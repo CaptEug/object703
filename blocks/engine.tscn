@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://mkhgj12b5dr8"]
+
+[ext_resource type="Script" uid="uid://wuc6eml41m1l" path="res://blocks/engine.gd" id="1_2irrd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kkwhi"]
+size = Vector2(16, 16)
+
+[node name="Engine" type="RigidBody2D"]
+script = ExtResource("1_2irrd")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_kkwhi")
