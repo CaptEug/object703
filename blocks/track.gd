@@ -2,8 +2,7 @@ extends Block
 
 const HITPOINT:int = 100
 const WEIGHT:int = 1
-var forward:bool = true
-var backward:bool
+var state:String
 var force:int = 10
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -15,7 +14,7 @@ func _process(delta):
 	pass
 
 func _physics_process(delta):
-	if forward:
+	if state == 'forward':
 		apply_impulse(Vector2.UP.rotated(rotation) * force)
-	if backward:
-		apply_impulse(Vector2.UP.rotated(rotation) * force)
+	if state == 'backward':
+		apply_impulse(Vector2.DOWN.rotated(rotation) * force)
