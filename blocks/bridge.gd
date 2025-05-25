@@ -1,11 +1,13 @@
 extends Block
 
 const HITPOINT:int = 100
-const WEIGHT:int = 2
+const WEIGHT: float = 2.0
 
+func get_weight() -> float:
+	return WEIGHT
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	mass = WEIGHT
+	super._ready()
 	pass # Replace with function body.
 
 
