@@ -11,7 +11,6 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	print(total_power)
 	if Input.is_action_pressed("FORWARD"): 
 		move_state = 'forward'
 	elif Input.is_action_pressed("BACKWARD"):
