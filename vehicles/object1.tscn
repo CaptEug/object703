@@ -14,3 +14,23 @@ position = Vector2(-16, 0)
 
 [node name="Track_right" parent="." instance=ExtResource("2_dklke")]
 position = Vector2(16, 0)
+
+[node name="PinJoint2D" type="PinJoint2D" parent="."]
+position = Vector2(-8, -8)
+node_a = NodePath("../Bridge")
+node_b = NodePath("../Track_left")
+
+[node name="PinJoint2D2" type="PinJoint2D" parent="."]
+position = Vector2(-8, 8)
+node_a = NodePath("../Bridge")
+node_b = NodePath("../Track_left")
+
+[node name="PinJoint2D3" type="PinJoint2D" parent="."]
+position = Vector2(8, -8)
+node_a = NodePath("../Bridge")
+node_b = NodePath("../Track_right")
+
+[node name="PinJoint2D4" type="PinJoint2D" parent="."]
+position = Vector2(8, 8)
+node_a = NodePath("../Bridge")
+node_b = NodePath("../Track_right")
