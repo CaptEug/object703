@@ -4,9 +4,11 @@ const HITPOINT:int = 100
 const WEIGHT:int = 2
 var power:int = 200
 
+func get_weight() -> float:
+	return WEIGHT
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	mass = WEIGHT
+	add_to_group("engines")
 	pass # Replace with function body.
 
 
