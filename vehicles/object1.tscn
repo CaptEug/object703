@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://bna702djki3qu"]
+
+[ext_resource type="Script" uid="uid://dksgxytgwjwdd" path="res://vehicles/object_1.gd" id="1_dklke"]
+[ext_resource type="PackedScene" uid="uid://byo7xm5tw3n2w" path="res://blocks/bridge.tscn" id="1_h02lt"]
+[ext_resource type="PackedScene" uid="uid://ynw68d3flv12" path="res://blocks/track.tscn" id="2_dklke"]
+
+[node name="Object1" type="Node2D"]
+script = ExtResource("1_dklke")
+
+[node name="Bridge" parent="." instance=ExtResource("1_h02lt")]
+
+[node name="Track_left" parent="." instance=ExtResource("2_dklke")]
+position = Vector2(-16, 0)
+
+[node name="Track_right" parent="." instance=ExtResource("2_dklke")]
+position = Vector2(16, 0)
