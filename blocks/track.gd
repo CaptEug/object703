@@ -11,6 +11,12 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	if Input.is_action_pressed("FORWARD"):  # Typically W key
+		state = 'forward'
+	elif Input.is_action_pressed("BACKWARD"):  # Typically S key
+		state = 'backward'
+	else:
+		state = ''
 	pass
 
 func _physics_process(delta):
