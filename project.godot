@@ -14,6 +14,19 @@ config/name="Object703"
 run/main_scene="uid://dawkb0e8tm4e8"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
+[input]
+
+FORWARD={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":87,"key_label":0,"unicode":87,"location":0,"echo":false,"script":null)
+]
+}
+BACKWARD={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":83,"location":0,"echo":false,"script":null)
+]
+}
+
 [physics]
 
 2d/default_gravity_vector=Vector2(0, 0)
