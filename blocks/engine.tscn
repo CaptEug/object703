@@ -1,9 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://mkhgj12b5dr8"]
+[gd_scene load_steps=5 format=3 uid="uid://mkhgj12b5dr8"]
 
 [ext_resource type="Script" uid="uid://wuc6eml41m1l" path="res://blocks/engine.gd" id="1_2irrd"]
+[ext_resource type="Texture2D" uid="uid://cs8htrrxh7e2p" path="res://assets/blocks1.png" id="2_kkwhi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kkwhi"]
 size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_itil1"]
+atlas = ExtResource("2_kkwhi")
+region = Rect2(0, 32, 16, 16)
 
 [node name="Engine" type="RigidBody2D"]
 script = ExtResource("1_2irrd")
@@ -11,3 +16,6 @@ metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_kkwhi")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_itil1")
