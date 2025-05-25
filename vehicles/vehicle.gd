@@ -11,12 +11,8 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if Input.is_action_pressed("FORWARD"): 
-		move_state = 'forward'
-	elif Input.is_action_pressed("BACKWARD"):
-		move_state = 'backward'
-	else:
-		move_state = 'idle'
+
+	update_tracks_state(delta)
 	pass
 
 func get_total_engine_power() -> float:
@@ -27,10 +23,9 @@ func get_total_engine_power() -> float:
 	return total_power
 
 func update_tracks_state(delta):
-	if Input.is_action_pressed("FORWARD"):
+	if Input.is_action_pressed("FORWARD"): 
 		move_state = 'forward'
-	elif Input.is_action_pressed("BACKWARD"): 
+	elif Input.is_action_pressed("BACKWARD"):
 		move_state = 'backward'
 	else:
 		move_state = 'idle'
-	print(move_state)
