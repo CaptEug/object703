@@ -1,8 +1,8 @@
-class_name Map
+class_name Terrain
 extends Node
 
 func _ready():
-	add_to_group('maps')
+	add_to_group('terrains')
 	pass
 	
 func stop_liner_damp_():

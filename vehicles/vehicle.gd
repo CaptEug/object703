@@ -31,13 +31,12 @@ func get_total_engine_power() -> float:
 	return total_power
 
 func set_total_track_liner_damp():
-	for map in get_tree().get_nodes_in_group('maps'):
-		print(map)
-		if map.is_inside_tree() and is_instance_valid(map):
-			var map_damp = map.stop_liner_damp_()
+	for terrain in get_tree().get_nodes_in_group('terrains'):
+		if terrain.is_inside_tree() and is_instance_valid(terrain):
+			var terrain_damp = terrain.stop_liner_damp_()
 			for track in get_tree().get_nodes_in_group("tracks"):
 				if track.is_inside_tree() and is_instance_valid(track):
-					track.stopped_damp = map_damp
+					track.stopped_damp = terrain_damp
 					track.set_liner_damp()
 			break
 

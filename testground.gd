@@ -1,4 +1,4 @@
-extends Map
+extends Terrain
 
 var stop_liner_damp = 5.0
 

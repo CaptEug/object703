@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
 [ext_resource type="Script" uid="uid://cyx535jfne5jh" path="res://testground.gd" id="1_m32x0"]
 
-[node name="Testground" type="Node2D" groups=["maps"]]
+[node name="Testground" type="Node2D" groups=["terrains"]]
 script = ExtResource("1_m32x0")
 
 [node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
