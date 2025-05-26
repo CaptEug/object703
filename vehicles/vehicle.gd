@@ -68,3 +68,4 @@ func connect_with_joint(a: Block, b: Block):
 	joint.position = (a.global_position + b.global_position) / 2.0
 	joint.disable_collision = false
 	add_child(joint)
+	
