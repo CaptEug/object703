@@ -4,10 +4,14 @@ extends Node2D
 var move_state:String
 var total_power:float
 var total_weight:int
-var bluepirnt_grid:Dictionary
+var bluepirnt:Dictionary
+var grid:= {}
+var blocks:= []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	for block in blocks:
+		block.add_to_group("blocks")
 	connect_blocks()
 	pass # Replace with function body.
 
@@ -20,7 +24,7 @@ func _process(delta):
 func connect_blocks():
 	for block in get_tree().get_nodes_in_group('blocks'):
 		var snapped_pos = snap_block_to_grid(block, 16, true)
-		bluepirnt_grid[snapped_pos] = block
+		grid[snapped_pos] = block
 		connect_adjacent_blocks(snapped_pos, block)
 
 func get_total_engine_power() -> float:
@@ -62,10 +66,10 @@ func connect_adjacent_blocks(pos: Vector2i, block: Block):
 	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
 	for dir in directions:
 		var neighbor_pos = pos + dir
-		if bluepirnt_grid.has(neighbor_pos):
-			var neighbor = bluepirnt_grid[neighbor_pos]
+		if grid.has(neighbor_pos):
+			var neighbor = grid[neighbor_pos]
 			connect_with_joint(block, neighbor)
-			
+
 func connect_with_joint(a: Block, b: Block):
 	var joint = PinJoint2D.new()
 	joint.node_a = a.get_path()

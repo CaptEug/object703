@@ -66,6 +66,5 @@ func create_vehicle_from_grid():
 		# Move block under vehicle
 		block.get_parent().remove_child(block)
 		vehicle.blocks.append(block)
-		added.append(block)
-		# Keep a grid index → block map
 		vehicle.blueprint[grid_pos] = block
+		added.append(block)
