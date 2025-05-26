@@ -1,10 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=4 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
 [ext_resource type="Script" uid="uid://cyx535jfne5jh" path="res://testground.gd" id="1_m32x0"]
 
-[node name="Testground" type="Node2D" groups=["terrains"]]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_m32x0"]
+size = Vector2(335, 266)
+
+[node name="Testground" type="Area2D"]
 script = ExtResource("1_m32x0")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_m32x0")
 
 [node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
 
