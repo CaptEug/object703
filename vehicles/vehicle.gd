@@ -19,16 +19,24 @@ func _process(delta):
 
 func connect_blocks():
 	for block in get_tree().get_nodes_in_group('blocks'):
-		var snapped_pos = snap_block_to_grid(block, 16)
+		var snapped_pos = snap_block_to_grid(block, 16, true)
 		bluepirnt_grid[snapped_pos] = block
 		connect_adjacent_blocks(snapped_pos, block)
 
 func get_total_engine_power() -> float:
 	var total_power := 0.0
-	for engine in get_tree().get_nodes_in_group("engines"):
+	for engine in get_tree().get_nodes_in_group('engines'):
 		if engine.is_inside_tree() and is_instance_valid(engine):
 			total_power += engine.power
 	return total_power
+
+func set_total_track_liner_damp(damp):
+	for track in get_tree().get_nodes_in_group("tracks"):
+		if track.is_inside_tree() and is_instance_valid(track):
+			track.stopped_damp = damp
+			track.set_liner_damp()
+
+
 
 func update_tracks_state(delta):
 	if Input.is_action_pressed("FORWARD"): 
@@ -38,13 +46,16 @@ func update_tracks_state(delta):
 	else:
 		move_state = 'idle'
 
-func snap_block_to_grid(block:Block, grid_size:int = 16) -> Vector2i:
+func snap_block_to_grid(block: Block, grid_size: int = 16, align_to_center: bool = true) -> Vector2i:
 	var world_pos = block.global_position
 	var snapped_pos = Vector2(
 		floor(world_pos.x / grid_size),
 		floor(world_pos.y / grid_size)
 	)
-	block.global_position = snapped_pos * grid_size + block.size/2 * grid_size
+	if align_to_center:
+		block.global_position = snapped_pos * grid_size + Vector2(grid_size / 2, grid_size / 2)
+	else:
+		block.global_position = snapped_pos * grid_size
 	return snapped_pos  # useful for tracking in a grid dictionary
 
 func connect_adjacent_blocks(pos: Vector2i, block: Block):
