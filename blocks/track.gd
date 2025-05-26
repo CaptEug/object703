@@ -5,8 +5,7 @@ const WEIGHT:int = 1
 var state:String
 var force:int
 var state_force: Array = ['', 0]
-var stopped_damp = 2     
-var space_rid: RID
+var fraction = 5   
 
 func get_weight() -> float:
 	return WEIGHT
@@ -14,7 +13,6 @@ func get_weight() -> float:
 func _ready():
 	add_to_group('tracks')
 	set_state_force('idle', 0)
-	space_rid = get_viewport().find_world_2d().get_space()
 	set_liner_damp()
 	pass # Replace with function body.
 
@@ -43,7 +41,7 @@ func track_move(delta):
 		apply_impulse(Vector2.DOWN.rotated(rotation) * state_force[1])
 
 func set_liner_damp():
-	PhysicsServer2D.area_set_param(space_rid, PhysicsServer2D.AREA_PARAM_LINEAR_DAMP, stopped_damp)
+	linear_damp = fraction
 
 
 	

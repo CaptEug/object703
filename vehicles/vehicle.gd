@@ -9,6 +9,8 @@ var bluepirnt_grid:Dictionary
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	connect_blocks()
+	print(calculate_center_of_mass())
+	print(bluepirnt_grid)
 	pass # Replace with function body.
 
 
@@ -69,3 +71,12 @@ func connect_with_joint(a: Block, b: Block):
 	joint.disable_collision = false
 	add_child(joint)
 	
+func calculate_center_of_mass() -> Vector2:
+	var total_mass: float = 0.0
+	var weighted_sum := Vector2.ZERO
+	for grid_pos in bluepirnt_grid:
+		var block: RigidBody2D = bluepirnt_grid[grid_pos]
+		var world_pos = Vector2(grid_pos.x * 16, grid_pos.y * 16)
+		weighted_sum += world_pos * block.WEIGHT
+		total_mass += block.WEIGHT
+	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
