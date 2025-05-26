@@ -30,12 +30,6 @@ func get_total_engine_power() -> float:
 			total_power += engine.power
 	return total_power
 
-func set_total_track_liner_damp(damp):
-	for track in get_tree().get_nodes_in_group("tracks"):
-		if track.is_inside_tree() and is_instance_valid(track):
-			track.stopped_damp = damp
-			track.set_liner_damp()
-
 
 
 func update_tracks_state(delta):

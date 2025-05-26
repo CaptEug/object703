@@ -5,7 +5,7 @@ const WEIGHT:int = 1
 var state:String
 var force:int
 var state_force: Array = ['', 0]
-var stopped_damp        
+var stopped_damp = 2     
 var space_rid: RID
 
 func get_weight() -> float:
@@ -15,6 +15,7 @@ func _ready():
 	add_to_group('tracks')
 	set_state_force('idle', 0)
 	space_rid = get_viewport().find_world_2d().get_space()
+	set_liner_damp()
 	pass # Replace with function body.
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
