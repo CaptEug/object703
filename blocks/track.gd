@@ -2,20 +2,19 @@ extends Block
 
 const HITPOINT:int = 100
 const WEIGHT:int = 1
-var size:= Vector2(1, 1)
 var state:String
 var force:int
 var state_force: Array = ['', 0]
-var stopped_damp = 5.0         
+var stopped_damp        
 var space_rid: RID
 
 func get_weight() -> float:
 	return WEIGHT
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	add_to_group('tracks')
 	set_state_force('idle', 0)
 	space_rid = get_viewport().find_world_2d().get_space()
-	PhysicsServer2D.area_set_param(space_rid, PhysicsServer2D.AREA_PARAM_LINEAR_DAMP, stopped_damp)
 	pass # Replace with function body.
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -41,6 +40,9 @@ func track_move(delta):
 		apply_impulse(Vector2.UP.rotated(rotation) * state_force[1])
 	elif state_force[0] == 'backward':
 		apply_impulse(Vector2.DOWN.rotated(rotation) * state_force[1])
+
+func set_liner_damp():
+	PhysicsServer2D.area_set_param(space_rid, PhysicsServer2D.AREA_PARAM_LINEAR_DAMP, stopped_damp)
 
 
 	
