@@ -2,6 +2,7 @@ extends Block
 
 const HITPOINT:int = 100
 const WEIGHT: float = 2.0
+var size:= Vector2(1, 1)
 
 func get_weight() -> float:
 	return WEIGHT
