@@ -19,7 +19,7 @@ func _process(delta):
 
 func connect_blocks():
 	for block in get_tree().get_nodes_in_group('blocks'):
-		var snapped_pos = snap_block_to_grid(block, 16, true)
+		var snapped_pos = snap_block_to_grid(block, 16)
 		bluepirnt_grid[snapped_pos] = block
 		connect_adjacent_blocks(snapped_pos, block)
 
@@ -38,16 +38,13 @@ func update_tracks_state(delta):
 	else:
 		move_state = 'idle'
 
-func snap_block_to_grid(block: Block, grid_size: int = 16, align_to_center: bool = true) -> Vector2i:
+func snap_block_to_grid(block:Block, grid_size:int = 16) -> Vector2i:
 	var world_pos = block.global_position
 	var snapped_pos = Vector2(
 		floor(world_pos.x / grid_size),
 		floor(world_pos.y / grid_size)
 	)
-	if align_to_center:
-		block.global_position = snapped_pos * grid_size + Vector2(grid_size / 2, grid_size / 2)
-	else:
-		block.global_position = snapped_pos * grid_size
+	block.global_position = snapped_pos * grid_size + block.size/2 * grid_size
 	return snapped_pos  # useful for tracking in a grid dictionary
 
 func connect_adjacent_blocks(pos: Vector2i, block: Block):

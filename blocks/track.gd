@@ -2,6 +2,7 @@ extends Block
 
 const HITPOINT:int = 100
 const WEIGHT:int = 1
+var size:= Vector2(1, 1)
 var state:String
 var force:int
 var state_force: Array = ['', 0]

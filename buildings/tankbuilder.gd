@@ -22,6 +22,8 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	if ghost_block:
+		update_ghost_position()
 	pass
 
 func update_ghost_position():
@@ -33,5 +35,5 @@ func snap_to_grid(pos:Vector2, block_size:Vector2) -> Vector2i:
 		floor(pos.x / GRID_SIZE),
 		floor(pos.y / GRID_SIZE)
 	)
-	var snapped_global_position = snapped_pos * GRID_SIZE + Vector2(GRID_SIZE / 2, GRID_SIZE / 2)
+	var snapped_global_position = snapped_pos * GRID_SIZE + block_size/2 * GRID_SIZE
 	return snapped_global_position  # useful for tracking in a grid dictionary
