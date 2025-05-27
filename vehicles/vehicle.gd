@@ -47,11 +47,6 @@ func _update_direction_from_velocity():
 		if move_state == "backward":
 			direction *= -1
 
-func connect_blocks():
-	for block in get_tree().get_nodes_in_group('blocks'):
-		var snapped_pos = snap_block_to_grid(block)
-		grid[snapped_pos] = block
-		connect_adjacent_blocks(snapped_pos, block)
 
 func get_total_engine_power() -> float:
 	var total_power := 0.0
@@ -91,6 +86,16 @@ func _power_increase():
 		if power_increase > 0:
 			power_increase -= speed_of_increase
 
+func connect_blocks():
+	for block in get_tree().get_nodes_in_group('blocks'):
+		var size = block.size
+		var grid_pos = snap_block_to_grid(block)
+		for x in size.x:
+			for y in size.y:
+				var cell = grid_pos + Vector2i(x, y)
+				grid[cell] = block
+				connect_adjacent_blocks(cell, grid[cell])
+
 func snap_block_to_grid(block:Block) -> Vector2i:
 	var world_pos = block.global_position
 	var snapped_pos = Vector2(
@@ -104,23 +109,16 @@ func connect_adjacent_blocks(pos:Vector2i, block:Block):
 	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
 	for dir in directions:
 		var neighbor_pos = pos + dir
-		if grid.has(neighbor_pos):
+		if grid.has(neighbor_pos) and grid[neighbor_pos] != block:
 			var neighbor = grid[neighbor_pos]
-			connect_with_joint(block, neighbor, dir)
+			var joint_pos = 8 * dir
+			connect_with_joint(block, neighbor, joint_pos)
 
-func connect_with_joint(a:Block, b:Block, dir):
+func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
 	var joint = PinJoint2D.new()
 	joint.node_a = a.get_path()
 	joint.node_b = b.get_path()
-	# Place joint in the middle of the two blocks
-	if dir == Vector2i.LEFT:
-		joint.position.x = - a.size.x * GRID_SIZE / 2.0
-	if dir == Vector2i.RIGHT:
-		joint.position.x = a.size.x * GRID_SIZE / 2.0
-	if dir == Vector2i.UP:
-		joint.position.y = - a.size.y * GRID_SIZE / 2.0
-	if dir == Vector2i.DOWN:
-		joint.position.y = a.size.y * GRID_SIZE / 2.0
+	joint.position = joint_pos
 	joint.disable_collision = false
 	a.add_child(joint)
 	
