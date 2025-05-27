@@ -11,19 +11,17 @@ script = ExtResource("1_dklke")
 
 [node name="Bridge" parent="." groups=["blocks"] instance=ExtResource("1_h02lt")]
 
-[node name="Centroid" type="Node2D" parent="Bridge"]
-
 [node name="Track_left" parent="." groups=["blocks"] instance=ExtResource("2_dklke")]
-position = Vector2(-16, 16)
+position = Vector2(-16, -15)
 
 [node name="Track_right" parent="." groups=["blocks"] instance=ExtResource("2_dklke")]
-position = Vector2(32, 16)
+position = Vector2(-16, 0)
 
 [node name="Engine" parent="." groups=["blocks"] instance=ExtResource("4_21i8c")]
-position = Vector2(0, 16)
+position = Vector2(16, -16)
 
 [node name="Track" parent="." groups=["blocks"] instance=ExtResource("2_dklke")]
-position = Vector2(-32, 16)
+position = Vector2(16, 0)
 
 [node name="Track2" parent="." groups=["blocks"] instance=ExtResource("2_dklke")]
 position = Vector2(16, 16)
