@@ -8,6 +8,4 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	super._process(delta)
-	#$Track_left.set_state_force(move_state,total_power)
-	#$Track_right.set_state_force(move_state,total_power)
 	pass
