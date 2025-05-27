@@ -38,7 +38,7 @@ func _ready():
 
 func _process(delta):
 	update_tracks_state(delta)
-	print(direction)
+
 
 func _update_direction_from_velocity():
 	var com_velocity = get_physics_com_velocity()
