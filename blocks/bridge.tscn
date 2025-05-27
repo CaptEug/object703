@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://byo7xm5tw3n2w"]
 
 [ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/bridge.gd" id="1_axnth"]
-[ext_resource type="Texture2D" uid="uid://bcdvvxqs3nw56" path="res://assets/blocks1.png" id="2_x12pa"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_x12pa"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_x12pa"]
 size = Vector2(16, 16)

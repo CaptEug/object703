@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://jbbm78mi6qb5"]
+
+[ext_resource type="Script" uid="uid://mksnqq0fauve" path="res://blocks/weapons/ammo.gd" id="1_aas2x"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_xsjiv"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mhqor"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2gyxe"]
+atlas = ExtResource("2_xsjiv")
+region = Rect2(0, 32, 16, 16)
+
+[node name="Ammo" type="RigidBody2D"]
+script = ExtResource("1_aas2x")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_mhqor")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_2gyxe")
