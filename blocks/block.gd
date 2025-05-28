@@ -5,7 +5,6 @@ var current_hp:int
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
-	linear_damp_mode = RigidBody2D.DAMP_MODE_REPLACE
 	pass # Replace with function body.
 
 func init():
@@ -18,6 +17,3 @@ func _process(delta):
 
 func damage(amount:int):
 	current_hp -= amount
-	print(str(name) + 'damage received:' + str(amount))
-	if current_hp <= 0:
-		queue_free()

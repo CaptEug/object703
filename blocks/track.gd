@@ -1,8 +1,8 @@
 extends Block
 
 const HITPOINT:int = 200
-const WEIGHT:float = 200
-const FRACTION = 1.0
+const WEIGHT:float = 2
+const FRACTION = 5.0
 var block_name:String = 'track'
 var size:= Vector2(1, 1)
 var state_force: Array = ['idle', 0.0]
@@ -13,14 +13,10 @@ func init():
 	mass = WEIGHT
 	current_hp = HITPOINT
 	linear_damp = FRACTION
-	#linear_damp_mode = RigidBody2D.DAMP_MODE_COMBINE
-# Called when the node enters the scene tree for the first time.
+	linear_damp_mode = RigidBody2D.DAMP_MODE_COMBINE
+
 func _ready():
 	super._ready()
-<<<<<<< HEAD
-=======
-	linear_damp = FRACTION
->>>>>>> 4468ca1144843ba16ed5fdfd7f1bc5032f5966bc
 	add_to_group('tracks')
 	set_state_force('idle', 0.0)
 	queue_redraw()
