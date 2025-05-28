@@ -1,10 +1,8 @@
-extends Block
+extends Shell
 
-const HITPOINT:int = 100
-const WEIGHT:int = 2
-var block_name:String = 'ammo rack'
-var size:= Vector2(1, 1)
-var ammo_capacity:float = 50.0
+const WEIGHT:float = 3
+var shell_name:String = '75mm armorpiercing'
+var kenetic_damage:int = 200
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
@@ -13,3 +11,8 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
+
+
+func _on_area_2d_body_entered(block:Block):
+	
+	pass # Replace with function body.

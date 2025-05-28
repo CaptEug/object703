@@ -1,18 +1,9 @@
-extends Block
+class_name Shell
+extends RigidBody2D
 
-const HITPOINT:int = 100
-const WEIGHT:float = 1000
-var block_name:String = 'engine'
-var size:= Vector2(1, 1)
-var power:int = 2000
-
-func init():
-	mass = WEIGHT
-	current_hp = HITPOINT
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	add_to_group("engines")
 	pass # Replace with function body.
 
 
