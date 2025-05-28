@@ -2,6 +2,7 @@ extends Block
 
 const HITPOINT:int = 100
 const WEIGHT:int = 2
+var block_name:String = 'command cupola'
 var size:= Vector2(1, 1)
 
 func get_weight() -> float:
