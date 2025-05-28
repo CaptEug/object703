@@ -27,3 +27,6 @@ texture = SubResource("AtlasTexture_6dfq6")
 [node name="Turret" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_b3psk")
 offset = Vector2(0, -16)
+
+[node name="Muzzle" type="Marker2D" parent="Turret"]
+position = Vector2(0, -45)

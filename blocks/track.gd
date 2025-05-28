@@ -1,8 +1,8 @@
 extends Block
 
-const HITPOINT:int = 100
+const HITPOINT:int = 200
 const WEIGHT:float = 200
-const FRACTION = 5.0
+const FRACTION = 1.0
 var block_name:String = 'track'
 var size:= Vector2(1, 1)
 var state_force: Array = ['idle', 0.0]
@@ -15,6 +15,7 @@ func init():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	super._ready()
 	linear_damp = FRACTION
 	add_to_group('tracks')
 	set_state_force('idle', 0.0)

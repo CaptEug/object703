@@ -1,6 +1,6 @@
 extends Block
 
-const HITPOINT:int = 100
+const HITPOINT:int = 300
 const WEIGHT:float = 500
 var block_name:String = 'command cupola'
 var size:= Vector2(1, 1)
