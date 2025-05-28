@@ -1,7 +1,7 @@
 extends Block
 
 const HITPOINT:int = 100
-const WEIGHT:int = 1
+const WEIGHT:float = 200
 const FRACTION = 5.0
 var block_name:String = 'track'
 var size:= Vector2(1, 1)
@@ -9,8 +9,10 @@ var state_force: Array = ['idle', 0.0]
 var force_direction := Vector2.ZERO
 var max_force = 500
 
-func get_weight() -> float:
-	return WEIGHT
+func init():
+	mass = WEIGHT
+	current_hp = HITPOINT
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	linear_damp = FRACTION

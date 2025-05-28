@@ -1,10 +1,10 @@
 extends Block
 
 const HITPOINT:int = 100
-const WEIGHT:float = 1000
-var block_name:String = 'engine'
+const WEIGHT:float = 200
+var block_name:String = 'ammo rack'
 var size:= Vector2(1, 1)
-var power:int = 2000
+var ammo_capacity:float = 50.0
 
 func init():
 	mass = WEIGHT
@@ -12,7 +12,6 @@ func init():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	add_to_group("engines")
 	pass # Replace with function body.
 
 

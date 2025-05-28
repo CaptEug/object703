@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://quimu7rq0a35"]
+
+[ext_resource type="Script" uid="uid://dqrl1xbjyuw1r" path="res://blocks/weapons/shells/ap_75_mm.gd" id="1_kaski"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_kaski"]
+radius = 0.01
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_lpwx8"]
+radius = 1.0
+
+[node name="Ap75Mm" type="RigidBody2D"]
+script = ExtResource("1_kaski")
+metadata/_custom_type_script = "uid://dhtn6iji0pso7"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_kaski")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("CircleShape2D_lpwx8")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
