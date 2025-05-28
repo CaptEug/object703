@@ -32,7 +32,6 @@ func _ready():
 		balanced_forces[track] = 0.0
 	# 计算初始平衡力
 	calculate_balanced_forces()
-	print(balanced_forces)
 	pass # Replace with function body.
 
 func _process(delta):
@@ -81,8 +80,10 @@ func update_tracks_state(delta):
 	
 	# 根据平衡力设置目标力
 	for track in balanced_forces:
-		if move_state == 'forward' or move_state == 'backward':
+		if move_state == 'forward':
 			track_target_forces[track] = balanced_forces[track]
+		elif move_state == 'backward':
+			track_target_forces[track] = -balanced_forces[track]
 		else:
 			track_target_forces[track] = 0.0
 	
@@ -128,14 +129,17 @@ func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
 func calculate_center_of_mass() -> Vector2:
 	var total_mass := 0.0
 	var weighted_sum := Vector2.ZERO
+	var has_calculated := {}
 	for grid_pos in grid:
 		var body: RigidBody2D = grid[grid_pos]
-		print(body,body.mass)
+		if has_calculated.get(body.get_instance_id(), false):
+			continue
 		var rid = body.get_rid()
 		var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
 		var global_com: Vector2 = body.to_global(local_com)
 		weighted_sum += global_com * body.mass
 		total_mass += body.mass
+		has_calculated[body.get_instance_id()] = true
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func get_total_engine_power() -> float:
