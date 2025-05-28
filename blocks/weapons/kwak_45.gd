@@ -16,5 +16,6 @@ func _process(delta):
 	pass
 
 func aim(delta, target_pos):
-	var to_target = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
-	$Turret.rotation = move_toward($Turret.rotation, to_target, rotation_speed * delta)
+	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
+	var angle_diff = wrapf(target_angle - $Turret.rotation, -PI, PI)
+	$Turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
