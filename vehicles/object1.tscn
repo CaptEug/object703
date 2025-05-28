@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://dksgxytgwjwdd" path="res://vehicles/object_1.gd" id="1_dklke"]
 [ext_resource type="PackedScene" uid="uid://byo7xm5tw3n2w" path="res://blocks/bridge.tscn" id="1_h02lt"]
-[ext_resource type="PackedScene" uid="uid://ynw68d3flv12" path="res://blocks/track.tscn" id="2_dklke"]
-[ext_resource type="PackedScene" uid="uid://mkhgj12b5dr8" path="res://blocks/engine.tscn" id="4_21i8c"]
+[ext_resource type="PackedScene" uid="uid://ynw68d3flv12" path="res://blocks/rusty_track.tscn" id="2_dklke"]
+[ext_resource type="PackedScene" uid="uid://mkhgj12b5dr8" path="res://blocks/maybach_hl_250.tscn" id="4_21i8c"]
 [ext_resource type="PackedScene" uid="uid://ywknmytaihqu" path="res://blocks/weapons/kwak45.tscn" id="5_qf2vm"]
 
 [node name="Object1" type="Node2D"]

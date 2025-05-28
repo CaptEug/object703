@@ -10,6 +10,8 @@ var total_weight:int
 var bluepirnt:Dictionary
 var grid:= {}
 var blocks:= []
+var powerpacks:= []
+var tracks:= []
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
 var track_target_forces := {}  # 存储每个履带的目标力
@@ -24,7 +26,7 @@ var force_vector_width := 2.0
 
 func _ready():
 	connect_blocks()
-	for track in get_tree().get_nodes_in_group("tracks"):
+	for track in tracks:
 		track_target_forces[track] = 0.0
 		track_current_forces[track] = 0.0
 		balanced_forces[track] = 0.0
@@ -38,7 +40,7 @@ func _process(delta):
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
-	var active_tracks = get_tree().get_nodes_in_group("tracks")
+	var active_tracks = tracks
 	var total_power = get_total_engine_power()
 	
 	# 准备推力点数据
@@ -279,7 +281,7 @@ func calculate_center_of_mass() -> Vector2:
 
 func get_total_engine_power() -> float:
 	var total_power := 0.0
-	for engine in get_tree().get_nodes_in_group('engines'):
+	for engine in powerpacks:
 		if engine.is_inside_tree() and is_instance_valid(engine):
 			total_power += engine.power
 	return total_power

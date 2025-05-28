@@ -5,6 +5,10 @@ extends Vehicle
 func _ready():
 	for block in get_children():
 		blocks.append(block)
+		if block is Track:
+			tracks.append(block)
+		if block is Powerpack:
+			powerpacks.append(block)
 	super._ready()
 	total_power = self.get_total_engine_power()
 
