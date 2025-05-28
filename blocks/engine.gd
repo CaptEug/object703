@@ -1,10 +1,10 @@
 extends Block
 
-const HITPOINT:int = 100
-const WEIGHT:float = 50
+const HITPOINT:int = 200
+const WEIGHT:float = 1000
 var block_name:String = 'engine'
 var size:= Vector2(1, 1)
-var power:int = 200
+var power:int = 20000
 
 func init():
 	mass = WEIGHT

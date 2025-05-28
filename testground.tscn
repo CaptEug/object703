@@ -4,6 +4,6 @@
 
 [node name="Testground" type="Node2D"]
 
-[node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
-
 [node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Object1" parent="." instance=ExtResource("1_6fv6v")]

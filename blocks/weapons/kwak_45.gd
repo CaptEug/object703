@@ -1,11 +1,13 @@
 extends Block
 
-const HITPOINT:int = 400
-const WEIGHT:int = 7
+const HITPOINT:int = 800
+const WEIGHT:int = 7000
 var block_name:String = '7.5cm Kwak 45 L/70'
 var size:= Vector2(2, 2)
 var rotation_speed:float = 3.0  # rads per second
-var muzzle_energy:float = 100
+var muzzle_energy:float = 800
+
+@export var ap_shell = preload("res://blocks/weapons/shells/ap75mm.tscn")
 
 func init():
 	mass = WEIGHT
@@ -20,6 +22,8 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	aim(delta, get_global_mouse_position())
+	if Input.is_action_just_pressed("FIRE_MAIN"):
+		fire(ap_shell)
 	pass
 
 func aim(delta, target_pos):
@@ -27,5 +31,11 @@ func aim(delta, target_pos):
 	var angle_diff = wrapf(target_angle - $Turret.rotation, -PI, PI)
 	$Turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 
-func fire(shell:Shell):
-	pass
+func fire(shell_scene:PackedScene):
+	var muzzle = $Turret/Muzzle
+	var shell = shell_scene.instantiate()
+	var shell_rotation = muzzle.global_rotation
+	get_tree().current_scene.add_child(shell)
+	shell.global_position = muzzle.global_position
+	shell.apply_impulse(Vector2.UP.rotated(shell_rotation) * muzzle_energy)
+	
