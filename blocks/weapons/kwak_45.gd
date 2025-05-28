@@ -1,7 +1,7 @@
 extends Block
 
 const HITPOINT:int = 400
-const WEIGHT:int = 7000
+const WEIGHT:int = 7
 var block_name:String = '7.5cm Kwak 45 L/70'
 var size:= Vector2(2, 2)
 var rotation_speed:float = 3.0  # rads per second
@@ -10,9 +10,10 @@ var muzzle_energy:float = 100
 func init():
 	mass = WEIGHT
 	current_hp = HITPOINT
-
+	linear_damp = 5.0
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	super._ready()
 	pass # Replace with function body.
 
 

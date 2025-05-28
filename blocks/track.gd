@@ -1,7 +1,7 @@
 extends Block
 
 const HITPOINT:int = 100
-const WEIGHT:float = 200
+const WEIGHT:float = 2
 const FRACTION = 5.0
 var block_name:String = 'track'
 var size:= Vector2(1, 1)
@@ -12,13 +12,13 @@ var max_force = 500
 func init():
 	mass = WEIGHT
 	current_hp = HITPOINT
-
+	linear_damp = FRACTION
+	#linear_damp_mode = RigidBody2D.DAMP_MODE_COMBINE
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	linear_damp = FRACTION
+	super._ready()
 	add_to_group('tracks')
 	set_state_force('idle', 0.0)
-	print(state_force)
 	queue_redraw()
 	pass # Replace with function body.
 
@@ -40,12 +40,9 @@ func _on_received_state_force_signal(state_force_signal):
 		set_state_force(state_force_signal.get('state', ''), state_force_signal.get('force', 0))
 		
 func track_move(delta):
-	if state_force[0] == 'forward':
+	if state_force[0] == 'forward' or state_force[0] == 'backward':
 		apply_impulse(Vector2.UP.rotated(rotation) * state_force[1])
 		force_direction = Vector2.UP
-	elif state_force[0] == 'backward':
-		apply_impulse(Vector2.DOWN.rotated(rotation) * state_force[1])
-		force_direction = Vector2.DOWN
 
 
 func _draw():

@@ -5,6 +5,7 @@ var current_hp:int
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
+	linear_damp_mode = RigidBody2D.DAMP_MODE_REPLACE
 	pass # Replace with function body.
 
 func init():

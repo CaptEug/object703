@@ -2,7 +2,7 @@ class_name Vehicle
 extends Node2D
 
 const GRID_SIZE:int = 16
-const FORCE_CHANGE_RATE := 1.0
+const FORCE_CHANGE_RATE := 5.0
 
 var move_state:String
 var total_power:float
@@ -32,41 +32,177 @@ func _ready():
 		balanced_forces[track] = 0.0
 	# 计算初始平衡力
 	calculate_balanced_forces()
+	print(balanced_forces)
 	pass # Replace with function body.
 
 func _process(delta):
 	update_tracks_state(delta)
 
 func calculate_balanced_forces():
-	# 计算直线行驶时各履带的理想出力分布
 	var com = calculate_center_of_mass()
 	var active_tracks = get_tree().get_nodes_in_group("tracks")
-	var total_power = 20
+	var total_power = get_total_engine_power()
 	
-	# 1. 计算每个履带到质心的距离
-	var distances := {}
-	var total_inverse_distance := 0.0
+	# 准备推力点数据
+	var thrust_points = []
 	for track in active_tracks:
-		print(track.global_position, com)
-		var dist = (track.global_position - com).length()
-		# 避免除以零
-		distances[track] = max(dist, 0.1)
-		total_inverse_distance += 1.0 / distances[track]
+		var dir = Vector2.UP.rotated(track.rotation) # 履带前进方向
+		thrust_points.append({
+			"position": track.global_position - global_position, # 相对位置
+			"direction": dir,
+			"track": track
+		})
 	
-	# 2. 根据距离分配力 (距离越远出力越大)
-	for track in active_tracks:
-		var dist_factor = (1.0 / distances[track]) / total_inverse_distance
-		balanced_forces[track] = total_power * dist_factor
+	# 计算各点出力
+	var thrusts = calculate_thrust_distribution(
+		thrust_points, 
+		com - global_position, # 相对质心
+		total_power, 
+		direction # 目标方向
+	)
 	
-	# 3. 标准化使总力等于引擎功率
-	var total_force := 0.0
-	for track in active_tracks:
-		total_force += balanced_forces[track]
+	# 分配结果
+	for point in thrust_points:
+		balanced_forces[point.track] = thrusts[point.track]
+
+# 最小二乘解法计算推力分布
+func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float, target_dir: Vector2) -> Dictionary:
+	var num_points = thrust_points.size()
+	if num_points == 0:
+		return {}
 	
-	if total_force > 0:
-		var scale_factor = total_power / total_force
-		for track in active_tracks:
-			balanced_forces[track] *= scale_factor
+	# 构建矩阵A和向量b
+	var A = []
+	var b = []
+	
+	# 1. 合力方程 (x和y方向)
+	var eq_force_x = []
+	var eq_force_y = []
+	for point in thrust_points:
+		eq_force_x.append(point.direction.x)
+		eq_force_y.append(point.direction.y)
+	A.append(eq_force_x)
+	b.append(total_thrust * target_dir.x)
+	A.append(eq_force_y)
+	b.append(total_thrust * target_dir.y)
+	
+	# 2. 扭矩平衡方程
+	var eq_torque = []
+	for point in thrust_points:
+		var r = point.position - com
+		var torque_coeff = r.x * point.direction.y - r.y * point.direction.x
+		eq_torque.append(torque_coeff)
+	A.append(eq_torque)
+	b.append(0.0)  # 目标扭矩为零
+	
+	# 3. 添加最小能量约束 (防止过度分配)
+	for i in range(num_points):
+		var eq_energy = array_zero(num_points)
+		eq_energy[i] = 1.0
+		A.append(eq_energy)
+		b.append(0.0)  # 偏好小出力
+	
+	# 4. 解最小二乘问题 (使用伪逆)
+	var x = least_squares_solve(A, b)
+	
+	# 5. 收集结果并标准化
+	var results = {}
+	var total = 0.0
+	for i in range(num_points):
+		var thrust = max(x[i], 0.0)  # 确保非负
+		results[thrust_points[i].track] = thrust
+		total += thrust
+	
+	# 标准化到总功率
+	if total > 0:
+		var scale = total_thrust / total
+		for track in results:
+			results[track] *= scale
+	
+	return results
+
+# 辅助函数：最小二乘求解
+func least_squares_solve(A: Array, b: Array) -> Array:
+	# 这里简化实现，实际项目建议使用性能更好的库
+	var At = transpose(A)
+	var AtA = multiply(At, A)
+	var Atb = multiply_vector(At, b)
+	return solve(AtA, Atb)
+
+# 矩阵转置
+func transpose(m: Array) -> Array:
+	var result = []
+	for j in range(m[0].size()):
+		result.append([])
+		for i in range(m.size()):
+			result[j].append(m[i][j])
+	return result
+
+# 矩阵乘法
+func multiply(a: Array, b: Array) -> Array:
+	var result = []
+	for i in range(a.size()):
+		result.append([])
+		for j in range(b[0].size()):
+			var sum = 0.0
+			for k in range(a[0].size()):
+				sum += a[i][k] * b[k][j]
+			result[i].append(sum)
+	return result
+
+# 矩阵向量乘法
+func multiply_vector(m: Array, v: Array) -> Array:
+	var result = []
+	for i in range(m.size()):
+		var sum = 0.0
+		for j in range(m[i].size()):
+			sum += m[i][j] * v[j]
+		result.append(sum)
+	return result
+
+func solve(A: Array, b: Array) -> Array:
+	# 这里应该使用更稳健的线性求解器
+	# 简化版仅用于演示
+	var n = A.size()
+	for i in range(n):
+		# 部分主元选择
+		var max_row = i
+		for k in range(i+1, n):
+			if abs(A[k][i]) > abs(A[max_row][i]):
+				max_row = k
+		
+		# 交换 A[i] 和 A[max_row]
+		var tmp_row = A[i] # 临时保存 A[i]
+		A[i] = A[max_row]
+		A[max_row] = tmp_row
+		
+		# 交换 b[i] 和 b[max_row]
+		var tmp_b = b[i]  # 临时保存 b[i]
+		b[i] = b[max_row]
+		b[max_row] = tmp_b
+		
+		# 消元
+		for k in range(i+1, n):
+			var factor = A[k][i] / A[i][i]
+			for j in range(i, n):
+				A[k][j] -= factor * A[i][j]
+			b[k] -= factor * b[i]
+	
+	# 回代
+	var x = array_zero(n)
+	for i in range(n-1, -1, -1):
+		x[i] = b[i]
+		for j in range(i+1, n):
+			x[i] -= A[i][j] * x[j]
+		x[i] /= A[i][i]
+	return x
+
+func array_zero(size: int) -> Array:
+	var arr = []
+	arr.resize(size)
+	for i in range(size):
+		arr[i] = 0.0
+	return arr
 
 func update_tracks_state(delta):
 	var forward_input = Input.get_action_strength("FORWARD") - Input.get_action_strength("BACKWARD")
@@ -137,9 +273,10 @@ func calculate_center_of_mass() -> Vector2:
 		var rid = body.get_rid()
 		var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
 		var global_com: Vector2 = body.to_global(local_com)
-		weighted_sum += global_com * body.mass
-		total_mass += body.mass
+		weighted_sum += global_com * body.mass * body.linear_damp
+		total_mass += body.mass * body.linear_damp
 		has_calculated[body.get_instance_id()] = true
+		print(body,body.mass,'   ', body.linear_damp)
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func get_total_engine_power() -> float:
