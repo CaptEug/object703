@@ -1,43 +1,43 @@
 [gd_scene load_steps=3 format=3 uid="uid://hpkk1sl4ldyp"]
 
-[ext_resource type="Script" uid="uid://bd6kccmkxqjkk" path="res://vehicles/vehicle.gd" id="1_xdu0c"]
+[ext_resource type="Script" uid="uid://ydmbwkhhajqc" path="res://vehicles/testarget.gd" id="1_fytn4"]
 [ext_resource type="PackedScene" uid="uid://cn6p02q1ry3yx" path="res://blocks/armor.tscn" id="2_fytn4"]
 
 [node name="Testarget" type="Node2D"]
-script = ExtResource("1_xdu0c")
+script = ExtResource("1_fytn4")
 metadata/_custom_type_script = "uid://bd6kccmkxqjkk"
 
-[node name="Armor" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor" parent="." instance=ExtResource("2_fytn4")]
 
-[node name="Armor2" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor2" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(16, 0)
 
-[node name="Armor3" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor3" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(32, 0)
 
-[node name="Armor4" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor4" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(48, 0)
 
-[node name="Armor5" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor5" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(0, -16)
 
-[node name="Armor6" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor6" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(16, -16)
 
-[node name="Armor7" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor7" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(32, -16)
 
-[node name="Armor8" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor8" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(48, -16)
 
-[node name="Armor9" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor9" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(0, -32)
 
-[node name="Armor10" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor10" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(16, -32)
 
-[node name="Armor11" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor11" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(32, -32)
 
-[node name="Armor12" parent="." groups=["blocks"] instance=ExtResource("2_fytn4")]
+[node name="Armor12" parent="." instance=ExtResource("2_fytn4")]
 position = Vector2(48, -32)

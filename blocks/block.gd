@@ -17,3 +17,5 @@ func _process(delta):
 
 func damage(amount:int):
 	current_hp -= amount
+	if current_hp <= 0:
+		queue_free()

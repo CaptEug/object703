@@ -1,9 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=3 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
+[ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="2_m32x0"]
 
 [node name="Testground" type="Node2D"]
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
+
+[node name="Testarget" parent="." instance=ExtResource("2_m32x0")]
+position = Vector2(-24, -125)

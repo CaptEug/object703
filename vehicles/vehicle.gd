@@ -23,8 +23,6 @@ var force_vector_color := Color(0, 1, 0, 0.5)  # 半透明绿色
 var force_vector_width := 2.0
 
 func _ready():
-	for block in blocks:
-		block.add_to_group("blocks")
 	connect_blocks()
 	for track in get_tree().get_nodes_in_group("tracks"):
 		track_target_forces[track] = 0.0
@@ -227,7 +225,7 @@ func update_tracks_state(delta):
 
 
 func connect_blocks():
-	for block in get_tree().get_nodes_in_group('blocks'):
+	for block in blocks:
 		var size = block.size
 		var grid_pos = snap_block_to_grid(block)
 		for x in size.x:
