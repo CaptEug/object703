@@ -3,7 +3,7 @@ extends Node2D
 
 const GRID_SIZE:int = 16
 const FORCE_CHANGE_RATE := 5.0
-const MAX_ROTING_POWER := 0.1
+const MAX_ROTING_POWER := 0.05
 
 var move_state:String
 var total_power:float
@@ -289,6 +289,7 @@ func update_tracks_state(delta):
 		move_state = 'idle'
 	else:
 		move_state = 'move'
+	
 	var total_forward = 0
 	var total_turn = 0
 	for track in balanced_forces:
@@ -373,6 +374,7 @@ func apply_smooth_track_forces(delta):
 		
 		# 只有当力足够大时才施加
 		if abs(new_force) > 0:
+			print(move_state, new_force)
 			track.set_state_force(move_state, new_force)
 			track_current_forces[track] = new_force
 		else:
