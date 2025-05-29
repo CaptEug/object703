@@ -29,9 +29,10 @@ func _process(delta):
 
 func _on_area_2d_body_entered(block:Block):
 	var block_hp = block.current_hp
+	var damage_to_deal = min(kenetic_damage, block_hp)
 	var momentum:Vector2 = WEIGHT * linear_velocity
 	block.apply_impulse(momentum)
 	block.damage(kenetic_damage)
-	kenetic_damage -= block_hp
+	kenetic_damage -= damage_to_deal
 	if kenetic_damage <= 0:
 		queue_free()
