@@ -2,8 +2,8 @@ extends Block
 
 const HITPOINT:int = 100
 const WEIGHT:float = 200
-var block_name:String = 'ammo rack'
-var size:= Vector2(1, 1)
+const BLOCK_NAME:String = 'ammo rack'
+const SIZE:= Vector2(1, 1)
 var ammo_capacity:float = 50.0
 
 func init():
