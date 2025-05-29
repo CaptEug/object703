@@ -16,6 +16,7 @@ func _process(delta):
 
 
 func damage(amount:int):
+	print(str(name)+'receive damage:'+str(amount))
 	current_hp -= amount
 	if current_hp <= 0:
 		queue_free()
