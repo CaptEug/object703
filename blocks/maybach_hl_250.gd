@@ -2,12 +2,15 @@ extends Powerpack
 
 const HITPOINT:int = 200
 const WEIGHT:float = 1.0
+const BLOCK_NAME:String = 'maybach HL 250'
+const SIZE:= Vector2(1, 1)
+const POWER:float = 2000.0
 
 func _init():
-	block_name = "standard_engine"
-	size = Vector2(1, 1)
-	power = 2000
-	hitpoint = HITPOINT
+	current_hp = HITPOINT
 	weight = WEIGHT
+	block_name = 'maybach HL 250'
+	size = SIZE
+	power = POWER
 	linear_damp = 5.0
 	angular_damp = 1.0

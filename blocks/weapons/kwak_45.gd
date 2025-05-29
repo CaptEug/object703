@@ -1,20 +1,24 @@
 extends Block
 
 const HITPOINT:int = 800
-const WEIGHT:int = 7
-var block_name:String = '7.5cm Kwak 45 L/70'
-var size:= Vector2(2, 2)
+const WEIGHT:float = 7.0
+const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
+const SIZE:= Vector2(2, 2)
+
 var rotation_speed:float = 3.0  # rads per second
 var muzzle_energy:float = 800
 
 @export var ap_shell = preload("res://blocks/weapons/shells/ap75mm.tscn")
 
 func init():
-	mass = WEIGHT
 	current_hp = HITPOINT
+	weight = WEIGHT
+	block_name = BLOCK_NAME
+	size = SIZE
 	linear_damp = 5.0
 	angular_damp = 1.0
 # Called when the node enters the scene tree for the first time.
+
 func _ready():
 	super._ready()
 	pass # Replace with function body.
