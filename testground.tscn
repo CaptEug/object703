@@ -1,9 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=4 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
 [ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="2_m32x0"]
 
+[sub_resource type="Environment" id="Environment_m32x0"]
+background_mode = 3
+glow_enabled = true
+glow_blend_mode = 0
+
 [node name="Testground" type="Node2D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 

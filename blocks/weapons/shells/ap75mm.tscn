@@ -22,4 +22,8 @@ shape = SubResource("CircleShape2D_kaski")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("CircleShape2D_lpwx8")
 
+[node name="Line2D" type="Line2D" parent="."]
+width = 2.0
+default_color = Color(3, 0.267, 0.18, 1)
+
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

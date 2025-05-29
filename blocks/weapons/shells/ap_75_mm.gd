@@ -3,14 +3,28 @@ extends Shell
 const WEIGHT:float = 3
 var shell_name:String = '75mm armorpiercing'
 var kenetic_damage:int = 150
+
+@onready var trail = $Line2D
+var trail_points := []
+
+func update_trail(delta):
+	trail_points.append(global_position)
+	if trail_points.size() > 5:
+		trail_points.pop_front()
+	var real_points = []
+	var start = trail_points[-1]
+	for i in trail_points.size():
+		real_points.append(trail_points[i] - start)
+	trail.points = real_points
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	pass
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	pass
+	update_trail(delta)
 
 
 func _on_area_2d_body_entered(block:Block):
