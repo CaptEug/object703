@@ -2,12 +2,14 @@ extends Block
 
 const HITPOINT:int = 500
 const WEIGHT:float = 1000
-var block_name:String = 'armor'
-var size:= Vector2(1, 1)
+const BLOCK_NAME:String = 'armor'
+const SIZE:= Vector2(1, 1)
 
 func init():
-	mass = WEIGHT
 	current_hp = HITPOINT
+	weight = WEIGHT
+	block_name = BLOCK_NAME
+	size = SIZE
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

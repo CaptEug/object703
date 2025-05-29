@@ -1,13 +1,15 @@
 extends Block
 
 const HITPOINT:int = 300
-const WEIGHT:float = 100
-var block_name:String = 'command cupola'
-var size:= Vector2(1, 1)
+const WEIGHT:float = 100.0
+const BLOCK_NAME:String = 'command cupola'
+const SIZE:= Vector2(1, 1)
 
 func init():
-	mass = WEIGHT
 	current_hp = HITPOINT
+	weight = WEIGHT
+	block_name = BLOCK_NAME
+	size = SIZE
 	linear_damp = 5.0
 	angular_damp = 1.0
 

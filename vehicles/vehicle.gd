@@ -20,6 +20,7 @@ var track_current_forces := {} # 存储当前实际施加的力
 var balanced_forces := {} # 存储直线行驶时的理想出力分布
 var rotation_forces := {} # 存储纯旋转时的理想出力分布
 
+
 func _ready():
 	connect_blocks()
 	for track in tracks:
@@ -32,6 +33,23 @@ func _ready():
 
 func _process(delta):
 	update_tracks_state(delta)
+	
+func _add_block(block):
+	if block is Block:
+		blocks.append(block)
+		block.parent_vehicle = self
+	if block is Track:
+		tracks.append(block)
+	if block is Powerpack:
+		powerpacks.append(block)
+
+func remove_block(block: Block):
+	if block in blocks:
+		blocks.erase(block)
+	if block in tracks:
+		tracks.erase(block)
+	if block in powerpacks:
+		powerpacks.erase(block)
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
@@ -368,15 +386,13 @@ func apply_smooth_track_forces(delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
 		var current = track_current_forces[track]
-		
 		# 使用lerp平滑过渡
 		var new_force = lerp(current, target, FORCE_CHANGE_RATE * delta)
 		
-		# 只有当力足够大时才施加
-		if abs(new_force) > 0:
-			print(move_state, new_force)
-			track.set_state_force(move_state, new_force)
-			track_current_forces[track] = new_force
-		else:
-			track.set_state_force('idle', 0)
-			track_current_forces[track] = 0.0
+		if tracks.has(track) and get_total_engine_power() != 0:
+			if abs(new_force) > 0:
+				track.set_state_force(move_state, new_force)
+				track_current_forces[track] = new_force
+			else:
+				track.set_state_force('idle', 0)
+				track_current_forces[track] = 0.0

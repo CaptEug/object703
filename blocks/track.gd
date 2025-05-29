@@ -2,11 +2,7 @@ class_name Track
 extends Block
 
 # 抽象属性 - 需要在子类中定义
-var hitpoint: int
-var weight: float
 var friction: float
-var block_name: String
-var size: Vector2
 var max_force: float
 
 # 运行时状态
@@ -14,16 +10,8 @@ var state_force: Array = ["idle", 0.0]
 var force_direction := Vector2.ZERO
 
 func _ready():
-	super._ready()
-	init()
-	queue_redraw()
-	queue_redraw()
-
-func initi():
-	"""初始化物理属性"""
-	mass = weight
-	current_hp = hitpoint
 	set_state_force("idle", 0.0)
+	super._ready()
 
 func set_state_force(new_state: String, force_value: float):
 	"""设置状态和力值"""
