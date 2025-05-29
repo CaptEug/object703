@@ -15,4 +15,3 @@ func _ready():
 func init():
 	mass = weight
 	current_hp = hitpoint
-	linear_damp = 5.0  # 默认阻尼值

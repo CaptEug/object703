@@ -9,3 +9,5 @@ func _init():
 	power = 2000
 	hitpoint = HITPOINT
 	weight = WEIGHT
+	linear_damp = 5.0
+	angular_damp = 1.0

@@ -11,3 +11,5 @@ func _init():
 	hitpoint = HITPOINT
 	weight = WEIGHT
 	friction = FRICTION
+	linear_damp = 5.0
+	angular_damp = 1.0

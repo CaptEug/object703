@@ -15,16 +15,14 @@ var force_direction := Vector2.ZERO
 
 func _ready():
 	super._ready()
-	initialize()
+	init()
 	queue_redraw()
 	queue_redraw()
 
-func initialize():
+func initi():
 	"""初始化物理属性"""
 	mass = weight
 	current_hp = hitpoint
-	linear_damp = friction
-	linear_damp_mode = RigidBody2D.DAMP_MODE_COMBINE
 	set_state_force("idle", 0.0)
 
 func set_state_force(new_state: String, force_value: float):
@@ -38,7 +36,7 @@ func update_force_direction():
 
 func apply_track_force():
 	"""应用力的抽象方法"""
-	if state_force[0] in ["forward", "backward"]:
+	if state_force[0] == 'move':
 		apply_impulse(force_direction * state_force[1])
 
 func _physics_process(delta):

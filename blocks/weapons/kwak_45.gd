@@ -13,6 +13,7 @@ func init():
 	mass = WEIGHT
 	current_hp = HITPOINT
 	linear_damp = 5.0
+	angular_damp = 1.0
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	super._ready()
