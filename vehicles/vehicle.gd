@@ -3,6 +3,7 @@ extends Node2D
 
 const GRID_SIZE:int = 16
 const FORCE_CHANGE_RATE := 5.0
+const MAX_ROTING_POWER := 0.1
 
 var move_state:String
 var total_power:float
@@ -10,27 +11,23 @@ var total_weight:int
 var bluepirnt:Dictionary
 var grid:= {}
 var blocks:= []
+var powerpacks:= []
+var tracks:= []
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
 var track_target_forces := {}  # 存储每个履带的目标力
 var track_current_forces := {} # 存储当前实际施加的力
 var balanced_forces := {} # 存储直线行驶时的理想出力分布
-
-var debug_draw := true
-var com_marker_color := Color(1, 0, 0, 0.7)  # 半透明红色
-var com_marker_size := 10.0
-var force_vector_color := Color(0, 1, 0, 0.5)  # 半透明绿色
-var force_vector_width := 2.0
+var rotation_forces := {} # 存储纯旋转时的理想出力分布
 
 func _ready():
 	connect_blocks()
-	for track in get_tree().get_nodes_in_group("tracks"):
+	for track in tracks:
 		track_target_forces[track] = 0.0
 		track_current_forces[track] = 0.0
-		balanced_forces[track] = 0.0
 	# 计算初始平衡力
 	calculate_balanced_forces()
-	print(balanced_forces)
+	calculate_rotation_forces()
 	pass # Replace with function body.
 
 func _process(delta):
@@ -38,7 +35,7 @@ func _process(delta):
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
-	var active_tracks = get_tree().get_nodes_in_group("tracks")
+	var active_tracks = tracks
 	var total_power = get_total_engine_power()
 	
 	# 准备推力点数据
@@ -110,6 +107,87 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 		var thrust = max(x[i], 0.0)  # 确保非负
 		results[thrust_points[i].track] = thrust
 		total += thrust
+	
+	# 标准化到总功率
+	if total > 0:
+		var scale = total_thrust / total
+		for track in results:
+			results[track] *= scale
+	
+	return results
+	
+func calculate_rotation_forces():
+	var com = calculate_center_of_mass()
+	var active_tracks = tracks
+	var total_power = get_total_engine_power()
+	
+	# 准备推力点数据
+	var thrust_points = []
+	for track in active_tracks:
+		var dir = Vector2.UP.rotated(track.rotation) # 履带前进方向
+		thrust_points.append({
+			"position": track.global_position - global_position, # 相对位置
+			"direction": dir,
+			"track": track
+		})
+	
+	# 计算各点出力 - 纯旋转
+	var thrusts = calculate_rotation_thrust_distribution(
+		thrust_points, 
+		com - global_position, # 相对质心
+		total_power * MAX_ROTING_POWER # 总功率
+	)
+	
+	# 分配结果
+	for point in thrust_points:
+		rotation_forces[point.track] = thrusts[point.track]
+
+# 计算纯旋转时的推力分布
+func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float) -> Dictionary:
+	var num_points = thrust_points.size()
+	if num_points == 0:
+		return {}
+	
+	# 构建矩阵A和向量b
+	var A = []
+	var b = []
+	
+	# 1. 扭矩平衡方程 (产生最大扭矩)
+	var eq_torque = []
+	for point in thrust_points:
+		var r = point.position - com
+		var torque_coeff = r.x * point.direction.y - r.y * point.direction.x
+		eq_torque.append(torque_coeff)
+	A.append(eq_torque)
+	b.append(total_thrust)  # 目标扭矩最大化
+	
+	# 2. 合力平衡方程 (x和y方向应该为零)
+	var eq_force_x = []
+	var eq_force_y = []
+	for point in thrust_points:
+		eq_force_x.append(point.direction.x)
+		eq_force_y.append(point.direction.y)
+	A.append(eq_force_x)
+	b.append(0.0)
+	A.append(eq_force_y)
+	b.append(0.0)
+	
+	# 3. 添加最小能量约束
+	for i in range(num_points):
+		var eq_energy = array_zero(num_points)
+		eq_energy[i] = 1.0
+		A.append(eq_energy)
+		b.append(0.0)
+	
+	# 4. 解最小二乘问题
+	var x = least_squares_solve(A, b)
+	
+	# 5. 收集结果并标准化
+	var results = {}
+	var total = 0.0
+	for i in range(num_points):
+		results[thrust_points[i].track] = x[i]
+		total += abs(x[i])
 	
 	# 标准化到总功率
 	if total > 0:
@@ -204,25 +282,27 @@ func array_zero(size: int) -> Array:
 
 func update_tracks_state(delta):
 	var forward_input = Input.get_action_strength("FORWARD") - Input.get_action_strength("BACKWARD")
+	var turn_input = Input.get_action_strength("PIVOT_RIGHT") - Input.get_action_strength("PIVOT_LEFT")
+	var scale = 0
 	
-	if Input.is_action_pressed("FORWARD"): 
-		move_state = 'forward'
-	elif Input.is_action_pressed("BACKWARD"):
-		move_state = 'backward'
-	else:
+	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
-	
-	# 根据平衡力设置目标力
+	else:
+		move_state = 'move'
+	var total_forward = 0
+	var total_turn = 0
 	for track in balanced_forces:
-		if move_state == 'forward':
-			track_target_forces[track] = balanced_forces[track]
-		elif move_state == 'backward':
-			track_target_forces[track] = -balanced_forces[track]
-		else:
-			track_target_forces[track] = 0.0
+		track_target_forces[track] = balanced_forces[track] * forward_input + rotation_forces[track] * turn_input 
+		total_forward += abs(balanced_forces[track] * forward_input)
+		total_turn += abs(rotation_forces[track] * turn_input)
+	if total_forward > 0:
+		scale = get_total_engine_power() / (total_forward + total_turn)
+	else:
+		scale = get_total_engine_power() * MAX_ROTING_POWER / (total_forward + total_turn)
+	for track in track_target_forces:
+		track_target_forces[track] *= scale
 	
 	apply_smooth_track_forces(delta)
-
 
 func connect_blocks():
 	for block in blocks:
@@ -271,15 +351,14 @@ func calculate_center_of_mass() -> Vector2:
 		var rid = body.get_rid()
 		var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
 		var global_com: Vector2 = body.to_global(local_com)
-		weighted_sum += global_com * body.mass * body.linear_damp
-		total_mass += body.mass * body.linear_damp
+		weighted_sum += global_com * body.mass
+		total_mass += body.mass
 		has_calculated[body.get_instance_id()] = true
-		print(body,body.mass,'   ', body.linear_damp)
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func get_total_engine_power() -> float:
 	var total_power := 0.0
-	for engine in get_tree().get_nodes_in_group('engines'):
+	for engine in powerpacks:
 		if engine.is_inside_tree() and is_instance_valid(engine):
 			total_power += engine.power
 	return total_power

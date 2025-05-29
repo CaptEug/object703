@@ -1,17 +1,17 @@
 [gd_scene load_steps=5 format=3 uid="uid://ynw68d3flv12"]
 
-[ext_resource type="Script" uid="uid://bptpkf87ghxkg" path="res://blocks/track.gd" id="1_wobmq"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_pt07c"]
+[ext_resource type="Script" uid="uid://bptpkf87ghxkg" path="res://blocks/rusty_track.gd" id="1_1jm28"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_1cqs3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pt07c"]
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_11o0d"]
-atlas = ExtResource("2_pt07c")
+atlas = ExtResource("2_1cqs3")
 region = Rect2(0, 64, 16, 16)
 
 [node name="Track" type="RigidBody2D"]
-script = ExtResource("1_wobmq")
+script = ExtResource("1_1jm28")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

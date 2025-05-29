@@ -1,7 +1,7 @@
 extends Block
 
 const HITPOINT:int = 300
-const WEIGHT:float = 50
+const WEIGHT:float = 100
 var block_name:String = 'command cupola'
 var size:= Vector2(1, 1)
 
@@ -9,6 +9,7 @@ func init():
 	mass = WEIGHT
 	current_hp = HITPOINT
 	linear_damp = 5.0
+	angular_damp = 1.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
