@@ -1,12 +1,13 @@
-extends Block
+extends Weapon
 
 const HITPOINT:int = 800
 const WEIGHT:float = 7.0
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
-
-var rotation_speed:float = 3.0  # rads per second
-var muzzle_energy:float = 800
+const RELOAD:float = 2.5
+const ROTATION_SPEED:float = 3.0  # rads per second
+const MUZZLE_ENERGY:float = 800
+const SPREAD:float = 0.02
 
 @export var ap_shell = preload("res://blocks/weapons/shells/ap75mm.tscn")
 
@@ -15,13 +16,14 @@ func init():
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE
+	reload = RELOAD
+	rotation_speed = ROTATION_SPEED
+	muzzle_energy = MUZZLE_ENERGY
+	turret = $Turret
+	muzzle = $Turret/Muzzle
+	spread = SPREAD
 	linear_damp = 5.0
 	angular_damp = 1.0
-# Called when the node enters the scene tree for the first time.
-
-func _ready():
-	super._ready()
-	pass # Replace with function body.
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -30,17 +32,3 @@ func _process(delta):
 	if Input.is_action_just_pressed("FIRE_MAIN"):
 		fire(ap_shell)
 	pass
-
-func aim(delta, target_pos):
-	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
-	var angle_diff = wrapf(target_angle - $Turret.rotation, -PI, PI)
-	$Turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
-
-func fire(shell_scene:PackedScene):
-	var muzzle = $Turret/Muzzle
-	var shell = shell_scene.instantiate()
-	var shell_rotation = muzzle.global_rotation
-	get_tree().current_scene.add_child(shell)
-	shell.global_position = muzzle.global_position
-	shell.apply_impulse(Vector2.UP.rotated(shell_rotation) * muzzle_energy)
-	

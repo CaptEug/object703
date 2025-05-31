@@ -1,6 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://dxi7i5jk186vv"]
+[gd_scene load_steps=4 format=3 uid="uid://dxi7i5jk186vv"]
 
 [ext_resource type="Script" uid="uid://wj0i0n2esf6y" path="res://blocks/weapons/shells/trail.gd" id="1_2t8no"]
+[ext_resource type="Texture2D" uid="uid://di1forcnqx0fg" path="res://assets/trail.png" id="1_36y4g"]
+
+[sub_resource type="Curve" id="Curve_2t8no"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.202247), 0.0, 0.0, 0, 0]
+point_count = 2
 
 [node name="Trail" type="Line2D"]
+width = 5.0
+width_curve = SubResource("Curve_2t8no")
+texture = ExtResource("1_36y4g")
+texture_mode = 2
 script = ExtResource("1_2t8no")
