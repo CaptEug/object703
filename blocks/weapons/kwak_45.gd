@@ -6,7 +6,7 @@ const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
 const RELOAD:float = 2.5
 const ROTATION_SPEED:float = 3.0  # rads per second
-const MUZZLE_ENERGY:float = 800
+const MUZZLE_ENERGY:float = 1000
 const SPREAD:float = 0.02
 
 @export var ap_shell = preload("res://blocks/weapons/shells/ap75mm.tscn")
