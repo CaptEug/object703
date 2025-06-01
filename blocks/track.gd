@@ -27,7 +27,7 @@ func apply_track_force():
 	if state_force[0] == 'move':
 		apply_impulse(force_direction * state_force[1])
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	apply_track_force()
 
 func _on_received_state_force_signal(state_force_signal):

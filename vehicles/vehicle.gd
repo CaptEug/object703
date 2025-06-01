@@ -54,7 +54,7 @@ func remove_block(block: Block):
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var total_power = get_total_engine_power()
+	var currunt_total_power = get_total_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -70,7 +70,7 @@ func calculate_balanced_forces():
 	var thrusts = calculate_thrust_distribution(
 		thrust_points, 
 		com - global_position, # 相对质心
-		total_power, 
+		currunt_total_power, 
 		direction # 目标方向
 	)
 	
@@ -128,16 +128,16 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 	
 	# 标准化到总功率
 	if total > 0:
-		var scale = total_thrust / total
+		var currunt_scale = total_thrust / total
 		for track in results:
-			results[track] *= scale
+			results[track] *= currunt_scale
 	
 	return results
 	
 func calculate_rotation_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var total_power = get_total_engine_power()
+	var currunt_total_power = get_total_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -153,7 +153,7 @@ func calculate_rotation_forces():
 	var thrusts = calculate_rotation_thrust_distribution(
 		thrust_points, 
 		com - global_position, # 相对质心
-		total_power * MAX_ROTING_POWER # 总功率
+		currunt_total_power * MAX_ROTING_POWER # 总功率
 	)
 	
 	# 分配结果
@@ -209,9 +209,9 @@ func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, 
 	
 	# 标准化到总功率
 	if total > 0:
-		var scale = total_thrust / total
+		var currunt_scale = total_thrust / total
 		for track in results:
-			results[track] *= scale
+			results[track] *= currunt_scale
 	
 	return results
 
@@ -301,7 +301,7 @@ func array_zero(size: int) -> Array:
 func update_tracks_state(delta):
 	var forward_input = Input.get_action_strength("FORWARD") - Input.get_action_strength("BACKWARD")
 	var turn_input = Input.get_action_strength("PIVOT_RIGHT") - Input.get_action_strength("PIVOT_LEFT")
-	var scale = 0
+	var currunt_scale = 0
 	
 	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
@@ -315,11 +315,11 @@ func update_tracks_state(delta):
 		total_forward += abs(balanced_forces[track] * forward_input)
 		total_turn += abs(rotation_forces[track] * turn_input)
 	if total_forward > 0:
-		scale = get_total_engine_power() / (total_forward + total_turn)
+		currunt_scale = get_total_engine_power() / (total_forward + total_turn)
 	else:
-		scale = get_total_engine_power() * MAX_ROTING_POWER / (total_forward + total_turn)
+		currunt_scale = get_total_engine_power() * MAX_ROTING_POWER / (total_forward + total_turn)
 	for track in track_target_forces:
-		track_target_forces[track] *= scale
+		track_target_forces[track] *= currunt_scale
 	
 	apply_smooth_track_forces(delta)
 
@@ -376,11 +376,11 @@ func calculate_center_of_mass() -> Vector2:
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func get_total_engine_power() -> float:
-	var total_power := 0.0
+	var currunt_total_power := 0.0
 	for engine in powerpacks:
 		if engine.is_inside_tree() and is_instance_valid(engine):
-			total_power += engine.power
-	return total_power
+			currunt_total_power += engine.power
+	return currunt_total_power
 
 func apply_smooth_track_forces(delta):
 	for track in track_target_forces:
