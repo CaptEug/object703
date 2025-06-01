@@ -42,6 +42,7 @@ func _add_block(block):
 		tracks.append(block)
 	if block is Powerpack:
 		powerpacks.append(block)
+	
 
 func remove_block(block: Block):
 	if block in blocks:
@@ -50,6 +51,8 @@ func remove_block(block: Block):
 		tracks.erase(block)
 	if block in powerpacks:
 		powerpacks.erase(block)
+	calculate_balanced_forces()
+	calculate_rotation_forces()
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
@@ -365,14 +368,15 @@ func calculate_center_of_mass() -> Vector2:
 	var has_calculated := {}
 	for grid_pos in grid:
 		var body: RigidBody2D = grid[grid_pos]
-		if has_calculated.get(body.get_instance_id(), false):
-			continue
-		var rid = body.get_rid()
-		var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
-		var global_com: Vector2 = body.to_global(local_com)
-		weighted_sum += global_com * body.mass
-		total_mass += body.mass
-		has_calculated[body.get_instance_id()] = true
+		if blocks.has(body):
+			if has_calculated.get(body.get_instance_id(), false):
+				continue
+			var rid = body.get_rid()
+			var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
+			var global_com: Vector2 = body.to_global(local_com)
+			weighted_sum += global_com * body.mass
+			total_mass += body.mass
+			has_calculated[body.get_instance_id()] = true
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func get_total_engine_power() -> float:
