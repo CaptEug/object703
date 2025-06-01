@@ -8,7 +8,6 @@ _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.202247), 0.0, 0.0, 0, 0]
 point_count = 2
 
 [node name="Trail" type="Line2D"]
-width = 5.0
 width_curve = SubResource("Curve_2t8no")
 texture = ExtResource("1_36y4g")
 texture_mode = 2

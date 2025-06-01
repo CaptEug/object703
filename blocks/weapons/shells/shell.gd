@@ -1,15 +1,16 @@
 class_name Shell
 extends RigidBody2D
 
-var dead := false
-
 var shell_name:String
+var type:String
 var weight:float
 var lifetime:float
 var kenetic_damage:int
 var explosive_weight:int
 var shell_body:Area2D
 var trail:Line2D
+
+var stopped := false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -29,14 +30,15 @@ func _process(_delta):
 	pass
 
 
-func die():
-	dead = true
+func stop():
+	stopped = true
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0
-	freeze = true
 	set_physics_process(false)
-	shell_body.set_physics_process(false)
+	shell_body.queue_free()
 	trail.fade()
+	#await get_tree().create_timer(trail.lifetime).timeout
+	#queue_free()
 
 
 func _on_timer_timeout():
@@ -53,4 +55,4 @@ func _on_shell_body_entered(block:Block):
 	block.damage(kenetic_damage)
 	kenetic_damage -= damage_to_deal
 	if kenetic_damage <= 0:
-		die()
+		stop()
