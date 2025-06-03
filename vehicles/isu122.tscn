@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://cl5ghcjpwf378"]
+[gd_scene load_steps=7 format=3 uid="uid://cl5ghcjpwf378"]
 
 [ext_resource type="Script" uid="uid://78kijm22ksav" path="res://vehicles/isu_122.gd" id="1_srejp"]
 [ext_resource type="PackedScene" uid="uid://xjn5knyr2ii6" path="res://blocks/weapons/d_52s.tscn" id="2_srejp"]
 [ext_resource type="PackedScene" uid="uid://ynw68d3flv12" path="res://blocks/rusty_track.tscn" id="3_1brmp"]
+[ext_resource type="PackedScene" uid="uid://byo7xm5tw3n2w" path="res://blocks/bridge.tscn" id="4_5m7c6"]
 [ext_resource type="PackedScene" uid="uid://mkhgj12b5dr8" path="res://blocks/maybach_hl_250.tscn" id="4_qoi2p"]
+[ext_resource type="PackedScene" uid="uid://jbbm78mi6qb5" path="res://blocks/weapons/ammorack.tscn" id="5_1brmp"]
 
 [node name="Isu122" type="Node2D"]
 script = ExtResource("1_srejp")
@@ -21,16 +23,28 @@ position = Vector2(0, -16)
 position = Vector2(0, 16)
 
 [node name="Track4" parent="." instance=ExtResource("3_1brmp")]
-position = Vector2(48, -16)
+position = Vector2(0, 32)
 
 [node name="Track5" parent="." instance=ExtResource("3_1brmp")]
-position = Vector2(48, 0)
+position = Vector2(48, -16)
 
 [node name="Track6" parent="." instance=ExtResource("3_1brmp")]
+position = Vector2(48, 0)
+
+[node name="Track7" parent="." instance=ExtResource("3_1brmp")]
 position = Vector2(48, 16)
 
-[node name="Engine" parent="." instance=ExtResource("4_qoi2p")]
+[node name="Track8" parent="." instance=ExtResource("3_1brmp")]
+position = Vector2(48, 32)
+
+[node name="Bridge" parent="." instance=ExtResource("4_5m7c6")]
 position = Vector2(16, 16)
 
-[node name="Engine2" parent="." instance=ExtResource("4_qoi2p")]
+[node name="Ammo" parent="." instance=ExtResource("5_1brmp")]
 position = Vector2(32, 16)
+
+[node name="Engine" parent="." instance=ExtResource("4_qoi2p")]
+position = Vector2(16, 32)
+
+[node name="Engine2" parent="." instance=ExtResource("4_qoi2p")]
+position = Vector2(32, 32)
