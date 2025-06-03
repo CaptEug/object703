@@ -9,7 +9,7 @@ const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
 const MUZZLE_ENERGY:float = 1000
 const SPREAD:float = 0.02
 
-@export var ap_shell = preload("res://blocks/weapons/shells/ap75mm.tscn")
+@export var ap_shell = preload("res://blocks/weapons/shells/pzgr75mm.tscn")
 
 func init():
 	current_hp = HITPOINT

@@ -2,7 +2,7 @@ extends Weapon
 
 const HITPOINT:int = 1000
 const WEIGHT:float = 10.0
-const BLOCK_NAME:String = 'D-52s'
+const BLOCK_NAME:String = '122mm D-52s cannon'
 const SIZE:= Vector2(2, 2)
 const RELOAD:float = 10
 const ROTATION_SPEED:float = deg_to_rad(15)  # rads per second
