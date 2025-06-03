@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://quimu7rq0a35"]
 
-[ext_resource type="Script" uid="uid://dqrl1xbjyuw1r" path="res://blocks/weapons/shells/ap_75_mm.gd" id="1_kaski"]
-[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/weapons/shells/trail.tscn" id="2_lpwx8"]
+[ext_resource type="Script" uid="uid://dqrl1xbjyuw1r" path="res://blocks/weapons/shells/pzgr75mm.gd" id="1_uxmwh"]
+[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/weapons/shells/trail.tscn" id="2_hvndr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kaski"]
 radius = 0.01
@@ -16,7 +16,7 @@ colors = PackedColorArray(0.099986, 0.099986, 0.099986, 0, 0.219501, 0.219501, 0
 [node name="Ap75Mm" type="RigidBody2D"]
 collision_layer = 0
 collision_mask = 0
-script = ExtResource("1_kaski")
+script = ExtResource("1_uxmwh")
 metadata/_custom_type_script = "uid://dhtn6iji0pso7"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -27,7 +27,7 @@ shape = SubResource("CircleShape2D_kaski")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource("CircleShape2D_lpwx8")
 
-[node name="Trail" parent="." instance=ExtResource("2_lpwx8")]
+[node name="Trail" parent="." instance=ExtResource("2_hvndr")]
 gradient = SubResource("Gradient_lpwx8")
 
 [connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]

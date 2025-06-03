@@ -339,7 +339,7 @@ func connect_blocks():
 				connect_adjacent_blocks(cell, grid[cell])
 
 func snap_block_to_grid(block:Block) -> Vector2i:
-	var world_pos = block.global_position
+	var world_pos = block.global_position - block.size/2 * GRID_SIZE
 	var snapped_pos = Vector2(
 		floor(world_pos.x / GRID_SIZE),
 		floor(world_pos.y / GRID_SIZE)
@@ -353,7 +353,8 @@ func connect_adjacent_blocks(pos:Vector2i, block:Block):
 		var neighbor_pos = pos + dir
 		if grid.has(neighbor_pos) and grid[neighbor_pos] != block:
 			var neighbor = grid[neighbor_pos]
-			var joint_pos = 8 * dir
+			var global_joint_pos = pos * GRID_SIZE + Vector2i(8, 8) + 8 * dir
+			var joint_pos = Vector2(global_joint_pos) - block.global_position
 			connect_with_joint(block, neighbor, joint_pos)
 
 func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):

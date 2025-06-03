@@ -4,12 +4,12 @@ const HITPOINT:int = 800
 const WEIGHT:float = 7.0
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
-const RELOAD:float = 2.5
-const ROTATION_SPEED:float = 3.0  # rads per second
+const RELOAD:float = 0.5
+const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
 const MUZZLE_ENERGY:float = 1000
 const SPREAD:float = 0.02
 
-@export var ap_shell = preload("res://blocks/weapons/shells/ap75mm.tscn")
+@export var ap_shell = preload("res://blocks/weapons/shells/pzgr75mm.tscn")
 
 func init():
 	current_hp = HITPOINT
@@ -29,6 +29,6 @@ func init():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	aim(delta, get_global_mouse_position())
-	if Input.is_action_just_pressed("FIRE_MAIN"):
+	if Input.is_action_pressed("FIRE_MAIN"):
 		fire(ap_shell)
 	pass
