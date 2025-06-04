@@ -37,10 +37,11 @@ func aim(delta, target_pos):
 func fire(shell_scene:PackedScene):
 	if loaded:
 		var shell = shell_scene.instantiate()
-		var shell_rotation = muzzle.global_rotation
+		var gun_rotation = muzzle.global_rotation
 		get_tree().current_scene.add_child(shell)
 		shell.global_position = muzzle.global_position
-		shell.apply_impulse(Vector2.UP.rotated(shell_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
+		shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
+		apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
 		reload_timer.start()
 		loaded = false
 

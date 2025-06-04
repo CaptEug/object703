@@ -1,6 +1,6 @@
 extends Shell
 
-const SHELL_NAME:String = 'PzGr 75mm'
+const SHELL_NAME:String = '75mm PzGr'
 const TYPE:String = 'AP'
 const WEIGHT:float = 7.2
 const LIFETIME:float = 1

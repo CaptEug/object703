@@ -10,8 +10,5 @@ func init():
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	pass
+	linear_damp = 5.0
+	angular_damp = 1.0
