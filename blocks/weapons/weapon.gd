@@ -3,7 +3,7 @@ extends Block
 
 var reload:float
 var rotation_speed:float  # rads per second
-var guidance:Array # degree
+var traverse:Array # degree
 var muzzle_energy:float
 var turret:Sprite2D 
 var muzzle:Marker2D
@@ -27,9 +27,9 @@ func _process(_delta):
 
 func aim(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
-	if guidance:
-		var min_angle = deg_to_rad(guidance[0])
-		var max_angle = deg_to_rad(guidance[1])
+	if traverse:
+		var min_angle = deg_to_rad(traverse[0])
+		var max_angle = deg_to_rad(traverse[1])
 		target_angle = clamp(wrapf(target_angle, -PI, PI), min_angle, max_angle)
 	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 	turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
