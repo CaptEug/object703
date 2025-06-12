@@ -15,6 +15,7 @@ glow_blend_mode = 0
 environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1.73, 1.73)
 
 [node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
 position = Vector2(101, -57)

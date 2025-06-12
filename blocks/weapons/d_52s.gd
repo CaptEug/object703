@@ -4,7 +4,7 @@ const HITPOINT:int = 1000
 const WEIGHT:float = 10.0
 const BLOCK_NAME:String = '122mm D-52S cannon'
 const SIZE:= Vector2(2, 2)
-const RELOAD:float = 1
+const RELOAD:float = 2
 const ROTATION_SPEED:float = deg_to_rad(15)  # rads per second
 const TRAVERSE:= [-8, 8] #degree
 const MUZZLE_ENERGY:float = 1000
@@ -23,6 +23,7 @@ func init():
 	muzzle_energy = MUZZLE_ENERGY
 	turret = $Gun
 	muzzle = $Gun/Muzzle
+	animplayer = $Gun/AnimationPlayer
 	spread = SPREAD
 	linear_damp = 5.0
 	angular_damp = 1.0
