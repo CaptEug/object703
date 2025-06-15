@@ -21,6 +21,7 @@ func init():
 	muzzle_energy = MUZZLE_ENERGY
 	turret = $Turret
 	muzzle = $Turret/Muzzle
+	animplayer = $Turret/AnimationPlayer
 	spread = SPREAD
 	linear_damp = 5.0
 	angular_damp = 1.0

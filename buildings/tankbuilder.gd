@@ -3,14 +3,14 @@ extends Node2D
 @export var block_scenes:Dictionary
 
 const GRID_SIZE:int = 16
-var current_block_type:String
+var current_block:String
 var ghost_block
 var placed_blocks:={}  # Dictionary of Vector2i -> block instance
 
 func create_ghost_block():
 	if ghost_block:
 		ghost_block.queue_free()
-	ghost_block = block_scenes[current_block_type].instantiate()
+	ghost_block = block_scenes[current_block].instantiate()
 	ghost_block.modulate = Color(1, 1, 1, 0.5)  # Transparent ghost
 	ghost_block.set_physics_process(false)
 	add_child(ghost_block)
@@ -32,14 +32,14 @@ func update_ghost_position():
 	ghost_block.global_position = grid_pos * GRID_SIZE + ghost_block.size/2 * GRID_SIZE
 
 func place_block():
-	var grid_pos = snap_to_grid(ghost_block.global_position)
+	var grid_pos = snap_to_grid(ghost_block.global_position - ghost_block.size/2 * GRID_SIZE)
 	var size = ghost_block.size
 	for x in size.x:
 		for y in size.y:
 			var cell = grid_pos + Vector2i(x, y)
 			if placed_blocks.has(cell):
 				return  # can't place here
-	var block = block_scenes[current_block_type].instantiate()
+	var block = block_scenes[current_block].instantiate()
 	block.global_position = ghost_block.global_position
 	add_child(block)
 	# Mark all occupied cells

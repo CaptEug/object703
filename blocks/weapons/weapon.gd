@@ -7,6 +7,7 @@ var traverse:Array # degree
 var muzzle_energy:float
 var turret:Sprite2D 
 var muzzle:Marker2D
+var animplayer:AnimationPlayer
 var spread:float
 
 var reload_timer:Timer
@@ -42,6 +43,8 @@ func fire(shell_scene:PackedScene):
 		shell.global_position = muzzle.global_position
 		shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
 		apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
+		if animplayer:
+			animplayer.play('recoil')
 		reload_timer.start()
 		loaded = false
 
