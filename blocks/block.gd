@@ -31,3 +31,8 @@ func damage(amount:int):
 		if parent_vehicle:
 			parent_vehicle.remove_block(self)
 		queue_free()
+		
+func get_icon_texture():
+	var texture_blocks = find_child('Sprite2D')
+	if texture_blocks != null and texture_blocks is Sprite2D:
+			return texture_blocks.texture

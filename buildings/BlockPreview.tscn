@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bs5n6u3ybdf0e"]
+
+[ext_resource type="Script" uid="uid://diswbu6sluk6x" path="res://buildings/BlockPreview.gd" id="1_ncqee"]
+
+[node name="BlockPreview" type="Node2D"]
+script = ExtResource("1_ncqee")
