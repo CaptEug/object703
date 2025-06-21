@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://bs5n6u3ybdf0e"]
+
+[ext_resource type="Script" uid="uid://diswbu6sluk6x" path="res://buildings/BlockPreview.gd" id="1_ncqee"]
+
+[node name="BlockPreview" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_ncqee")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0

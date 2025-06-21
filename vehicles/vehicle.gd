@@ -19,6 +19,8 @@ var track_target_forces := {}  # 存储每个履带的目标力
 var track_current_forces := {} # 存储当前实际施加的力
 var balanced_forces := {} # 存储直线行驶时的理想出力分布
 var rotation_forces := {} # 存储纯旋转时的理想出力分布
+var is_assembled := false
+var block_scenes := {}
 
 
 func _ready():

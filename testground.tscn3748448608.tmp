@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://dawkb0e8tm4e8"]
+
+[ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
+[ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="2_m32x0"]
+[ext_resource type="PackedScene" uid="uid://cl5ghcjpwf378" path="res://vehicles/isu122.tscn" id="4_77d2g"]
+[ext_resource type="PackedScene" uid="uid://c04b61ykvsi34" path="res://buildings/tankbuilder.tscn" id="4_x4rnv"]
+
+[sub_resource type="Environment" id="Environment_m32x0"]
+background_mode = 3
+glow_enabled = true
+glow_blend_mode = 0
+
+[node name="Testground" type="Node2D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_m32x0")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
+position = Vector2(101, -57)
+
+[node name="Testarget" parent="." instance=ExtResource("2_m32x0")]
+position = Vector2(-24, -125)
+
+[node name="Isu122" parent="." instance=ExtResource("4_77d2g")]
+position = Vector2(8, 24)
+
+[node name="Tankbuilder" parent="." instance=ExtResource("4_x4rnv")]
+position = Vector2(-140, 2)
