@@ -218,12 +218,3 @@ func complete_vehicle_creation():
 	placed_blocks.clear() 
 	is_creating_vehicle = false
 	print("车辆生成完成")
-
-func snap_block_to_grid(block:Block) -> Vector2i:
-	var world_pos = block.global_position - block.size/2 * GRID_SIZE
-	var snapped_pos = Vector2(
-		floor(world_pos.x / GRID_SIZE),
-		floor(world_pos.y / GRID_SIZE)
-	)
-	block.global_position = snapped_pos * GRID_SIZE + block.size/2 * GRID_SIZE
-	return snapped_pos
