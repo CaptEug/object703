@@ -19,9 +19,9 @@ var ghost_block: Node2D
 var placed_blocks := {}  # {Vector2i 网格坐标: 方块实例}
 var can_build := true
 var is_creating_vehicle := false
+var is_build_mode := false
 
 func _ready():
-	create_ghost_block()
 	queue_redraw()
 
 func _process(delta):
@@ -32,6 +32,11 @@ func _process(delta):
 		complete_vehicle_creation()
 		
 func _input(event):
+	if event is InputEventKey and event.keycode == KEY_CTRL:
+		if event.pressed:
+			toggle_build_mode()
+	
+	if not is_build_mode: return
 	if is_creating_vehicle: return
 	
 	# 鼠标滚轮切换方块
@@ -51,10 +56,29 @@ func _input(event):
 
 func _draw():
 	# 绘制建造范围边界
-	draw_rect(Rect2(Vector2.ZERO, factory_size * GRID_SIZE), Color(1, 0, 0, 0.2), true)
-	draw_rect(Rect2(Vector2.ZERO, factory_size * GRID_SIZE), Color.RED, false, 2.0)
+	if is_build_mode:
+		draw_rect(Rect2(Vector2.ZERO, factory_size * GRID_SIZE), Color(1, 0, 0, 0.2), true)
+		draw_rect(Rect2(Vector2.ZERO, factory_size * GRID_SIZE), Color.RED, false, 2.0)
 
 # 方块尺寸获取
+func toggle_build_mode():
+	is_build_mode = !is_build_mode
+	
+	if is_build_mode:
+		print("进入建造模式")
+		create_ghost_block()
+	else:
+		print("退出建造模式")
+		if ghost_block:
+			ghost_block.queue_free()
+			ghost_block = null
+		
+		# 自动生成车辆
+		if not placed_blocks.is_empty():
+			complete_vehicle_creation()
+	
+	queue_redraw()
+
 func get_block_size(block: Node) -> Vector2i:
 	return block.SIZE if "SIZE" in block else Vector2i(1, 1)
 
@@ -75,7 +99,7 @@ func is_position_in_factory(world_pos: Vector2) -> bool:
 	# 检查方块占用的每个网格是否都在工厂范围内
 	for x in range(block_size.x):
 		for y in range(block_size.y):
-			var check_pos = base_grid_pos + Vector2i(x, y)
+			var check_pos = base_grid_pos + Vector2i(x/2, y/2)
 			
 			# 判断是否超出边界（四个方向）
 			if (check_pos.x < 0 or 
@@ -163,25 +187,41 @@ func place_block():
 	for x in block_size.x:
 		for y in block_size.y:
 			placed_blocks[grid_pos + Vector2i(x, y)] = new_block
-	#print("已放置方块: ", get_current_block_name(), " 在位置: ", grid_pos,placed_blocks,new_block.position)
 
 func remove_block_at_mouse():
-	var mouse_pos = get_global_mouse_position()
-	var grid_pos = Vector2i(mouse_pos / GRID_SIZE)
+	var mouse_pos = get_global_mouse_position()  # 获取鼠标全局坐标
 	
-	if placed_blocks.has(grid_pos):
-		var block = placed_blocks[grid_pos]
-		var block_size = get_block_size(block)
+	# 遍历所有已放置的方块（优化：使用values()避免重复检查）
+	for block in placed_blocks.values():
+		var block_size = get_block_size(block)  # 获取当前方块的尺寸
 		
-		# 移除所有关联位置
-		for x in block_size.x:
-			for y in block_size.y:
-				var pos = grid_pos + Vector2i(x, y)
-				if placed_blocks.get(pos) == block:
-					placed_blocks.erase(pos)
+		# 计算该方块的起始网格坐标（与place_block()逻辑一致）
+		var block_grid_pos = Vector2i(
+			floor((block.position.x - (block_size.x * GRID_SIZE)/2) / GRID_SIZE),
+			floor((block.position.y - (block_size.y * GRID_SIZE)/2) / GRID_SIZE)
+		)
 		
-		block.queue_free()
-		print("已移除方块: ", grid_pos)
+		# 检测鼠标是否在该方块的矩形区域内
+		var block_left = block.position.x - (block_size.x * GRID_SIZE)/2
+		var block_right = block.position.x + (block_size.x * GRID_SIZE)/2
+		var block_top = block.position.y - (block_size.y * GRID_SIZE)/2
+		var block_bottom = block.position.y + (block_size.y * GRID_SIZE)/2
+		
+		if (mouse_pos.x >= block_left and mouse_pos.x < block_right and
+			mouse_pos.y >= block_top and mouse_pos.y < block_bottom):
+			
+			# 从字典中移除该方块占用的所有网格位置
+			for x in block_size.x:
+				for y in block_size.y:
+					var pos_to_erase = block_grid_pos + Vector2i(x, y)
+					if placed_blocks.get(pos_to_erase) == block:  # 安全验证
+						placed_blocks.erase(pos_to_erase)
+			
+			block.queue_free()  # 删除方块节点
+			print("已移除方块（尺寸：", block_size, "）")
+			return  # 找到后立即退出
+	
+	print("鼠标位置没有可移除的方块")
 
 # 车辆生成系统
 func begin_vehicle_creation():

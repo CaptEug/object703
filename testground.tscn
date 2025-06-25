@@ -3,7 +3,6 @@
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
 [ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="2_m32x0"]
 [ext_resource type="PackedScene" uid="uid://cl5ghcjpwf378" path="res://vehicles/isu122.tscn" id="4_77d2g"]
-[ext_resource type="PackedScene" uid="uid://c04b61ykvsi34" path="res://buildings/tankbuilder.tscn" id="4_x4rnv"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3
@@ -68,10 +67,4 @@ script = SubResource("GDScript_8bj8j")
 
 [node name="Isu122" parent="." instance=ExtResource("4_77d2g")]
 position = Vector2(8, 24)
-<<<<<<< HEAD
-
-[node name="Tankbuilder" parent="." instance=ExtResource("4_x4rnv")]
-position = Vector2(-198, -29)
-=======
 script = SubResource("GDScript_x4rnv")
->>>>>>> 882df5e055ac4e5adc61b102ae0e37068a410907
