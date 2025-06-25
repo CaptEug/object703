@@ -1,11 +1,50 @@
-[gd_scene load_steps=2 format=3 uid="uid://bs5n6u3ybdf0e"]
+[gd_scene load_steps=2 format=3 uid="uid://ds01dly0k7yak"]
 
-[ext_resource type="Script" uid="uid://diswbu6sluk6x" path="res://buildings/BlockPreview.gd" id="1_ncqee"]
+[sub_resource type="GDScript" id="GDScript_4sod1"]
+script/source = "extends Control
+class_name BlockPreview
+
+signal start_drag(control: Control, offset: Vector2)
+
+@export var block_scene: PackedScene
+@onready var texture_rect: TextureRect = %TextureRect  # 使用%确保节点引用正确
+@onready var label: Label = %Label
+
+func setup(scene: PackedScene) -> void:
+	if not scene:
+		push_error(\"BlockPreview: Invalid scene provided\")
+		return
+	
+	block_scene = scene
+	var temp = scene.instantiate()
+	print(\"Temp node name: \", temp.name)
+	
+	# 安全设置图标
+	if texture_rect:
+		if temp.has_method(\"get_icon_texture\"):
+			var icon = temp.get_icon_texture()
+			if icon:
+				texture_rect.texture = icon
+			else:
+				push_warning(\"BlockPreview: get_icon_texture() returned null for \", scene.resource_path)
+		else:
+			push_warning(\"BlockPreview: Scene has no get_icon_texture() method\")
+	
+	# 安全设置标签
+	#if label:
+		#label.text = temp.get(\"block_name\", \"Unnamed\")
+	
+	temp.queue_free()
+
+func _on_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		start_drag.emit(self, get_local_mouse_position())
+"
 
 [node name="BlockPreview" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-script = ExtResource("1_ncqee")
+script = SubResource("GDScript_4sod1")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0

@@ -24,6 +24,10 @@ var block_scenes := {}
 
 
 func _ready():
+	Get_ready_again()
+	pass # Replace with function body.
+
+func Get_ready_again():
 	connect_blocks()
 	for track in tracks:
 		track_target_forces[track] = 0.0
@@ -31,7 +35,7 @@ func _ready():
 	# 计算初始平衡力
 	calculate_balanced_forces()
 	calculate_rotation_forces()
-	pass # Replace with function body.
+
 
 func _process(delta):
 	update_tracks_state(delta)

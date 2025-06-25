@@ -1,18 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://c04b61ykvsi34"]
+[gd_scene load_steps=2 format=3 uid="uid://c04b61ykvsi34"]
 
-[ext_resource type="Script" uid="uid://dgirbrrbyqind" path="res://buildings/Factory.gd" id="1_re5i5"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_gkkxu"]
+[ext_resource type="Script" uid="uid://jda1hd1fy1p" path="res://buildings/tankbuilder.gd" id="1_re5i5"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_gkkxu"]
-size = Vector2(188, 257)
-
-[node name="Tankbuilder" type="Area2D"]
+[node name="Tankbuilder" type="Node2D"]
 script = ExtResource("1_re5i5")
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_gkkxu")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-35, -6.5)
-scale = Vector2(1.0026, 0.985299)
-shape = SubResource("RectangleShape2D_gkkxu")
