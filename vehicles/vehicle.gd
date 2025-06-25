@@ -28,6 +28,9 @@ func _ready():
 	pass # Replace with function body.
 
 func Get_ready_again():
+	for block in bluepirnt.values():
+		_add_block(block)
+	print('wadawdawd',blocks)
 	connect_blocks()
 	for track in tracks:
 		track_target_forces[track] = 0.0
@@ -41,6 +44,8 @@ func _process(delta):
 	update_tracks_state(delta)
 
 func _add_block(block):
+	if block in blocks:
+		return 
 	if block is Block:
 		blocks.append(block)
 		block.parent_vehicle = self
