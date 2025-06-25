@@ -1,7 +1,7 @@
 extends Block
 
 const HITPOINT:int = 300
-const WEIGHT:float = 100.0
+const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'command cupola'
 const SIZE:= Vector2(1, 1)
 

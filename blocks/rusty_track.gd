@@ -1,7 +1,7 @@
 extends Track
 
 const HITPOINT:int = 200
-const WEIGHT:float = 2.0
+const WEIGHT:float = 500.0
 const BLOCK_NAME:String = 'rusty track'
 const SIZE:= Vector2(1, 1)
 const FRICTION:float = 5.0

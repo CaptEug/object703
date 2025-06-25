@@ -1,7 +1,7 @@
 extends Weapon
 
 const HITPOINT:int = 800
-const WEIGHT:float = 7.0
+const WEIGHT:float = 7000
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
 const RELOAD:float = 0.5
