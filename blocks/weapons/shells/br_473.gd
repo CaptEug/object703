@@ -4,8 +4,8 @@ const SHELL_NAME:String = '122mm BR-473'
 const TYPE:String = 'SAP'
 const WEIGHT:float = 25
 const LIFETIME:float = 1.5
-const KENETIC_DAMAGE:int = 2000
-const MAX_EXPLOSIVE_DAMAGE:int = 999
+const KENETIC_DAMAGE:int = 400
+const MAX_EXPLOSIVE_DAMAGE:int = 500
 const EXPLOSION_RADIUS:int = 50
 
 func init():

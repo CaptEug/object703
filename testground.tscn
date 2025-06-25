@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
 [ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="2_m32x0"]
@@ -9,19 +9,62 @@ background_mode = 3
 glow_enabled = true
 glow_blend_mode = 0
 
+[sub_resource type="GDScript" id="GDScript_77d2g"]
+script/source = "extends Vehicle
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	super._ready()
+	#print(grid)
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	super._process(delta)
+	pass
+"
+
+[sub_resource type="GDScript" id="GDScript_8bj8j"]
+script/source = "extends Vehicle
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	super._ready()
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(_delta):
+	super._process(_delta)
+	pass
+"
+
+[sub_resource type="GDScript" id="GDScript_x4rnv"]
+script/source = "extends Vehicle
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	super._ready()
+	print(grid)
+"
+
 [node name="Testground" type="Node2D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(1.73, 1.73)
 
 [node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
 position = Vector2(101, -57)
+script = SubResource("GDScript_77d2g")
 
 [node name="Testarget" parent="." instance=ExtResource("2_m32x0")]
 position = Vector2(-24, -125)
+script = SubResource("GDScript_8bj8j")
 
 [node name="Isu122" parent="." instance=ExtResource("4_77d2g")]
 position = Vector2(8, 24)
+script = SubResource("GDScript_x4rnv")

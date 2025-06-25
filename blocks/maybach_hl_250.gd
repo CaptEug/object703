@@ -1,10 +1,10 @@
 extends Powerpack
 
 const HITPOINT:int = 200
-const WEIGHT:float = 1.0
+const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'maybach HL 250'
 const SIZE:= Vector2(1, 1)
-const POWER:float = 2000.0
+const POWER:float = 200000.0
 
 func _init():
 	current_hp = HITPOINT

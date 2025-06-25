@@ -14,6 +14,7 @@ var shell_body:Area2D
 var trail:Line2D
 
 var stopped := false
+var explosion_particle = preload("res://assets/particles/explosion.tscn")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -35,13 +36,17 @@ func _process(_delta):
 	pass
 
 func explode():
+	var explosion = explosion_particle.instantiate()
+	explosion.emitting = true
+	add_child(explosion)
+	
 	for block in explosion_area.get_overlapping_bodies():
 		if block.has_method("damage"):
 			var dist = global_position.distance_to(block.global_position)
 			var dir = (block.global_position - global_position).normalized()
 			var ratio = clamp(1.0 - dist / explosion_radius, 0.0, 1.0)
 			var dmg = max_explosive_damage * ratio
-			var impulse_strength = 10000000.0 * ratio
+			var impulse_strength = 100000.0 * ratio
 			block.apply_impulse(dir * impulse_strength)
 			block.damage(dmg)
 
