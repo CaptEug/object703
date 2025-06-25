@@ -1,6 +1,103 @@
-[gd_scene load_steps=2 format=3 uid="uid://chmbpumtc0o8h"]
+[gd_scene load_steps=2 format=3 uid="uid://bb10grfybgxsb"]
 
-[ext_resource type="Script" uid="uid://wicc7jvhoyv6" path="res://buildings/BuildUI.gd" id="1_6qkwu"]
+[sub_resource type="GDScript" id="GDScript_yvi3j"]
+script/source = "extends CanvasLayer
+class_name BuildUI
+
+@export var block_preview_scene: PackedScene = preload(\"res://buildings/BlockPreview.tscn\")
+@export var block_spacing := Vector2(120, 0)
+
+var factory: Factory = null
+var dragged_block: Control = null
+var drag_offset := Vector2.ZERO
+var build_area_rect := Rect2()
+
+func _ready() -> void:
+	if not factory:
+		push_error(\"BuildUI: Factory not assigned!\")
+		return
+	
+	setup_build_area()
+	create_block_palette()
+	print(\"Viewport size: \", get_viewport().size)
+
+func setup_build_area() -> void:
+	var viewport := get_viewport()
+	if not viewport:
+		push_error(\"BuildUI: Failed to get viewport\")
+		return
+	
+	var viewport_size := viewport.get_visible_rect().size
+	build_area_rect = Rect2(
+		(viewport_size - factory.build_area_size) / 2,
+		factory.build_area_size
+	)
+	$BuildArea.color = Color(0.2, 0.2, 0.2, 0.5)
+
+func create_block_palette() -> void:
+	var start_pos := Vector2(50, get_viewport().size.y - 150)
+	
+	for i in range(factory.available_blocks.size()):
+		var block_scene: PackedScene = factory.available_blocks[i]
+		if not block_scene:
+			continue
+		if block_scene:
+				print(\"Loading: \", block_scene.resource_path) 
+		var preview: BlockPreview = block_preview_scene.instantiate()
+		preview.position = start_pos + block_spacing * i
+		print(\"Preview position: \", preview.position)
+		preview.setup(block_scene)
+		preview.start_drag.connect(_on_block_drag_start)
+		$BlockPalette.add_child(preview)
+		print(\"Available blocks: \", factory.available_blocks)  # 检查数组内容
+		var start_pos_ := Vector2(50, get_viewport().size.y - 150)  # 确保坐标在屏幕内
+
+
+func _on_block_drag_start(preview: Control, offset: Vector2) -> void:
+	if preview is BlockPreview:
+		dragged_block = preview
+		drag_offset = offset
+
+func _input(event: InputEvent) -> void:
+	if not dragged_block:
+		return
+	
+	if event is InputEventMouseMotion:
+		# 限制拖拽在屏幕范围内
+		var new_pos = event.position - drag_offset
+		new_pos = new_pos.clamp(Vector2.ZERO, get_viewport().size)
+		dragged_block.position = new_pos
+	
+	elif event is InputEventMouseButton and not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		try_place_block(event.position - drag_offset)
+		dragged_block = null
+
+func try_place_block(position: Vector2) -> void:
+	if not build_area_rect.has_point(position):
+		return
+	
+	if not dragged_block or not dragged_block.block_scene:
+		return
+	
+	# 网格对齐
+	var grid_pos := (position / factory.GRID_SIZE).snapped(Vector2.ONE)
+	if grid_pos.x < 0 or grid_pos.y < 0 or \\
+	   grid_pos.x >= factory.max_vehicle_size.x or \\
+	   grid_pos.y >= factory.max_vehicle_size.y:
+		return
+	
+	var block: Node2D = dragged_block.block_scene.instantiate()
+	block.position = grid_pos * factory.GRID_SIZE
+	$BuildArea.add_child(block)
+"
 
 [node name="BuildUi" type="CanvasLayer"]
-script = ExtResource("1_6qkwu")
+script = SubResource("GDScript_yvi3j")
+
+[node name="BuildArea" type="ColorRect" parent="."]
+offset_right = 1147.0
+offset_bottom = 653.0
+
+[node name="BlockPalette" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
