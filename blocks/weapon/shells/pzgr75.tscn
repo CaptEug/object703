@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://quimu7rq0a35"]
 
-[ext_resource type="Script" path="res://blocks/weapons/shells/pzgr_75.gd" id="1_rreaq"]
-[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/weapons/shells/trail.tscn" id="2_wwygk"]
+[ext_resource type="Script" uid="uid://dqrl1xbjyuw1r" path="res://blocks/weapon/shells/pzgr_75.gd" id="1_rreaq"]
+[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/weapon/shells/trail.tscn" id="2_wwygk"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kaski"]
 radius = 0.01

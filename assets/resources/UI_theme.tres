@@ -1,0 +1,37 @@
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://djb1bkq82a1wy"]
+
+[ext_resource type="Texture2D" uid="uid://dm7mjxrcug1" path="res://assets/panel_tex.png" id="1_ubhoo"]
+[ext_resource type="Texture2D" uid="uid://b53lmsgqybp1" path="res://assets/textbox_tex.png" id="2_4w2ry"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vwcpp"]
+texture = ExtResource("1_ubhoo")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ubhoo"]
+texture = ExtResource("2_4w2ry")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4w2ry"]
+texture = ExtResource("2_4w2ry")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+
+[resource]
+Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
+RichTextLabel/colors/default_color = Color(0, 0.701961, 0, 1)
+RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
+Tree/colors/font_color = Color(0, 0.701961, 0, 1)
+Tree/fonts/font = null
+Tree/styles/panel = SubResource("StyleBoxTexture_4w2ry")

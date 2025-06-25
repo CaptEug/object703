@@ -10,7 +10,7 @@ const TRAVERSE:= [-8, 8] #degree
 const MUZZLE_ENERGY:float = 1000
 const SPREAD:float = 0.05
 
-var sap_shell = preload("res://blocks/weapons/shells/br473.tscn")
+var sap_shell = preload("res://blocks/weapon/shells/br473.tscn")
 
 func init():
 	current_hp = HITPOINT

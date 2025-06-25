@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://cnd7wmr8cjat6"]
 
-[ext_resource type="Script" uid="uid://bebbb68rg3aem" path="res://blocks/weapons/shells/br_473.gd" id="1_5wjt8"]
-[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/weapons/shells/trail.tscn" id="2_5gsks"]
+[ext_resource type="Script" uid="uid://bebbb68rg3aem" path="res://blocks/weapon/shells/br_473.gd" id="1_5wjt8"]
+[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/weapon/shells/trail.tscn" id="2_5gsks"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5gsks"]
 radius = 0.01

@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://xjn5knyr2ii6"]
 
-[ext_resource type="Script" uid="uid://km7153n6lesi" path="res://blocks/weapons/d_52s.gd" id="1_7v3xy"]
+[ext_resource type="Script" uid="uid://km7153n6lesi" path="res://blocks/weapon/d_52s.gd" id="1_7v3xy"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_ww6jp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ww6jp"]

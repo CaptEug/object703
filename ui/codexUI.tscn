@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvbnqq014m5ku"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ld0rk"]
+[ext_resource type="Script" uid="uid://dlxhou30xvj1w" path="res://ui/codex_ui.gd" id="2_hqcu7"]
+
+[node name="CodexUi" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+theme = ExtResource("1_ld0rk")
+script = ExtResource("2_hqcu7")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 584.0
+offset_right = 1001.0
+offset_bottom = 648.0
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 606.0
+offset_top = 401.0
+offset_right = 979.0
+offset_bottom = 612.0
+text = "put description here"
+
+[node name="Tree" type="Tree" parent="."]
+layout_mode = 2
+offset_left = 14.0
+offset_top = 101.0
+offset_right = 419.0
+offset_bottom = 486.0
+hide_root = true
