@@ -6,9 +6,9 @@ const GRID_SIZE := 16
 @export var block_scenes: Array[PackedScene] = [
 	preload("res://blocks/armor.tscn"),
 	preload("res://blocks/bridge.tscn"),
-	preload("res://blocks/maybach_hl_250.tscn"),
-	preload("res://blocks/rusty_track.tscn"),
-	preload("res://blocks/weapons/kwak45.tscn")
+	preload("res://blocks/power/maybach_hl_250.tscn"),
+	preload("res://blocks/power/rusty_track.tscn"),
+	preload("res://blocks/weapon/kwak45.tscn")
 ]
 
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
