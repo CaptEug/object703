@@ -12,6 +12,7 @@ const GRID_SIZE := 16
 ]
 
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
+@export var codex_ui_scene: PackedScene = preload("res://ui/codexUI.tscn")
 
 # 建造系统
 var current_block_index := 0
@@ -20,8 +21,15 @@ var placed_blocks := {}  # {Vector2i 网格坐标: 方块实例}
 var can_build := true
 var is_creating_vehicle := false
 var is_build_mode := false
+var codex_ui: Control 
 
 func _ready():
+	# 初始化图鉴UI
+	codex_ui = codex_ui_scene.instantiate()
+	add_child(codex_ui)
+	codex_ui.hide()
+	# 连接图鉴的选择信号
+	codex_ui.tree.item_selected.connect(_on_codex_block_selected)
 	queue_redraw()
 
 func _process(delta):
@@ -30,6 +38,8 @@ func _process(delta):
 		update_build_indicator()
 	if is_creating_vehicle:
 		complete_vehicle_creation()
+
+
 		
 func _input(event):
 	if event is InputEventKey and event.keycode == KEY_CTRL:
@@ -216,3 +226,9 @@ func complete_vehicle_creation():
 	placed_blocks.clear() 
 	is_creating_vehicle = false
 	print("车辆生成完成")
+
+func _on_codex_block_selected():
+	var selected_item = codex_ui.tree.get_selected()
+	if selected_item and selected_item.has_meta("block_index"):
+		current_block_index = selected_item.get_meta("block_index")
+		create_ghost_block()
