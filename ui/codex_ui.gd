@@ -48,18 +48,20 @@ func get_scenes_from_folder(folder_path: String) -> Array:
 	return scenes
 
 func _on_tree_item_selected():
-	if selected_block:
-		$Panel/Marker2D.remove_child(selected_block)
-	selected_block = tree.get_selected().get_metadata(0)
-	$Panel/Marker2D.add_child(selected_block)
-	
-	description_textbox.clear()
-	description_textbox.append_text(selected_block.BLOCK_NAME+"\n")
-	description_textbox.append_text("HITPOINT: "+str(selected_block.HITPOINT)+"\n")
-	description_textbox.append_text("WEIGHT: "+str(selected_block.WEIGHT)+"kg\n")
-	
-	if selected_block is Weapon:
-		description_textbox.append_text("Fire rate: "+str(60/selected_block.RELOAD)+"rpm\n")
-	
-	if selected_block is Powerpack:
-		description_textbox.append_text("POWER: "+str(selected_block.POWER)+"hp\n")
+	var selected = tree.get_selected().get_metadata(0)
+	if selected is Block:
+		if selected_block:
+			$Panel/Marker2D.remove_child(selected_block)
+		selected_block = selected
+		$Panel/Marker2D.add_child(selected_block)
+		
+		description_textbox.clear()
+		description_textbox.append_text(selected_block.BLOCK_NAME+"\n\n")
+		description_textbox.append_text("HITPOINT: "+str(selected_block.HITPOINT)+"\n")
+		description_textbox.append_text("WEIGHT: "+str(selected_block.WEIGHT)+"kg\n")
+		
+		if selected_block is Weapon:
+			description_textbox.append_text("Fire rate: "+str(60/selected_block.RELOAD)+"rpm\n")
+		
+		if selected_block is Powerpack:
+			description_textbox.append_text("POWER: "+str(selected_block.POWER)+"hp\n")
