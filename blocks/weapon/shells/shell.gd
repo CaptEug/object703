@@ -51,11 +51,11 @@ func explode():
 			block.damage(dmg)
 
 func stop():
+	shell_body.queue_free()
 	stopped = true
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0
 	set_physics_process(false)
-	shell_body.queue_free()
 	trail.fade()
 
 
@@ -67,12 +67,15 @@ func _on_timer_timeout():
 
 func _on_shell_body_entered(block:Block):
 	var block_hp = block.current_hp
-	var damage_to_deal = min(kenetic_damage, block_hp)
-	var momentum:Vector2 = weight * linear_velocity
-	block.apply_impulse(momentum)
-	block.damage(damage_to_deal)
-	kenetic_damage -= damage_to_deal
-	if kenetic_damage <= 0:
-		if max_explosive_damage:
-			explode()
-		stop()
+	if block_hp >= 0:
+		var damage_to_deal = min(kenetic_damage, block_hp)
+		print(kenetic_damage)
+		print(block_hp)
+		var momentum:Vector2 = weight * linear_velocity
+		block.apply_impulse(momentum)
+		block.damage(damage_to_deal)
+		kenetic_damage -= damage_to_deal
+		if kenetic_damage <= 0:
+			if max_explosive_damage:
+				explode()
+			stop()
