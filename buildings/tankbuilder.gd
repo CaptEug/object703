@@ -117,7 +117,7 @@ func create_ghost_block():
 	
 	# 禁用所有物理行为
 	for child in ghost_block.get_children():
-		if child is CollisionObject2D:
+		if child is CollisionShape2D:
 			child.set_deferred("disabled", true)
 		if child is RigidBody2D:
 			child.freeze = true
@@ -157,8 +157,7 @@ func place_block():
 	new_block.position = ghost_block.position
 	
 	if new_block is RigidBody2D:
-		new_block.freeze = true
-		new_block.sleeping = true
+		new_block.collision_layer = 2
 	
 	add_child(new_block)
 	for x in ghost_block.size.x:
@@ -205,8 +204,7 @@ func complete_vehicle_creation():
 		var block = placed_blocks[grid_pos]
 		if block in processed_blocks: continue
 		if block is RigidBody2D:
-			block.sleeping = false
-			block.freeze = false
+			block.collision_layer = 1
 	vehicle.bluepirnt = placed_blocks
 	vehicle.Get_ready_again()
 
