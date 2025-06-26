@@ -1,7 +1,8 @@
-[gd_resource type="Theme" load_steps=6 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=7 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://dm7mjxrcug1" path="res://assets/panel_tex.png" id="1_ubhoo"]
 [ext_resource type="Texture2D" uid="uid://b53lmsgqybp1" path="res://assets/textbox_tex.png" id="2_4w2ry"]
+[ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vwcpp"]
 texture = ExtResource("1_ubhoo")
@@ -31,7 +32,8 @@ texture_margin_bottom = 16.0
 [resource]
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 RichTextLabel/colors/default_color = Color(0, 0.701961, 0, 1)
+RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
 RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
 Tree/colors/font_color = Color(0, 0.701961, 0, 1)
-Tree/fonts/font = null
+Tree/fonts/font = ExtResource("3_4w2ry")
 Tree/styles/panel = SubResource("StyleBoxTexture_4w2ry")
