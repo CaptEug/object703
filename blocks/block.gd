@@ -6,9 +6,12 @@ var weight: float
 var block_name: String
 var size: Vector2
 var parent_vehicle: Vehicle = null  
+var _cached_icon: Texture2D
 
+signal frame_post_drawn
 
 func _ready():
+	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	init()
 	mass = weight
 	parent_vehicle = get_parent() as Vehicle
@@ -18,6 +21,9 @@ func _ready():
 
 func init():
 	pass
+
+func _emit_relay_signal():
+	frame_post_drawn.emit()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
@@ -33,6 +39,29 @@ func damage(amount:int):
 		queue_free()
 		
 func get_icon_texture():
-	var texture_blocks = find_child('Sprite2D')
+	var texture_blocks = find_child("Sprite2D")
 	if texture_blocks != null and texture_blocks is Sprite2D:
-			return texture_blocks.texture
+		return texture_blocks.texture
+	return null
+
+	
+
+func get_block_info() -> Dictionary:
+	init()
+	mass = weight
+	return {
+		"name": block_name,
+		"hitpoint": current_hp,
+		"weight": weight,
+		"size": size,
+		"icon": get_icon_texture(),
+		"type": _get_block_type()
+	}
+
+func _get_block_type() -> String:
+	if self is Weapon:
+		return "Weapon"
+	elif self is Powerpack:
+		return "Power"
+	else:
+		return "Armor"
