@@ -1,5 +1,10 @@
 extends Control
 
+const BLOCK_PATHS = {
+	"Firepower": "res://blocks/firepower/",
+	"Mobility": "res://blocks/mobility/",
+}
+
 @onready var tree = $Tree
 @onready var description_textbox = $Panel/RichTextLabel
 var selected_item:TreeItem
@@ -18,25 +23,22 @@ func prepare_data():
 	var root = tree.create_item()
 	root.set_text(0, "Blocks")
 	
-	# block type
-	var weapon = tree.create_item(root)
-	weapon.set_text(0, "Weapon")
-	var power = tree.create_item(root)
-	power.set_text(0, "Power")
+	# block category
+	var category_nodes = {}
+	for category in BLOCK_PATHS:
+		category_nodes[category] = tree.create_item(root)
+		category_nodes[category].set_text(0, category)
 	
-	for scene in get_scenes_from_folder("res://blocks/weapon/"):
-		var block = scene.instantiate()
-		var item = tree.create_item(weapon)
-		item.set_text(0, block.BLOCK_NAME)
-		item.set_icon(0, load(block.icons["normal"]))
-		item.set_metadata(0, block)
+	for category in BLOCK_PATHS:
+		for scene in get_scenes_from_folder(BLOCK_PATHS[category]):
+			var block = scene.instantiate()
+			if block is Block:
+				block.init()
+				var item = tree.create_item(category_nodes[category])
+				item.set_text(0, block.block_name)
+				item.set_icon(0, load(block.icons["normal"]))
+				item.set_metadata(0, block)
 	
-	for scene in get_scenes_from_folder("res://blocks/power/"):
-		var block = scene.instantiate()
-		var item = tree.create_item(power)
-		item.set_text(0, block.BLOCK_NAME)
-		item.set_icon(0, load(block.icons["normal"]))
-		item.set_metadata(0, block)
 
 func get_scenes_from_folder(folder_path: String) -> Array:
 	var scenes = []

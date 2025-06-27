@@ -1,17 +1,17 @@
 [gd_scene load_steps=5 format=3 uid="uid://dthnurfqvjyyh"]
 
-[ext_resource type="Script" uid="uid://bp6qvvq40qgik" path="res://blocks/block.gd" id="1_ux1n8"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_ocsbx"]
+[ext_resource type="Script" uid="uid://drgiam11wppfv" path="res://blocks/mobility/fuel_tank.gd" id="1_bexs3"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_tycq7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ux1n8"]
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kqvw8"]
-atlas = ExtResource("2_ocsbx")
+atlas = ExtResource("2_tycq7")
 region = Rect2(16, 16, 16, 16)
 
 [node name="FuelTank" type="RigidBody2D"]
-script = ExtResource("1_ux1n8")
+script = ExtResource("1_bexs3")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

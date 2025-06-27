@@ -4,9 +4,11 @@ extends RigidBody2D
 var current_hp:int
 var weight: float
 var block_name: String
+var type:String
 var size: Vector2
 var parent_vehicle: Vehicle = null  
 var _cached_icon: Texture2D
+var description:String
 
 signal frame_post_drawn
 
@@ -55,7 +57,8 @@ func get_block_info() -> Dictionary:
 		"weight": weight,
 		"size": size,
 		"icon": get_icon_texture(),
-		"type": _get_block_type()
+		"type": _get_block_type(),
+		"description": description
 	}
 
 func _get_block_type() -> String:

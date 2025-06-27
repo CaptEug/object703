@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=3 uid="uid://cl5ghcjpwf378"]
 
-[ext_resource type="PackedScene" uid="uid://xjn5knyr2ii6" path="res://blocks/weapon/d_52s.tscn" id="2_srejp"]
-[ext_resource type="PackedScene" uid="uid://ynw68d3flv12" path="res://blocks/power/rusty_track.tscn" id="3_1brmp"]
+[ext_resource type="PackedScene" uid="uid://xjn5knyr2ii6" path="res://blocks/firepower/d_52s.tscn" id="2_srejp"]
+[ext_resource type="PackedScene" uid="uid://ynw68d3flv12" path="res://blocks/mobility/rusty_track.tscn" id="3_1brmp"]
 [ext_resource type="PackedScene" uid="uid://byo7xm5tw3n2w" path="res://blocks/bridge.tscn" id="4_5m7c6"]
-[ext_resource type="PackedScene" uid="uid://mkhgj12b5dr8" path="res://blocks/power/maybach_hl_250.tscn" id="4_qoi2p"]
-[ext_resource type="PackedScene" uid="uid://jbbm78mi6qb5" path="res://blocks/weapon/ammorack.tscn" id="5_1brmp"]
+[ext_resource type="PackedScene" uid="uid://mkhgj12b5dr8" path="res://blocks/mobility/maybach_hl_250.tscn" id="4_qoi2p"]
+[ext_resource type="PackedScene" uid="uid://jbbm78mi6qb5" path="res://blocks/firepower/ammorack.tscn" id="5_1brmp"]
 
 [node name="Isu122" type="Node2D"]
 metadata/_custom_type_script = "uid://bd6kccmkxqjkk"
