@@ -50,10 +50,11 @@ func get_scenes_from_folder(folder_path: String) -> Array:
 
 func _on_tree_item_selected():
 	var selected = tree.get_selected()
+	if selected_item:
+		selected_item.set_icon(0, load(selected_block.icons["normal"]))
 	if selected.get_metadata(0) is Block:
 		if selected_block:
 			$Panel/Marker2D.remove_child(selected_block)
-			selected_item.set_icon(0, load(selected_block.icons["normal"]))
 		selected_block = selected.get_metadata(0)
 		$Panel/Marker2D.add_child(selected_block)
 		selected_item = tree.get_selected()
