@@ -1,8 +1,17 @@
-[gd_resource type="Theme" load_steps=7 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=14 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://dm7mjxrcug1" path="res://assets/panel_tex.png" id="1_ubhoo"]
 [ext_resource type="Texture2D" uid="uid://b53lmsgqybp1" path="res://assets/textbox_tex.png" id="2_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
+[ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/arrows.png" id="4_edc7y"]
+[ext_resource type="Texture2D" uid="uid://bg2clp6le5tly" path="res://assets/hovered_tex.png" id="4_vwcpp"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edc7y"]
+texture = ExtResource("2_4w2ry")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vwcpp"]
 texture = ExtResource("1_ubhoo")
@@ -22,18 +31,48 @@ texture_margin_bottom = 16.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_6vqaq"]
+atlas = ExtResource("4_edc7y")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_edc7y"]
+atlas = ExtResource("4_edc7y")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6vqaq"]
+texture = ExtResource("4_vwcpp")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 6.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4w2ry"]
 texture = ExtResource("2_4w2ry")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
 texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vwcpp"]
+bg_color = Color(0, 0.701961, 0, 1)
 
 [resource]
+ItemList/styles/panel = SubResource("StyleBoxTexture_edc7y")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 RichTextLabel/colors/default_color = Color(0, 0.701961, 0, 1)
 RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
 RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
 Tree/colors/font_color = Color(0, 0.701961, 0, 1)
+Tree/colors/font_hovered_color = Color(0, 0.701961, 0, 1)
+Tree/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
+Tree/colors/guide_color = Color(0, 0.701961, 0, 0)
 Tree/fonts/font = ExtResource("3_4w2ry")
+Tree/icons/arrow = SubResource("AtlasTexture_6vqaq")
+Tree/icons/arrow_collapsed = SubResource("AtlasTexture_edc7y")
+Tree/styles/hovered = SubResource("StyleBoxTexture_6vqaq")
 Tree/styles/panel = SubResource("StyleBoxTexture_4w2ry")
+Tree/styles/selected_focus = SubResource("StyleBoxFlat_vwcpp")

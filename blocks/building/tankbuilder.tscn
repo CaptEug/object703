@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c04b61ykvsi34"]
 
-[ext_resource type="Script" uid="uid://jda1hd1fy1p" path="res://buildings/tankbuilder.gd" id="1_re5i5"]
+[ext_resource type="Script" uid="uid://jda1hd1fy1p" path="res://blocks/building/tankbuilder.gd" id="1_re5i5"]
 
 [node name="Tankbuilder" type="Node2D"]
 script = ExtResource("1_re5i5")

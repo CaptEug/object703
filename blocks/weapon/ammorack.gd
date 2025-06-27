@@ -5,7 +5,7 @@ const WEIGHT:float = 500
 const BLOCK_NAME:String = 'ammo rack'
 const SIZE:= Vector2(1, 1)
 var ammo_capacity:float = 50.0
-var icon_path:String = "res://assets/ammo_icon.png"
+var icons:Dictionary = {"normal":"res://assets/icons/ammo_icon.png","selected":"res://assets/icons/ammo_icon_n.png"}
 
 func init():
 	current_hp = HITPOINT
