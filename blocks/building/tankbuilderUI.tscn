@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ca320w2cj51gd"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_147g5"]
-[ext_resource type="Script" uid="uid://ifelvwg72870" path="res://buildings/tankbuilderui.gd" id="2_y8xap"]
+[ext_resource type="Script" uid="uid://ifelvwg72870" path="res://blocks/building/tankbuilderui.gd" id="2_y8xap"]
 
 [node name="Tankbuilderui" type="Control"]
 layout_mode = 3

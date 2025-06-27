@@ -5,7 +5,7 @@ const GRID_SIZE := 16
 @export var factory_size := Vector2i(10, 10)
 
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
-@export var builder_ui: PackedScene = preload("res://buildings/tankbuilderUI.tscn") 
+@export var builder_ui: PackedScene = preload("res://blocks/building/tankbuilderUI.tscn") 
 
 # 建造系统
 var current_block_scene: PackedScene
@@ -213,6 +213,7 @@ func complete_vehicle_creation():
 	
 	placed_blocks.clear() 
 	is_creating_vehicle = false
+	toggle_build_mode()
 	print("车辆生成完成")
 
 func _on_codex_block_selected():
@@ -225,3 +226,4 @@ func _on_codex_block_selected():
 func _on_build_vehicle_requested():
 	if not is_build_mode: return
 	begin_vehicle_creation()
+	ui_instance.hide()
