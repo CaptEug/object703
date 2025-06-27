@@ -2,6 +2,7 @@ class_name Weapon
 extends Block
 
 var reload:float
+var ammo_cost:float
 var rotation_speed:float  # rads per second
 var traverse:Array # degree
 var muzzle_energy:float
