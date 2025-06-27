@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c5jag0q41cfe2"
-path="res://.godot/imported/track_icon.png-3e15b59155890aa4d5af35274b2d0e96.ctex"
+uid="uid://c163betofkl2m"
+path="res://.godot/imported/turret_icon.png-0947aa6ba09f482ad3536223b64c4752.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/track_icon.png"
-dest_files=["res://.godot/imported/track_icon.png-3e15b59155890aa4d5af35274b2d0e96.ctex"]
+source_file="res://assets/icons/turret_icon.png"
+dest_files=["res://.godot/imported/turret_icon.png-0947aa6ba09f482ad3536223b64c4752.ctex"]
 
 [params]
 

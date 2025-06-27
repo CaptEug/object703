@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://enrio73qhfmx"]
 
-[ext_resource type="PackedScene" uid="uid://c04b61ykvsi34" path="res://buildings/tankbuilder.tscn" id="1_vokvl"]
+[ext_resource type="PackedScene" uid="uid://c04b61ykvsi34" path="res://blocks/building/tankbuilder.tscn" id="1_vokvl"]
 
 [node name="Testbuilder" type="Node2D"]
 position = Vector2(440, 192)

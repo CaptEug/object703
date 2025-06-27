@@ -12,7 +12,7 @@ var spread:float
 
 var reload_timer:Timer
 var loaded:bool = false
-var icon_path:String = "res://assets/turret_icon.png"
+var icons:Dictionary = {"normal":"res://assets/icons/turret_icon.png","selected":"res://assets/icons/turret_icon_n.png"}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

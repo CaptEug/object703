@@ -5,7 +5,8 @@ extends Block
 var friction: float
 var max_force: float
 
-var icon_path:String = "res://assets/track_icon.png"
+var icons:Dictionary = {"normal":"res://assets/icons/track_icon.png","selected":"res://assets/icons/track_icon_n.png"}
+
 
 # 运行时状态
 var state_force: Array = ["idle", 0.0]
