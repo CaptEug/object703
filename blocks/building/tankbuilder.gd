@@ -3,34 +3,26 @@ extends Node2D
 # 配置
 const GRID_SIZE := 16
 @export var factory_size := Vector2i(10, 10)
-@export var block_scenes: Array[PackedScene] = [
-	preload("res://blocks/armor.tscn"),
-	preload("res://blocks/bridge.tscn"),
-	preload("res://blocks/power/maybach_hl_250.tscn"),
-	preload("res://blocks/power/rusty_track.tscn"),
-	preload("res://blocks/weapon/kwak45.tscn")
-]
 
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
-@export var codex_ui_scene: PackedScene = preload("res://ui/codexUI.tscn")
+@export var builder_ui: PackedScene = preload("res://blocks/building/tankbuilderUI.tscn") 
 
 # 建造系统
+var current_block_scene: PackedScene
 var current_block_index := 0
 var ghost_block: Node2D
 var placed_blocks := {}  # {Vector2i 网格坐标: 方块实例}
 var can_build := true
 var is_creating_vehicle := false
 var is_build_mode := false
-var codex_ui: Control 
+var ui_instance: Control
 
 func _ready():
-	# 初始化图鉴UI
-	codex_ui = codex_ui_scene.instantiate()
-	add_child(codex_ui)
-	codex_ui.hide()
-	# 连接图鉴的选择信号
-	codex_ui.tree.item_selected.connect(_on_codex_block_selected)
-	queue_redraw()
+	ui_instance = builder_ui.instantiate()
+	add_child(ui_instance)
+	ui_instance.hide()
+	ui_instance.tree.item_selected.connect(_on_codex_block_selected)
+	ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
 
 func _process(delta):
 	if ghost_block and not is_creating_vehicle:
@@ -45,25 +37,25 @@ func _input(event):
 	if event is InputEventKey and event.keycode == KEY_CTRL:
 		if event.pressed:
 			toggle_build_mode()
+	if event is InputEventKey and event.keycode == KEY_TAB:
+		if event.pressed:
+			toggle_codex_ui()
 	
 	if not is_build_mode: return
 	if is_creating_vehicle: return
 	
-	# 鼠标滚轮切换方块
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			change_block(1)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			change_block(-1)
-		elif event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			place_block()
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			remove_block_at_mouse()
-	
-	# 按键生成车辆
-	if event is InputEventKey and event.pressed and event.keycode == KEY_V:
-		begin_vehicle_creation()
 
+
+func toggle_codex_ui():
+	if ui_instance.visible:
+		ui_instance.hide()
+	else:
+		ui_instance.show()
 
 func toggle_build_mode():
 	is_build_mode = !is_build_mode
@@ -71,17 +63,13 @@ func toggle_build_mode():
 	if is_build_mode:
 		print("进入建造模式")
 		create_ghost_block()
+		ui_instance.build_vehicle_button.visible = true  # 显示按钮
 	else:
 		print("退出建造模式")
 		if ghost_block:
 			ghost_block.queue_free()
 			ghost_block = null
-		
-		# 自动生成车辆
-		if not placed_blocks.is_empty():
-			complete_vehicle_creation()
-	
-	queue_redraw()
+		ui_instance.build_vehicle_button.visible = false  # 隐藏按钮
 
 
 # 建造范围检测
@@ -107,22 +95,18 @@ func is_position_in_factory(block:Block) -> bool:
 func update_build_indicator():
 	can_build = is_position_in_factory(ghost_block)
 	ghost_block.modulate = Color(1, 1, 1, 0.5) if can_build else Color(1, 0.5, 0.5, 0.3)
+	ui_instance.build_vehicle_button.modulate = Color(1, 1, 1) if placed_blocks.size() > 0 else Color(0.5, 0.5, 0.5)
 
-# 方块切换
-func change_block(direction: int):
-	current_block_index = wrapi(current_block_index + direction, 0, block_scenes.size())
-	create_ghost_block()
-	print("当前方块: ", get_current_block_name())
-
-func get_current_block_name() -> String:
-	return block_scenes[current_block_index].resource_path.get_file().trim_suffix(".tscn")
 
 # 幽灵方块管理
 func create_ghost_block():
+	if not current_block_scene:
+		return
+		
 	if ghost_block:
 		ghost_block.queue_free()
 	
-	ghost_block = block_scenes[current_block_index].instantiate()
+	ghost_block = current_block_scene.instantiate()
 	ghost_block.modulate = Color(1, 1, 1, 0.5)
 	
 	# 禁用所有物理行为
@@ -138,8 +122,8 @@ func update_ghost_position():
 	var mouse_pos = get_global_mouse_position()
 	var world_pos = mouse_pos
 	var snapped_pos = Vector2(
-		floor(world_pos.x / GRID_SIZE),
-		floor(world_pos.y / GRID_SIZE)
+		round(world_pos.x / GRID_SIZE),
+		round(world_pos.y / GRID_SIZE)
 	)
 	
 	ghost_block.global_position = Vector2(
@@ -149,13 +133,15 @@ func update_ghost_position():
 
 # 方块放置/删除
 func place_block():
-	if not ghost_block or not can_build: return
+	if not ghost_block or not can_build or not current_block_scene: return
 
 	var world_pos = ghost_block.global_position - ghost_block.size/2 * GRID_SIZE
 	var snapped_pos = Vector2(
 		round(world_pos.x / GRID_SIZE),
 		round(world_pos.y / GRID_SIZE)
 	)
+	
+	# 检查是否有重叠
 	for x in ghost_block.size.x:
 		for y in ghost_block.size.y:
 			var check_pos = Vector2((snapped_pos.x + x), (snapped_pos.y + y))
@@ -163,7 +149,8 @@ func place_block():
 				print("位置被占用: ", check_pos)
 				return
 	
-	var new_block = block_scenes[current_block_index].instantiate()
+	# 放置新方块
+	var new_block = current_block_scene.instantiate()
 	new_block.position = ghost_block.position
 	
 	if new_block is RigidBody2D:
@@ -173,6 +160,7 @@ func place_block():
 	for x in ghost_block.size.x:
 		for y in ghost_block.size.y:
 			placed_blocks[Vector2((snapped_pos.x + x), (snapped_pos.y + y))] = new_block
+	ui_instance.build_vehicle_button.disabled = false
 
 
 func remove_block_at_mouse():
@@ -225,10 +213,17 @@ func complete_vehicle_creation():
 	
 	placed_blocks.clear() 
 	is_creating_vehicle = false
+	toggle_build_mode()
 	print("车辆生成完成")
 
 func _on_codex_block_selected():
-	var selected_item = codex_ui.tree.get_selected()
-	if selected_item and selected_item.has_meta("block_index"):
-		current_block_index = selected_item.get_meta("block_index")
+	var selected = ui_instance.tree.get_selected()
+	if selected and selected.has_meta("scene_path"):
+		current_block_scene = load(selected.get_meta("scene_path"))
 		create_ghost_block()
+
+
+func _on_build_vehicle_requested():
+	if not is_build_mode: return
+	begin_vehicle_creation()
+	ui_instance.hide()
