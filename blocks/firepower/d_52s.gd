@@ -6,7 +6,8 @@ const BLOCK_NAME:String = '122mm D-52S cannon'
 const SIZE:= Vector2(2, 2)
 const TYPE:= "Firepower"
 const RANGE:= 900
-const RELOAD:float = 5
+const RELOAD:float = 5.0
+const AMMO_COST:float= 2.0
 const ROTATION_SPEED:float = deg_to_rad(15)  # rads per second
 const TRAVERSE:= [-8, 8] #degree
 const MUZZLE_ENERGY:float = 1000
@@ -25,6 +26,7 @@ func init():
 	type = TYPE
 	range = RANGE
 	reload = RELOAD
+	ammo_cost = AMMO_COST
 	rotation_speed = ROTATION_SPEED
 	traverse = TRAVERSE
 	muzzle_energy = MUZZLE_ENERGY

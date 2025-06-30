@@ -1,20 +1,20 @@
 extends Weapon
 
-const HITPOINT:int = 800
-const WEIGHT:float = 7000
-const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
+const HITPOINT:int = 600
+const WEIGHT:float = 5000
+const BLOCK_NAME:String = '57mm duel barrel gun Zis-57-2'
 const SIZE:= Vector2(2, 2)
 const TYPE:= "Firepower"
-const RANGE:= 800
-const RELOAD:float = 0.5
-const AMMO_COST:float= 1.0
+const RANGE:= 600
+const RELOAD:float = 0.2
+const AMMO_COST:float= 0.25
 const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
-const MUZZLE_ENERGY:float = 1000
-const SPREAD:float = 0.02
+const MUZZLE_ENERGY:float = 900
+const SPREAD:float = 0.03
 
 const DESCRIPTION := ""
 
-var ap_shell = preload("res://blocks/firepower/shells/pzgr75.tscn")
+var ap_shell
 
 func init():
 	current_hp = HITPOINT
