@@ -13,6 +13,13 @@ offset_bottom = -163.0
 theme = ExtResource("1_147g5")
 script = ExtResource("2_y8xap")
 
+[node name="ItemList" type="ItemList" parent="."]
+layout_mode = 0
+offset_left = -6.0
+offset_top = 161.0
+offset_right = 331.0
+offset_bottom = 452.0
+
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
 offset_right = 329.0
@@ -23,13 +30,7 @@ layout_mode = 0
 offset_right = 329.0
 offset_bottom = 163.0
 
-[node name="Tree" type="Tree" parent="."]
-layout_mode = 0
-offset_top = 159.0
-offset_right = 329.0
-offset_bottom = 413.0
-
-[node name="Button" type="Button" parent="."]
+[node name="BuildButton" type="Button" parent="."]
 visible = false
 layout_mode = 0
 offset_left = 4.0
@@ -39,6 +40,3 @@ offset_bottom = 443.0
 scale = Vector2(1, 5.12)
 disabled = true
 text = "BUILD TANK	"
-
-[connection signal="item_selected" from="Tree" to="." method="_on_tree_item_selected"]
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
