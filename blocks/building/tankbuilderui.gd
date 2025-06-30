@@ -6,9 +6,9 @@ extends Control
 signal build_vehicle_requested 
 
 const BLOCK_PATHS = {
-	"Weapon": "res://blocks/weapon/",
-	"Power": "res://blocks/power/",
-	"Armor": "res://blocks/armor/"
+	"Weapon": "res://blocks/firepower/",
+	"Power": "res://blocks/mobility/",
+	#"Armor": "res://blocks/armor/"
 }
 
 func _ready():
@@ -38,11 +38,10 @@ func setup_block_tree():
 					if scene:
 						var block = scene.instantiate()
 						if block is Block:  # 确保是Block类型
-							var info = block.get_block_info()
 							var item = tree.create_item(category_nodes[category])
-							item.set_text(0, info.name)
-							if info.icon:
-								item.set_icon(0, info.icon)
+							item.set_text(0, block.name)
+							if block.get_icon_texture():
+								item.set_icon(0, block.get_icon_texture())
 							item.set_meta("scene_path", scene_path)
 						block.queue_free()
 				file_name = dir.get_next()
