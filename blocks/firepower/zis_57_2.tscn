@@ -1,0 +1,51 @@
+[gd_scene load_steps=8 format=3 uid="uid://b7qkhu7bbwspf"]
+
+[ext_resource type="Script" uid="uid://b7fdjrjw0m427" path="res://blocks/firepower/zis_57_2.gd" id="1_23xfu"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks2.png" id="2_8gmj7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6sner"]
+size = Vector2(32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sg6v4"]
+atlas = ExtResource("2_8gmj7")
+region = Rect2(64, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ytknx"]
+atlas = ExtResource("2_8gmj7")
+region = Rect2(96, 16, 32, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5o4hx"]
+atlas = ExtResource("2_8gmj7")
+region = Rect2(128, 16, 16, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b2j2j"]
+atlas = ExtResource("2_8gmj7")
+region = Rect2(144, 16, 16, 48)
+
+[node name="Zis572" type="RigidBody2D"]
+script = ExtResource("1_23xfu")
+metadata/_custom_type_script = "uid://umbrwl1bnc2h"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_6sner")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_sg6v4")
+
+[node name="Turret" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_ytknx")
+offset = Vector2(0, -8)
+
+[node name="Barrel1" type="Sprite2D" parent="Turret"]
+texture = SubResource("AtlasTexture_5o4hx")
+offset = Vector2(-8, -8)
+
+[node name="Barrel2" type="Sprite2D" parent="Turret"]
+texture = SubResource("AtlasTexture_b2j2j")
+offset = Vector2(8, -8)
+
+[node name="Muzzle1" type="Marker2D" parent="Turret"]
+position = Vector2(-4, -30)
+
+[node name="Muzzle2" type="Marker2D" parent="Turret"]
+position = Vector2(4, -30)

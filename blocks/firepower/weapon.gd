@@ -56,7 +56,7 @@ func generate_detection_area():
 	detection_area = Area2D.new()
 	add_child(detection_area)
 	if traverse:
-		var segments: int = 64
+		var segments: int = 32
 		var start_angle = deg_to_rad(traverse[0]-90)
 		var end_angle = deg_to_rad(traverse[-1]-90)
 		var points: PackedVector2Array = [Vector2.ZERO]

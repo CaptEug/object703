@@ -1,21 +1,21 @@
 [gd_scene load_steps=10 format=3 uid="uid://xjn5knyr2ii6"]
 
 [ext_resource type="Script" uid="uid://km7153n6lesi" path="res://blocks/firepower/d_52s.gd" id="1_7v3xy"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_ww6jp"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks2.png" id="2_8pcul"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ww6jp"]
 size = Vector2(32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pcn55"]
-atlas = ExtResource("2_ww6jp")
+atlas = ExtResource("2_8pcul")
 region = Rect2(64, 192, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ww6jp"]
-atlas = ExtResource("2_ww6jp")
+atlas = ExtResource("2_8pcul")
 region = Rect2(96, 128, 32, 96)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0dhif"]
-atlas = ExtResource("2_ww6jp")
+atlas = ExtResource("2_8pcul")
 region = Rect2(128, 128, 32, 96)
 
 [sub_resource type="Animation" id="Animation_pcn55"]
