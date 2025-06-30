@@ -23,6 +23,11 @@ layout_mode = 0
 offset_right = 329.0
 offset_bottom = 163.0
 
+[node name="InventoryLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
 [node name="Tree" type="Tree" parent="."]
 layout_mode = 0
 offset_top = 159.0

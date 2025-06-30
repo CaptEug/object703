@@ -23,6 +23,11 @@ func _ready():
 	ui_instance.hide()
 	ui_instance.tree.item_selected.connect(_on_codex_block_selected)
 	ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
+	ui_instance.add_to_inventory("Small Cannon", 5)
+	ui_instance.add_to_inventory("Heavy Cannon", 2)
+	ui_instance.add_to_inventory("Wheel", 8)
+	ui_instance.add_to_inventory("Tank Tread", 4)
+
 
 func _process(delta):
 	if ghost_block and not is_creating_vehicle:
@@ -56,6 +61,7 @@ func toggle_codex_ui():
 		ui_instance.hide()
 	else:
 		ui_instance.show()
+		ui_instance.prepare_data()
 
 func toggle_build_mode():
 	is_build_mode = !is_build_mode
@@ -93,8 +99,17 @@ func is_position_in_factory(block:Block) -> bool:
 
 # 建造状态指示器
 func update_build_indicator():
+	if not ghost_block: return
+	
 	can_build = is_position_in_factory(ghost_block)
-	ghost_block.modulate = Color(1, 1, 1, 0.5) if can_build else Color(1, 0.5, 0.5, 0.3)
+	
+	# 新增：检查背包中是否有足够的方块
+	if ghost_block is Block and not ui_instance.has_in_inventory(ghost_block.block_name):
+		can_build = false
+		ghost_block.modulate = Color(1, 0.3, 0.3, 0.3)  # 红色表示不能建造
+	else:
+		ghost_block.modulate = Color(1, 1, 1, 0.5) if can_build else Color(1, 0.5, 0.5, 0.3)
+	
 	ui_instance.build_vehicle_button.modulate = Color(1, 1, 1) if placed_blocks.size() > 0 else Color(0.5, 0.5, 0.5)
 
 
@@ -108,6 +123,11 @@ func create_ghost_block():
 	
 	ghost_block = current_block_scene.instantiate()
 	ghost_block.modulate = Color(1, 1, 1, 0.5)
+	
+	if ghost_block is Block and not ui_instance.has_in_inventory(ghost_block.block_name):
+		ghost_block.queue_free()
+		ghost_block = null
+		return
 	
 	# 禁用所有物理行为
 	for child in ghost_block.get_children():
@@ -134,6 +154,10 @@ func update_ghost_position():
 # 方块放置/删除
 func place_block():
 	if not ghost_block or not can_build or not current_block_scene: return
+	if not ghost_block is Block: return
+	
+	if not ui_instance.remove_from_inventory(ghost_block.block_name):
+		return
 
 	var world_pos = ghost_block.global_position - ghost_block.size/2 * GRID_SIZE
 	var snapped_pos = Vector2(
@@ -161,6 +185,9 @@ func place_block():
 		for y in ghost_block.size.y:
 			placed_blocks[Vector2((snapped_pos.x + x), (snapped_pos.y + y))] = new_block
 	ui_instance.build_vehicle_button.disabled = false
+	
+	ui_instance.prepare_data()
+	create_ghost_block()  # 创建新的幽灵方块
 
 
 func remove_block_at_mouse():
@@ -175,10 +202,12 @@ func remove_block_at_mouse():
 	for block_pos in placed_blocks:
 		if block_pos == snapped_pos:
 			var block = placed_blocks[block_pos]
+			if block is Block:
+				ui_instance.add_to_inventory(block.block_name)  # 返还到背包
 			placed_blocks.erase(block_pos)
-			block.queue_free()  # 删除方块节点
-			print("已移除方块（尺寸：", block, "）")
-			return  # 找到后立即退出
+			block.queue_free()
+			ui_instance.prepare_data()  # 刷新UI显示
+			return
 	
 	print("鼠标位置没有可移除的方块")
 
