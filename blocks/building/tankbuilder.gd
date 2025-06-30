@@ -189,30 +189,36 @@ func remove_block_at_mouse():
 		remove_block_from_grid(block, grid_pos)
 
 func begin_vehicle_creation():
-	print(placed_blocks)
+	#print(placed_blocks)
 	if placed_blocks.is_empty():
 		return
 	is_creating_vehicle = true
+	
 
 func complete_vehicle_creation():
 	var vehicle = vehicle_scene.instantiate()
 	get_parent().add_child(vehicle)
 	
+	# 转移所有方块到车辆节点
 	var processed_blocks = []
+	print(placed_blocks)
 	for grid_pos in placed_blocks:
 		var block = placed_blocks[grid_pos]
-		if block in processed_blocks:
-			continue
+		if block in processed_blocks: continue
 		if block is RigidBody2D:
 			block.collision_layer = 1
-		processed_blocks.append(block)
+	vehicle.bluepirnt = placed_blocks
+	vehicle.Get_ready_again()
+
 	
+	# 初始化车辆物理
 	if vehicle.has_method("initialize_physics"):
 		vehicle.initialize_physics(processed_blocks)
 	
-	placed_blocks.clear()
+	placed_blocks.clear() 
 	is_creating_vehicle = false
 	toggle_build_mode()
+	print("车辆生成完成")
 
 # 信号处理
 func _on_block_selected(scene_path: String):

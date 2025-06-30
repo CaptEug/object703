@@ -31,12 +31,11 @@ offset_right = 329.0
 offset_bottom = 163.0
 
 [node name="BuildButton" type="Button" parent="."]
-visible = false
 layout_mode = 0
-offset_left = 4.0
-offset_top = 412.0
-offset_right = 329.0
-offset_bottom = 443.0
+offset_left = -1.0
+offset_top = 452.0
+offset_right = 324.0
+offset_bottom = 483.0
 scale = Vector2(1, 5.12)
 disabled = true
 text = "BUILD TANK	"
