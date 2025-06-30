@@ -34,4 +34,11 @@ offset_right = 480.0
 offset_bottom = 596.0
 hide_root = true
 
+[node name="ItemList" type="ItemList" parent="."]
+layout_mode = 0
+offset_left = 512.0
+offset_top = 58.0
+offset_right = 694.0
+offset_bottom = 235.0
+
 [connection signal="item_selected" from="Tree" to="." method="_on_tree_item_selected"]

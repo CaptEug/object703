@@ -19,6 +19,7 @@ var explosion_particle = preload("res://assets/particles/explosion.tscn")
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
+	trail.lifetime = lifetime
 	var timer = Timer.new()
 	timer.wait_time = lifetime
 	timer.autostart = true
@@ -69,8 +70,6 @@ func _on_shell_body_entered(block:Block):
 	var block_hp = block.current_hp
 	if block_hp >= 0:
 		var damage_to_deal = min(kenetic_damage, block_hp)
-		print(kenetic_damage)
-		print(block_hp)
 		var momentum:Vector2 = weight * linear_velocity
 		block.apply_impulse(momentum)
 		block.damage(damage_to_deal)

@@ -5,6 +5,7 @@ const WEIGHT:float = 7000
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
 const TYPE:= "Firepower"
+const RANGE:= 800
 const RELOAD:float = 0.5
 const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
 const MUZZLE_ENERGY:float = 1000
@@ -21,6 +22,7 @@ func init():
 	description = DESCRIPTION
 	size = SIZE
 	type = TYPE
+	range = RANGE
 	reload = RELOAD
 	rotation_speed = ROTATION_SPEED
 	muzzle_energy = MUZZLE_ENERGY

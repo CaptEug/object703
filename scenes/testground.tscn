@@ -1,8 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=10 format=3 uid="uid://dawkb0e8tm4e8"]
 
-[ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="1_6fv6v"]
-[ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="2_m32x0"]
-[ext_resource type="PackedScene" uid="uid://cl5ghcjpwf378" path="res://vehicles/isu122.tscn" id="4_77d2g"]
+[ext_resource type="Script" uid="uid://b87arqcxbcgim" path="res://scenes/testground.gd" id="1_rby4w"]
+[ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
+[ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
+[ext_resource type="PackedScene" uid="uid://hpkk1sl4ldyp" path="res://vehicles/testarget.tscn" id="3_m5lm4"]
+[ext_resource type="PackedScene" uid="uid://cl5ghcjpwf378" path="res://vehicles/isu122.tscn" id="4_hie3q"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3
@@ -51,20 +53,22 @@ func _ready():
 "
 
 [node name="Testground" type="Node2D"]
+script = ExtResource("1_rby4w")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("2_m5lm4")
 
-[node name="Object1" parent="." instance=ExtResource("1_6fv6v")]
+[node name="Object1" parent="." instance=ExtResource("2_5du73")]
 position = Vector2(101, -57)
 script = SubResource("GDScript_77d2g")
 
-[node name="Testarget" parent="." instance=ExtResource("2_m32x0")]
+[node name="Testarget" parent="." instance=ExtResource("3_m5lm4")]
 position = Vector2(-24, -125)
 script = SubResource("GDScript_8bj8j")
 
-[node name="Isu122" parent="." instance=ExtResource("4_77d2g")]
+[node name="Isu122" parent="." instance=ExtResource("4_hie3q")]
 position = Vector2(8, 24)
 script = SubResource("GDScript_x4rnv")

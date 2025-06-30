@@ -4,7 +4,7 @@ extends Line2D
 #@export var min_spawn_distance := 5
 
 var trail_points:= []
-var lifetime:= 1
+var lifetime:float
 var tick_speed:= 0.05
 var tick:= 0.0
 var wild_speed:= 0.1

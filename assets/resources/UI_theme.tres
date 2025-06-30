@@ -7,11 +7,13 @@
 [ext_resource type="Texture2D" uid="uid://bg2clp6le5tly" path="res://assets/hovered_tex.png" id="4_vwcpp"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edc7y"]
-texture = ExtResource("2_4w2ry")
+texture = ExtResource("1_ubhoo")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
 texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vwcpp"]
 texture = ExtResource("1_ubhoo")
