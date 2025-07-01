@@ -339,16 +339,18 @@ func update_tracks_state(delta):
 	apply_smooth_track_forces(delta)
 
 func connect_blocks():
+	var normalized = []
 	for  grid_pos in bluepirnt:
 		var block = bluepirnt[grid_pos]
-		block.global_position = Vector2(grid_pos.x*GRID_SIZE, grid_pos.y*GRID_SIZE)
-		print(grid_pos, block.global_position)
-		var size = block.size
-		for x in size.x:
-			for y in size.y:
-				var cell = grid_pos + Vector2i(x, y)
-				grid[cell] = block
-				connect_adjacent_blocks(cell, grid[cell])
+		if not normalized.has(block):
+			block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + block.size/2 * GRID_SIZE
+			var size = block.size
+			for x in size.x:
+				for y in size.y:
+					var cell = grid_pos + Vector2i(x, y)
+					grid[cell] = block
+					connect_adjacent_blocks(cell, grid[cell])
+			normalized.append(block)
 
 
 func connect_adjacent_blocks(pos:Vector2i, block:Block):
