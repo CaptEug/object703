@@ -30,7 +30,6 @@ func _ready():
 func Get_ready_again():
 	for block in bluepirnt.values():
 		_add_block(block)
-	print('wadawdawd',blocks)
 	connect_blocks()
 	for track in tracks:
 		track_target_forces[track] = 0.0
@@ -342,6 +341,8 @@ func update_tracks_state(delta):
 func connect_blocks():
 	for  grid_pos in bluepirnt:
 		var block = bluepirnt[grid_pos]
+		block.global_position = Vector2(grid_pos.x*GRID_SIZE, grid_pos.y*GRID_SIZE)
+		print(grid_pos, block.global_position)
 		var size = block.size
 		for x in size.x:
 			for y in size.y:
