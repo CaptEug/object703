@@ -97,6 +97,7 @@ func fire(shell_scene:PackedScene):
 
 func shoot(muz:Marker2D, shell_scene:PackedScene):
 	var shell = shell_scene.instantiate()
+	shell.from = self
 	var gun_rotation = muz.global_rotation
 	get_tree().current_scene.add_child(shell)
 	shell.global_position = muz.global_position
