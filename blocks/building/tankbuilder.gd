@@ -5,7 +5,7 @@ const GRID_SIZE := 16
 @export var factory_size := Vector2i(10, 10)
 
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
-@export var builder_ui: PackedScene = preload("res://blocks/building/tankbuilderUI.tscn")
+@export var builder_ui: PackedScene = preload("res://ui/tankbuilderUI.tscn")
 
 # 建造系统
 var current_block_scene: PackedScene

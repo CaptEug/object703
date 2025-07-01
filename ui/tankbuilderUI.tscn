@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ca320w2cj51gd"]
 
-[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_147g5"]
-[ext_resource type="Script" uid="uid://ifelvwg72870" path="res://blocks/building/tankbuilderui.gd" id="2_y8xap"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ils3j"]
+[ext_resource type="Script" uid="uid://ifelvwg72870" path="res://ui/tankbuilderui.gd" id="2_8aq6r"]
 
 [node name="Tankbuilderui" type="Control"]
 layout_mode = 3
@@ -10,8 +10,8 @@ offset_left = -331.0
 offset_top = -163.0
 offset_right = -331.0
 offset_bottom = -163.0
-theme = ExtResource("1_147g5")
-script = ExtResource("2_y8xap")
+theme = ExtResource("1_ils3j")
+script = ExtResource("2_8aq6r")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
@@ -38,9 +38,4 @@ layout_mode = 0
 offset_left = 3.0
 offset_top = 160.0
 offset_right = 331.0
-offset_bottom = 200.0
-current_tab = 0
-
-[node name="ItemList" type="ItemList" parent="TabContainer"]
-layout_mode = 2
-metadata/_tab_index = 0
+offset_bottom = 493.0
