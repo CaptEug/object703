@@ -340,7 +340,7 @@ func update_tracks_state(delta):
 
 func connect_blocks():
 	var normalized = []
-	for  grid_pos in bluepirnt:
+	for grid_pos in bluepirnt:
 		var block = bluepirnt[grid_pos]
 		if not normalized.has(block):
 			block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + block.size/2 * GRID_SIZE
