@@ -1,9 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=5 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="Script" uid="uid://b87arqcxbcgim" path="res://scenes/testground.gd" id="1_rby4w"]
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
-[ext_resource type="PackedScene" uid="uid://cni6c1naatc3u" path="res://vehicles/isu122.tscn" id="4_hie3q"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3
@@ -18,7 +17,5 @@ environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 script = ExtResource("2_m5lm4")
-
-[node name="Isu122" parent="." instance=ExtResource("4_hie3q")]
 
 [node name="Object1" parent="." instance=ExtResource("2_5du73")]
