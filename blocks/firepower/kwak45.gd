@@ -14,7 +14,7 @@ const SPREAD:float = 0.02
 
 const DESCRIPTION := ""
 
-var ap_shell = preload("res://blocks/firepower/shells/pzgr75.tscn")
+var ap_shell = preload("res://blocks/firepower/shells/pzgr_75.tscn")
 
 func init():
 	current_hp = HITPOINT
@@ -29,7 +29,7 @@ func init():
 	rotation_speed = ROTATION_SPEED
 	muzzle_energy = MUZZLE_ENERGY
 	turret = $Turret
-	muzzle = $Turret/Muzzle
+	muzzles.append($Turret/Muzzle)
 	animplayer = $Turret/AnimationPlayer
 	spread = SPREAD
 	linear_damp = 5.0

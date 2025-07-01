@@ -19,6 +19,8 @@ var explosion_particle = preload("res://assets/particles/explosion.tscn")
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	init()
+	collision_layer = 0
+	collision_mask = 0
 	trail.lifetime = lifetime
 	var timer = Timer.new()
 	timer.wait_time = lifetime
