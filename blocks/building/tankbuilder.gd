@@ -112,8 +112,8 @@ func configure_ghost_block():
 func update_ghost_position():
 	var mouse_pos = get_global_mouse_position()
 	var snapped_pos = Vector2(
-		round(mouse_pos.x / GRID_SIZE),
-		round(mouse_pos.y / GRID_SIZE)
+		floor(mouse_pos.x / GRID_SIZE),
+		floor(mouse_pos.y / GRID_SIZE)
 	)
 	ghost_block.global_position = snapped_pos * GRID_SIZE + ghost_block.size/2 * GRID_SIZE
 
@@ -128,8 +128,8 @@ func place_block():
 	var grid_positions = []
 	var world_pos = ghost_block.global_position - ghost_block.size/2 * GRID_SIZE
 	var base_pos = Vector2i(
-		round(world_pos.x / GRID_SIZE),
-		round(world_pos.y / GRID_SIZE)
+		floor(world_pos.x / GRID_SIZE),
+		floor(world_pos.y / GRID_SIZE)
 	)
 	
 	# 计算方块占据的所有网格
@@ -171,8 +171,8 @@ func place_block():
 func remove_block_at_mouse():
 	var mouse_pos = get_global_mouse_position()
 	var grid_pos = Vector2i(
-		round(mouse_pos.x / GRID_SIZE),
-		round(mouse_pos.y / GRID_SIZE)
+		floor(mouse_pos.x / GRID_SIZE),
+		floor(mouse_pos.y / GRID_SIZE)
 	)
 	
 	if placed_blocks.has(grid_pos):
@@ -259,8 +259,8 @@ func is_position_in_factory(block:Block) -> bool:
 func calculate_grid_positions() -> Array:  # 添加缺失的函数
 	var world_pos = ghost_block.global_position - ghost_block.size/2 * GRID_SIZE
 	var base_pos = Vector2i(
-		round(world_pos.x / GRID_SIZE),
-		round(world_pos.y / GRID_SIZE)
+		floor(world_pos.x / GRID_SIZE),
+		floor(world_pos.y / GRID_SIZE)
 	)
 	
 	var positions = []

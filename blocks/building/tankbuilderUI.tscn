@@ -13,13 +13,6 @@ offset_bottom = -163.0
 theme = ExtResource("1_147g5")
 script = ExtResource("2_y8xap")
 
-[node name="ItemList" type="ItemList" parent="."]
-layout_mode = 0
-offset_left = -6.0
-offset_top = 161.0
-offset_right = 331.0
-offset_bottom = 452.0
-
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
 offset_right = 329.0
@@ -32,10 +25,22 @@ offset_bottom = 163.0
 
 [node name="BuildButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = -1.0
-offset_top = 452.0
-offset_right = 324.0
-offset_bottom = 483.0
+offset_left = 6.0
+offset_top = 493.0
+offset_right = 331.0
+offset_bottom = 524.0
 scale = Vector2(1, 5.12)
 disabled = true
 text = "BUILD TANK	"
+
+[node name="TabContainer" type="TabContainer" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 160.0
+offset_right = 331.0
+offset_bottom = 200.0
+current_tab = 0
+
+[node name="ItemList" type="ItemList" parent="TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
