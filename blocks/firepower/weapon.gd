@@ -8,7 +8,8 @@ var rotation_speed:float  # rads per second
 var traverse:Array # degree
 var muzzle_energy:float
 var turret:Sprite2D 
-var muzzle:Marker2D
+var muzzles:Array
+var current_muzzle:int = 0
 var animplayer:AnimationPlayer
 var spread:float
 
@@ -87,16 +88,20 @@ func aim(delta, target_pos):
 
 func fire(shell_scene:PackedScene):
 	if loaded:
-		var shell = shell_scene.instantiate()
-		var gun_rotation = muzzle.global_rotation
-		get_tree().current_scene.add_child(shell)
-		shell.global_position = muzzle.global_position
-		shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
-		apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
+		shoot(muzzles[current_muzzle], shell_scene)
 		if animplayer:
-			animplayer.play('recoil')
+			animplayer.play('recoil'+str(current_muzzle))
 		reload_timer.start()
+		current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
 		loaded = false
+
+func shoot(muz:Marker2D, shell_scene:PackedScene):
+	var shell = shell_scene.instantiate()
+	var gun_rotation = muz.global_rotation
+	get_tree().current_scene.add_child(shell)
+	shell.global_position = muz.global_position
+	shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
+	apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
 
 func _on_timer_timeout():
 	loaded = true

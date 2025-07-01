@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://b7qkhu7bbwspf"]
+[gd_scene load_steps=12 format=3 uid="uid://b7qkhu7bbwspf"]
 
 [ext_resource type="Script" uid="uid://b7fdjrjw0m427" path="res://blocks/firepower/zis_57_2.gd" id="1_23xfu"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks2.png" id="2_8gmj7"]
@@ -22,7 +22,75 @@ region = Rect2(128, 16, 16, 48)
 atlas = ExtResource("2_8gmj7")
 region = Rect2(144, 16, 16, 48)
 
+[sub_resource type="Animation" id="Animation_8gmj7"]
+resource_name = "recoil0"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Turret/Barrel:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 3), Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_6sner"]
+resource_name = "recoil1"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Turret/Barrel2:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 3), Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_sg6v4"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Turret/Barrel:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Turret/Barrel2:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_sg6v4"]
+_data = {
+&"RESET": SubResource("Animation_sg6v4"),
+&"recoil0": SubResource("Animation_8gmj7"),
+&"recoil1": SubResource("Animation_6sner")
+}
+
 [node name="Zis572" type="RigidBody2D"]
+collision_layer = 0
+collision_mask = 0
 script = ExtResource("1_23xfu")
 metadata/_custom_type_script = "uid://umbrwl1bnc2h"
 
@@ -33,19 +101,28 @@ shape = SubResource("RectangleShape2D_6sner")
 texture = SubResource("AtlasTexture_sg6v4")
 
 [node name="Turret" type="Sprite2D" parent="."]
+z_index = 2
 texture = SubResource("AtlasTexture_ytknx")
 offset = Vector2(0, -8)
 
-[node name="Barrel1" type="Sprite2D" parent="Turret"]
+[node name="Barrel" type="Sprite2D" parent="Turret"]
+z_index = -1
 texture = SubResource("AtlasTexture_5o4hx")
 offset = Vector2(-8, -8)
 
 [node name="Barrel2" type="Sprite2D" parent="Turret"]
+z_index = -1
 texture = SubResource("AtlasTexture_b2j2j")
 offset = Vector2(8, -8)
 
-[node name="Muzzle1" type="Marker2D" parent="Turret"]
+[node name="Muzzle" type="Marker2D" parent="Turret"]
 position = Vector2(-4, -30)
 
 [node name="Muzzle2" type="Marker2D" parent="Turret"]
 position = Vector2(4, -30)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Turret"]
+root_node = NodePath("../..")
+libraries = {
+&"": SubResource("AnimationLibrary_sg6v4")
+}

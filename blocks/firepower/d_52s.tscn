@@ -52,7 +52,7 @@ tracks/0/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_pcn55"]
 _data = {
 &"RESET": SubResource("Animation_pcn55"),
-&"recoil": SubResource("Animation_ww6jp")
+&"recoil0": SubResource("Animation_ww6jp")
 }
 
 [node name="D52s" type="RigidBody2D"]

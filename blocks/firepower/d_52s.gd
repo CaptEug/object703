@@ -15,7 +15,7 @@ const SPREAD:float = 0.05
 
 const DESCRIPTION := ""
 
-var sap_shell = preload("res://blocks/firepower/shells/br473.tscn")
+var sap_shell = preload("res://blocks/firepower/shells/br_473.tscn")
 
 func init():
 	current_hp = HITPOINT
@@ -31,7 +31,7 @@ func init():
 	traverse = TRAVERSE
 	muzzle_energy = MUZZLE_ENERGY
 	turret = $Gun
-	muzzle = $Gun/Muzzle
+	muzzles.append($Gun/Muzzle)
 	animplayer = $Gun/AnimationPlayer
 	spread = SPREAD
 	linear_damp = 5.0
