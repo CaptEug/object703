@@ -30,9 +30,6 @@ func update_inventory_display(current_inventory: Dictionary):
 	item_list.fixed_icon_size = Vector2(64, 64)
 	
 	for category in BLOCK_PATHS:
-		# 添加分类标题
-		var category_idx = item_list.add_item(category)
-		item_list.set_item_selectable(category_idx, false)
 		
 		# 扫描文件夹
 		var dir = DirAccess.open(BLOCK_PATHS[category])
