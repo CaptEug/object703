@@ -89,8 +89,6 @@ _data = {
 }
 
 [node name="Zis572" type="RigidBody2D"]
-collision_layer = 0
-collision_mask = 0
 script = ExtResource("1_23xfu")
 metadata/_custom_type_script = "uid://umbrwl1bnc2h"
 

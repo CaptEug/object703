@@ -13,6 +13,7 @@ var explosion_shape:CollisionShape2D
 var shell_body:Area2D
 var trail:Line2D
 
+var from:Block
 var stopped := false
 var explosion_particle = preload("res://assets/particles/explosion.tscn")
 
@@ -69,6 +70,9 @@ func _on_timer_timeout():
 
 
 func _on_shell_body_entered(block:Block):
+	var vehicle_hit = block.get_parent()
+	if vehicle_hit == from.get_parent():
+		return
 	var block_hp = block.current_hp
 	if block_hp >= 0:
 		var damage_to_deal = min(kenetic_damage, block_hp)
