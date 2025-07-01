@@ -340,23 +340,15 @@ func update_tracks_state(delta):
 	apply_smooth_track_forces(delta)
 
 func connect_blocks():
-	for block in blocks:
+	for  grid_pos in bluepirnt:
+		var block = bluepirnt[grid_pos]
 		var size = block.size
-		var grid_pos = snap_block_to_grid(block)
 		for x in size.x:
 			for y in size.y:
 				var cell = grid_pos + Vector2i(x, y)
 				grid[cell] = block
 				connect_adjacent_blocks(cell, grid[cell])
 
-func snap_block_to_grid(block:Block) -> Vector2i:
-	var world_pos = block.global_position - block.size/2 * GRID_SIZE
-	var snapped_pos = Vector2(
-		floor(world_pos.x / GRID_SIZE),
-		floor(world_pos.y / GRID_SIZE)
-	)
-	block.global_position = snapped_pos * GRID_SIZE + block.size/2 * GRID_SIZE
-	return snapped_pos
 
 func connect_adjacent_blocks(pos:Vector2i, block:Block):
 	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
