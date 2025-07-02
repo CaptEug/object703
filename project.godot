@@ -14,6 +14,10 @@ config/name="Object703"
 run/main_scene="uid://dawkb0e8tm4e8"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
+[display]
+
+window/stretch/scale_mode="integer"
+
 [input]
 
 FORWARD={

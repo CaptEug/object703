@@ -1,8 +1,45 @@
-[gd_resource type="Theme" load_steps=25 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=31 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
 [ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/arrows.png" id="4_edc7y"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cet5l"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cet5l"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_p64gu"]
+texture = SubResource("AtlasTexture_cet5l")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xxub0"]
+texture = SubResource("AtlasTexture_cet5l")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 12.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xxub0"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(192, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7qj07"]
+texture = SubResource("AtlasTexture_xxub0")
+texture_margin_left = 8.0
+texture_margin_top = 10.0
+texture_margin_right = 8.0
+texture_margin_bottom = 10.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_o6fga"]
 
@@ -122,11 +159,16 @@ axis_stretch_vertical = 1
 bg_color = Color(0, 0.701961, 0, 1)
 
 [resource]
+Button/styles/focus = SubResource("StyleBoxTexture_cet5l")
+Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
+Button/styles/normal = SubResource("StyleBoxTexture_xxub0")
+Button/styles/pressed = SubResource("StyleBoxTexture_7qj07")
 ItemList/styles/panel = SubResource("StyleBoxTexture_o6fga")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 RichTextLabel/colors/default_color = Color(0, 0.701961, 0, 1)
 RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
 RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
+TabContainer/colors/font_hovered_color = Color(0.169244, 0.169246, 0.169246, 1)
 TabContainer/colors/font_selected_color = Color(0.262933, 0.262932, 0.262932, 1)
 TabContainer/colors/font_unselected_color = Color(0.125911, 0.125911, 0.125911, 1)
 TabContainer/constants/side_margin = 0
