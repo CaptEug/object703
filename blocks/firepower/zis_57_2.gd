@@ -12,15 +12,14 @@ const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
 const MUZZLE_ENERGY:float = 900
 const SPREAD:float = 0.03
 
-const DESCRIPTION := ""
+var description := ""
 
 var ap_shell = preload("res://blocks/firepower/shells/br_273_p.tscn")
 
-func init():
+func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
-	description = DESCRIPTION
 	size = SIZE
 	type = TYPE
 	range = RANGE
@@ -28,10 +27,6 @@ func init():
 	ammo_cost = AMMO_COST
 	rotation_speed = ROTATION_SPEED
 	muzzle_energy = MUZZLE_ENERGY
-	turret = $Turret
-	muzzles.append($Turret/Muzzle)
-	muzzles.append($Turret/Muzzle2)
-	animplayer = $Turret/AnimationPlayer
 	spread = SPREAD
 	linear_damp = 5.0
 	angular_damp = 1.0

@@ -35,7 +35,6 @@ text = "BUILD TANK	"
 
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 0
-offset_left = 3.0
-offset_top = 160.0
+offset_top = 163.0
 offset_right = 331.0
 offset_bottom = 493.0

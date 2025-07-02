@@ -5,7 +5,7 @@ const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'command cupola'
 const SIZE:= Vector2(1, 1)
 
-func init():
+func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
