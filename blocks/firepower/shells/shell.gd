@@ -8,7 +8,7 @@ var lifetime:float
 var kenetic_damage:int
 var max_explosive_damage:int
 var explosion_radius:int
-var explosion_area:Area2D
+var explosion_area:Area2D = null
 var explosion_shape:CollisionShape2D
 var shell_body:Area2D
 var trail:Line2D
@@ -19,7 +19,11 @@ var explosion_particle = preload("res://assets/particles/explosion.tscn")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	init()
+	shell_body = find_child("Area2D")
+	trail = find_child("Trail")
+	explosion_area = find_child("ExplosionArea")
+	if explosion_area:
+		explosion_shape = explosion_area.find_child("CollisionShape2D")
 	collision_layer = 0
 	collision_mask = 0
 	trail.lifetime = lifetime
@@ -71,7 +75,7 @@ func _on_timer_timeout():
 
 func _on_shell_body_entered(block:Block):
 	var vehicle_hit = block.parent_vehicle
-	if vehicle_hit == from:
+	if vehicle_hit == from and from != null:
 		return
 	var block_hp = block.current_hp
 	if block_hp >= 0:

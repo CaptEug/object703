@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="Script" uid="uid://b87arqcxbcgim" path="res://scenes/testground.gd" id="1_rby4w"]
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://b7qkhu7bbwspf" path="res://blocks/firepower/zis_57_2.tscn" id="4_rby4w"]
 [ext_resource type="PackedScene" uid="uid://cn6p02q1ry3yx" path="res://blocks/armor.tscn" id="5_5du73"]
+[ext_resource type="PackedScene" uid="uid://xjn5knyr2ii6" path="res://blocks/firepower/d_52s.tscn" id="6_m5lm4"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3
@@ -27,3 +28,6 @@ position = Vector2(44, -117)
 
 [node name="Zis572" parent="." instance=ExtResource("4_rby4w")]
 position = Vector2(-131, -86)
+
+[node name="D52s" parent="." instance=ExtResource("6_m5lm4")]
+position = Vector2(-131, 64)
