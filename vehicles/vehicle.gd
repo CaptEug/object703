@@ -8,8 +8,9 @@ const MAX_ROTING_POWER := 0.1
 var move_state:String
 var total_power:float
 var total_weight:int
-var bluepirnt:Dictionary
+var bluepirnt:Variant
 var grid:= {}
+var target_grid:={}
 var blocks:= []
 var powerpacks:= []
 var tracks:= []
@@ -24,19 +25,16 @@ var block_scenes := {}
 
 
 func _ready():
-	Get_ready_again()
-	pass # Replace with function body.
+	if bluepirnt:
+		Get_ready_again()
 
 func Get_ready_again():
-	for block in bluepirnt.values():
-		_add_block(block)
-	connect_blocks()
-	for track in tracks:
-		track_target_forces[track] = 0.0
-		track_current_forces[track] = 0.0
-	# 计算初始平衡力
-	calculate_balanced_forces()
-	calculate_rotation_forces()
+	if bluepirnt is String:
+		load_from_file(bluepirnt)
+	elif bluepirnt is Dictionary:
+		load_from_blueprint(bluepirnt)
+	else:
+		push_error("Invalid blueprint format")
 
 
 func _process(delta):
@@ -338,21 +336,24 @@ func update_tracks_state(delta):
 	
 	apply_smooth_track_forces(delta)
 
+
 func connect_blocks():
-	var normalized = []
-	for grid_pos in bluepirnt:
-		var block = bluepirnt[grid_pos]
-		if not normalized.has(block):
-			block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + block.size/2 * GRID_SIZE
-			var size = block.size
-			for x in size.x:
-				for y in size.y:
-					var cell = grid_pos + Vector2i(x, y)
-					grid[cell] = block
-					connect_adjacent_blocks(cell, grid[cell])
-			normalized.append(block)
+	for block in blocks:
+		var size = block.size
+		var grid_pos = find_pos(target_grid, block)
+		block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
+		for x in size.x:
+			for y in size.y:
+				var cell = grid_pos + Vector2i(x, y)
+				grid[cell] = block
+				connect_adjacent_blocks(cell, grid[cell])
 
-
+func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
+	for pos in Dic:
+		if Dic[pos] == block:
+			return pos
+	return Vector2i.ZERO  
+	
 func connect_adjacent_blocks(pos:Vector2i, block:Block):
 	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
 	for dir in directions:
@@ -410,3 +411,83 @@ func apply_smooth_track_forces(delta):
 			else:
 				track.set_state_force('idle', 0)
 				track_current_forces[track] = 0.0
+
+func load_from_file(identifier):  # 允许接收多种类型参数
+	var path: String
+	if identifier is String:
+		if not identifier.ends_with(".json"):
+			path = "res://vehicles/blueprint/%s.json" % identifier
+		else:
+			path = identifier
+	elif identifier is int:
+		path = "res://vehicles/blueprint/%d.json" % identifier
+	else:
+		push_error("Invalid file identifier type: ", typeof(identifier))
+		return
+	var file = FileAccess.open(path, FileAccess.READ)
+	if file:
+		var json = JSON.new()
+		var error = json.parse(file.get_as_text())
+		if error == OK:
+			load_from_blueprint(json.data)
+		else:
+			push_error("JSON parse error: ", json.get_error_message())
+	else:
+		push_error("Failed to load file: ", path)
+
+func load_from_blueprint(blueprint: Dictionary):
+	clear_existing_blocks()
+	
+	# 按数字键排序以保证加载顺序一致
+	var block_ids = blueprint["blocks"].keys()
+	block_ids.sort()
+	
+	for block_id in block_ids:
+		var block_data = blueprint["blocks"][block_id]
+		var block_scene = load(block_data["path"])  # 使用完整路径加载
+		
+		if block_scene:
+			var block = block_scene.instantiate()
+			var size = Vector2(block_data["size"][0], block_data["size"][1])
+			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
+			block.rotation = get_rotation_angle(block_data["rotation"])
+			block.size = size
+			add_child(block)
+			
+			# 记录所有网格位置
+			for x in size.x:
+				for y in size.y:
+					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+					target_grid[grid_pos] = block
+	connect_blocks()
+	initialize_physics()
+
+func get_rotation_angle(direction: String) -> float:
+	match direction:
+		"left":    return PI/2
+		"up": return 0
+		"right":  return -PI/2
+		"down":  return PI
+		_:       return PI/2
+
+
+func clear_existing_blocks():
+	for block in blocks:
+		block.queue_free()
+	blocks.clear()
+	grid.clear()
+	tracks.clear()
+	powerpacks.clear()
+	track_target_forces.clear()
+	track_current_forces.clear()
+
+func initialize_physics():
+	# 初始化物理计算
+	calculate_center_of_mass()
+	calculate_balanced_forces()
+	calculate_rotation_forces()
+	
+	# 初始化履带力
+	for track in tracks:
+		track_target_forces[track] = 0.0
+		track_current_forces[track] = 0.0

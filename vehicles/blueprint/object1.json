@@ -1,0 +1,174 @@
+{
+	"blocks": {
+		"1": {
+			"base_pos": [
+				24,
+				16
+			],
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
+			"rotation": "up",
+			"size": [
+				2.0,
+				2.0
+			]
+		},
+		"10": {
+			"base_pos": [
+				26,
+				16
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"11": {
+			"base_pos": [
+				26,
+				17
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"12": {
+			"base_pos": [
+				26,
+				18
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"13": {
+			"base_pos": [
+				26,
+				19
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"2": {
+			"base_pos": [
+				24,
+				18
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"3": {
+			"base_pos": [
+				25,
+				18
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"4": {
+			"base_pos": [
+				24,
+				19
+			],
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"5": {
+			"base_pos": [
+				25,
+				19
+			],
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"6": {
+			"base_pos": [
+				23,
+				19
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"7": {
+			"base_pos": [
+				23,
+				18
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"8": {
+			"base_pos": [
+				23,
+				17
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"9": {
+			"base_pos": [
+				23,
+				16
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		}
+	},
+	"name": "testtank01"
+}
