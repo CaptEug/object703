@@ -11,6 +11,7 @@ signal build_vehicle_requested
 signal block_selected(scene_path: String)
 signal vehicle_saved(vehicle_name: String)
 
+
 const BLOCK_PATHS = {
 	"Weapon": "res://blocks/firepower/",
 	"Power": "res://blocks/mobility/"
