@@ -13,8 +13,9 @@ var state_force: Array = ["idle", 0.0]
 var force_direction := Vector2.ZERO
 
 func _ready():
-	set_state_force("idle", 0.0)
 	super._ready()
+	set_state_force("idle", 0.0)
+	
 
 func set_state_force(new_state: String, force_value: float):
 	"""设置状态和力值"""

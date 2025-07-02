@@ -21,6 +21,11 @@ var icons:Dictionary = {"normal":"res://assets/icons/turret_icon.png","selected"
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	super._ready()
+	turret = find_child("Turret")
+	for muz in turret.get_children():
+		if muz is Marker2D:
+			muzzles.append(muz)
+	animplayer = find_child("AnimationPlayer")
 	generate_detection_area()
 	reload_timer = Timer.new()
 	reload_timer.wait_time = reload
@@ -28,9 +33,6 @@ func _ready():
 	add_child(reload_timer)
 	reload_timer.start()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	pass
 
 func _draw():
 	var line_color = Color(1,1,1)

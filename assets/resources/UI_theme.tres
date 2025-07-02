@@ -1,22 +1,17 @@
-[gd_resource type="Theme" load_steps=14 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=25 format=3 uid="uid://djb1bkq82a1wy"]
 
-[ext_resource type="Texture2D" uid="uid://dm7mjxrcug1" path="res://assets/panel_tex.png" id="1_ubhoo"]
-[ext_resource type="Texture2D" uid="uid://b53lmsgqybp1" path="res://assets/textbox_tex.png" id="2_4w2ry"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
 [ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/arrows.png" id="4_edc7y"]
-[ext_resource type="Texture2D" uid="uid://bg2clp6le5tly" path="res://assets/hovered_tex.png" id="4_vwcpp"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edc7y"]
-texture = ExtResource("1_ubhoo")
-texture_margin_left = 16.0
-texture_margin_top = 16.0
-texture_margin_right = 16.0
-texture_margin_bottom = 16.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_o6fga"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vwcpp"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(0, 0, 48, 48)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vwcpp"]
-texture = ExtResource("1_ubhoo")
+texture = SubResource("AtlasTexture_vwcpp")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
@@ -24,14 +19,70 @@ texture_margin_bottom = 16.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_4w2ry"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(48, 0, 48, 48)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ubhoo"]
-texture = ExtResource("2_4w2ry")
+texture = SubResource("AtlasTexture_4w2ry")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
 texture_margin_bottom = 16.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d55uv"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(0, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_d55uv"]
+texture = SubResource("AtlasTexture_d55uv")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edc7y"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o6fga"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(144, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_we4p1"]
+texture = SubResource("AtlasTexture_o6fga")
+texture_margin_left = 16.0
+texture_margin_top = 8.0
+texture_margin_right = 16.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kwu70"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(96, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qdf78"]
+texture = SubResource("AtlasTexture_kwu70")
+texture_margin_left = 16.0
+texture_margin_top = 8.0
+texture_margin_right = 16.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qdf78"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(48, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kwu70"]
+texture = SubResource("AtlasTexture_qdf78")
+texture_margin_left = 16.0
+texture_margin_top = 8.0
+texture_margin_right = 16.0
+texture_margin_bottom = 8.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6vqaq"]
 atlas = ExtResource("4_edc7y")
@@ -41,8 +92,12 @@ region = Rect2(0, 0, 16, 16)
 atlas = ExtResource("4_edc7y")
 region = Rect2(16, 0, 16, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_we4p1"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(96, 0, 48, 48)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6vqaq"]
-texture = ExtResource("4_vwcpp")
+texture = SubResource("AtlasTexture_we4p1")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
@@ -50,8 +105,12 @@ texture_margin_bottom = 6.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_p64gu"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(48, 0, 48, 48)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4w2ry"]
-texture = ExtResource("2_4w2ry")
+texture = SubResource("AtlasTexture_p64gu")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
@@ -63,11 +122,20 @@ axis_stretch_vertical = 1
 bg_color = Color(0, 0.701961, 0, 1)
 
 [resource]
-ItemList/styles/panel = SubResource("StyleBoxTexture_edc7y")
+ItemList/styles/panel = SubResource("StyleBoxTexture_o6fga")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 RichTextLabel/colors/default_color = Color(0, 0.701961, 0, 1)
 RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
 RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
+TabContainer/colors/font_selected_color = Color(0.262933, 0.262932, 0.262932, 1)
+TabContainer/colors/font_unselected_color = Color(0.125911, 0.125911, 0.125911, 1)
+TabContainer/constants/side_margin = 0
+TabContainer/fonts/font = ExtResource("3_4w2ry")
+TabContainer/styles/panel = SubResource("StyleBoxTexture_d55uv")
+TabContainer/styles/tab_focus = SubResource("StyleBoxTexture_edc7y")
+TabContainer/styles/tab_hovered = SubResource("StyleBoxTexture_we4p1")
+TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_qdf78")
+TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_kwu70")
 Tree/colors/font_color = Color(0, 0.701961, 0, 1)
 Tree/colors/font_hovered_color = Color(0, 0.701961, 0, 1)
 Tree/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)

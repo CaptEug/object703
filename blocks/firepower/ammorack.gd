@@ -8,13 +8,12 @@ const TYPE:= "Firepower"
 var ammo_capacity:float = 50.0
 var icons:Dictionary = {"normal":"res://assets/icons/ammo_icon.png","selected":"res://assets/icons/ammo_icon_n.png"}
 
-const DESCRIPTION := ""
+var description := ""
 
-func init():
+func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
-	description = DESCRIPTION
 	size = SIZE
 	type = TYPE
 	linear_damp = 5.0

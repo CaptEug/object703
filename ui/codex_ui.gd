@@ -33,7 +33,7 @@ func prepare_data():
 		for scene in get_scenes_from_folder(BLOCK_PATHS[category]):
 			var block = scene.instantiate()
 			if block is Block:
-				block.init()
+				#block.init()
 				var item = tree.create_item(category_nodes[category])
 				item.set_text(0, block.block_name)
 				item.set_icon(0, load(block.icons["normal"]))

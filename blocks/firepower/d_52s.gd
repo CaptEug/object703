@@ -13,15 +13,14 @@ const TRAVERSE:= [-8, 8] #degree
 const MUZZLE_ENERGY:float = 1000
 const SPREAD:float = 0.05
 
-const DESCRIPTION := ""
+var description := ""
 
 var sap_shell = preload("res://blocks/firepower/shells/br_473.tscn")
 
-func init():
+func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
-	description = DESCRIPTION
 	size = SIZE
 	type = TYPE
 	range = RANGE
@@ -30,9 +29,6 @@ func init():
 	rotation_speed = ROTATION_SPEED
 	traverse = TRAVERSE
 	muzzle_energy = MUZZLE_ENERGY
-	turret = $Gun
-	muzzles.append($Gun/Muzzle)
-	animplayer = $Gun/AnimationPlayer
 	spread = SPREAD
 	linear_damp = 5.0
 	angular_damp = 1.0

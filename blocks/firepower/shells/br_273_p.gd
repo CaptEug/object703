@@ -2,7 +2,7 @@ extends Shell
 
 const SHELL_NAME:String = '57mm BR-273P'
 const TYPE:String = 'AP'
-const WEIGHT:float = 7.2
+const WEIGHT:float = 4
 const LIFETIME:float = 0.5
 const KENETIC_DAMAGE:int = 80
 

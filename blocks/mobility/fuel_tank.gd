@@ -8,13 +8,12 @@ const SIZE:= Vector2(1, 1)
 var fuel_capacity:= 100
 var icons:Dictionary = {"normal":"res://assets/icons/engine_icon.png","selected":"res://assets/icons/engine_icon_n.png"}
 
-const DESCRIPTION := ""
+var description := ""
 
 func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
-	description = DESCRIPTION
 	type = TYPE
 	size = SIZE
 	linear_damp = 5.0

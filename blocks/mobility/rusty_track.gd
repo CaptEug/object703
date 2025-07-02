@@ -8,13 +8,12 @@ const SIZE:= Vector2(1, 1)
 const FRICTION:float = 5.0
 const MAX_FORCE:float = 1000000.0
 
-const DESCRIPTION := ""
+var description := ""
 
 func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
-	description = DESCRIPTION
 	size = SIZE
 	friction = FRICTION
 	max_force = MAX_FORCE

@@ -65,20 +65,20 @@ shape = SubResource("RectangleShape2D_ww6jp")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_pcn55")
 
-[node name="Gun" type="Sprite2D" parent="."]
+[node name="Turret" type="Sprite2D" parent="."]
 z_index = 2
 texture = SubResource("AtlasTexture_ww6jp")
 offset = Vector2(0, -32)
 
-[node name="Barrel" type="Sprite2D" parent="Gun"]
+[node name="Barrel" type="Sprite2D" parent="Turret"]
 z_index = -1
 texture = SubResource("AtlasTexture_0dhif")
 offset = Vector2(0, -32)
 
-[node name="Muzzle" type="Marker2D" parent="Gun"]
+[node name="Muzzle" type="Marker2D" parent="Turret"]
 position = Vector2(0, -72)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Gun"]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Turret"]
 libraries = {
 &"": SubResource("AnimationLibrary_pcn55")
 }
