@@ -58,7 +58,7 @@ func _input(event):
 	handle_build_actions(event)
 
 func handle_build_mode_toggle(event):
-	if event is InputEventKey and event.keycode == KEY_CTRL and event.pressed:
+	if event is InputEventKey and event.keycode == KEY_TAB and event.pressed:
 		toggle_build_mode()
 	if event is InputEventKey and event.keycode == KEY_TAB and event.pressed:
 		toggle_codex_ui()
