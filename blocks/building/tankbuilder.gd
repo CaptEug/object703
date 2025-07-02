@@ -18,16 +18,17 @@ var ui_instance: Control
 
 # 背包系统
 var inventory = {
-	"rusty_track": 5,
-	"kwak45": 3,
-	"maybach_hl_250": 2
+	"rusty_track": 10,
+	"kwak45": 10,
+	"maybach_hl_250": 10,
+	"d_52s":10,
+	"zis_57_2":10,
+	"fuel_tank":10,
 }
 
 func _ready():
 	init_ui()
 	setup_test_inventory()
-	print("信号连接状态：", 
-	  ui_instance.is_connected("build_vehicle_requested", self._on_build_vehicle_requested))
 
 func init_ui():
 	ui_instance = builder_ui.instantiate()
@@ -36,6 +37,7 @@ func init_ui():
 	ui_instance.setup_inventory(inventory)
 	ui_instance.block_selected.connect(_on_block_selected)
 	ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
+	ui_instance.vehicle_saved.connect(_on_vehicle_saved)
 	
 
 func setup_test_inventory():
@@ -201,7 +203,6 @@ func complete_vehicle_creation():
 	
 	# 转移所有方块到车辆节点
 	var processed_blocks = []
-	print(placed_blocks)
 	for grid_pos in placed_blocks:
 		var block = placed_blocks[grid_pos]
 		if block in processed_blocks: continue
@@ -285,3 +286,81 @@ func remove_block_from_grid(block: Node, grid_pos: Vector2i):  # 添加缺失的
 		placed_blocks.erase(pos)
 	
 	block.queue_free()
+
+func _on_vehicle_saved(vehicle_name: String):
+	var blueprint_data = create_blueprint_data(vehicle_name)
+	save_blueprint(blueprint_data)
+	clear_builder()
+	is_creating_vehicle = false
+	spawn_vehicle_from_blueprint(blueprint_data) 
+	toggle_build_mode()
+
+func create_blueprint_data(vehicle_name: String) -> Dictionary:
+	var blueprint_data = {
+		"name": vehicle_name,
+		"blocks": {}
+	}
+	
+	var block_counter = 1  # 从1开始的自增计数器
+	var processed_blocks = {}  # 用于跟踪已处理的方块
+	# 首先收集所有方块的基准位置
+	var base_positions = {}
+	for grid_pos in placed_blocks:
+		var block = placed_blocks[grid_pos]
+		if not processed_blocks.has(block):
+			base_positions[block] = grid_pos
+			processed_blocks[block] = true
+	
+	# 重新处理并分配顺序ID
+	processed_blocks.clear()
+	for grid_pos in placed_blocks:
+		var block = placed_blocks[grid_pos]
+		if not processed_blocks.has(block):
+			var base_pos = grid_pos
+			var rotation_str = get_rotation_direction(block.rotation)
+			
+			blueprint_data["blocks"][str(block_counter)] = {
+				"name": block.block_name,  # 只存储文件名
+				"path": block.scene_file_path,  # 完整路径
+				"base_pos": [base_pos.x, base_pos.y],
+				"size": [block.size.x, block.size.y],
+				"rotation": rotation_str
+			}
+			block_counter += 1
+			processed_blocks[block] = true
+	
+	return blueprint_data
+
+func get_rotation_direction(angle: float) -> String:
+	var normalized = fmod(angle, TAU)
+	if abs(normalized) <= PI/4 or abs(normalized) >= 7*PI/4:
+		return "up"
+	elif normalized >= PI/4 and normalized <= 3*PI/4:
+		return "right"
+	elif normalized >= 3*PI/4 and normalized <= 5*PI/4:
+		return "down"
+	else:
+		return "left"
+
+func save_blueprint(blueprint_data: Dictionary):
+	var save_path = "res://vehicles/blueprint/%s.json" % blueprint_data["name"]
+	var dir = DirAccess.open("res://vehicles/blueprint/")
+	if not dir:
+		DirAccess.make_dir_absolute("res://vehicles/blueprint/")
+	
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(blueprint_data, "\t"))
+	file.close()
+	print("Vehicle saved to: ", save_path)
+
+func clear_builder():
+	placed_blocks.clear()
+	for block in get_children():
+		if block is RigidBody2D and block != ghost_block:
+			block.queue_free()
+
+func spawn_vehicle_from_blueprint(blueprint: Dictionary):
+	var vehicle = vehicle_scene.instantiate()
+	vehicle.bluepirnt = blueprint  # 传递字典而非文件路径
+	get_parent().add_child(vehicle)
+	clear_builder()

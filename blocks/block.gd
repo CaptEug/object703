@@ -9,6 +9,7 @@ var size: Vector2
 var parent_vehicle: Vehicle = null  
 var _cached_icon: Texture2D
 var description:String
+ 
 
 signal frame_post_drawn
 
@@ -57,14 +58,9 @@ func get_block_info() -> Dictionary:
 		"weight": weight,
 		"size": size,
 		"icon": get_icon_texture(),
-		"type": _get_block_type(),
+		"path": _get_block_type(),
 		"description": description
 	}
 
 func _get_block_type() -> String:
-	if self is Weapon:
-		return "Weapon"
-	elif self is Powerpack:
-		return "Power"
-	else:
-		return "Armor"
+	return type

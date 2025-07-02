@@ -3,9 +3,13 @@ extends Control
 @onready var tab_container = $TabContainer
 @onready var description_label = $Panel/RichTextLabel
 @onready var build_vehicle_button = $BuildButton
+@onready var save_dialog = $SaveDialog
+@onready var name_input = $SaveDialog/VBoxContainer/NameInput
+@onready var error_label = $SaveDialog/VBoxContainer/ErrorLabel
 
 signal build_vehicle_requested
 signal block_selected(scene_path: String)
+signal vehicle_saved(vehicle_name: String)
 
 const BLOCK_PATHS = {
 	"Weapon": "res://blocks/firepower/",
@@ -17,7 +21,14 @@ var item_lists = {}  # Stores references to all ItemList nodes by tab name
 
 func _ready():
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
+	save_dialog.get_ok_button().pressed.connect(_on_save_confirmed)
+	save_dialog.close_requested.connect(_on_save_canceled)
+	name_input.text_changed.connect(_on_name_input_changed)
 	create_tabs()
+	
+	# Hide save dialog initially
+	save_dialog.hide()
+	error_label.hide()
 	
 func create_tabs():
 	# Clear existing tabs (except maybe the first one)
@@ -122,9 +133,38 @@ func update_description(scene_path: String):
 	if block:
 		description_label.clear()
 		description_label.append_text("[b]%s[/b]\n\n" % block.name)
-		description_label.append_text("TYPE: %s\n" % block._get_block_type())
+		description_label.append_text("TYPE: %s\n" % block.type)
 		description_label.append_text("SIZE: %s\n" % str(block.size))
 		block.queue_free()
 
 func _on_build_vehicle_pressed():
-	emit_signal("build_vehicle_requested")
+	show_save_dialog()
+
+func show_save_dialog():
+	name_input.text = ""
+	error_label.text = ""
+	error_label.hide()
+	save_dialog.popup_centered()
+	name_input.grab_focus()
+
+func _on_save_confirmed():
+	var vehicle_name = name_input.text.strip_edges()
+	
+	if vehicle_name.is_empty():
+		error_label.text = "Name cannot be empty!"
+		error_label.show()
+		return
+	
+	if vehicle_name.contains("/") or vehicle_name.contains("\\"):
+		error_label.text = "The name cannot contain special characters!"
+		error_label.show()
+		return
+	
+	emit_signal("vehicle_saved", vehicle_name)
+	save_dialog.hide()
+
+func _on_save_canceled():
+	save_dialog.hide()
+
+func _on_name_input_changed(new_text: String):
+	error_label.hide()
