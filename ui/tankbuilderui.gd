@@ -122,7 +122,7 @@ func update_description(scene_path: String):
 	if block:
 		description_label.clear()
 		description_label.append_text("[b]%s[/b]\n\n" % block.name)
-		description_label.append_text("TYPE: %s\n" % block._get_block_type())
+		description_label.append_text("TYPE: %s\n" % block.type)
 		description_label.append_text("SIZE: %s\n" % str(block.size))
 		block.queue_free()
 
