@@ -16,25 +16,23 @@ script = ExtResource("2_8aq6r")
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
 offset_right = 329.0
-offset_bottom = 160.0
+offset_bottom = 610.0
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Panel"]
 layout_mode = 0
 offset_right = 329.0
 offset_bottom = 163.0
 
-[node name="BuildButton" type="Button" parent="."]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 493.0
-offset_right = 331.0
-offset_bottom = 524.0
-scale = Vector2(1, 5.12)
-disabled = true
-text = "BUILD TANK	"
-
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 0
 offset_top = 163.0
-offset_right = 331.0
+offset_right = 329.0
 offset_bottom = 493.0
+
+[node name="BuildButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 554.0
+offset_right = 318.0
+offset_bottom = 597.0
+text = "buildtank"
