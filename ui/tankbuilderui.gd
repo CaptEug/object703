@@ -13,8 +13,8 @@ signal vehicle_saved(vehicle_name: String)
 
 
 const BLOCK_PATHS = {
-	"Weapon": "res://blocks/firepower/",
-	"Power": "res://blocks/mobility/"
+	"Firepower": "res://blocks/firepower/",
+	"Mobility": "res://blocks/mobility/"
 }
 
 var inventory = {}
