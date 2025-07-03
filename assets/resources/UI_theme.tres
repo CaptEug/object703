@@ -1,8 +1,21 @@
-[gd_resource type="Theme" load_steps=31 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=32 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
 [ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/arrows.png" id="4_edc7y"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vwcpp"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dvbi4"]
+texture = SubResource("AtlasTexture_vwcpp")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cet5l"]
 
@@ -42,10 +55,6 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_o6fga"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_vwcpp"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(0, 0, 48, 48)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vwcpp"]
 texture = SubResource("AtlasTexture_vwcpp")
@@ -159,6 +168,7 @@ axis_stretch_vertical = 1
 bg_color = Color(0, 0.701961, 0, 1)
 
 [resource]
+AcceptDialog/styles/panel = SubResource("StyleBoxTexture_dvbi4")
 Button/styles/focus = SubResource("StyleBoxTexture_cet5l")
 Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
 Button/styles/normal = SubResource("StyleBoxTexture_xxub0")
