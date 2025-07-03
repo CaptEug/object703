@@ -338,6 +338,7 @@ func update_tracks_state(delta):
 
 
 func connect_blocks():
+	get_neighbor()
 	for block in blocks:
 		var size = block.size
 		var grid_pos = find_pos(target_grid, block)
@@ -347,6 +348,22 @@ func connect_blocks():
 				var cell = grid_pos + Vector2i(x, y)
 				grid[cell] = block
 				connect_adjacent_blocks(cell, grid[cell])
+
+func get_neighbor():
+	for block in blocks:
+		var size = block.size
+		var grid_pos = find_pos(target_grid, block)
+		for x in size.x:
+			for y in size.y:
+				var cell = grid_pos + Vector2i(x, y)
+				target_grid[cell] = block
+				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
+				for dir in directions:
+						var neighbor_pos = cell + dir
+						if target_grid.has(neighbor_pos) and target_grid[neighbor_pos] != block:
+							var neighbor = target_grid[neighbor_pos]
+							var neighbor_real_pos = find_pos(target_grid, neighbor)
+							block.neighbors[neighbor_real_pos - grid_pos] = neighbor
 
 func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 	for pos in Dic:

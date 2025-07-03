@@ -8,6 +8,7 @@ var type:String
 var size: Vector2
 var parent_vehicle: Vehicle = null  
 var _cached_icon: Texture2D
+var neighbors:= {}
 
 signal frame_post_drawn
 
