@@ -31,7 +31,7 @@ func _ready():
 	reload_timer.wait_time = reload
 	reload_timer.timeout.connect(_on_timer_timeout)
 	add_child(reload_timer)
-	reload_timer.start()
+	start_reload()
 
 
 func _draw():
@@ -93,9 +93,9 @@ func fire(shell_scene:PackedScene):
 		shoot(muzzles[current_muzzle], shell_scene)
 		if animplayer:
 			animplayer.play('recoil'+str(current_muzzle))
-		reload_timer.start()
 		current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
 		loaded = false
+		start_reload()
 
 func shoot(muz:Marker2D, shell_scene:PackedScene):
 	var shell = shell_scene.instantiate()
@@ -105,6 +105,12 @@ func shoot(muz:Marker2D, shell_scene:PackedScene):
 	shell.global_position = muz.global_position
 	shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
 	apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
+
+func start_reload():
+	if parent_vehicle:
+		if parent_vehicle.total_power > ammo_cost:
+			parent_vehicle.total_power -= ammo_cost
+			reload_timer.start()
 
 func _on_timer_timeout():
 	loaded = true

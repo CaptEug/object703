@@ -8,18 +8,23 @@ const MAX_ROTING_POWER := 0.1
 var move_state:String
 var total_power:float
 var total_weight:int
+var total_ammo:float
+var total_fuel:float
+var total_store:int
 var bluepirnt:Variant
 var grid:= {}
 var target_grid:={}
 var blocks:= []
 var powerpacks:= []
 var tracks:= []
+var commands := []
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
 var track_target_forces := {}  # 存储每个履带的目标力
 var track_current_forces := {} # 存储当前实际施加的力
 var balanced_forces := {} # 存储直线行驶时的理想出力分布
 var rotation_forces := {} # 存储纯旋转时的理想出力分布
+var control:Callable
 var is_assembled := false
 var block_scenes := {}
 
@@ -35,10 +40,14 @@ func Get_ready_again():
 		load_from_blueprint(bluepirnt)
 	else:
 		push_error("Invalid blueprint format")
-
+	print(commands.size())
+	
+	if commands.size() > 0:
+		control = commands[0].control
 
 func _process(delta):
-	update_tracks_state(delta)
+	if control:
+		update_tracks_state(control.call(), delta)
 
 func _add_block(block):
 	if block in blocks:
@@ -50,7 +59,9 @@ func _add_block(block):
 		tracks.append(block)
 	if block is Powerpack:
 		powerpacks.append(block)
-	
+	if block is Command:
+		commands.append(blocks)
+
 
 func remove_block(block: Block):
 	if block in blocks:
@@ -63,6 +74,11 @@ func remove_block(block: Block):
 		powerpacks.erase(block)
 	calculate_balanced_forces()
 	calculate_rotation_forces()
+
+func has_block(block_name:String):
+	for block in blocks:
+		if block.block_name == block_name:
+			return block
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
@@ -311,9 +327,9 @@ func array_zero(size: int) -> Array:
 		arr[i] = 0.0
 	return arr
 
-func update_tracks_state(delta):
-	var forward_input = Input.get_action_strength("FORWARD") - Input.get_action_strength("BACKWARD")
-	var turn_input = Input.get_action_strength("PIVOT_RIGHT") - Input.get_action_strength("PIVOT_LEFT")
+func update_tracks_state(control_input:Array, delta):
+	var forward_input = control_input[0]
+	var turn_input = control_input[1]
 	var currunt_scale = 0
 	
 	if forward_input == 0 and turn_input == 0:
