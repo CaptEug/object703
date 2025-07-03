@@ -6,10 +6,13 @@ const FORCE_CHANGE_RATE := 50.0
 const MAX_ROTING_POWER := 0.1
 
 var move_state:String
-var total_power:float
+var max_engine_power:float
+var current_engine_power:float
 var total_weight:int
 var total_ammo:float
+var total_ammo_cap:float
 var total_fuel:float
+var total_fuel_cap:float
 var total_store:int
 var bluepirnt:Variant
 var grid:= {}
@@ -17,6 +20,8 @@ var target_grid:={}
 var blocks:= []
 var powerpacks:= []
 var tracks:= []
+var ammoracks:= []
+var fueltanks := []
 var commands := []
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
@@ -40,7 +45,10 @@ func Get_ready_again():
 		load_from_blueprint(bluepirnt)
 	else:
 		push_error("Invalid blueprint format")
-	print(commands.size())
+	#Get all total parameters
+	get_max_engine_power()
+	get_ammo_cap()
+	get_fuel_cap()
 	
 	if commands.size() > 0:
 		control = commands[0].control
@@ -61,6 +69,10 @@ func _add_block(block):
 		powerpacks.append(block)
 	if block is Command:
 		commands.append(blocks)
+	if block is Ammorack:
+		ammoracks.append(blocks)
+	if block is Fueltank:
+		fueltanks.append(blocks)
 
 
 func remove_block(block: Block):
@@ -72,6 +84,12 @@ func remove_block(block: Block):
 		tracks.erase(block)
 	if block in powerpacks:
 		powerpacks.erase(block)
+	if block in commands:
+		commands.erase(block)
+	if block in ammoracks:
+		ammoracks.erase(block)
+	if block in fueltanks:
+		fueltanks.erase(block)
 	calculate_balanced_forces()
 	calculate_rotation_forces()
 
@@ -83,7 +101,7 @@ func has_block(block_name:String):
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var currunt_total_power = get_total_engine_power()
+	var currunt_total_power = get_current_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -166,7 +184,7 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 func calculate_rotation_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var currunt_total_power = get_total_engine_power()
+	var currunt_total_power = get_current_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -344,9 +362,9 @@ func update_tracks_state(control_input:Array, delta):
 		total_forward += abs(balanced_forces[track] * forward_input)
 		total_turn += abs(rotation_forces[track] * turn_input)
 	if total_forward > 0:
-		currunt_scale = get_total_engine_power() / (total_forward + total_turn)
+		currunt_scale = get_current_engine_power() / (total_forward + total_turn)
 	else:
-		currunt_scale = get_total_engine_power() * MAX_ROTING_POWER / (total_forward + total_turn)
+		currunt_scale = get_current_engine_power() * MAX_ROTING_POWER / (total_forward + total_turn)
 	for track in track_target_forces:
 		track_target_forces[track] *= currunt_scale
 	
@@ -423,12 +441,80 @@ func calculate_center_of_mass() -> Vector2:
 				has_calculated[body.get_instance_id()] = true
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
-func get_total_engine_power() -> float:
-	var currunt_total_power := 0.0
+
+func get_max_engine_power() -> float:
+	var max_power := 0.0
 	for engine in powerpacks:
 		if engine.is_inside_tree() and is_instance_valid(engine):
-			currunt_total_power += engine.power
-	return currunt_total_power
+			max_power += engine.max_power
+	current_engine_power = max_power
+	return max_power
+
+func get_current_engine_power() -> float:
+	var currunt_power := 0.0
+	for engine in powerpacks:
+		if engine.is_inside_tree() and is_instance_valid(engine):
+			currunt_power += engine.power
+	current_engine_power = currunt_power
+	return currunt_power
+
+
+
+func get_ammo_cap():
+	var ammo_cap := 0.0
+	for ammorack in ammoracks:
+		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
+			ammo_cap += ammorack.AMMO_CAPACITY
+	total_ammo_cap = ammo_cap
+	return ammo_cap
+
+func update_current_ammo():
+	var currunt_ammo := 0.0
+	for ammorack in ammoracks:
+		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
+			currunt_ammo += ammorack.ammo_storage
+	total_ammo = currunt_ammo
+	return currunt_ammo
+
+func cost_ammo(amount:float):
+	var remaining = amount
+	for ammorack in ammoracks:
+		if ammorack.ammo_storage >= remaining:
+			ammorack.ammo_storage -= remaining
+		else:
+			remaining -= ammorack.ammo_storage
+			ammorack.ammo_storage = 0
+	update_current_ammo()
+
+
+
+func get_fuel_cap():
+	var fuel_cap := 0.0
+	for fueltank in ammoracks:
+		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
+			fuel_cap += fueltank.FUEL_CAPACITY
+	total_fuel_cap = fuel_cap
+	return fuel_cap
+
+func update_current_fuel():
+	var currunt_fuel := 0.0
+	for fueltank in fueltanks:
+		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
+			currunt_fuel += fueltank.fuel_storage
+	total_fuel = currunt_fuel
+	return currunt_fuel
+
+func cost_fuel(amount:float):
+	var remaining = amount
+	for fueltank in fueltanks:
+		if fueltank.fuel_storage >= remaining:
+			fueltank.fuel_storage -= remaining
+		else:
+			remaining -= fueltank.fuel_storage
+			fueltank.fuel_storage = 0
+	update_current_fuel()
+
+
 
 func apply_smooth_track_forces(delta):
 	for track in track_target_forces:
@@ -437,7 +523,7 @@ func apply_smooth_track_forces(delta):
 		# 使用lerp平滑过渡
 		var new_force = lerp(current, target, FORCE_CHANGE_RATE * delta)
 		
-		if tracks.has(track) and get_total_engine_power() != 0:
+		if tracks.has(track) and get_current_engine_power() != 0:
 			if abs(new_force) > 0:
 				track.set_state_force(move_state, new_force)
 				track_current_forces[track] = new_force

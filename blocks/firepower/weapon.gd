@@ -15,6 +15,7 @@ var spread:float
 
 var reload_timer:Timer
 var loaded:bool = false
+var loading:bool = false
 var detection_area:Area2D
 var icons:Dictionary = {"normal":"res://assets/icons/turret_icon.png","selected":"res://assets/icons/turret_icon_n.png"}
 
@@ -31,8 +32,12 @@ func _ready():
 	reload_timer.wait_time = reload
 	reload_timer.timeout.connect(_on_timer_timeout)
 	add_child(reload_timer)
-	start_reload()
 
+func _process(delta):
+	super._process(delta)
+	if not loading and not loaded and has_ammo():
+		start_reload()
+	
 
 func _draw():
 	var line_color = Color(1,1,1)
@@ -89,13 +94,13 @@ func aim(delta, target_pos):
 	turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 
 func fire(shell_scene:PackedScene):
-	if loaded:
-		shoot(muzzles[current_muzzle], shell_scene)
-		if animplayer:
-			animplayer.play('recoil'+str(current_muzzle))
-		current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
-		loaded = false
-		start_reload()
+	if not loaded:
+		return
+	shoot(muzzles[current_muzzle], shell_scene)
+	if animplayer:
+		animplayer.play('recoil'+str(current_muzzle))
+	current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
+	loaded = false
 
 func shoot(muz:Marker2D, shell_scene:PackedScene):
 	var shell = shell_scene.instantiate()
@@ -107,10 +112,16 @@ func shoot(muz:Marker2D, shell_scene:PackedScene):
 	apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
 
 func start_reload():
+	loading = true
+	parent_vehicle.cost_ammo(ammo_cost)
+	reload_timer.start()
+
+func has_ammo() -> bool: 
 	if parent_vehicle:
-		if parent_vehicle.total_power > ammo_cost:
-			parent_vehicle.total_power -= ammo_cost
-			reload_timer.start()
+		if parent_vehicle.total_ammo >= ammo_cost:
+			return true
+	return false
 
 func _on_timer_timeout():
 	loaded = true
+	loading = false

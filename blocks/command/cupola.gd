@@ -4,12 +4,14 @@ const HITPOINT:int = 300
 const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'command cupola'
 const SIZE:= Vector2(1, 1)
+const TYPE:= 'Command'
 
 func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE
+	type = TYPE
 	control = manual_control
 	linear_damp = 5.0
 	angular_damp = 1.0
