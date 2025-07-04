@@ -12,6 +12,7 @@ func _ready():
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	fuel_progressbar.value = 77
 	if selected_vehicle:
 		retrieve_vehicle_data()
 		draw_grid()
