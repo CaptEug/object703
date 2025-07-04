@@ -2,10 +2,10 @@
 	"blocks": {
 		"1": {
 			"base_pos": [
-				24,
-				16
+				23,
+				15
 			],
-			"name": "57mm duel barrel gun Zis-57-2",
+			"name": "Zis572",
 			"path": "res://blocks/firepower/zis_57_2.tscn",
 			"rotation": "up",
 			"size": [
@@ -13,65 +13,13 @@
 				2.0
 			]
 		},
-		"10": {
-			"base_pos": [
-				26,
-				16
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1.0,
-				1.0
-			]
-		},
-		"11": {
-			"base_pos": [
-				26,
-				17
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1.0,
-				1.0
-			]
-		},
-		"12": {
-			"base_pos": [
-				26,
-				18
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1.0,
-				1.0
-			]
-		},
-		"13": {
-			"base_pos": [
-				26,
-				19
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1.0,
-				1.0
-			]
-		},
 		"2": {
 			"base_pos": [
-				24,
-				18
+				23,
+				17
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"name": "Engine",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
 			"rotation": "up",
 			"size": [
 				1.0,
@@ -80,11 +28,11 @@
 		},
 		"3": {
 			"base_pos": [
-				25,
-				18
+				24,
+				17
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"name": "@RigidBody2D@30",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
 			"rotation": "up",
 			"size": [
 				1.0,
@@ -93,11 +41,11 @@
 		},
 		"4": {
 			"base_pos": [
-				24,
-				19
+				22,
+				17
 			],
-			"name": "maybach HL 250",
-			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"name": "Track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
 				1.0,
@@ -106,11 +54,11 @@
 		},
 		"5": {
 			"base_pos": [
-				25,
-				19
+				22,
+				16
 			],
-			"name": "maybach HL 250",
-			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"name": "@RigidBody2D@40",
+			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
 				1.0,
@@ -119,10 +67,10 @@
 		},
 		"6": {
 			"base_pos": [
-				23,
-				19
+				22,
+				15
 			],
-			"name": "rusty track",
+			"name": "@RigidBody2D@44",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -132,10 +80,10 @@
 		},
 		"7": {
 			"base_pos": [
-				23,
-				18
+				25,
+				15
 			],
-			"name": "rusty track",
+			"name": "@RigidBody2D@50",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -145,10 +93,10 @@
 		},
 		"8": {
 			"base_pos": [
-				23,
-				17
+				25,
+				16
 			],
-			"name": "rusty track",
+			"name": "@RigidBody2D@53",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -158,10 +106,10 @@
 		},
 		"9": {
 			"base_pos": [
-				23,
-				16
+				25,
+				17
 			],
-			"name": "rusty track",
+			"name": "@RigidBody2D@59",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -170,5 +118,5 @@
 			]
 		}
 	},
-	"name": "testtank01"
+	"name": "Object1"
 }

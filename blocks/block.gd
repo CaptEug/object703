@@ -9,6 +9,7 @@ var size: Vector2
 var parent_vehicle: Vehicle = null  
 var _cached_icon: Texture2D
 var neighbors:= {}
+var global_grid_pos:= []
 
 signal frame_post_drawn
 

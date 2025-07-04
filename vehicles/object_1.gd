@@ -1,4 +1,4 @@
 extends Vehicle
 
 func _init() -> void:
-	bluepirnt = "object1"
+	bluepirnt = "Object1"
