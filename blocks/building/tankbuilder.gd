@@ -27,6 +27,7 @@ var inventory = {
 	"d_52s":10,
 	"zis_57_2":10,
 	"fuel_tank":10,
+	"cupola":10
 }
 
 func _ready():
@@ -45,8 +46,7 @@ func setup_factory_zone():
 	factory_zone.collision_mask = 1
 
 func init_ui():
-	ui_instance = builder_ui.instantiate()
-	add_child(ui_instance)
+	ui_instance = $"../Tankbuilderui"
 	ui_instance.hide()
 	ui_instance.setup_inventory(inventory)
 	ui_instance.block_selected.connect(_on_block_selected)
