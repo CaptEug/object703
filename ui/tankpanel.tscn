@@ -1,0 +1,79 @@
+[gd_scene load_steps=9 format=3 uid="uid://cqye7fhmmkft8"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_sh8cn"]
+[ext_resource type="Script" uid="uid://dsrbwryh0conf" path="res://ui/tankpanel.gd" id="2_b7f80"]
+[ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/icons/arrows.png" id="2_sh8cn"]
+[ext_resource type="Texture2D" uid="uid://c8cutrddmtslg" path="res://assets/icons/driving_wheel.png" id="4_mvbyx"]
+[ext_resource type="Texture2D" uid="uid://d1yqkv0fm6ayc" path="res://assets/icons/ai.png" id="5_bu53t"]
+[ext_resource type="Texture2D" uid="uid://beh1prpitcc5h" path="res://assets/icons/remote_control.png" id="5_i2tau"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b7f80"]
+atlas = ExtResource("2_sh8cn")
+region = Rect2(0, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sh8cn"]
+atlas = ExtResource("2_sh8cn")
+region = Rect2(16, 16, 16, 16)
+
+[node name="Tankpanel" type="Panel"]
+offset_right = 334.0
+offset_bottom = 398.0
+theme = ExtResource("1_sh8cn")
+script = ExtResource("2_b7f80")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 332.0
+offset_bottom = 330.0
+text = "tankname"
+
+[node name="Fuel" type="ProgressBar" parent="RichTextLabel"]
+layout_mode = 0
+offset_left = 279.0
+offset_top = 230.0
+offset_right = 287.0
+offset_bottom = 300.0
+fill_mode = 3
+show_percentage = false
+
+[node name="Sprite2D" type="Sprite2D" parent="RichTextLabel/Fuel"]
+position = Vector2(4, 78)
+texture = SubResource("AtlasTexture_b7f80")
+
+[node name="Ammo" type="ProgressBar" parent="RichTextLabel"]
+layout_mode = 0
+offset_left = 299.0
+offset_top = 230.0
+offset_right = 307.0
+offset_bottom = 300.0
+fill_mode = 3
+show_percentage = false
+
+[node name="Sprite2D" type="Sprite2D" parent="RichTextLabel/Ammo"]
+position = Vector2(4, 78)
+texture = SubResource("AtlasTexture_sh8cn")
+
+[node name="ManualControl" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 226.0
+offset_top = 12.0
+offset_right = 258.0
+offset_bottom = 44.0
+texture_normal = ExtResource("4_mvbyx")
+
+[node name="RemoteControl" type="TextureButton" parent="."]
+offset_left = 258.0
+offset_top = 12.0
+offset_right = 290.0
+offset_bottom = 44.0
+texture_normal = ExtResource("5_i2tau")
+
+[node name="AIControl" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 290.0
+offset_top = 12.0
+offset_right = 322.0
+offset_bottom = 44.0
+texture_normal = ExtResource("5_bu53t")

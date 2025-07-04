@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://biyojl8ju41n2"
-path="res://.godot/imported/arrows.png-4802d5ef5af2af6fa5f490e680067993.ctex"
+uid="uid://c8cutrddmtslg"
+path="res://.godot/imported/driving_wheel.png-f0708e83c0b091c68ee6946ed6b06691.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/arrows.png"
-dest_files=["res://.godot/imported/arrows.png-4802d5ef5af2af6fa5f490e680067993.ctex"]
+source_file="res://assets/icons/driving_wheel.png"
+dest_files=["res://.godot/imported/driving_wheel.png-f0708e83c0b091c68ee6946ed6b06691.ctex"]
 
 [params]
 

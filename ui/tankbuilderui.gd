@@ -1,11 +1,11 @@
 extends Control
 
-@onready var tab_container = $TabContainer
+@onready var tab_container = $Panel/TabContainer
 @onready var description_label = $Panel/RichTextLabel
-@onready var build_vehicle_button = $BuildButton
+@onready var build_vehicle_button = $Panel/BuildButton
 @onready var save_dialog = $SaveDialog
-@onready var name_input = $SaveDialog/VBoxContainer/NameInput
-@onready var error_label = $SaveDialog/VBoxContainer/ErrorLabel
+@onready var name_input = $SaveDialog/NameInput
+@onready var error_label = $SaveDialog/ErrorLabel
 
 signal build_vehicle_requested
 signal block_selected(scene_path: String)
