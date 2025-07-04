@@ -5,6 +5,7 @@ const GRID_SIZE:int = 16
 const FORCE_CHANGE_RATE := 50.0
 const MAX_ROTING_POWER := 0.1
 
+var vehicle_name:String
 var move_state:String
 var max_engine_power:float
 var current_engine_power:float
@@ -57,15 +58,20 @@ func _process(delta):
 	if control:
 		update_tracks_state(control.call(), delta)
 
-func _add_block(block):
+func _add_block(block: Block):
 	if block in blocks:
 		return 
-	if block is Block:
-		blocks.append(block)
-		block.parent_vehicle = self
+		
+	# 添加方块到车辆
+	add_child(block)
+	blocks.append(block)
+	block.parent_vehicle = self
+	
 	if block is Track:
 		tracks.append(block)
-	if block is Powerpack:
+		track_target_forces[block] = 0.0
+		track_current_forces[block] = 0.0
+	elif block is Powerpack:
 		powerpacks.append(block)
 	if block is Command:
 		commands.append(blocks)
@@ -73,6 +79,36 @@ func _add_block(block):
 		ammoracks.append(blocks)
 	if block is Fueltank:
 		fueltanks.append(blocks)
+	# 重新计算物理属性
+	calculate_center_of_mass()
+	calculate_balanced_forces()
+	calculate_rotation_forces()
+	
+	# 连接相邻方块
+	connect_to_adjacent_blocks(block)
+	
+
+func connect_to_adjacent_blocks(block: Block):
+	# 找到方块在网格中的基准位置
+	var base_pos: Vector2i = Vector2i.ZERO
+	for pos in grid:
+		if grid[pos] == block:
+			base_pos = pos
+			break
+	
+	# 检查四个方向的相邻方块
+	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
+	for x in block.size.x:
+		for y in block.size.y:
+			for dir in directions:
+				var neighbor_pos = base_pos + dir + Vector2i(x, y)
+				if grid.has(neighbor_pos):
+					var neighbor = grid[neighbor_pos]
+					if neighbor != block:
+						var global_joint_pos = (base_pos + Vector2i(x, y)) * GRID_SIZE + Vector2i(8, 8) + 8 * dir
+						var joint_pos = Vector2(global_joint_pos) - block.global_position
+						connect_with_joint(block, neighbor, joint_pos)
+
 
 
 func remove_block(block: Block):
@@ -372,6 +408,13 @@ func update_tracks_state(control_input:Array, delta):
 
 
 func connect_blocks():
+	# 先清除所有现有关节
+	for block in blocks:
+		for child in block.get_children():
+			if child is PinJoint2D:
+				child.queue_free()
+	
+	# 重新建立连接
 	get_neighbor()
 	for block in blocks:
 		var size = block.size
@@ -381,7 +424,7 @@ func connect_blocks():
 			for y in size.y:
 				var cell = grid_pos + Vector2i(x, y)
 				grid[cell] = block
-				connect_adjacent_blocks(cell, grid[cell])
+				connect_to_adjacent_blocks(block)
 
 func get_neighbor():
 	for block in blocks:
@@ -404,16 +447,6 @@ func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 		if Dic[pos] == block:
 			return pos
 	return Vector2i.ZERO  
-	
-func connect_adjacent_blocks(pos:Vector2i, block:Block):
-	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
-	for dir in directions:
-		var neighbor_pos = pos + dir
-		if grid.has(neighbor_pos) and grid[neighbor_pos] != block:
-			var neighbor = grid[neighbor_pos]
-			var global_joint_pos = pos * GRID_SIZE + Vector2i(8, 8) + 8 * dir
-			var joint_pos = Vector2(global_joint_pos) - block.global_position
-			connect_with_joint(block, neighbor, joint_pos)
 
 func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
 	var joint = PinJoint2D.new()
@@ -559,6 +592,8 @@ func load_from_blueprint(blueprint: Dictionary):
 	
 	# 按数字键排序以保证加载顺序一致
 	var block_ids = blueprint["blocks"].keys()
+	var _name = blueprint["name"]
+	vehicle_name = _name
 	block_ids.sort()
 	
 	for block_id in block_ids:
@@ -610,3 +645,10 @@ func initialize_physics():
 	for track in tracks:
 		track_target_forces[track] = 0.0
 		track_current_forces[track] = 0.0
+
+func get_blueprint_path() -> String:
+	if bluepirnt is String:
+		return bluepirnt
+	elif bluepirnt is Dictionary:
+		return "res://vehicles/blueprint/%s.json" % vehicle_name
+	return ""

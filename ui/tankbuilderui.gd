@@ -14,7 +14,8 @@ signal vehicle_saved(vehicle_name: String)
 
 const BLOCK_PATHS = {
 	"Firepower": "res://blocks/firepower/",
-	"Mobility": "res://blocks/mobility/"
+	"Mobility": "res://blocks/mobility/",
+	"Command": "res://blocks/command/"
 }
 
 var inventory = {}
@@ -169,3 +170,9 @@ func _on_save_canceled():
 
 func _on_name_input_changed(new_text: String):
 	error_label.hide()
+
+func set_edit_mode(is_editing: bool, vehicle_name: String = ""):
+	if is_editing:
+		build_vehicle_button.text = "保存修改"
+	else:
+		build_vehicle_button.text = "建造车辆"
