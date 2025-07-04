@@ -1,17 +1,17 @@
 [gd_scene load_steps=5 format=3 uid="uid://byo7xm5tw3n2w"]
 
-[ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/bridge.gd" id="1_axnth"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_x12pa"]
+[ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/command/cupola.gd" id="1_5uqw0"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_ahdwv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_x12pa"]
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fxiys"]
-atlas = ExtResource("2_x12pa")
+atlas = ExtResource("2_ahdwv")
 region = Rect2(0, 0, 16, 16)
 
-[node name="Bridge" type="RigidBody2D"]
-script = ExtResource("1_axnth")
+[node name="Cupola" type="RigidBody2D"]
+script = ExtResource("1_5uqw0")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

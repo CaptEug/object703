@@ -71,4 +71,4 @@ func _on_tree_item_selected():
 			description_textbox.append_text("Fire rate: "+str(60/selected_block.RELOAD)+"rpm\n")
 		
 		if selected_block is Powerpack:
-			description_textbox.append_text("POWER: "+str(selected_block.POWER)+"hp\n")
+			description_textbox.append_text("POWER: "+str(selected_block.MAX_POWER)+"hp\n")
