@@ -173,7 +173,5 @@ func _on_name_input_changed(new_text: String):
 func set_edit_mode(is_editing: bool, vehicle_name: String = ""):
 	if is_editing:
 		build_vehicle_button.text = "保存修改"
-		$Panel/TitleLabel.text = "正在编辑: %s" % vehicle_name
 	else:
 		build_vehicle_button.text = "建造车辆"
-		$Panel/TitleLabel.text = "坦克建造器"

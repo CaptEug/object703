@@ -9,8 +9,10 @@ size = Vector2(55, 53)
 script = ExtResource("1_re5i5")
 
 [node name="FactoryZone" type="Area2D" parent="."]
+visible = false
 collision_mask = 129
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="FactoryZone"]
+visible = false
 shape = SubResource("RectangleShape2D_ojk03")
 debug_color = Color(0.855298, 0.334109, 0.407991, 0.42)
