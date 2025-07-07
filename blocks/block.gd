@@ -5,7 +5,7 @@ var current_hp:int
 var weight: float
 var block_name: String
 var type:String
-var size: Vector2
+var size: Vector2i
 var parent_vehicle: Vehicle = null  
 var _cached_icon: Texture2D
 var neighbors:= {}

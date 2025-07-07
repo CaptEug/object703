@@ -2,21 +2,73 @@
 	"blocks": {
 		"1": {
 			"base_pos": [
-				23,
-				15
+				31,
+				19
 			],
-			"name": "Zis572",
-			"path": "res://blocks/firepower/zis_57_2.tscn",
+			"name": "Cupola",
+			"path": "res://blocks/command/cupola.tscn",
 			"rotation": "up",
 			"size": [
-				2.0,
-				2.0
+				1.0,
+				1.0
+			]
+		},
+		"10": {
+			"base_pos": [
+				33,
+				19
+			],
+			"name": "@RigidBody2D@62",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"11": {
+			"base_pos": [
+				30,
+				20
+			],
+			"name": "@RigidBody2D@65",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"12": {
+			"base_pos": [
+				33,
+				20
+			],
+			"name": "@RigidBody2D@69",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
+			]
+		},
+		"13": {
+			"base_pos": [
+				31,
+				20
+			],
+			"name": "FuelTank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": "up",
+			"size": [
+				1.0,
+				1.0
 			]
 		},
 		"2": {
 			"base_pos": [
-				23,
-				17
+				32,
+				19
 			],
 			"name": "Engine",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
@@ -28,20 +80,33 @@
 		},
 		"3": {
 			"base_pos": [
-				24,
+				31,
 				17
 			],
-			"name": "@RigidBody2D@30",
-			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"name": "Zis572",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
+			"rotation": "up",
+			"size": [
+				2.0,
+				2.0
+			]
+		},
+		"4": {
+			"base_pos": [
+				32,
+				20
+			],
+			"name": "@RigidBody2D@44",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
 			"rotation": "up",
 			"size": [
 				1.0,
 				1.0
 			]
 		},
-		"4": {
+		"5": {
 			"base_pos": [
-				22,
+				30,
 				17
 			],
 			"name": "Track",
@@ -52,25 +117,12 @@
 				1.0
 			]
 		},
-		"5": {
-			"base_pos": [
-				22,
-				16
-			],
-			"name": "@RigidBody2D@40",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1.0,
-				1.0
-			]
-		},
 		"6": {
 			"base_pos": [
-				22,
-				15
+				30,
+				18
 			],
-			"name": "@RigidBody2D@44",
+			"name": "@RigidBody2D@49",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -80,10 +132,10 @@
 		},
 		"7": {
 			"base_pos": [
-				25,
-				15
+				30,
+				19
 			],
-			"name": "@RigidBody2D@50",
+			"name": "@RigidBody2D@52",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -93,10 +145,10 @@
 		},
 		"8": {
 			"base_pos": [
-				25,
-				16
+				33,
+				17
 			],
-			"name": "@RigidBody2D@53",
+			"name": "@RigidBody2D@56",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -106,10 +158,10 @@
 		},
 		"9": {
 			"base_pos": [
-				25,
-				17
+				33,
+				18
 			],
-			"name": "@RigidBody2D@59",
+			"name": "@RigidBody2D@58",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -118,5 +170,5 @@
 			]
 		}
 	},
-	"name": "Object1"
+	"name": "object1"
 }

@@ -64,6 +64,7 @@ offset_bottom = 44.0
 texture_normal = ExtResource("4_mvbyx")
 
 [node name="RemoteControl" type="TextureButton" parent="."]
+layout_mode = 0
 offset_left = 258.0
 offset_top = 12.0
 offset_right = 290.0

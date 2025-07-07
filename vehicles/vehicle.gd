@@ -15,7 +15,7 @@ var total_ammo_cap:float
 var total_fuel:float
 var total_fuel_cap:float
 var total_store:int
-var bluepirnt:Variant
+var blueprint:Variant
 var grid:= {}
 var target_grid:={}
 var blocks:= []
@@ -31,28 +31,43 @@ var track_current_forces := {} # 存储当前实际施加的力
 var balanced_forces := {} # 存储直线行驶时的理想出力分布
 var rotation_forces := {} # 存储纯旋转时的理想出力分布
 var control:Callable
+var controls:= []
 var is_assembled := false
 var block_scenes := {}
 
 
 func _ready():
-	if bluepirnt:
+	if blueprint:
 		Get_ready_again()
 
 func Get_ready_again():
-	if bluepirnt is String:
-		load_from_file(bluepirnt)
-	elif bluepirnt is Dictionary:
-		load_from_blueprint(bluepirnt)
+	if blueprint is String:
+		load_from_file(blueprint)
+	elif blueprint is Dictionary:
+		load_from_blueprint(blueprint)
 	else:
 		push_error("Invalid blueprint format")
+	update_vehicle()
+
+
+
+func update_vehicle():
 	#Get all total parameters
 	get_max_engine_power()
 	get_ammo_cap()
 	get_fuel_cap()
-	
+	# 重新计算物理属性
+	calculate_center_of_mass()
+	calculate_balanced_forces()
+	calculate_rotation_forces()
+	# 重新获取控制方法
 	if commands.size() > 0:
-		control = commands[0].control
+		if not check_control(control.get_method()):
+			if not check_control("AI_control"):
+				if not check_control("remote_control"):
+					check_control("manual_control")
+	else:
+		control = Callable()
 
 func _process(delta):
 	if control:
@@ -60,7 +75,7 @@ func _process(delta):
 
 func _add_block(block: Block):
 	if block not in blocks:
-		print("add", block)	
+		print("add", block)
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
@@ -74,18 +89,40 @@ func _add_block(block: Block):
 			powerpacks.append(block)
 		elif block is Command:
 			commands.append(block)
-			control = commands[0].control
 		elif block is Ammorack:
 			ammoracks.append(block)
 		elif block is Fueltank:
 			fueltanks.append(block)
-		# 重新计算物理属性
-		calculate_center_of_mass()
-		calculate_balanced_forces()
-		calculate_rotation_forces()
-		# 连接相邻方块
-		connect_to_adjacent_blocks(block)
-	
+	update_vehicle()
+
+func remove_block(block: Block):
+	if block in blocks:
+		blocks.erase(block)
+	if block in grid:
+		grid.erase(block)
+	if block in tracks:
+		tracks.erase(block)
+	if block in powerpacks:
+		powerpacks.erase(block)
+	if block in commands:
+		commands.erase(block)
+	if block in ammoracks:
+		ammoracks.erase(block)
+	if block in fueltanks:
+		fueltanks.erase(block)
+	update_vehicle()
+
+func has_block(block_name:String):
+	for block in blocks:
+		if block.block_name == block_name:
+			return block
+
+func check_control(control_name:String):
+	for block in commands:
+		if block.has_method(control_name):
+			control = Callable(block, control_name)
+			return true
+	return false
 
 func connect_to_adjacent_blocks(block: Block):
 	# 找到方块在网格中的基准位置
@@ -110,29 +147,6 @@ func connect_to_adjacent_blocks(block: Block):
 
 
 
-func remove_block(block: Block):
-	if block in blocks:
-		blocks.erase(block)
-	if block in grid:
-		grid.erase(block)
-	if block in tracks:
-		tracks.erase(block)
-	if block in powerpacks:
-		powerpacks.erase(block)
-	if block in commands:
-		commands.erase(block)
-	if block in ammoracks:
-		ammoracks.erase(block)
-	if block in fueltanks:
-		fueltanks.erase(block)
-	calculate_balanced_forces()
-	calculate_rotation_forces()
-
-func has_block(block_name:String):
-	for block in blocks:
-		if block.block_name == block_name:
-			return block
-
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
@@ -150,9 +164,9 @@ func calculate_balanced_forces():
 	
 	# 计算各点出力
 	var thrusts = calculate_thrust_distribution(
-		thrust_points, 
+		thrust_points,
 		com - global_position, # 相对质心
-		currunt_total_power, 
+		currunt_total_power,
 		direction # 目标方向
 	)
 	
@@ -233,7 +247,7 @@ func calculate_rotation_forces():
 	
 	# 计算各点出力 - 纯旋转
 	var thrusts = calculate_rotation_thrust_distribution(
-		thrust_points, 
+		thrust_points,
 		com - global_position, # 相对质心
 		currunt_total_power * MAX_ROTING_POWER # 总功率
 	)
@@ -393,7 +407,7 @@ func update_tracks_state(control_input:Array, delta):
 	var total_forward = 0
 	var total_turn = 0
 	for track in balanced_forces:
-		track_target_forces[track] = balanced_forces[track] * forward_input + rotation_forces[track] * turn_input 
+		track_target_forces[track] = balanced_forces[track] * forward_input + rotation_forces[track] * turn_input
 		total_forward += abs(balanced_forces[track] * forward_input)
 		total_turn += abs(rotation_forces[track] * turn_input)
 	if total_forward > 0:
@@ -416,7 +430,7 @@ func connect_blocks():
 	# 重新建立连接
 	get_neighbor()
 	for block in blocks:
-		var size = block.size
+		var size = Vector2(block.size)
 		var grid_pos = find_pos(target_grid, block)
 		block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
 		for x in size.x:
@@ -435,17 +449,17 @@ func get_neighbor():
 				target_grid[cell] = block
 				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
 				for dir in directions:
-						var neighbor_pos = cell + dir
-						if target_grid.has(neighbor_pos) and target_grid[neighbor_pos] != block:
-							var neighbor = target_grid[neighbor_pos]
-							var neighbor_real_pos = find_pos(target_grid, neighbor)
-							block.neighbors[neighbor_real_pos - grid_pos] = neighbor
+					var neighbor_pos = cell + dir
+					if target_grid.has(neighbor_pos) and target_grid[neighbor_pos] != block:
+						var neighbor = target_grid[neighbor_pos]
+						var neighbor_real_pos = find_pos(target_grid, neighbor)
+						block.neighbors[neighbor_real_pos - grid_pos] = neighbor
 
 func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 	for pos in Dic:
 		if Dic[pos] == block:
 			return pos
-	return Vector2i.ZERO  
+	return Vector2i.ZERO
 
 func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
 	var joint = PinJoint2D.new()
@@ -646,8 +660,8 @@ func initialize_physics():
 		track_current_forces[track] = 0.0
 
 func get_blueprint_path() -> String:
-	if bluepirnt is String:
-		return bluepirnt
-	elif bluepirnt is Dictionary:
+	if blueprint is String:
+		return blueprint
+	elif blueprint is Dictionary:
 		return "res://vehicles/blueprint/%s.json" % vehicle_name
 	return ""

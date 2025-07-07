@@ -12,7 +12,6 @@ func _init():
 	block_name = BLOCK_NAME
 	size = SIZE
 	type = TYPE
-	control = manual_control
 	linear_damp = 5.0
 	angular_damp = 1.0
 

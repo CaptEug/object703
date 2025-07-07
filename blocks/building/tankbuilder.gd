@@ -457,9 +457,9 @@ func _on_vehicle_saved(vehicle_name: String):
 	var blueprint_path = ""
 	if is_editing_vehicle:
 		# 编辑模式：使用原有路径或生成默认路径
-		if current_vehicle.bluepirnt is String:
-			blueprint_path = current_vehicle.bluepirnt
-		elif current_vehicle.bluepirnt is Dictionary:
+		if current_vehicle.blueprint is String:
+			blueprint_path = current_vehicle.blueprint
+		elif current_vehicle.blueprint is Dictionary:
 			blueprint_path = "res://vehicles/blueprint/%s.json" % vehicle_name
 	else:
 		# 新建模式：使用新路径
@@ -468,7 +468,7 @@ func _on_vehicle_saved(vehicle_name: String):
 	# 保存蓝图
 	if save_blueprint(blueprint_data, blueprint_path):
 		# 更新车辆引用
-		current_vehicle.bluepirnt = blueprint_data
+		current_vehicle.blueprint = blueprint_data
 		
 		# 如果是新建模式，恢复碰撞层
 		if not is_editing_vehicle:
@@ -557,6 +557,6 @@ func clear_builder():
 
 func spawn_vehicle_from_blueprint(blueprint: Dictionary):
 	var vehicle = vehicle_scene.instantiate()
-	vehicle.bluepirnt = blueprint  # 传递字典而非文件路径
+	vehicle.blueprint = blueprint  # 传递字典而非文件路径
 	get_parent().add_child(vehicle)
 	clear_builder()
