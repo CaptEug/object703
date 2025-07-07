@@ -17,8 +17,6 @@ func _ready():
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight
 	parent_vehicle = get_parent() as Vehicle
-	if parent_vehicle:
-		parent_vehicle._add_block(self)
 	pass # Replace with function body.
 
 

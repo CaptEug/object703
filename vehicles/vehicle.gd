@@ -59,33 +59,32 @@ func _process(delta):
 		update_tracks_state(control.call(), delta)
 
 func _add_block(block: Block):
-	if block in blocks:
-		return 
+	if block not in blocks:
+		print("add", block)	
+		# 添加方块到车辆
+		add_child(block)
+		blocks.append(block)
+		block.parent_vehicle = self
 		
-	# 添加方块到车辆
-	add_child(block)
-	blocks.append(block)
-	block.parent_vehicle = self
-	
-	if block is Track:
-		tracks.append(block)
-		track_target_forces[block] = 0.0
-		track_current_forces[block] = 0.0
-	elif block is Powerpack:
-		powerpacks.append(block)
-	if block is Command:
-		commands.append(blocks)
-	if block is Ammorack:
-		ammoracks.append(blocks)
-	if block is Fueltank:
-		fueltanks.append(blocks)
-	# 重新计算物理属性
-	calculate_center_of_mass()
-	calculate_balanced_forces()
-	calculate_rotation_forces()
-	
-	# 连接相邻方块
-	connect_to_adjacent_blocks(block)
+		if block is Track:
+			tracks.append(block)
+			track_target_forces[block] = 0.0
+			track_current_forces[block] = 0.0
+		elif block is Powerpack:
+			powerpacks.append(block)
+		elif block is Command:
+			commands.append(block)
+			control = commands[0].control
+		elif block is Ammorack:
+			ammoracks.append(block)
+		elif block is Fueltank:
+			fueltanks.append(block)
+		# 重新计算物理属性
+		calculate_center_of_mass()
+		calculate_balanced_forces()
+		calculate_rotation_forces()
+		# 连接相邻方块
+		connect_to_adjacent_blocks(block)
 	
 
 func connect_to_adjacent_blocks(block: Block):
@@ -607,7 +606,7 @@ func load_from_blueprint(blueprint: Dictionary):
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			block.size = size
 			add_child(block)
-			
+			_add_block(block)
 			# 记录所有网格位置
 			for x in size.x:
 				for y in size.y:
