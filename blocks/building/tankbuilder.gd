@@ -27,7 +27,8 @@ var inventory = {
 	"d_52s":10,
 	"zis_57_2":10,
 	"fuel_tank":10,
-	"cupola":10
+	"cupola":10,
+	"ammo_rack":10
 }
 
 func _ready():
@@ -165,7 +166,7 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	placed_blocks.clear()
 	# 7. [新增] 网格对齐处理
 	for block:Block in vehicle.blocks:
-		var local_pos = block.global_position- Vector2(GRID_SIZE/2, GRID_SIZE/2)*block.size
+		var local_pos = block.global_position- Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
 		var grid_x = round(local_pos.x / GRID_SIZE)
 		var grid_y = round(local_pos.y / GRID_SIZE)
 		var grid_pos = Vector2(grid_x, grid_y)
@@ -175,7 +176,7 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 				vehicle.grid[cell_pos] = block
 				vehicle.target_grid[cell_pos] = block
 				placed_blocks[cell_pos] = block
-		block.global_position = Vector2(grid_x, grid_y) * GRID_SIZE + Vector2(GRID_SIZE/2, GRID_SIZE/2)*block.size
+		block.global_position = Vector2(grid_x, grid_y) * GRID_SIZE + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
 	
 	for block in vehicle.blocks:
 		if is_instance_valid(block):
@@ -245,7 +246,7 @@ func update_ghost_position():
 		floor(mouse_pos.x / GRID_SIZE),
 		floor(mouse_pos.y / GRID_SIZE)
 	)
-	ghost_block.global_position = Vector2(snapped_pos * GRID_SIZE) + ghost_block.size/2 * GRID_SIZE
+	ghost_block.global_position = Vector2(snapped_pos * GRID_SIZE) + Vector2(ghost_block.size)/2 * GRID_SIZE
 	ghost_block.global_grid_pos.clear()
 	for x in ghost_block.size.x:
 		for y in ghost_block.size.y:
@@ -409,7 +410,7 @@ func update_build_indicator():
 
 func is_position_in_factory(block:Block) -> bool:
    # 计算方块的左上角世界坐标
-	var block_top_left = block.global_position - block.size/2 * GRID_SIZE
+	var block_top_left = block.global_position - Vector2(block.size)/2 * GRID_SIZE
 	
 	# 计算方块的右下角世界坐标
 	var block_bottom_right = Vector2((block_top_left.x + block.size.x * GRID_SIZE), (block_top_left.y + block.size.y * GRID_SIZE))
