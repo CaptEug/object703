@@ -29,15 +29,17 @@ func _ready():
 	animplayer = find_child("AnimationPlayer")
 	generate_detection_area()
 	reload_timer = Timer.new()
+	reload_timer.one_shot = true
 	reload_timer.wait_time = reload
 	reload_timer.timeout.connect(_on_timer_timeout)
 	add_child(reload_timer)
 
 func _process(delta):
 	super._process(delta)
-	if not loading and not loaded and has_ammo():
-		start_reload()
-	
+	#check reload every frame
+	if has_ammo():
+		if not loading and not loaded:
+			start_reload()
 
 func _draw():
 	var line_color = Color(1,1,1)
