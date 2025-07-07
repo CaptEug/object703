@@ -61,13 +61,11 @@ func update_vehicle():
 	calculate_balanced_forces()
 	calculate_rotation_forces()
 	# 重新获取控制方法
-	if commands.size() > 0:
-		if not check_control(control.get_method()):
-			if not check_control("AI_control"):
-				if not check_control("remote_control"):
-					check_control("manual_control")
-	else:
-		control = Callable()
+	if not check_control(control.get_method()):
+		if not check_control("AI_control"):
+			if not check_control("remote_control"):
+				if not check_control("manual_control"):
+					control = Callable()
 
 func _process(delta):
 	if control:
@@ -411,9 +409,9 @@ func update_tracks_state(control_input:Array, delta):
 		total_forward += abs(balanced_forces[track] * forward_input)
 		total_turn += abs(rotation_forces[track] * turn_input)
 	if total_forward > 0:
-		currunt_scale = get_current_engine_power() / (total_forward + total_turn)
+		currunt_scale = current_engine_power / (total_forward + total_turn)
 	else:
-		currunt_scale = get_current_engine_power() * MAX_ROTING_POWER / (total_forward + total_turn)
+		currunt_scale = current_engine_power * MAX_ROTING_POWER / (total_forward + total_turn)
 	for track in track_target_forces:
 		track_target_forces[track] *= currunt_scale
 	
@@ -536,7 +534,7 @@ func cost_ammo(amount:float):
 
 func get_fuel_cap():
 	var fuel_cap := 0.0
-	for fueltank in ammoracks:
+	for fueltank in fueltanks:
 		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
 			fuel_cap += fueltank.FUEL_CAPACITY
 	total_fuel_cap = fuel_cap
@@ -569,7 +567,7 @@ func apply_smooth_track_forces(delta):
 		# 使用lerp平滑过渡
 		var new_force = lerp(current, target, FORCE_CHANGE_RATE * delta)
 		
-		if tracks.has(track) and get_current_engine_power() != 0:
+		if tracks.has(track) and current_engine_power != 0:
 			if abs(new_force) > 0:
 				track.set_state_force(move_state, new_force)
 				track_current_forces[track] = new_force
