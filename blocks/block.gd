@@ -41,3 +41,17 @@ func get_icon_texture():
 	if texture_blocks != null and texture_blocks is Sprite2D:
 		return texture_blocks.texture
 	return null
+
+func get_neighour():
+	if parent_vehicle:
+		var grid = parent_vehicle.grid
+		var grid_pos = parent_vehicle.find_pos(grid, self)
+		for x in size.x:
+			for y in size.y:
+				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
+				for dir in directions:
+					var neighbor_pos = grid_pos + dir
+					if grid.has(neighbor_pos) and grid[neighbor_pos] != self:
+						var neighbor = grid[neighbor_pos]
+						var neighbor_real_pos = parent_vehicle.find_pos(grid, neighbor)
+						neighbors[neighbor_real_pos - grid_pos] = neighbor
