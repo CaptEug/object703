@@ -160,7 +160,8 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	
 	# 6. 移动整个车辆使质心对齐工厂中心
 	var factory_center := Vector2(factory_size * GRID_SIZE) / 2
-	
+	vehicle.grid.clear()
+	vehicle.target_grid.clear()
 	placed_blocks.clear()
 	# 7. [新增] 网格对齐处理
 	for block:Block in vehicle.blocks:
@@ -168,8 +169,6 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 		var grid_x = round(local_pos.x / GRID_SIZE)
 		var grid_y = round(local_pos.y / GRID_SIZE)
 		var grid_pos = Vector2(grid_x, grid_y)
-		print(block.block_name, local_pos, Vector2(grid_x, grid_y))
-		placed_blocks[grid_pos] = block
 		for x in block.size.x:
 			for y in block.size.y:
 				var cell_pos = Vector2i(grid_pos) + Vector2i(x, y)
