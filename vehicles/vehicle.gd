@@ -74,12 +74,13 @@ func _process(delta):
 		update_tracks_state(control.call(), delta)
 
 func _add_block(block: Block):
+	print("add", block)
 	if block not in blocks:
-		print("add", block)
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
-		block.parent_vehicle = self
+		print(block.parent_vehicle)
+		#block.parent_vehicle = self
 		
 		if block is Track:
 			tracks.append(block)
@@ -619,7 +620,6 @@ func load_from_blueprint(blueprint: Dictionary):
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			block.size = size
-			add_child(block)
 			_add_block(block)
 			# 记录所有网格位置
 			for x in size.x:

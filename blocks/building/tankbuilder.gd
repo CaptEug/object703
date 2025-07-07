@@ -332,6 +332,7 @@ func remove_block_at_mouse():
 		if is_editing_vehicle and current_vehicle:
 			# 如果是编辑模式，从车辆中移除方块
 			current_vehicle.remove_block(block)
+			print(block,"已处理")
 			# 从车辆网格中移除
 			for pos in current_vehicle.grid:
 				if current_vehicle.grid[pos] == block:
@@ -365,7 +366,7 @@ func begin_vehicle_creation():
 		if block is RigidBody2D:
 			block.collision_layer = 1  # 恢复正常碰撞层
 		remove_child(block)
-		current_vehicle.add_child(block)
+		#current_vehicle.add_child(block)
 		processed_blocks.append(block)
 	
 	# 初始化车辆网格
