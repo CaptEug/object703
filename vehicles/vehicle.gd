@@ -54,8 +54,11 @@ func Get_ready_again():
 func update_vehicle():
 	#Get all total parameters
 	get_max_engine_power()
+	get_current_engine_power()
 	get_ammo_cap()
+	update_current_ammo()
 	get_fuel_cap()
+	update_current_fuel()
 	# 重新计算物理属性
 	calculate_center_of_mass()
 	calculate_balanced_forces()
@@ -66,6 +69,7 @@ func update_vehicle():
 			if not check_control("remote_control"):
 				if not check_control("manual_control"):
 					control = Callable()
+	print(total_ammo)
 
 func _process(delta):
 	if control:
