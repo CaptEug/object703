@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b8lp0f8rp8hu1"]
 
-[ext_resource type="PackedScene" uid="uid://cn6p02q1ry3yx" path="res://blocks/armor.tscn" id="2_fytn4"]
+[ext_resource type="PackedScene" uid="uid://cn6p02q1ry3yx" path="res://blocks/structual/armor.tscn" id="2_fytn4"]
 
 [node name="Testarget" type="Node2D"]
 metadata/_custom_type_script = "uid://bd6kccmkxqjkk"

@@ -19,11 +19,11 @@ var explosion_particle = preload("res://assets/particles/explosion.tscn")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	shell_body = find_child("Area2D")
-	trail = find_child("Trail")
-	explosion_area = find_child("ExplosionArea")
+	shell_body = find_child("Area2D") as Area2D
+	trail = find_child("Trail") as Line2D
+	explosion_area = find_child("ExplosionArea") as Area2D
 	if explosion_area:
-		explosion_shape = explosion_area.find_child("CollisionShape2D")
+		explosion_shape = explosion_area.find_child("CollisionShape2D") as CollisionShape2D
 	collision_layer = 0
 	collision_mask = 0
 	trail.lifetime = lifetime
