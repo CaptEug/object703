@@ -57,6 +57,9 @@ func _process(delta):
 
 
 func update_vehicle():
+	#Check block connectivity
+	for block in blocks:
+		block.get_neighors()
 	#Get all total parameters
 	get_max_engine_power()
 	get_current_engine_power()
@@ -157,7 +160,7 @@ func get_ammo_cap():
 	var ammo_cap := 0.0
 	for ammorack in ammoracks:
 		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
-			ammo_cap += ammorack.AMMO_CAPACITY
+			ammo_cap += ammorack.ammo_storage_cap
 	total_ammo_cap = ammo_cap
 	return ammo_cap
 
@@ -168,16 +171,6 @@ func update_current_ammo():
 			currunt_ammo += ammorack.ammo_storage
 	total_ammo = currunt_ammo
 	return currunt_ammo
-
-func cost_ammo(amount:float):
-	var remaining = amount
-	for ammorack in ammoracks:
-		if ammorack.ammo_storage >= remaining:
-			ammorack.ammo_storage -= remaining
-		else:
-			remaining -= ammorack.ammo_storage
-			ammorack.ammo_storage = 0
-	update_current_ammo()
 
 func get_fuel_cap():
 	var fuel_cap := 0.0
@@ -195,15 +188,6 @@ func update_current_fuel():
 	total_fuel = currunt_fuel
 	return currunt_fuel
 
-func cost_fuel(amount:float):
-	var remaining = amount
-	for fueltank in fueltanks:
-		if fueltank.fuel_storage >= remaining:
-			fueltank.fuel_storage -= remaining
-		else:
-			remaining -= fueltank.fuel_storage
-			fueltank.fuel_storage = 0
-	update_current_fuel()
 
 
 ########################## VEHICLE LOADING ###########################
@@ -231,17 +215,17 @@ func load_from_file(identifier):  # 允许接收多种类型参数
 	else:
 		push_error("Failed to load file: ", path)
 
-func load_from_blueprint(blueprint: Dictionary):
+func load_from_blueprint(bp: Dictionary):
 	clear_existing_blocks()
 	var target_grid = {}
 	# 按数字键排序以保证加载顺序一致
-	var block_ids = blueprint["blocks"].keys()
-	var _name = blueprint["name"]
+	var block_ids = bp["blocks"].keys()
+	var _name = bp["name"]
 	vehicle_name = _name
 	block_ids.sort()
 	
 	for block_id in block_ids:
-		var block_data = blueprint["blocks"][block_id]
+		var block_data = bp["blocks"][block_id]
 		var block_scene = load(block_data["path"])  # 使用完整路径加载
 		
 		if block_scene:
@@ -258,8 +242,8 @@ func load_from_blueprint(blueprint: Dictionary):
 					target_grid[grid_pos] = block
 	connect_blocks(target_grid)
 
-func get_rotation_angle(direction: String) -> float:
-	match direction:
+func get_rotation_angle(dir: String) -> float:
+	match dir:
 		"left":    return PI/2
 		"up": return 0
 		"right":  return -PI/2
