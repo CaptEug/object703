@@ -144,7 +144,8 @@ func connect_to_adjacent_blocks(block: Block):
 				if grid.has(neighbor_pos):
 					var neighbor = grid[neighbor_pos]
 					if neighbor != block:
-						var global_joint_pos = (base_pos + Vector2i(x, y)) * GRID_SIZE + Vector2i(8, 8) + 8 * dir
+						var global_base_pos = block.global_position - Vector2(block.size * GRID_SIZE)/2 + Vector2(8.0,8.0)
+						var global_joint_pos = Vector2(global_base_pos) + Vector2(x, y) * GRID_SIZE + Vector2(8* dir)
 						var joint_pos = Vector2(global_joint_pos) - block.global_position
 						connect_with_joint(block, neighbor, joint_pos)
 
@@ -468,7 +469,7 @@ func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
 	var joint = PinJoint2D.new()
 	joint.node_a = a.get_path()
 	joint.node_b = b.get_path()
-	joint.position = joint_pos
+	joint.global_position = joint_pos
 	joint.disable_collision = false
 	a.add_child(joint)
 	

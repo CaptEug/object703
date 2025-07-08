@@ -1,10 +1,11 @@
-extends Node2D
+extends Block
 
 # 配置
 const GRID_SIZE := 16
 @export var factory_size := Vector2i(10, 10)
 @onready var factory_zone = $FactoryZone
 @onready var zone_shape: CollisionShape2D = $FactoryZone/CollisionShape2D
+@onready var texture: Sprite2D = $Sprite2D
 
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
 @export var builder_ui: PackedScene = preload("res://ui/tankbuilderUI.tscn")
@@ -18,6 +19,8 @@ var is_editing_vehicle := false
 var is_build_mode := false
 var ui_instance: Control
 var current_vehicle: Vehicle = null
+var original_parent = null
+var to_local_offset: Vector2
 
 # 背包系统
 var inventory = {
@@ -28,10 +31,13 @@ var inventory = {
 	"zis_57_2":10,
 	"fuel_tank":10,
 	"cupola":10,
-	"ammo_rack":10
+	"ammo_rack":10,
+	#"tankbuilder":10
 }
 
 func _ready():
+	super._ready()
+	original_parent = parent_vehicle
 	init_ui()
 	setup_test_inventory()
 	setup_factory_zone()
@@ -42,17 +48,19 @@ func setup_factory_zone():
 	var rect = RectangleShape2D.new()
 	rect.size = factory_size * GRID_SIZE
 	zone_shape.shape = rect
-	factory_zone.position = (factory_size * GRID_SIZE) / 2
+	factory_zone.position = Vector2.ZERO + Vector2(factory_size * GRID_SIZE)/2
+	texture.position = factory_zone.position
 	factory_zone.collision_layer = 0
 	factory_zone.collision_mask = 1
 
 func init_ui():
 	ui_instance = $"../Tankbuilderui"
-	ui_instance.hide()
-	ui_instance.setup_inventory(inventory)
-	ui_instance.block_selected.connect(_on_block_selected)
-	ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
-	ui_instance.vehicle_saved.connect(_on_vehicle_saved)
+	if ui_instance != null:
+		ui_instance.hide()
+		ui_instance.setup_inventory(inventory)
+		ui_instance.block_selected.connect(_on_block_selected)
+		ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
+		ui_instance.vehicle_saved.connect(_on_vehicle_saved)
 
 	
 
@@ -63,6 +71,10 @@ func _process(delta):
 	if ghost_block and is_build_mode:
 		update_ghost_position()
 		update_build_indicator()
+			
+	if current_vehicle and is_editing_vehicle:
+		block_to_grid(current_vehicle)
+
 
 func _input(event):
 	handle_build_mode_toggle(event)
@@ -120,6 +132,7 @@ func toggle_build_mode():
 			is_editing_vehicle = true
 			load_vehicle_for_editing(current_vehicle)
 		else:
+			original_parent = parent_vehicle
 			is_editing_vehicle = false
 			current_vehicle = null
 		enter_build_mode()
@@ -138,6 +151,19 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 				child.queue_free()
 	
 	# 3. 计算车辆原始质心（世界坐标）
+	block_to_grid(vehicle)
+	
+	for block in vehicle.blocks:
+		if is_instance_valid(block):
+			vehicle.connect_to_adjacent_blocks(block)
+	ui_instance.update_inventory_display(inventory)
+	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
+	create_ghost_block()
+	# 10. 恢复物理处理
+	vehicle.set_physics_process(true)
+
+
+func block_to_grid(vehicle:Vehicle):
 	var original_com := vehicle.calculate_center_of_mass()
 	
 	# 4. 逐块处理旋转（保持原始位置，仅校正旋转）
@@ -150,7 +176,7 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 		
 		# 重置方块旋转（清除之前任何旋转）
 		var original_rotation = block.global_rotation
-		block.global_rotation = 0
+		block.global_rotation = global_rotation
 		
 		# 计算旋转后的新位置（保持相对质心距离）
 		var rotated_offset = offset_from_com.rotated(-original_rotation + block.global_rotation)
@@ -160,13 +186,12 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	var new_com := vehicle.calculate_center_of_mass()
 	
 	# 6. 移动整个车辆使质心对齐工厂中心
-	var factory_center := Vector2(factory_size * GRID_SIZE) / 2
 	vehicle.grid.clear()
 	vehicle.target_grid.clear()
 	placed_blocks.clear()
 	# 7. [新增] 网格对齐处理
 	for block:Block in vehicle.blocks:
-		var local_pos = block.global_position- Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
+		var local_pos = to_local(block.global_position) - Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
 		var grid_x = round(local_pos.x / GRID_SIZE)
 		var grid_y = round(local_pos.y / GRID_SIZE)
 		var grid_pos = Vector2(grid_x, grid_y)
@@ -176,16 +201,10 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 				vehicle.grid[cell_pos] = block
 				vehicle.target_grid[cell_pos] = block
 				placed_blocks[cell_pos] = block
-		block.global_position = Vector2(grid_x, grid_y) * GRID_SIZE + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
+		block.position = current_vehicle.to_local(to_global(Vector2(grid_x, grid_y) * GRID_SIZE + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)))
 	
-	for block in vehicle.blocks:
-		if is_instance_valid(block):
-			vehicle.connect_to_adjacent_blocks(block)
-	ui_instance.update_inventory_display(inventory)
-	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
-	create_ghost_block()
-	# 10. 恢复物理处理
-	vehicle.set_physics_process(true)
+
+
 	
 func update_editor_state(vehicle: Vehicle):
 	placed_blocks.clear()
@@ -241,16 +260,17 @@ func configure_ghost_block():
 			child.freeze = true
 
 func update_ghost_position():
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos = to_local(get_global_mouse_position())
 	var snapped_pos = Vector2i(
 		floor(mouse_pos.x / GRID_SIZE),
 		floor(mouse_pos.y / GRID_SIZE)
 	)
-	ghost_block.global_position = Vector2(snapped_pos * GRID_SIZE) + Vector2(ghost_block.size)/2 * GRID_SIZE
+	ghost_block.position = Vector2(snapped_pos * GRID_SIZE) + Vector2(ghost_block.size)/2 * GRID_SIZE
 	ghost_block.global_grid_pos.clear()
 	for x in ghost_block.size.x:
 		for y in ghost_block.size.y:
 			ghost_block.global_grid_pos.append(snapped_pos + Vector2i(x, y))
+	
 
 func place_block():
 	if not ghost_block or not can_build:
@@ -265,6 +285,7 @@ func place_block():
 	
 	# 检查位置是否被占用
 	for pos in grid_positions:
+		print(grid_positions, ghost_block)
 		if placed_blocks.has(pos):
 			print("位置被占用: ", pos)
 			return
@@ -274,7 +295,7 @@ func place_block():
 		current_vehicle = vehicle_scene.instantiate()
 		get_parent().add_child(current_vehicle)
 		current_vehicle.global_position = factory_zone.position
-		is_editing_vehicle = false
+		is_editing_vehicle = true
 		print("创建新车辆")
 	
 	inventory[block_name] -= 1
@@ -291,7 +312,7 @@ func place_block():
 	
 	if current_vehicle:
 		# 计算相对于车辆的局部位置
-		var local_pos = current_vehicle.to_local(ghost_block.global_position)
+		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
 		new_block.position = local_pos
 		
 		current_vehicle._add_block(new_block)
@@ -303,23 +324,18 @@ func place_block():
 			placed_blocks[pos] = new_block
 		# 自动连接相邻方块
 		current_vehicle.connect_to_adjacent_blocks(new_block)
-	else:
-		add_child(new_block)
-		for pos in grid_positions:
-			placed_blocks[pos] = new_block
 	
 	create_ghost_block()
 
 func remove_block_at_mouse():
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos = to_local(get_global_mouse_position())
 	var grid_pos = Vector2i(
 		floor(mouse_pos.x / GRID_SIZE),
 		floor(mouse_pos.y / GRID_SIZE)
 	)
-	
 	if placed_blocks.has(grid_pos):
-		var block = placed_blocks[grid_pos]
-		var block_name = block.name
+		var block:Block = placed_blocks[grid_pos]
+		var block_name = block.scene_file_path.get_file().get_basename()
 		
 		# 返还资源
 		if inventory.has(block_name):
@@ -327,8 +343,8 @@ func remove_block_at_mouse():
 		else:
 			inventory[block_name] = 1
 		
-		ui_instance.update_inventory_display(inventory)
 		
+		ui_instance.update_inventory_display(inventory)
 		if is_editing_vehicle and current_vehicle:
 			# 如果是编辑模式，从车辆中移除方块
 			current_vehicle.remove_block(block)
@@ -396,7 +412,6 @@ func _on_build_vehicle_requested():
 		return
 		
 	if is_editing_vehicle and current_vehicle:
-		# 直接保存修改，不弹出命名对话框
 		_on_vehicle_saved(current_vehicle.vehicle_name)
 	else:
 		begin_vehicle_creation()
@@ -411,14 +426,14 @@ func update_build_indicator():
 
 func is_position_in_factory(block:Block) -> bool:
    # 计算方块的左上角世界坐标
-	var block_top_left = block.global_position - Vector2(block.size)/2 * GRID_SIZE
+	var block_top_left = block.position - Vector2(block.size)/2 * GRID_SIZE
 	
 	# 计算方块的右下角世界坐标
 	var block_bottom_right = Vector2((block_top_left.x + block.size.x * GRID_SIZE), (block_top_left.y + block.size.y * GRID_SIZE))
 	
 	# 工厂区域的边界
-	var factory_top_left = global_position
-	var factory_bottom_right = Vector2((global_position.x + factory_size.x * GRID_SIZE), (global_position.y + factory_size.y * GRID_SIZE))
+	var factory_top_left = factory_zone.position - Vector2(factory_size)/2 * GRID_SIZE
+	var factory_bottom_right = Vector2((factory_top_left.x + factory_size.x * GRID_SIZE), (factory_top_left.y + factory_size.y * GRID_SIZE))
 	
 	# 检查是否完全在工厂范围内
 	return (block_top_left.x >= factory_top_left.x and
@@ -456,7 +471,7 @@ func _on_vehicle_saved(vehicle_name: String):
 	
 	# 确定保存路径
 	var blueprint_path = ""
-	if is_editing_vehicle:
+	if current_vehicle.blueprint != null:
 		# 编辑模式：使用原有路径或生成默认路径
 		if current_vehicle.blueprint is String:
 			blueprint_path = current_vehicle.blueprint
