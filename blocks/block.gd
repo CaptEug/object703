@@ -11,6 +11,7 @@ var _cached_icon: Texture2D
 var neighbors:= {}
 var connected_blocks := []
 var global_grid_pos:= []
+var mouse_inside:bool
 
 signal frame_post_drawn
 
@@ -18,19 +19,31 @@ func _ready():
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight
 	parent_vehicle = get_parent() as Vehicle
-	pass # Replace with function body.
+	#initialize signal
+	input_pickable = true
+	connect("input_event", Callable(self, "_on_input_event"))
+	connect("mouse_entered", Callable(self, "_on_mouse_entered"))
+	connect("mouse_exited", Callable(self, "_on_mouse_exited"))
 
+func _process(_delta):
+	pass
 
 func _emit_relay_signal():
 	frame_post_drawn.emit()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	pass
+func _on_input_event(viewport, event, shape_idx):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			print("Clicked!")
 
+func _on_mouse_entered():
+	mouse_inside = true
+
+func _on_mouse_exited():
+	mouse_inside = false
 
 func damage(amount:int):
-	print(str(name)+'receive damage:'+str(amount))
+	print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
 	if current_hp <= 0:
 		if parent_vehicle:
@@ -38,10 +51,8 @@ func damage(amount:int):
 		queue_free()
 
 func get_icon_texture():
-	var texture_blocks = find_child("Sprite2D")
-	if texture_blocks != null and texture_blocks is Sprite2D:
-		return texture_blocks.texture
-	return null
+	var texture_blocks := find_child("Sprite2D") as Sprite2D
+	return texture_blocks.texture
 
 func get_neighors():
 	if parent_vehicle:
