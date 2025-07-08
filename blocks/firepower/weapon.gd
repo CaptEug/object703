@@ -4,7 +4,7 @@ extends Block
 var range:float
 var reload:float
 var ammo_cost:float
-var rotation_speed:float  # rads per second
+var rotation_speed:float # rads per second
 var traverse:Array # degree
 var muzzle_energy:float
 var turret:Sprite2D 
@@ -17,6 +17,7 @@ var reload_timer:Timer
 var loaded:bool = false
 var loading:bool = false
 var detection_area:Area2D
+var connected_ammoracks := []
 var icons:Dictionary = {"normal":"res://assets/icons/turret_icon.png","selected":"res://assets/icons/turret_icon_n.png"}
 
 # Called when the node enters the scene tree for the first time.
@@ -115,15 +116,36 @@ func shoot(muz:Marker2D, shell_scene:PackedScene):
 
 func start_reload():
 	loading = true
-	parent_vehicle.cost_ammo(ammo_cost)
+	cost_ammo(ammo_cost)
 	reload_timer.start()
 
-func has_ammo() -> bool: 
-	if parent_vehicle:
-		if parent_vehicle.total_ammo >= ammo_cost:
-			return true
+func has_ammo() -> bool:
+	connected_ammoracks.clear()
+	find_all_connected_ammorack()
+	var total_ammo = 0
+	for ammorack in connected_ammoracks:
+		total_ammo += ammorack.ammo_storage
+	if total_ammo > ammo_cost:
+		return true
 	return false
+
+func cost_ammo(amount:float):
+	var remaining = amount
+	for ammorack in connected_ammoracks:
+		if ammorack.ammo_storage >= remaining:
+			ammorack.ammo_storage -= remaining
+			return
+		else:
+			remaining -= ammorack.ammo_storage
+			ammorack.ammo_storage = 0
 
 func _on_timer_timeout():
 	loaded = true
 	loading = false
+
+func find_all_connected_ammorack():
+	connected_ammoracks.clear()
+	for block in get_all_connected_blocks():
+		if block is Ammorack:
+			connected_ammoracks.append(block)
+	return connected_ammoracks

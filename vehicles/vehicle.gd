@@ -16,8 +16,8 @@ var total_fuel:float
 var total_fuel_cap:float
 var total_store:int
 var blueprint:Variant
+var blueprint_grid:= {}
 var grid:= {}
-var target_grid:={}
 var blocks:= []
 var powerpacks:= []
 var tracks:= []
@@ -40,6 +40,7 @@ func _ready():
 	if blueprint:
 		Get_ready_again()
 
+
 func Get_ready_again():
 	if blueprint is String:
 		load_from_file(blueprint)
@@ -50,8 +51,15 @@ func Get_ready_again():
 	update_vehicle()
 
 
+func _process(delta):
+	if control:
+		update_tracks_state(control.call(), delta)
+
 
 func update_vehicle():
+	#Check block connectivity
+	for block in blocks:
+		block.get_neighors()
 	#Get all total parameters
 	get_max_engine_power()
 	get_current_engine_power()
@@ -69,11 +77,8 @@ func update_vehicle():
 			if not check_control("remote_control"):
 				if not check_control("manual_control"):
 					control = Callable()
-	print(total_ammo)
 
-func _process(delta):
-	if control:
-		update_tracks_state(control.call(), delta)
+###################### BLOCK MANAGEMENT ######################
 
 func _add_block(block: Block):
 	print("add", block)
@@ -120,12 +125,165 @@ func has_block(block_name:String):
 		if block.block_name == block_name:
 			return block
 
+func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
+	for pos in Dic:
+		if Dic[pos] == block:
+			return pos
+	return Vector2i.ZERO
+
+##################### VEHICLE PARAMETER MANAGEMENT #####################
+
 func check_control(control_name:String):
 	for block in commands:
 		if block.has_method(control_name):
 			control = Callable(block, control_name)
 			return true
 	return false
+
+func get_max_engine_power() -> float:
+	var max_power := 0.0
+	for engine in powerpacks:
+		if engine.is_inside_tree() and is_instance_valid(engine):
+			max_power += engine.max_power
+	current_engine_power = max_power
+	return max_power
+
+func get_current_engine_power() -> float:
+	var currunt_power := 0.0
+	for engine in powerpacks:
+		if engine.is_inside_tree() and is_instance_valid(engine):
+			currunt_power += engine.power
+	current_engine_power = currunt_power
+	return currunt_power
+
+func get_ammo_cap():
+	var ammo_cap := 0.0
+	for ammorack in ammoracks:
+		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
+			ammo_cap += ammorack.ammo_storage_cap
+	total_ammo_cap = ammo_cap
+	return ammo_cap
+
+func update_current_ammo():
+	var currunt_ammo := 0.0
+	for ammorack in ammoracks:
+		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
+			currunt_ammo += ammorack.ammo_storage
+	total_ammo = currunt_ammo
+	return currunt_ammo
+
+func get_fuel_cap():
+	var fuel_cap := 0.0
+	for fueltank in fueltanks:
+		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
+			fuel_cap += fueltank.FUEL_CAPACITY
+	total_fuel_cap = fuel_cap
+	return fuel_cap
+
+func update_current_fuel():
+	var currunt_fuel := 0.0
+	for fueltank in fueltanks:
+		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
+			currunt_fuel += fueltank.fuel_storage
+	total_fuel = currunt_fuel
+	return currunt_fuel
+
+
+
+########################## VEHICLE LOADING ###########################
+
+func load_from_file(identifier):  # 允许接收多种类型参数
+	var path: String
+	if identifier is String:
+		if not identifier.ends_with(".json"):
+			path = "res://vehicles/blueprint/%s.json" % identifier
+		else:
+			path = identifier
+	elif identifier is int:
+		path = "res://vehicles/blueprint/%d.json" % identifier
+	else:
+		push_error("Invalid file identifier type: ", typeof(identifier))
+		return
+	var file = FileAccess.open(path, FileAccess.READ)
+	if file:
+		var json = JSON.new()
+		var error = json.parse(file.get_as_text())
+		if error == OK:
+			load_from_blueprint(json.data)
+		else:
+			push_error("JSON parse error: ", json.get_error_message())
+	else:
+		push_error("Failed to load file: ", path)
+
+func load_from_blueprint(bp: Dictionary):
+	clear_existing_blocks()
+	var target_grid = {}
+	# 按数字键排序以保证加载顺序一致
+	var block_ids = bp["blocks"].keys()
+	var _name = bp["name"]
+	vehicle_name = _name
+	block_ids.sort()
+	
+	for block_id in block_ids:
+		var block_data = bp["blocks"][block_id]
+		var block_scene = load(block_data["path"])  # 使用完整路径加载
+		
+		if block_scene:
+			var block = block_scene.instantiate()
+			var size = Vector2(block_data["size"][0], block_data["size"][1])
+			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
+			block.rotation = get_rotation_angle(block_data["rotation"])
+			block.size = size
+			_add_block(block)
+			# 记录所有网格位置
+			for x in size.x:
+				for y in size.y:
+					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+					target_grid[grid_pos] = block
+	connect_blocks(target_grid)
+
+func get_rotation_angle(dir: String) -> float:
+	match dir:
+		"left":    return PI/2
+		"up": return 0
+		"right":  return -PI/2
+		"down":  return PI
+		_:       return PI/2
+
+func clear_existing_blocks():
+	for block in blocks:
+		block.queue_free()
+	blocks.clear()
+	grid.clear()
+	tracks.clear()
+	powerpacks.clear()
+	track_target_forces.clear()
+	track_current_forces.clear()
+
+func get_blueprint_path() -> String:
+	if blueprint is String:
+		return blueprint
+	elif blueprint is Dictionary:
+		return "res://vehicles/blueprint/%s.json" % vehicle_name
+	return ""
+
+func connect_blocks(target_grid:Dictionary):
+	# 先清除所有现有关节
+	for block in blocks:
+		for child in block.get_children():
+			if child is PinJoint2D:
+				child.queue_free()
+
+	# 重新建立连接
+	for block in blocks:
+		var size = Vector2(block.size)
+		var grid_pos = find_pos(target_grid, block)
+		block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
+		for x in size.x:
+			for y in size.y:
+				var cell = grid_pos + Vector2i(x, y)
+				grid[cell] = block
+				connect_to_adjacent_blocks(block)
 
 func connect_to_adjacent_blocks(block: Block):
 	# 找到方块在网格中的基准位置
@@ -149,6 +307,34 @@ func connect_to_adjacent_blocks(block: Block):
 						var joint_pos = Vector2(global_joint_pos) - block.global_position
 						connect_with_joint(block, neighbor, joint_pos)
 
+func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
+	var joint = PinJoint2D.new()
+	joint.node_a = a.get_path()
+	joint.node_b = b.get_path()
+	joint.position = joint_pos
+	joint.disable_collision = false
+	a.add_child(joint)
+
+
+########################## VEHICLE PHYSICS PROCESSING #######################
+
+func calculate_center_of_mass() -> Vector2:
+	var total_mass := 0.0
+	var weighted_sum := Vector2.ZERO
+	var has_calculated := {}
+	for grid_pos in grid:
+		if  grid[grid_pos] != null:
+			var body: RigidBody2D = grid[grid_pos]
+			if blocks.has(body):
+				if has_calculated.get(body.get_instance_id(), false):
+					continue
+				var rid = body.get_rid()
+				var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
+				var global_com: Vector2 = body.to_global(local_com)
+				weighted_sum += global_com * body.mass
+				total_mass += body.mass
+				has_calculated[body.get_instance_id()] = true
+	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 
 func calculate_balanced_forces():
@@ -424,148 +610,6 @@ func update_tracks_state(control_input:Array, delta):
 	apply_smooth_track_forces(delta)
 
 
-func connect_blocks():
-	# 先清除所有现有关节
-	for block in blocks:
-		for child in block.get_children():
-			if child is PinJoint2D:
-				child.queue_free()
-	
-	# 重新建立连接
-	get_neighbor()
-	for block in blocks:
-		var size = Vector2(block.size)
-		var grid_pos = find_pos(target_grid, block)
-		block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
-		for x in size.x:
-			for y in size.y:
-				var cell = grid_pos + Vector2i(x, y)
-				grid[cell] = block
-				connect_to_adjacent_blocks(block)
-
-func get_neighbor():
-	for block in blocks:
-		var size = block.size
-		var grid_pos = find_pos(target_grid, block)
-		for x in size.x:
-			for y in size.y:
-				var cell = grid_pos + Vector2i(x, y)
-				target_grid[cell] = block
-				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
-				for dir in directions:
-					var neighbor_pos = cell + dir
-					if target_grid.has(neighbor_pos) and target_grid[neighbor_pos] != block:
-						var neighbor = target_grid[neighbor_pos]
-						var neighbor_real_pos = find_pos(target_grid, neighbor)
-						block.neighbors[neighbor_real_pos - grid_pos] = neighbor
-
-func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
-	for pos in Dic:
-		if Dic[pos] == block:
-			return pos
-	return Vector2i.ZERO
-
-func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
-	var joint = PinJoint2D.new()
-	joint.node_a = a.get_path()
-	joint.node_b = b.get_path()
-	joint.global_position = joint_pos
-	joint.disable_collision = false
-	a.add_child(joint)
-	
-func calculate_center_of_mass() -> Vector2:
-	var total_mass := 0.0
-	var weighted_sum := Vector2.ZERO
-	var has_calculated := {}
-	for grid_pos in grid:
-		if  grid[grid_pos] != null:
-			var body: RigidBody2D = grid[grid_pos]
-			if blocks.has(body):
-				if has_calculated.get(body.get_instance_id(), false):
-					continue
-				var rid = body.get_rid()
-				var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
-				var global_com: Vector2 = body.to_global(local_com)
-				weighted_sum += global_com * body.mass
-				total_mass += body.mass
-				has_calculated[body.get_instance_id()] = true
-	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
-
-
-func get_max_engine_power() -> float:
-	var max_power := 0.0
-	for engine in powerpacks:
-		if engine.is_inside_tree() and is_instance_valid(engine):
-			max_power += engine.max_power
-	current_engine_power = max_power
-	return max_power
-
-func get_current_engine_power() -> float:
-	var currunt_power := 0.0
-	for engine in powerpacks:
-		if engine.is_inside_tree() and is_instance_valid(engine):
-			currunt_power += engine.power
-	current_engine_power = currunt_power
-	return currunt_power
-
-
-
-func get_ammo_cap():
-	var ammo_cap := 0.0
-	for ammorack in ammoracks:
-		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
-			ammo_cap += ammorack.AMMO_CAPACITY
-	total_ammo_cap = ammo_cap
-	return ammo_cap
-
-func update_current_ammo():
-	var currunt_ammo := 0.0
-	for ammorack in ammoracks:
-		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
-			currunt_ammo += ammorack.ammo_storage
-	total_ammo = currunt_ammo
-	return currunt_ammo
-
-func cost_ammo(amount:float):
-	var remaining = amount
-	for ammorack in ammoracks:
-		if ammorack.ammo_storage >= remaining:
-			ammorack.ammo_storage -= remaining
-		else:
-			remaining -= ammorack.ammo_storage
-			ammorack.ammo_storage = 0
-	update_current_ammo()
-
-
-
-func get_fuel_cap():
-	var fuel_cap := 0.0
-	for fueltank in fueltanks:
-		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			fuel_cap += fueltank.FUEL_CAPACITY
-	total_fuel_cap = fuel_cap
-	return fuel_cap
-
-func update_current_fuel():
-	var currunt_fuel := 0.0
-	for fueltank in fueltanks:
-		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			currunt_fuel += fueltank.fuel_storage
-	total_fuel = currunt_fuel
-	return currunt_fuel
-
-func cost_fuel(amount:float):
-	var remaining = amount
-	for fueltank in fueltanks:
-		if fueltank.fuel_storage >= remaining:
-			fueltank.fuel_storage -= remaining
-		else:
-			remaining -= fueltank.fuel_storage
-			fueltank.fuel_storage = 0
-	update_current_fuel()
-
-
-
 func apply_smooth_track_forces(delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
@@ -580,91 +624,3 @@ func apply_smooth_track_forces(delta):
 			else:
 				track.set_state_force('idle', 0)
 				track_current_forces[track] = 0.0
-
-func load_from_file(identifier):  # 允许接收多种类型参数
-	var path: String
-	if identifier is String:
-		if not identifier.ends_with(".json"):
-			path = "res://vehicles/blueprint/%s.json" % identifier
-		else:
-			path = identifier
-	elif identifier is int:
-		path = "res://vehicles/blueprint/%d.json" % identifier
-	else:
-		push_error("Invalid file identifier type: ", typeof(identifier))
-		return
-	var file = FileAccess.open(path, FileAccess.READ)
-	if file:
-		var json = JSON.new()
-		var error = json.parse(file.get_as_text())
-		if error == OK:
-			load_from_blueprint(json.data)
-		else:
-			push_error("JSON parse error: ", json.get_error_message())
-	else:
-		push_error("Failed to load file: ", path)
-
-func load_from_blueprint(blueprint: Dictionary):
-	clear_existing_blocks()
-	
-	# 按数字键排序以保证加载顺序一致
-	var block_ids = blueprint["blocks"].keys()
-	var _name = blueprint["name"]
-	vehicle_name = _name
-	block_ids.sort()
-	
-	for block_id in block_ids:
-		var block_data = blueprint["blocks"][block_id]
-		var block_scene = load(block_data["path"])  # 使用完整路径加载
-		
-		if block_scene:
-			var block = block_scene.instantiate()
-			var size = Vector2(block_data["size"][0], block_data["size"][1])
-			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
-			block.rotation = get_rotation_angle(block_data["rotation"])
-			block.size = size
-			_add_block(block)
-			# 记录所有网格位置
-			for x in size.x:
-				for y in size.y:
-					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
-					target_grid[grid_pos] = block
-	connect_blocks()
-	initialize_physics()
-
-func get_rotation_angle(direction: String) -> float:
-	match direction:
-		"left":    return PI/2
-		"up": return 0
-		"right":  return -PI/2
-		"down":  return PI
-		_:       return PI/2
-
-
-func clear_existing_blocks():
-	for block in blocks:
-		block.queue_free()
-	blocks.clear()
-	grid.clear()
-	tracks.clear()
-	powerpacks.clear()
-	track_target_forces.clear()
-	track_current_forces.clear()
-
-func initialize_physics():
-	# 初始化物理计算
-	calculate_center_of_mass()
-	calculate_balanced_forces()
-	calculate_rotation_forces()
-	
-	# 初始化履带力
-	for track in tracks:
-		track_target_forces[track] = 0.0
-		track_current_forces[track] = 0.0
-
-func get_blueprint_path() -> String:
-	if blueprint is String:
-		return blueprint
-	elif blueprint is Dictionary:
-		return "res://vehicles/blueprint/%s.json" % vehicle_name
-	return ""

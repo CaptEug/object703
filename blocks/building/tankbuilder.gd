@@ -187,7 +187,6 @@ func block_to_grid(vehicle:Vehicle):
 	
 	# 6. 移动整个车辆使质心对齐工厂中心
 	vehicle.grid.clear()
-	vehicle.target_grid.clear()
 	placed_blocks.clear()
 	# 7. [新增] 网格对齐处理
 	for block:Block in vehicle.blocks:
@@ -199,7 +198,6 @@ func block_to_grid(vehicle:Vehicle):
 			for y in block.size.y:
 				var cell_pos = Vector2i(grid_pos) + Vector2i(x, y)
 				vehicle.grid[cell_pos] = block
-				vehicle.target_grid[cell_pos] = block
 				placed_blocks[cell_pos] = block
 		block.position = current_vehicle.to_local(to_global(Vector2(grid_x, grid_y) * GRID_SIZE + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)))
 	
@@ -320,7 +318,6 @@ func place_block():
 		# 更新网格记录
 		for pos in grid_positions:
 			current_vehicle.grid[pos] = new_block
-			current_vehicle.target_grid[pos] = new_block
 			placed_blocks[pos] = new_block
 		# 自动连接相邻方块
 		current_vehicle.connect_to_adjacent_blocks(new_block)

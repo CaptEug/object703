@@ -9,6 +9,7 @@ var size: Vector2i
 var parent_vehicle: Vehicle = null  
 var _cached_icon: Texture2D
 var neighbors:= {}
+var connected_blocks := []
 var global_grid_pos:= []
 
 signal frame_post_drawn
@@ -41,3 +42,30 @@ func get_icon_texture():
 	if texture_blocks != null and texture_blocks is Sprite2D:
 		return texture_blocks.texture
 	return null
+
+func get_neighors():
+	if parent_vehicle:
+		var grid = parent_vehicle.grid
+		var grid_pos = parent_vehicle.find_pos(grid, self)
+		for x in size.x:
+			for y in size.y:
+				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
+				for dir in directions:
+					var neighbor_pos = grid_pos + dir
+					if grid.has(neighbor_pos) and grid[neighbor_pos] != self:
+						var neighbor = grid[neighbor_pos]
+						var neighbor_real_pos = parent_vehicle.find_pos(grid, neighbor)
+						neighbors[neighbor_real_pos - grid_pos] = neighbor
+	return neighbors
+
+func get_all_connected_blocks():
+	connected_blocks.clear()
+	get_connected_blocks(self)
+	return connected_blocks
+
+func get_connected_blocks(block:Block):
+	var nbrs = block.neighbors
+	for neighbor in nbrs.values():
+		if not connected_blocks.has(neighbor) and neighbor != self:
+			connected_blocks.append(neighbor)
+			get_connected_blocks(neighbor)
