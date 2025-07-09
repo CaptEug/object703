@@ -1,4 +1,7 @@
+class_name Tankeditor
 extends Block
+
+
 
 # 配置
 const GRID_SIZE := 16
@@ -72,8 +75,8 @@ func _process(delta):
 		update_ghost_position()
 		update_build_indicator()
 			
-	if current_vehicle and is_editing_vehicle:
-		block_to_grid(current_vehicle)
+	#if current_vehicle and is_editing_vehicle:
+		#block_to_grid(current_vehicle)
 
 
 func _input(event):
@@ -164,13 +167,14 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 
 
 func block_to_grid(vehicle:Vehicle):
-	var original_com := vehicle.calculate_center_of_mass()
+	var original_com := to_local(vehicle.calculate_center_of_mass()) 
+	print(vehicle.calculate_center_of_mass())
 	
 	# 4. 逐块处理旋转（保持原始位置，仅校正旋转）
 	for block:Block in vehicle.blocks:
 		# 保存原始全局位置
-		var original_global_pos = block.global_position
-		
+		var original_global_pos = to_local(block.global_position) 
+		#print(original_global_pos)
 		# 计算方块相对质心的向量
 		var offset_from_com = original_global_pos - original_com
 		
@@ -180,10 +184,7 @@ func block_to_grid(vehicle:Vehicle):
 		
 		# 计算旋转后的新位置（保持相对质心距离）
 		var rotated_offset = offset_from_com.rotated(-original_rotation + block.global_rotation)
-		block.global_position = original_com + rotated_offset
-	
-	# 5. 重新计算车辆质心（旋转后）
-	var new_com := vehicle.calculate_center_of_mass()
+		block.position = vehicle.to_local(to_global(original_com + rotated_offset)) 
 	
 	# 6. 移动整个车辆使质心对齐工厂中心
 	vehicle.grid.clear()
@@ -191,16 +192,16 @@ func block_to_grid(vehicle:Vehicle):
 	# 7. [新增] 网格对齐处理
 	for block:Block in vehicle.blocks:
 		var local_pos = to_local(block.global_position) - Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
-		var grid_x = round(local_pos.x / GRID_SIZE)
-		var grid_y = round(local_pos.y / GRID_SIZE)
-		var grid_pos = Vector2(grid_x, grid_y)
+		var grid_x = roundi(local_pos.x / GRID_SIZE)
+		var grid_y = roundi(local_pos.y / GRID_SIZE)
+		var grid_pos = Vector2i(grid_x, grid_y)
 		for x in block.size.x:
 			for y in block.size.y:
-				var cell_pos = Vector2i(grid_pos) + Vector2i(x, y)
-				vehicle.grid[cell_pos] = block
+				var cell_pos = grid_pos + Vector2i(x, y)
 				placed_blocks[cell_pos] = block
-		block.position = current_vehicle.to_local(to_global(Vector2(grid_x, grid_y) * GRID_SIZE + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)))
-	
+				vehicle.grid = placed_blocks
+		block.position = current_vehicle.to_local(to_global(Vector2(grid_pos * GRID_SIZE) + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)))
+	#
 
 
 	
@@ -312,6 +313,7 @@ func place_block():
 		# 计算相对于车辆的局部位置
 		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
 		new_block.position = local_pos
+		new_block.global_rotation = rotation
 		
 		current_vehicle._add_block(new_block)
 		
@@ -508,6 +510,19 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	
 	# 首先收集所有方块的基准位置
 	var base_positions = {}
+	var min_x:int
+	var min_y:int
+	for grid_pos in placed_blocks:
+		min_x = grid_pos.x
+		min_y = grid_pos.y
+		break
+	
+	for grid_pos in placed_blocks:
+		if min_x > grid_pos.x:
+			min_x = grid_pos.x
+		if min_y > grid_pos.y:
+			min_y = grid_pos.y
+		
 	for grid_pos in placed_blocks:
 		var block = placed_blocks[grid_pos]
 		if not processed_blocks.has(block):
@@ -525,7 +540,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 			blueprint_data["blocks"][str(block_counter)] = {
 				"name": block.name,
 				"path": block.scene_file_path,
-				"base_pos": [base_pos.x, base_pos.y],
+				"base_pos": [base_pos.x - min_x, base_pos.y - min_y],
 				"size": [block.size.x, block.size.y],
 				"rotation": rotation_str
 			}
