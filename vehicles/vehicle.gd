@@ -34,6 +34,7 @@ var control:Callable
 var controls:= []
 var is_assembled := false
 var block_scenes := {}
+var selected:bool
 
 
 func _ready():

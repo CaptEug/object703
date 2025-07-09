@@ -15,13 +15,7 @@ glow_blend_mode = 0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Control" type="Control" parent="CanvasLayer"]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="Tankpanel" parent="CanvasLayer/Control" instance=ExtResource("6_hie3q")]
+[node name="Tankpanel" parent="CanvasLayer" instance=ExtResource("6_hie3q")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
