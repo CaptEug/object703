@@ -352,7 +352,6 @@ func remove_block_at_mouse():
 			for pos in current_vehicle.grid:
 				if current_vehicle.grid[pos] == block:
 					current_vehicle.grid.erase(pos)
-					current_vehicle.target_grid.erase(pos)
 		else:
 			# 否则直接从场景中移除
 			block.queue_free()
@@ -554,7 +553,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 			}
 			block_counter += 1
 			processed_blocks[block] = true
-	blueprint_data["vehical_size"] = [max_x - min_x + 1, max_y - min_y + 1]
+	blueprint_data["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
 	
 	return blueprint_data
 
