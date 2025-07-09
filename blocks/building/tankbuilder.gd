@@ -512,9 +512,13 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	var base_positions = {}
 	var min_x:int
 	var min_y:int
+	var max_x:int
+	var max_y:int
 	for grid_pos in placed_blocks:
 		min_x = grid_pos.x
 		min_y = grid_pos.y
+		max_x = grid_pos.x
+		max_y = grid_pos.y
 		break
 	
 	for grid_pos in placed_blocks:
@@ -522,6 +526,10 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 			min_x = grid_pos.x
 		if min_y > grid_pos.y:
 			min_y = grid_pos.y
+		if max_x < grid_pos.x:
+			max_x = grid_pos.x
+		if max_y < grid_pos.y:
+			max_y = grid_pos.y
 		
 	for grid_pos in placed_blocks:
 		var block = placed_blocks[grid_pos]
@@ -542,10 +550,11 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 				"path": block.scene_file_path,
 				"base_pos": [base_pos.x - min_x, base_pos.y - min_y],
 				"size": [block.size.x, block.size.y],
-				"rotation": rotation_str
+				"rotation": rotation_str,
 			}
 			block_counter += 1
 			processed_blocks[block] = true
+	blueprint_data["vehical_size"] = [max_x - min_x + 1, max_y - min_y + 1]
 	
 	return blueprint_data
 
