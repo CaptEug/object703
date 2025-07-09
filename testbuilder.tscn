@@ -10,4 +10,5 @@ scale = Vector2(0.80315, 0.964736)
 
 [node name="Tankbuilder" parent="." instance=ExtResource("1_vokvl")]
 position = Vector2(535.392, 228.042)
+rotation = -0.792379
 scale = Vector2(0.996965, 1.01527)
