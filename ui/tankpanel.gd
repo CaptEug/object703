@@ -29,6 +29,7 @@ func retrieve_vehicle_data():
 	ammo_progressbar.value = selected_vehicle.update_current_ammo()
 
 func draw_grid():
+	var vehicle_size = selected_vehicle.vehicle_size
 	var line_color = Color(0, 0.7, 0)
 	var line_width: float = 2.0
 	var grid_size = 16
@@ -45,5 +46,5 @@ func draw_grid():
 			var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
 			if collisionshape and collisionshape.shape is RectangleShape2D:
 				var extents = collisionshape.shape.extents
-				var rect = Rect2(Vector2(pos) * grid_size, extents * 2)
+				var rect = Rect2((Vector2(pos) - Vector2(vehicle_size)/2) * grid_size, extents * 2)
 				draw_rect(rect, line_color, false, line_width)
