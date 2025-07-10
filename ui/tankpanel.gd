@@ -29,11 +29,13 @@ func retrieve_vehicle_data():
 	ammo_progressbar.value = selected_vehicle.update_current_ammo()
 
 func draw_grid():
-	var vehicle_size = selected_vehicle.vehicle_size
 	var line_color = Color(0, 0.7, 0)
 	var line_width: float = 2.0
-	var grid_size = 16
+	
 	var grid = selected_vehicle.grid
+	var vehicle_size = selected_vehicle.vehicle_size
+	var grid_size = 16
+	var draw_pos = $Marker2D.position - Vector2(vehicle_size/2) * grid_size
 	var blocks = []
 	for pos in grid:
 		if not blocks.has(grid[pos]):
@@ -41,10 +43,10 @@ func draw_grid():
 			# draw outline if the block has one
 			if grid[pos].outline_tex:
 				var mask_tex = grid[pos].outline_tex
-				draw_texture(mask_tex, Vector2(pos) * grid_size, line_color)
+				draw_texture(mask_tex, draw_pos + Vector2(pos) * grid_size, line_color)
 				continue
 			var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
 			if collisionshape and collisionshape.shape is RectangleShape2D:
-				var extents = collisionshape.shape.extents
-				var rect = Rect2((Vector2(pos) - Vector2(vehicle_size)/2) * grid_size, extents * 2)
+				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
+				var rect = Rect2(draw_pos + Vector2(pos) * grid_size + Vector2(line_width,line_width)/2, extents * 2)
 				draw_rect(rect, line_color, false, line_width)

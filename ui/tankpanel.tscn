@@ -46,6 +46,7 @@ theme_override_colors/font_color = Color(0, 0.701961, 0, 1)
 text = "tankname"
 
 [node name="ManualControl" type="TextureButton" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 226.0
 offset_top = 12.0
@@ -54,6 +55,7 @@ offset_bottom = 44.0
 texture_normal = ExtResource("4_mvbyx")
 
 [node name="RemoteControl" type="TextureButton" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 258.0
 offset_top = 12.0
@@ -62,6 +64,7 @@ offset_bottom = 44.0
 texture_normal = ExtResource("5_i2tau")
 
 [node name="AIControl" type="TextureButton" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 290.0
 offset_top = 12.0
@@ -94,3 +97,6 @@ show_percentage = false
 [node name="Sprite2D" type="Sprite2D" parent="Ammo"]
 position = Vector2(4, 78)
 texture = SubResource("AtlasTexture_sh8cn")
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(168, 168)
