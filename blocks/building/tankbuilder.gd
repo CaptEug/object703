@@ -35,7 +35,7 @@ var inventory = {
 	"fuel_tank":10,
 	"cupola":10,
 	"ammo_rack":10,
-	#"tankbuilder":10
+	"tankbuilder":10
 }
 
 func _ready():
@@ -57,18 +57,24 @@ func setup_factory_zone():
 	factory_zone.collision_mask = 1
 
 func init_ui():
-	ui_instance = $"../Tankbuilderui"
-	if ui_instance != null:
-		ui_instance.hide()
-		ui_instance.setup_inventory(inventory)
-		ui_instance.block_selected.connect(_on_block_selected)
-		ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
-		ui_instance.vehicle_saved.connect(_on_vehicle_saved)
+	if parent_vehicle != null:
+		ui_instance = $"../../CanvasLayer/Tankbuilderui"
+	elif get_parent().has_node("CanvasLayer"):
+		ui_instance = $"../CanvasLayer/Tankbuilderui"
+	else:
+		ui_instance = $"../Tankbuilderui"
+		if ui_instance != null:
+			ui_instance.hide()
+			ui_instance.setup_inventory(inventory)
+			ui_instance.block_selected.connect(_on_block_selected)
+			ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
+			ui_instance.vehicle_saved.connect(_on_vehicle_saved)
 
 	
 
 func setup_test_inventory():
-	ui_instance.update_inventory_display(inventory)
+	if ui_instance != null:
+		ui_instance.update_inventory_display(inventory)
 
 func _process(delta):
 	if ghost_block and is_build_mode:
@@ -539,10 +545,10 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	# 重新处理并分配顺序ID
 	processed_blocks.clear()
 	for grid_pos in placed_blocks:
-		var block = placed_blocks[grid_pos]
+		var block:Block = placed_blocks[grid_pos]
 		if not processed_blocks.has(block):
 			var base_pos = grid_pos
-			var rotation_str = get_rotation_direction(block.rotation)
+			var rotation_str = get_rotation_direction(block.global_rotation - global_rotation)
 			
 			blueprint_data["blocks"][str(block_counter)] = {
 				"name": block.name,
