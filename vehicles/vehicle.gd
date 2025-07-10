@@ -5,6 +5,7 @@ const GRID_SIZE:int = 16
 const FORCE_CHANGE_RATE := 50.0
 const MAX_ROTING_POWER := 0.1
 
+var vehicle_size:Vector2i
 var vehicle_name:String
 var move_state:String
 var max_engine_power:float
@@ -68,6 +69,7 @@ func update_vehicle():
 	update_current_ammo()
 	get_fuel_cap()
 	update_current_fuel()
+	update_vehicle_size()
 	# 重新计算物理属性
 	calculate_center_of_mass()
 	calculate_balanced_forces()
@@ -225,6 +227,7 @@ func load_from_blueprint(bp: Dictionary):
 	var _name = bp["name"]
 	vehicle_name = _name
 	block_ids.sort()
+	vehicle_size = Vector2i(bp["vehicle_size"][0], bp["vehicle_size"][1])
 	
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
@@ -280,7 +283,7 @@ func connect_blocks(target_grid:Dictionary):
 	for block in blocks:
 		var size = Vector2(block.size)
 		var grid_pos = find_pos(target_grid, block)
-		block.global_position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
+		block.position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
 		for x in size.x:
 			for y in size.y:
 				var cell = grid_pos + Vector2i(x, y)
@@ -304,9 +307,9 @@ func connect_to_adjacent_blocks(block: Block):
 				if grid.has(neighbor_pos):
 					var neighbor = grid[neighbor_pos]
 					if neighbor != block:
-						var global_base_pos = block.global_position - Vector2(block.size * GRID_SIZE)/2 + Vector2(8.0,8.0)
+						var global_base_pos = block.position - Vector2(block.size * GRID_SIZE)/2 + Vector2(8.0,8.0)
 						var global_joint_pos = Vector2(global_base_pos) + Vector2(x, y) * GRID_SIZE + Vector2(8* dir)
-						var joint_pos = Vector2(global_joint_pos) - block.global_position
+						var joint_pos = Vector2(global_joint_pos) - block.position
 						connect_with_joint(block, neighbor, joint_pos)
 
 func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
@@ -626,3 +629,28 @@ func apply_smooth_track_forces(delta):
 			else:
 				track.set_state_force('idle', 0)
 				track_current_forces[track] = 0.0
+
+func update_vehicle_size():
+	var min_x:int
+	var min_y:int
+	var max_x:int
+	var max_y:int
+	
+	for grid_pos in grid:
+		min_x = grid_pos.x
+		min_y = grid_pos.y
+		max_x = grid_pos.x
+		max_y = grid_pos.y
+		break
+	
+	for grid_pos in grid:
+		if min_x > grid_pos.x:
+			min_x = grid_pos.x
+		if min_y > grid_pos.y:
+			min_y = grid_pos.y
+		if max_x < grid_pos.x:
+			max_x = grid_pos.x
+		if max_y < grid_pos.y:
+			max_y = grid_pos.y
+	
+	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)

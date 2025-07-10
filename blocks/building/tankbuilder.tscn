@@ -28,5 +28,6 @@ texture = SubResource("AtlasTexture_igcs5")
 collision_mask = 129
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="FactoryZone"]
+visible = false
 shape = SubResource("RectangleShape2D_ojk03")
 debug_color = Color(0.855298, 0.334109, 0.407991, 0.42)

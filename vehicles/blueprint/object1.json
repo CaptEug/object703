@@ -2,8 +2,8 @@
 	"blocks": {
 		"1": {
 			"base_pos": [
-				4,
-				2
+				1,
+				0
 			],
 			"name": "Zis572",
 			"path": "res://blocks/firepower/zis_57_2.tscn",
@@ -15,8 +15,8 @@
 		},
 		"10": {
 			"base_pos": [
-				6,
-				2
+				3,
+				3
 			],
 			"name": "@RigidBody2D@52",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -28,10 +28,10 @@
 		},
 		"11": {
 			"base_pos": [
-				6,
-				3
+				3,
+				2
 			],
-			"name": "@RigidBody2D@56",
+			"name": "@RigidBody2D@55",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -41,10 +41,10 @@
 		},
 		"12": {
 			"base_pos": [
-				6,
-				4
+				3,
+				1
 			],
-			"name": "@RigidBody2D@61",
+			"name": "@RigidBody2D@59",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -54,10 +54,10 @@
 		},
 		"13": {
 			"base_pos": [
-				6,
-				5
+				3,
+				0
 			],
-			"name": "@RigidBody2D@67",
+			"name": "@RigidBody2D@65",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up",
 			"size": [
@@ -67,8 +67,8 @@
 		},
 		"2": {
 			"base_pos": [
-				4,
-				4
+				1,
+				2
 			],
 			"name": "Ammo",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
@@ -80,11 +80,11 @@
 		},
 		"3": {
 			"base_pos": [
-				4,
-				5
+				2,
+				2
 			],
-			"name": "FuelTank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"name": "Cupola",
+			"path": "res://blocks/command/cupola.tscn",
 			"rotation": "up",
 			"size": [
 				1,
@@ -93,8 +93,8 @@
 		},
 		"4": {
 			"base_pos": [
-				5,
-				5
+				1,
+				3
 			],
 			"name": "Engine",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
@@ -106,11 +106,11 @@
 		},
 		"5": {
 			"base_pos": [
-				5,
-				4
+				2,
+				3
 			],
-			"name": "Cupola",
-			"path": "res://blocks/command/cupola.tscn",
+			"name": "FuelTank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
 			"rotation": "up",
 			"size": [
 				1,
@@ -119,8 +119,8 @@
 		},
 		"6": {
 			"base_pos": [
-				3,
-				2
+				0,
+				3
 			],
 			"name": "Track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -132,8 +132,8 @@
 		},
 		"7": {
 			"base_pos": [
-				3,
-				3
+				0,
+				2
 			],
 			"name": "@RigidBody2D@42",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -145,8 +145,8 @@
 		},
 		"8": {
 			"base_pos": [
-				3,
-				4
+				0,
+				1
 			],
 			"name": "@RigidBody2D@45",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -158,8 +158,8 @@
 		},
 		"9": {
 			"base_pos": [
-				3,
-				5
+				0,
+				0
 			],
 			"name": "@RigidBody2D@49",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -170,5 +170,9 @@
 			]
 		}
 	},
-	"name": "object1"
+	"name": "Object1",
+	"vehicle_size": [
+		4,
+		4
+	]
 }
