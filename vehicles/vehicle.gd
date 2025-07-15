@@ -51,6 +51,7 @@ func Get_ready_again():
 	else:
 		push_error("Invalid blueprint format")
 	update_vehicle()
+	print(grid)
 
 
 func _process(delta):
@@ -83,14 +84,11 @@ func update_vehicle():
 
 ###################### BLOCK MANAGEMENT ######################
 
-func _add_block(block: Block):
-	print("add", block)
+func _add_block(block: Block, grid_positions):
 	if block not in blocks:
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
-		print(block.parent_vehicle)
-		#block.parent_vehicle = self
 		
 		if block is Track:
 			tracks.append(block)
@@ -104,6 +102,11 @@ func _add_block(block: Block):
 			ammoracks.append(block)
 		elif block is Fueltank:
 			fueltanks.append(block)
+		for pos in grid_positions:
+			grid[pos] = block
+		block.position = Vector2(grid_positions[0]*GRID_SIZE) + Vector2(block.size * GRID_SIZE / 2)
+		block.global_rotation = rotation
+		connect_to_adjacent_blocks(block)
 	update_vehicle()
 
 func remove_block(block: Block):
@@ -221,7 +224,6 @@ func load_from_file(identifier):  # 允许接收多种类型参数
 
 func load_from_blueprint(bp: Dictionary):
 	clear_existing_blocks()
-	var target_grid = {}
 	# 按数字键排序以保证加载顺序一致
 	var block_ids = bp["blocks"].keys()
 	var _name = bp["name"]
@@ -239,13 +241,13 @@ func load_from_blueprint(bp: Dictionary):
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			block.size = size
-			_add_block(block)
+			var target_grid = []
 			# 记录所有网格位置
 			for x in size.x:
 				for y in size.y:
 					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
-					target_grid[grid_pos] = block
-	connect_blocks(target_grid)
+					target_grid.append(grid_pos)
+			_add_block(block, target_grid)
 
 func get_rotation_angle(dir: String) -> float:
 	match dir:
@@ -271,24 +273,6 @@ func get_blueprint_path() -> String:
 	elif blueprint is Dictionary:
 		return "res://vehicles/blueprint/%s.json" % vehicle_name
 	return ""
-
-func connect_blocks(target_grid:Dictionary):
-	# 先清除所有现有关节
-	for block in blocks:
-		for child in block.get_children():
-			if child is PinJoint2D:
-				child.queue_free()
-
-	# 重新建立连接
-	for block in blocks:
-		var size = Vector2(block.size)
-		var grid_pos = find_pos(target_grid, block)
-		block.position = Vector2(grid_pos.x*GRID_SIZE , grid_pos.y*GRID_SIZE) + size/2 * GRID_SIZE
-		for x in size.x:
-			for y in size.y:
-				var cell = grid_pos + Vector2i(x, y)
-				grid[cell] = block
-				connect_to_adjacent_blocks(block)
 
 func connect_to_adjacent_blocks(block: Block):
 	# 找到方块在网格中的基准位置
@@ -316,9 +300,10 @@ func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
 	var joint = PinJoint2D.new()
 	joint.node_a = a.get_path()
 	joint.node_b = b.get_path()
-	joint.position = joint_pos
+	joint.global_position = joint_pos
 	joint.disable_collision = false
 	a.add_child(joint)
+	
 
 
 ########################## VEHICLE PHYSICS PROCESSING #######################

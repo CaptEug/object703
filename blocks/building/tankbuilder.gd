@@ -279,16 +279,11 @@ func place_block():
 		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
 		new_block.position = local_pos
 		new_block.global_rotation = rotation
-		
-		current_vehicle._add_block(new_block)
-		
+		current_vehicle._add_block(new_block, grid_positions)	
 		# Update grid records
 		for pos in grid_positions:
-			current_vehicle.grid[pos] = new_block
 			placed_blocks[pos] = new_block
-		# Auto-connect adjacent blocks
-		current_vehicle.connect_to_adjacent_blocks(new_block)
-	
+				
 	create_ghost_block()
 
 func remove_block_at_mouse():
