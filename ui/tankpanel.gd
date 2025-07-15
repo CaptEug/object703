@@ -27,9 +27,9 @@ func _draw():
 
 func retrieve_vehicle_data():
 	fuel_progressbar.max_value = selected_vehicle.get_fuel_cap()
-	fuel_progressbar.value = selected_vehicle.update_current_fuel()
+	fuel_progressbar.value = selected_vehicle.get_current_fuel()
 	ammo_progressbar.max_value = selected_vehicle.get_ammo_cap()
-	ammo_progressbar.value = selected_vehicle.update_current_ammo()
+	ammo_progressbar.value = selected_vehicle.get_current_ammo()
 
 func draw_grid():
 	var line_width: float = 2.0

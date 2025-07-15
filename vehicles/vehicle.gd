@@ -66,9 +66,9 @@ func update_vehicle():
 	get_max_engine_power()
 	get_current_engine_power()
 	get_ammo_cap()
-	update_current_ammo()
+	get_current_ammo()
 	get_fuel_cap()
-	update_current_fuel()
+	get_current_fuel()
 	update_vehicle_size()
 	# 重新计算物理属性
 	calculate_center_of_mass()
@@ -84,13 +84,11 @@ func update_vehicle():
 ###################### BLOCK MANAGEMENT ######################
 
 func _add_block(block: Block):
-	print("add", block)
+	print("add ", block)
 	if block not in blocks:
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
-		print(block.parent_vehicle)
-		#block.parent_vehicle = self
 		
 		if block is Track:
 			tracks.append(block)
@@ -107,10 +105,16 @@ func _add_block(block: Block):
 	update_vehicle()
 
 func remove_block(block: Block):
-	if block in blocks:
-		blocks.erase(block)
-	if block in grid:
-		grid.erase(block)
+	print("remove ", block)
+	blocks.erase(block)
+	
+	var keys_to_erase = []
+	for pos in grid:
+		if grid[pos] == block:
+			keys_to_erase.append(pos)
+	for pos in keys_to_erase:
+		grid.erase(pos)
+	
 	if block in tracks:
 		tracks.erase(block)
 	if block in powerpacks:
@@ -122,6 +126,7 @@ func remove_block(block: Block):
 	if block in fueltanks:
 		fueltanks.erase(block)
 	update_vehicle()
+	check_vehicle_connectivity()
 
 func has_block(block_name:String):
 	for block in blocks:
@@ -134,6 +139,23 @@ func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 			return pos
 	return Vector2i.ZERO
 
+func check_vehicle_connectivity():
+	print(grid.size())
+	print(grid)
+	for block in blocks:
+		if not block is Command:
+			var connected_blocks = block.get_all_connected_blocks()
+
+			var connected_to_any_command := false
+			for command_blk in commands:
+				if command_blk in connected_blocks:
+					connected_to_any_command = true
+					break
+
+			if not connected_to_any_command:
+				for blk in connected_blocks:
+					remove_block(blk)
+				remove_block(block)
 
 ##################### VEHICLE PARAMETER MANAGEMENT #####################
 
@@ -168,7 +190,7 @@ func get_ammo_cap():
 	total_ammo_cap = ammo_cap
 	return ammo_cap
 
-func update_current_ammo():
+func get_current_ammo():
 	var currunt_ammo := 0.0
 	for ammorack in ammoracks:
 		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
@@ -184,7 +206,7 @@ func get_fuel_cap():
 	total_fuel_cap = fuel_cap
 	return fuel_cap
 
-func update_current_fuel():
+func get_current_fuel():
 	var currunt_fuel := 0.0
 	for fueltank in fueltanks:
 		if fueltank.is_inside_tree() and is_instance_valid(fueltank):

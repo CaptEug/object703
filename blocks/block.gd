@@ -19,7 +19,7 @@ signal frame_post_drawn
 func _ready():
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight
-	parent_vehicle = get_parent() as Vehicle
+	parent_vehicle = get_parent_vehicle()
 	#initialize signal
 	input_pickable = true
 	connect("input_event", Callable(self, "_on_input_event"))
@@ -38,7 +38,7 @@ func _on_input_event(viewport, event, shape_idx):
 			var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
 			if control_ui:
 				var tank_panel := control_ui.find_child("Tankpanel") as Panel
-				tank_panel.selected_vehicle = parent_vehicle
+				tank_panel.selected_vehicle = get_parent_vehicle()
 			
 
 func _on_mouse_entered():
@@ -59,10 +59,14 @@ func get_icon_texture():
 	var texture_blocks := find_child("Sprite2D") as Sprite2D
 	return texture_blocks.texture
 
+func get_parent_vehicle():
+	parent_vehicle = get_parent() as Vehicle
+	return parent_vehicle
+
 func get_neighors():
 	neighbors.clear()
-	if parent_vehicle:
-		var grid = parent_vehicle.grid
+	if get_parent_vehicle():
+		var grid = get_parent_vehicle().grid
 		var grid_pos = parent_vehicle.find_pos(grid, self)
 		for x in size.x:
 			for y in size.y:
@@ -77,6 +81,7 @@ func get_neighors():
 	return neighbors
 
 func get_all_connected_blocks():
+	get_neighors()
 	connected_blocks.clear()
 	get_connected_blocks(self)
 	return connected_blocks
@@ -84,7 +89,7 @@ func get_all_connected_blocks():
 func get_connected_blocks(block:Block):
 	var nbrs = block.neighbors
 	for neighbor in nbrs.values():
-		if is_instance_valid(neighbor):
+		#if is_instance_valid(neighbor):
 			if not connected_blocks.has(neighbor) and neighbor != self:
 				connected_blocks.append(neighbor)
 				get_connected_blocks(neighbor)

@@ -5,5 +5,3 @@ func _init() -> void:
 
 func _process(delta: float) -> void:
 	super._process(delta)
-	print(vehicle_size)
-	
