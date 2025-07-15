@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://cqye7fhmmkft8"]
+[gd_scene load_steps=13 format=3 uid="uid://cqye7fhmmkft8"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_sh8cn"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_6e8cr"]
@@ -21,6 +21,10 @@ texture_margin_bottom = 16.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="Gradient" id="Gradient_6e8cr"]
+offsets = PackedFloat32Array(0, 0.612378, 1)
+colors = PackedColorArray(0.701961, 0, 0, 1, 1, 1, 0, 1, 0, 0.701961, 0, 1)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_b7f80"]
 atlas = ExtResource("2_sh8cn")
 region = Rect2(0, 16, 16, 16)
@@ -35,6 +39,7 @@ offset_bottom = 336.0
 theme = ExtResource("1_sh8cn")
 theme_override_styles/panel = SubResource("StyleBoxTexture_kkd3v")
 script = ExtResource("2_b7f80")
+health_gradient = SubResource("Gradient_6e8cr")
 
 [node name="RichTextLabel" type="Label" parent="."]
 layout_mode = 0

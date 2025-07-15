@@ -1,6 +1,6 @@
 extends Track
 
-const HITPOINT:int = 200
+const HITPOINT:float = 200
 const WEIGHT:float = 500.0
 const BLOCK_NAME:String = 'rusty track'
 const TYPE:= "Mobility"

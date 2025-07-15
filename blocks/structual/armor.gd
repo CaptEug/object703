@@ -1,6 +1,6 @@
 extends Block
 
-const HITPOINT:int = 500
+const HITPOINT:float = 500
 const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'armor'
 const SIZE:= Vector2(1, 1)

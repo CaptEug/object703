@@ -29,6 +29,9 @@ script = ExtResource("2_m5lm4")
 
 [node name="Object1" parent="." instance=ExtResource("2_5du73")]
 
+[node name="Object2" parent="." instance=ExtResource("2_5du73")]
+position = Vector2(-240, -131)
+
 [node name="Armor" parent="." instance=ExtResource("5_5du73")]
 position = Vector2(44, -117)
 

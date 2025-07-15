@@ -1,7 +1,7 @@
 class_name Block
 extends RigidBody2D
 
-var current_hp:int
+var current_hp:float
 var weight: float
 var block_name: String
 var type:String
@@ -60,6 +60,7 @@ func get_icon_texture():
 	return texture_blocks.texture
 
 func get_neighors():
+	neighbors.clear()
 	if parent_vehicle:
 		var grid = parent_vehicle.grid
 		var grid_pos = parent_vehicle.find_pos(grid, self)
@@ -67,11 +68,12 @@ func get_neighors():
 			for y in size.y:
 				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
 				for dir in directions:
-					var neighbor_pos = grid_pos + dir
+					var neighbor_pos = grid_pos + Vector2i(x, y) + dir
 					if grid.has(neighbor_pos) and grid[neighbor_pos] != self:
-						var neighbor = grid[neighbor_pos]
-						var neighbor_real_pos = parent_vehicle.find_pos(grid, neighbor)
-						neighbors[neighbor_real_pos - grid_pos] = neighbor
+						if is_instance_valid(grid[neighbor_pos]):
+							var neighbor = grid[neighbor_pos]
+							var neighbor_real_pos = parent_vehicle.find_pos(grid, neighbor)
+							neighbors[neighbor_real_pos - grid_pos] = neighbor
 	return neighbors
 
 func get_all_connected_blocks():
@@ -82,6 +84,7 @@ func get_all_connected_blocks():
 func get_connected_blocks(block:Block):
 	var nbrs = block.neighbors
 	for neighbor in nbrs.values():
-		if not connected_blocks.has(neighbor) and neighbor != self:
-			connected_blocks.append(neighbor)
-			get_connected_blocks(neighbor)
+		if is_instance_valid(neighbor):
+			if not connected_blocks.has(neighbor) and neighbor != self:
+				connected_blocks.append(neighbor)
+				get_connected_blocks(neighbor)

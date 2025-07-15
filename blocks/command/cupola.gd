@@ -1,6 +1,6 @@
 extends Command
 
-const HITPOINT:int = 300
+const HITPOINT:float = 300
 const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'command cupola'
 const SIZE:= Vector2(1, 1)
