@@ -20,6 +20,7 @@ glow_blend_mode = 0
 [node name="Tankpanel" parent="CanvasLayer" instance=ExtResource("6_hie3q")]
 
 [node name="Tankbuilderui" parent="CanvasLayer" instance=ExtResource("2_hie3q")]
+visible = false
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
