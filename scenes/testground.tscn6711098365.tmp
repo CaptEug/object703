@@ -33,3 +33,6 @@ position = Vector2(-240, -131)
 
 [node name="Tankbuilder" parent="." instance=ExtResource("7_iwiij")]
 position = Vector2(100, 100)
+factory_size = null
+vehicle_scene = null
+builder_ui = null

@@ -51,9 +51,9 @@ func damage(amount:int):
 	print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
 	if current_hp <= 0:
+		queue_free()
 		if parent_vehicle:
 			parent_vehicle.remove_block(self)
-		queue_free()
 
 func get_icon_texture():
 	var texture_blocks := find_child("Sprite2D") as Sprite2D
@@ -80,7 +80,7 @@ func get_neighors():
 							neighbors[neighbor_real_pos - grid_pos] = neighbor
 	return neighbors
 
-func get_all_connected_blocks():
+func get_all_connected_blocks() -> Array:
 	get_neighors()
 	connected_blocks.clear()
 	get_connected_blocks(self)
@@ -89,7 +89,13 @@ func get_all_connected_blocks():
 func get_connected_blocks(block:Block):
 	var nbrs = block.neighbors
 	for neighbor in nbrs.values():
-		#if is_instance_valid(neighbor):
-			if not connected_blocks.has(neighbor) and neighbor != self:
-				connected_blocks.append(neighbor)
-				get_connected_blocks(neighbor)
+		if not connected_blocks.has(neighbor) and neighbor != self:
+			connected_blocks.append(neighbor)
+			get_connected_blocks(neighbor)
+
+func check_connectivity():
+	if self is Command:
+		return
+	if not get_all_connected_blocks().any(func(item): return item is Command):
+		if get_parent_vehicle():
+			parent_vehicle.remove_block(self)

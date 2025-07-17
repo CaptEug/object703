@@ -36,6 +36,7 @@ var controls:= []
 var is_assembled := false
 var block_scenes := {}
 var selected:bool
+var destroyed:bool
 
 
 func _ready():
@@ -51,7 +52,6 @@ func Get_ready_again():
 	else:
 		push_error("Invalid blueprint format")
 	update_vehicle()
-	print(grid)
 
 
 func _process(delta):
@@ -63,6 +63,7 @@ func update_vehicle():
 	#Check block connectivity
 	for block in blocks:
 		block.get_neighors()
+		
 	#Get all total parameters
 	get_max_engine_power()
 	get_current_engine_power()
@@ -89,6 +90,8 @@ func _add_block(block: Block, grid_positions):
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
+		block.position = Vector2(grid_positions[0]*GRID_SIZE) + Vector2(block.size * GRID_SIZE / 2)
+		block.global_rotation = rotation
 		
 		if block is Track:
 			tracks.append(block)
@@ -104,13 +107,11 @@ func _add_block(block: Block, grid_positions):
 			fueltanks.append(block)
 		for pos in grid_positions:
 			grid[pos] = block
-		block.position = Vector2(grid_positions[0]*GRID_SIZE) + Vector2(block.size * GRID_SIZE / 2)
-		block.global_rotation = rotation
+		
 		connect_to_adjacent_blocks(block)
 	update_vehicle()
 
 func remove_block(block: Block):
-	print("remove ", block)
 	blocks.erase(block)
 	
 	var keys_to_erase = []
@@ -131,7 +132,8 @@ func remove_block(block: Block):
 	if block in fueltanks:
 		fueltanks.erase(block)
 	update_vehicle()
-	check_vehicle_connectivity()
+	for blk in blocks:
+		blk.check_connectivity()
 
 func has_block(block_name:String):
 	for block in blocks:
@@ -143,24 +145,6 @@ func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 		if Dic[pos] == block:
 			return pos
 	return Vector2i.ZERO
-
-func check_vehicle_connectivity():
-	print(grid.size())
-	print(grid)
-	for block in blocks:
-		if not block is Command:
-			var connected_blocks = block.get_all_connected_blocks()
-
-			var connected_to_any_command := false
-			for command_blk in commands:
-				if command_blk in connected_blocks:
-					connected_to_any_command = true
-					break
-
-			if not connected_to_any_command:
-				for blk in connected_blocks:
-					remove_block(blk)
-				remove_block(block)
 
 ##################### VEHICLE PARAMETER MANAGEMENT #####################
 
