@@ -15,7 +15,12 @@ func _process(delta):
 	time += delta
 	if selected_vehicle:
 		visible = true
-		$RichTextLabel.text = selected_vehicle.vehicle_name
+		var color = Color.RED if selected_vehicle.destroyed else Color.GREEN
+		var blink_strength = 0.75 + 0.25 * sin(time * 4.0)
+		$Namelabel.add_theme_color_override("font_color", color)
+		$Namelabel.text = selected_vehicle.vehicle_name
+		$Offlinelabel.visible = selected_vehicle.destroyed
+		$Offlinelabel.add_theme_color_override("font_color", color*blink_strength)
 		retrieve_vehicle_data()
 		queue_redraw()
 	else:

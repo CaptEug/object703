@@ -134,6 +134,8 @@ func remove_block(block: Block):
 	update_vehicle()
 	for blk in blocks:
 		blk.check_connectivity()
+	if commands.size() == 0:
+		destroyed = true
 
 func has_block(block_name:String):
 	for block in blocks:
@@ -145,6 +147,7 @@ func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 		if Dic[pos] == block:
 			return pos
 	return Vector2i.ZERO
+
 
 ##################### VEHICLE PARAMETER MANAGEMENT #####################
 

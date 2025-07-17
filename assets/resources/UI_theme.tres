@@ -194,7 +194,7 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vwcpp"]
-bg_color = Color(0, 0.701961, 0, 1)
+bg_color = Color(0, 1, 0, 1)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dvbi4"]
 atlas = ExtResource("1_4w2ry")
@@ -241,7 +241,7 @@ LineEdit/styles/normal = SubResource("StyleBoxTexture_f7ufs")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_d3oid")
 ProgressBar/styles/fill = SubResource("StyleBoxTexture_2u1il")
-RichTextLabel/colors/default_color = Color(0, 0.701961, 0, 1)
+RichTextLabel/colors/default_color = Color(0, 1, 0, 1)
 RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
 RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
 TabContainer/colors/font_hovered_color = Color(0.169244, 0.169246, 0.169246, 1)
@@ -254,8 +254,8 @@ TabContainer/styles/tab_focus = SubResource("StyleBoxTexture_edc7y")
 TabContainer/styles/tab_hovered = SubResource("StyleBoxTexture_we4p1")
 TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_qdf78")
 TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_kwu70")
-Tree/colors/font_color = Color(0, 0.701961, 0, 1)
-Tree/colors/font_hovered_color = Color(0, 0.701961, 0, 1)
+Tree/colors/font_color = Color(0, 1, 0, 1)
+Tree/colors/font_hovered_color = Color(0, 1, 0, 1)
 Tree/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
 Tree/colors/guide_color = Color(0, 0.701961, 0, 0)
 Tree/fonts/font = ExtResource("3_4w2ry")
