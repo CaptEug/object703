@@ -373,7 +373,7 @@ func block_to_grid(vehicle:Vehicle):
 	
 	# Grid alignment processing
 	for block:Block in vehicle.blocks:
-		var local_pos = to_local(block.global_position) - Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)
+		var local_pos = to_local(block.global_position) - Vector2(GRID_SIZE, GRID_SIZE)/2*Vector2(block.size)
 		var grid_x = roundi(local_pos.x / GRID_SIZE)
 		var grid_y = roundi(local_pos.y / GRID_SIZE)
 		var grid_pos = Vector2i(grid_x, grid_y)
@@ -382,7 +382,7 @@ func block_to_grid(vehicle:Vehicle):
 				var cell_pos = grid_pos + Vector2i(x, y)
 				placed_blocks[cell_pos] = block
 				vehicle.grid = placed_blocks
-		block.position = current_vehicle.to_local(to_global(Vector2(grid_pos * GRID_SIZE) + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)))
+		block.position = current_vehicle.to_local(to_global(Vector2(grid_pos * GRID_SIZE) + Vector2(GRID_SIZE, GRID_SIZE)/2*Vector2(block.size)))
 
 
 #-----------------------------------------------------------------------------#

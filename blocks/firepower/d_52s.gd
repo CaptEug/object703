@@ -36,6 +36,7 @@ func _init():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	super._process(delta)
 	aim(delta, get_global_mouse_position())
 	if Input.is_action_pressed("FIRE_MAIN"):
 		fire(sap_shell)
