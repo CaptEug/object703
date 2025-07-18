@@ -7,7 +7,6 @@ const GRID_SIZE := 16
 ### EXPORTS ###
 @export var factory_size := Vector2i(10, 10)
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
-@export var builder_ui: PackedScene = preload("res://ui/tankbuilderUI.tscn")
 
 ### NODE REFERENCES ###
 @onready var factory_zone = $FactoryZone
