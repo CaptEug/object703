@@ -175,8 +175,9 @@ func exit_build_mode():
 		ghost_block = null
 	ui_instance.build_vehicle_button.visible = false
 	is_editing_vehicle = false
+	if current_vehicle:
+		current_vehicle.update_vehicle_size()
 	current_vehicle = null
-	#placed_blocks.clear()
 
 func handle_build_mode_toggle(event):
 	"""Handle build mode toggle input (TAB key)"""
@@ -342,7 +343,6 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	for block in vehicle.blocks:
 		if is_instance_valid(block):
 			vehicle.connect_to_adjacent_blocks(block)
-	vehicle.update_vehicle()
 	ui_instance.update_inventory_display(inventory)
 	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
 	create_ghost_block()

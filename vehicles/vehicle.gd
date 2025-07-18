@@ -654,3 +654,9 @@ func update_vehicle_size():
 			max_y = grid_pos.y
 	
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
+	var grid_new = {}
+	for pos in grid:
+		var block:Block = grid[pos]
+		pos = Vector2i(pos.x - min_x, pos.y - min_y)
+		grid_new[pos] = block
+	grid = grid_new
