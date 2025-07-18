@@ -5,7 +5,7 @@
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_iyqv6"]
 atlas = ExtResource("2_n162s")
-region = Rect2(16, 48, 16, 16)
+region = Rect2(0, 176, 16, 16)
 
 [node name="PikeArmor" type="RigidBody2D"]
 script = ExtResource("1_plsjk")

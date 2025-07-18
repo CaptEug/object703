@@ -8,7 +8,7 @@ size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_m4jmg"]
 atlas = ExtResource("2_o2f85")
-region = Rect2(0, 48, 16, 16)
+region = Rect2(48, 192, 16, 16)
 
 [node name="Armor" type="RigidBody2D"]
 script = ExtResource("1_o2f85")

@@ -6,6 +6,12 @@ extends Panel
 var time:float = 0
 var selected_vehicle:Vehicle
 
+var control_modes := []
+var current_mode := 0
+var idle_icon:Texture = preload("res://assets/icons/idle.png")
+var manual_icon:Texture = preload("res://assets/icons/driving_wheel.png")
+var remote_icon:Texture = preload("res://assets/icons/remote_control.png")
+var ai_icon:Texture = preload("res://assets/icons/ai.png")
 
 func _ready():
 	pass
@@ -31,10 +37,26 @@ func _draw():
 		draw_grid()
 
 func retrieve_vehicle_data():
+	#get vehicle resource data
 	fuel_progressbar.max_value = selected_vehicle.get_fuel_cap()
 	fuel_progressbar.value = selected_vehicle.get_current_fuel()
 	ammo_progressbar.max_value = selected_vehicle.get_ammo_cap()
 	ammo_progressbar.value = selected_vehicle.get_current_ammo()
+	#check vehicle control
+	var available_modes := [Callable()]
+	var button_icons := [idle_icon]
+	if selected_vehicle.check_control("manual_control"):
+		available_modes.append(selected_vehicle.check_control("manual_control"))
+		button_icons.append(manual_icon)
+	if selected_vehicle.check_control("remote_control"):
+		available_modes.append(selected_vehicle.check_control("remote_control"))
+		button_icons.append(remote_icon)
+	if selected_vehicle.check_control("AI_control"):
+		available_modes.append(selected_vehicle.check_control("AI_control"))
+		button_icons.append(ai_icon)
+	control_modes = available_modes
+	current_mode = control_modes.find(selected_vehicle.control)
+	$Controlbutton.texture_normal = button_icons[current_mode]
 
 func draw_grid():
 	var line_width: float = 2.0
@@ -64,3 +86,8 @@ func draw_grid():
 				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
 				var rect = Rect2(draw_pos + Vector2(pos) * grid_size + Vector2(line_width,line_width)/2, extents * 2)
 				draw_rect(rect, line_color, false, line_width)
+
+
+func _on_controlbutton_pressed():
+	current_mode = (current_mode + 1) % control_modes.size()
+	selected_vehicle.control = control_modes[current_mode]
