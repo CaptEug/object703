@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://ynw68d3flv12"]
 
 [ext_resource type="Script" uid="uid://bptpkf87ghxkg" path="res://blocks/mobility/rusty_track.gd" id="1_1jm28"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_1cqs3"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_1cqs3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pt07c"]
 size = Vector2(16, 16)

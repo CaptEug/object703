@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cn6p02q1ry3yx"]
 
 [ext_resource type="Script" uid="uid://ba0fhjcourxsr" path="res://blocks/structual/armor.gd" id="1_o2f85"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_o2f85"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_o2f85"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_34ndi"]
 size = Vector2(16, 16)

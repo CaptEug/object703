@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://mkhgj12b5dr8"]
 
 [ext_resource type="Script" uid="uid://wuc6eml41m1l" path="res://blocks/mobility/maybach_hl_250.gd" id="1_yv36m"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_ymh6m"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ymh6m"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kkwhi"]
 size = Vector2(16, 16)

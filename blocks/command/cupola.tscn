@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://byo7xm5tw3n2w"]
 
 [ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/command/cupola.gd" id="1_5uqw0"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_ahdwv"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ahdwv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_x12pa"]
 size = Vector2(16, 16)
