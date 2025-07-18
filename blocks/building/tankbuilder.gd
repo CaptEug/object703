@@ -169,13 +169,14 @@ func enter_build_mode():
 func exit_build_mode():
 	"""Exit build mode cleanup"""
 	print("退出建造模式")
+	var vehicle_to_update = current_vehicle
 	if ghost_block:
 		ghost_block.queue_free()
 		ghost_block = null
 	ui_instance.build_vehicle_button.visible = false
 	is_editing_vehicle = false
 	current_vehicle = null
-	placed_blocks.clear()
+	#placed_blocks.clear()
 
 func handle_build_mode_toggle(event):
 	"""Handle build mode toggle input (TAB key)"""
@@ -279,7 +280,7 @@ func place_block():
 		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
 		new_block.position = local_pos
 		new_block.global_rotation = rotation
-		current_vehicle._add_block(new_block, grid_positions)	
+		current_vehicle._add_block(new_block, local_pos, grid_positions)	
 		# Update grid records
 		for pos in grid_positions:
 			placed_blocks[pos] = new_block
@@ -326,7 +327,6 @@ func remove_block_at_mouse():
 func load_vehicle_for_editing(vehicle: Vehicle):
 	"""Load a vehicle for editing in the factory"""
 	# 1. Pause physics and reset vehicle rotation
-	vehicle.set_physics_process(false)
 	vehicle.rotation = 0
 	
 	# 2. Disconnect all physics joints
@@ -342,18 +342,15 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	for block in vehicle.blocks:
 		if is_instance_valid(block):
 			vehicle.connect_to_adjacent_blocks(block)
-	
+	vehicle.update_vehicle()
 	ui_instance.update_inventory_display(inventory)
 	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
 	create_ghost_block()
 	
-	# 5. Resume physics
-	vehicle.set_physics_process(true)
 
 func block_to_grid(vehicle:Vehicle):
 	"""Align vehicle blocks to the factory grid"""
-	var original_com := to_local(vehicle.calculate_center_of_mass()) 
-	print(vehicle.calculate_center_of_mass())
+	var original_com := to_local(vehicle.center_of_mass) 
 	
 	# Process each block's rotation
 	for block:Block in vehicle.blocks:
@@ -388,14 +385,6 @@ func block_to_grid(vehicle:Vehicle):
 				vehicle.grid = placed_blocks
 		block.position = current_vehicle.to_local(to_global(Vector2(grid_pos * GRID_SIZE) + Vector2(GRID_SIZE/2, GRID_SIZE/2)*Vector2(block.size)))
 
-func update_editor_state(vehicle: Vehicle):
-	"""Update editor state with current vehicle"""
-	placed_blocks.clear()
-	for grid_pos in vehicle.grid:
-		placed_blocks[grid_pos] = vehicle.grid[grid_pos]
-	
-	ui_instance.update_inventory_display(inventory)
-	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
 
 #-----------------------------------------------------------------------------#
 #                          VEHICLE CREATION FUNCTIONS                         #
@@ -427,7 +416,6 @@ func begin_vehicle_creation():
 	
 	# Initialize vehicle grid
 	current_vehicle.grid = placed_blocks.duplicate()
-	current_vehicle.target_grid = placed_blocks.duplicate()
 	
 	# Connect all adjacent blocks
 	for block in current_vehicle.blocks:
@@ -629,7 +617,6 @@ func remove_block_from_grid(block: Node, grid_pos: Vector2i):
 
 func clear_builder():
 	"""Clear all placed blocks"""
-	placed_blocks.clear()
 	for block in get_children():
 		if block is RigidBody2D and block != ghost_block:
 			block.queue_free()

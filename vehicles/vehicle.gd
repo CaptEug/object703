@@ -37,6 +37,7 @@ var is_assembled := false
 var block_scenes := {}
 var selected:bool
 var destroyed:bool
+var center_of_mass:Vector2 = Vector2(0,0)
 
 
 func _ready():
@@ -55,6 +56,7 @@ func Get_ready_again():
 
 
 func _process(delta):
+	center_of_mass = calculate_center_of_mass()
 	if control:
 		update_tracks_state(control.call(), delta)
 
@@ -85,12 +87,12 @@ func update_vehicle():
 
 ###################### BLOCK MANAGEMENT ######################
 
-func _add_block(block: Block, grid_positions):
+func _add_block(block: Block,local_pos, grid_positions):
 	if block not in blocks:
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
-		block.position = Vector2(grid_positions[0]*GRID_SIZE) + Vector2(block.size * GRID_SIZE / 2)
+		block.position = local_pos
 		block.global_rotation = rotation
 		
 		if block is Track:
@@ -252,13 +254,15 @@ func load_from_blueprint(bp: Dictionary):
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			block.size = size
+			var local_pos = base_pos * GRID_SIZE + Vector2(block.size)*GRID_SIZE/2
+			
 			var target_grid = []
 			# 记录所有网格位置
 			for x in size.x:
 				for y in size.y:
 					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
 					target_grid.append(grid_pos)
-			_add_block(block, target_grid)
+			_add_block(block, local_pos, target_grid)
 
 func get_rotation_angle(dir: String) -> float:
 	match dir:
