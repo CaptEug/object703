@@ -1,7 +1,7 @@
 class_name Weapon
 extends Block
 
-var range:float
+var detect_range:float
 var reload:float
 var ammo_cost:float
 var rotation_speed:float # rads per second
@@ -12,15 +12,17 @@ var muzzles:Array
 var current_muzzle:int = 0
 var animplayer:AnimationPlayer
 var spread:float
+var shell_scene:PackedScene
 
 var reload_timer:Timer
 var loaded:bool = false
 var loading:bool = false
 var detection_area:Area2D
 var connected_ammoracks := []
+var targeting:= Callable()
 var icons:Dictionary = {"normal":"res://assets/icons/turret_icon.png","selected":"res://assets/icons/turret_icon_n.png"}
 
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	super._ready()
 	turret = find_child("Turret") as Sprite2D
@@ -34,6 +36,8 @@ func _ready():
 	reload_timer.wait_time = reload
 	reload_timer.timeout.connect(_on_timer_timeout)
 	add_child(reload_timer)
+	targeting = Callable(self, "auto_target")
+
 
 func _process(delta):
 	super._process(delta)
@@ -41,6 +45,8 @@ func _process(delta):
 	if has_ammo():
 		if not loading and not loaded:
 			start_reload()
+	if get_parent_vehicle() and targeting:
+		targeting.call(delta)
 
 func _draw():
 	var line_color = Color(1,1,1)
@@ -55,12 +61,12 @@ func _draw():
 		for i in range(segments + 1):
 			var t = i / float(segments)
 			var angle = lerp(start_angle, end_angle, t)
-			points.append(Vector2(cos(angle), sin(angle)) * range)
+			points.append(Vector2(cos(angle), sin(angle)) * detect_range)
 		draw_line(Vector2.ZERO, points[0], line_color, line_width)
 		draw_line(Vector2.ZERO, points[-1], line_color, line_width)
 		draw_polyline(points, line_color, line_width)
 	else:
-		draw_arc(Vector2.ZERO, range, 0, TAU, segments, line_color, 2.0)
+		draw_arc(Vector2.ZERO, detect_range, 0, TAU, segments, line_color, 2.0)
 
 func generate_detection_area():
 	# Get or create Area2D
@@ -76,16 +82,18 @@ func generate_detection_area():
 		for i in range(segments + 1):
 			var t = i / float(segments)
 			var angle = lerp(start_angle, end_angle, t)
-			points.append(Vector2(cos(angle), sin(angle)) * range)
+			points.append(Vector2(cos(angle), sin(angle)) * detect_range)
 
 		collision_polygon.polygon = points
 		detection_area.add_child(collision_polygon)
 	else:
 		var collision_shape = CollisionShape2D.new()
 		var circle = CircleShape2D.new()
-		circle.radius = range
+		circle.radius = detect_range
 		collision_shape.shape = circle
 		detection_area.add_child(collision_shape)
+
+
 
 func aim(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
@@ -95,8 +103,11 @@ func aim(delta, target_pos):
 		target_angle = clamp(wrapf(target_angle, -PI, PI), min_angle, max_angle)
 	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 	turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
+	# return true if aimed
+	return abs(angle_diff) < deg_to_rad(1)
 
-func fire(shell_scene:PackedScene):
+
+func fire():
 	if not loaded:
 		return
 	shoot(muzzles[current_muzzle], shell_scene)
@@ -105,8 +116,8 @@ func fire(shell_scene:PackedScene):
 	current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
 	loaded = false
 
-func shoot(muz:Marker2D, shell_scene:PackedScene):
-	var shell = shell_scene.instantiate()
+func shoot(muz:Marker2D, shell_picked:PackedScene):
+	var shell = shell_picked.instantiate()
 	shell.from = parent_vehicle
 	var gun_rotation = muz.global_rotation
 	get_tree().current_scene.add_child(shell)
@@ -149,3 +160,44 @@ func find_all_connected_ammorack():
 		if block is Ammorack:
 			connected_ammoracks.append(block)
 	return connected_ammoracks
+
+
+
+func auto_target(delta):
+	# find target
+	var detected_bodies = detection_area.get_overlapping_bodies()
+	var targets := []
+	var closest_target:Block
+	
+	if detected_bodies.size() > 0:
+		for body in detected_bodies:
+			if body is Block:
+				if body not in get_parent_vehicle().blocks:
+					if body.get_parent_vehicle():
+						var their_side = body.get_parent_vehicle().get_groups()
+						var our_side = self.get_parent_vehicle().get_groups()
+						if not has_common_element(our_side, their_side):
+							targets.append(body)
+	
+	if targets.size() > 0:
+		closest_target = targets[0]
+		for target in targets:
+			var distance = global_position.distance_to(target.global_position)
+			if distance < global_position.distance_to(closest_target.global_position):
+				closest_target = target
+	#fire if aimed
+		if aim(delta, closest_target.global_position):
+			fire()
+
+
+
+func manual_target(delta):
+	aim(delta, get_global_mouse_position())
+	if Input.is_action_pressed("FIRE_MAIN"):
+		fire()
+
+func has_common_element(a1: Array, a2: Array) -> bool:
+	for item in a1:
+		if a2.has(item):
+			return true
+	return false
