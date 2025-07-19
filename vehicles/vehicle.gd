@@ -64,7 +64,7 @@ func _process(delta):
 func update_vehicle():
 	#Check block connectivity
 	for block in blocks:
-		block.get_neighors()
+		block.get_neighbors()
 		
 	#Get all total parameters
 	get_max_engine_power()
@@ -110,7 +110,7 @@ func _add_block(block: Block,local_pos, grid_positions):
 		for pos in grid_positions:
 			grid[pos] = block
 		
-		connect_to_adjacent_blocks(block)
+		#connect_to_adjacent_blocks(block)
 	update_vehicle()
 
 func remove_block(block: Block):
