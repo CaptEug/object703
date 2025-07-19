@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://b7qkhu7bbwspf"]
 
 [ext_resource type="Script" uid="uid://b7fdjrjw0m427" path="res://blocks/firepower/zis_57_2.gd" id="1_23xfu"]
-[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks2.png" id="2_8gmj7"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_8gmj7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6sner"]
 size = Vector2(32, 32)

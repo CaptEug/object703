@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3 uid="uid://cd31gfs2al3t6"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_hoai8"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_f63i6"]
+[ext_resource type="Script" uid="uid://bb3bkledibg15" path="res://ui/tooltip.gd" id="3_o07bd"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_byk22"]
+atlas = ExtResource("2_f63i6")
+region = Rect2(192, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_21d5s"]
+texture = SubResource("AtlasTexture_byk22")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oc8ad"]
+
+[node name="Tooltip" type="Panel"]
+offset_right = 144.0
+offset_bottom = 26.0
+theme = ExtResource("1_hoai8")
+theme_override_styles/panel = SubResource("StyleBoxTexture_21d5s")
+script = ExtResource("3_o07bd")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+layout_mode = 2
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 136.0
+offset_bottom = 18.0
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/normal_font_size = 8
+theme_override_styles/normal = SubResource("StyleBoxEmpty_oc8ad")
+bbcode_enabled = true
+text = "infomation"
+fit_content = true

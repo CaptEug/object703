@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://jbbm78mi6qb5"]
 
 [ext_resource type="Script" uid="uid://mksnqq0fauve" path="res://blocks/firepower/ammo_rack.gd" id="1_j1dh7"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks.png" id="2_nkxv4"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_nkxv4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mhqor"]
 size = Vector2(16, 16)

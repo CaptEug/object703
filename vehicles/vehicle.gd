@@ -82,8 +82,9 @@ func update_vehicle():
 	if not check_control(control.get_method()):
 		if not check_control("AI_control"):
 			if not check_control("remote_control"):
-				if not check_control("manual_control"):
-					control = Callable()
+				control = Callable()
+			else: control = check_control("remote_control")
+		else: control = check_control("AI_control")
 
 ###################### BLOCK MANAGEMENT ######################
 
@@ -156,8 +157,7 @@ func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
 func check_control(control_name:String):
 	for block in commands:
 		if block.has_method(control_name):
-			control = Callable(block, control_name)
-			return true
+			return Callable(block, control_name)
 	return false
 
 func get_max_engine_power() -> float:

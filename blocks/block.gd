@@ -68,12 +68,13 @@ func _on_input_event(viewport, event, shape_idx):
 func _on_mouse_entered():
 	mouse_inside = true
 
+
 func _on_mouse_exited():
 	mouse_inside = false
 
-## Damage System
-func damage(amount: int):
-	print(str(name) + ' received damage: ' + str(amount))
+
+func damage(amount:int):
+	print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
 	if current_hp <= 0:
 		destroy()
@@ -92,7 +93,10 @@ func get_icon_texture():
 
 func get_parent_vehicle():
 	parent_vehicle = get_parent() as Vehicle
-	return parent_vehicle
+	if parent_vehicle:
+		if self in parent_vehicle.blocks:
+			return parent_vehicle
+	return null
 
 ## Neighbor and Connectivity System
 func get_neighbors():

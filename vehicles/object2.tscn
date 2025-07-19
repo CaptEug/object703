@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bl2tikk55bsp1"]
+
+[ext_resource type="Script" uid="uid://dh4xefapv8lws" path="res://vehicles/object_2.gd" id="1_gcg58"]
+
+[node name="Object2" type="Node2D"]
+script = ExtResource("1_gcg58")
+metadata/_custom_type_script = "uid://bd6kccmkxqjkk"

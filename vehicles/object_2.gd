@@ -1,11 +1,11 @@
 extends Vehicle
 
 func _init() -> void:
-	blueprint = "Object1"
+	blueprint = "OBJECT2"
 
 func _ready():
 	super._ready()
-	add_to_group("enemies")
+	
 
 func _process(delta: float) -> void:
 	super._process(delta)
