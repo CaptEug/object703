@@ -280,7 +280,8 @@ func place_block():
 		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
 		new_block.position = local_pos
 		new_block.global_rotation = rotation
-		current_vehicle._add_block(new_block, local_pos, grid_positions)	
+		current_vehicle._add_block(new_block, local_pos, grid_positions)
+		new_block.set_connection_enabled(true)	
 		# Update grid records
 		for pos in grid_positions:
 			placed_blocks[pos] = new_block

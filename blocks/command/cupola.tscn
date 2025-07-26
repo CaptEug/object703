@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://byo7xm5tw3n2w"]
+[gd_scene load_steps=6 format=3 uid="uid://byo7xm5tw3n2w"]
 
 [ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/command/cupola.gd" id="1_5uqw0"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ahdwv"]
+[ext_resource type="Script" uid="uid://bk4hgv1vkhg6f" path="res://blocks/connection_point.gd" id="3_uw1rn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_x12pa"]
 size = Vector2(16, 16)
@@ -19,3 +20,23 @@ shape = SubResource("RectangleShape2D_x12pa")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_fxiys")
+
+[node name="Marker2D" type="Marker2D" parent="."]
+position = Vector2(8, 0)
+script = ExtResource("3_uw1rn")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="Marker2D2" type="Marker2D" parent="."]
+position = Vector2(0, 8)
+script = ExtResource("3_uw1rn")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="Marker2D3" type="Marker2D" parent="."]
+position = Vector2(-8, 0)
+script = ExtResource("3_uw1rn")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="Marker2D4" type="Marker2D" parent="."]
+position = Vector2(0, -8)
+script = ExtResource("3_uw1rn")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
