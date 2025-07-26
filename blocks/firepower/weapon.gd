@@ -36,16 +36,28 @@ func _ready():
 	reload_timer.wait_time = reload
 	reload_timer.timeout.connect(_on_timer_timeout)
 	add_child(reload_timer)
-	targeting = Callable(self, "auto_target")
+
 
 
 func _process(delta):
 	super._process(delta)
+	
 	#check reload every frame
 	if has_ammo():
 		if not loading and not loaded:
 			start_reload()
-	if get_parent_vehicle() and targeting:
+	
+	#check targeting method
+	if get_parent_vehicle():
+		var control_method = get_parent_vehicle().control.get_method()
+		if control_method == "manual_control":
+			targeting = Callable(self, "manual_target")
+		elif (control_method == "remote_control") or (control_method == "AI_control"):
+			targeting = Callable(self, "auto_target")
+		else:
+			targeting = Callable()
+	
+	if targeting:
 		targeting.call(delta)
 
 func _draw():

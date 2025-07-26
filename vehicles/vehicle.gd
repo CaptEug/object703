@@ -22,6 +22,7 @@ var grid:= {}
 var blocks:= []
 var powerpacks:= []
 var tracks:= []
+var weapons:= []
 var ammoracks:= []
 var fueltanks := []
 var commands := []
@@ -104,6 +105,8 @@ func _add_block(block: Block,local_pos, grid_positions):
 			powerpacks.append(block)
 		elif block is Command:
 			commands.append(block)
+		elif block is Weapon:
+			weapons.append(block)
 		elif block is Ammorack:
 			ammoracks.append(block)
 		elif block is Fueltank:
@@ -130,6 +133,8 @@ func remove_block(block: Block):
 		powerpacks.erase(block)
 	if block in commands:
 		commands.erase(block)
+	if block in weapons:
+		weapons.erase(block)
 	if block in ammoracks:
 		ammoracks.erase(block)
 	if block in fueltanks:

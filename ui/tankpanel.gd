@@ -12,6 +12,7 @@ var idle_icon:Texture = preload("res://assets/icons/idle.png")
 var manual_icon:Texture = preload("res://assets/icons/driving_wheel.png")
 var remote_icon:Texture = preload("res://assets/icons/remote_control.png")
 var ai_icon:Texture = preload("res://assets/icons/ai.png")
+var crosshair:Texture = preload("res://assets/icons/crosshair.png")
 
 func _ready():
 	pass
@@ -91,3 +92,12 @@ func draw_grid():
 func _on_controlbutton_pressed():
 	current_mode = (current_mode + 1) % control_modes.size()
 	selected_vehicle.control = control_modes[current_mode]
+	# return idle if other vehicle enter manual mode
+	if selected_vehicle.control.get_method() == "manual_control":
+		Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
+		for vehicle in get_tree().get_nodes_in_group("vehicles"):
+			if vehicle != selected_vehicle:
+				if vehicle.control.get_method() == "manual_control":
+					vehicle.control = Callable()
+	else:
+		Input.set_custom_mouse_cursor(null)
