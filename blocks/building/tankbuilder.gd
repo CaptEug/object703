@@ -340,9 +340,10 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	block_to_grid(vehicle)
 	
 	# 4. Reconnect adjacent blocks
-	for block in vehicle.blocks:
+	for block:Block in vehicle.blocks:
 		if is_instance_valid(block):
-			vehicle.connect_to_adjacent_blocks(block)
+			block.set_connection_enabled(true)
+			block.is_movable_on_connection = false
 	ui_instance.update_inventory_display(inventory)
 	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
 	create_ghost_block()

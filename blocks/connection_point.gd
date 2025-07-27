@@ -48,6 +48,14 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 	if not parent_block or not other_block:
 		return false
 	
+	# 检查两个块的移动性
+	var parent_can_move = parent_block.is_movable_on_connection
+	var other_can_move = other_block.is_movable_on_connection
+	
+	# 如果两个都不能移动，则不连接
+	if not parent_can_move and not other_can_move:
+		return false
+	
 	# 强制对齐旋转(0度或180度)
 	var angle_diff = other_block.global_rotation - parent_block.global_rotation
 	var snapped_angle = round(angle_diff / PI) * PI  # 对齐到0或PI弧度
@@ -55,7 +63,18 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 	
 	# 计算精确位置对齐
 	var offset = other_point.global_position - global_position
-	other_block.global_position -= offset
+	
+	# 根据移动性决定如何移动
+	if parent_can_move and other_can_move:
+		# 两个都可以移动，各自移动一半
+		parent_block.global_position += offset * 0.5
+		other_block.global_position -= offset * 0.5
+	elif parent_can_move and not other_can_move:
+		# 只有父块可以移动
+		parent_block.global_position += offset
+	elif not parent_can_move and other_can_move:
+		# 只有其他块可以移动
+		other_block.global_position -= offset
 	
 	# 创建固定连接
 	parent_block.create_joint_with(self, other_point, true)  # 最后一个参数表示严格对齐

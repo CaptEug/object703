@@ -19,6 +19,7 @@ var outline_tex: Texture
 @export var connection_point_script: Script
 @export var auto_detect_connection_points := true
 @export var manual_connection_points: Array[ConnectionPoint]
+@export var is_movable_on_connection := true
 
 var connection_points: Array[ConnectionPoint] = []
 var joint_connected_blocks := {}  # Tracks which blocks are connected through which joints
@@ -186,6 +187,10 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, rigid_a
 	
 	var target_block = target.find_parent_block()
 	if not target_block:
+		return null
+	
+	# 检查移动性
+	if not self.is_movable_on_connection and not target_block.is_movable_on_connection:
 		return null
 	
 	# 使用焊接关节保证严格对齐
