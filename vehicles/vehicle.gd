@@ -22,7 +22,6 @@ var grid:= {}
 var blocks:= []
 var powerpacks:= []
 var tracks:= []
-var weapons:= []
 var ammoracks:= []
 var fueltanks := []
 var commands := []
@@ -105,16 +104,13 @@ func _add_block(block: Block,local_pos, grid_positions):
 			powerpacks.append(block)
 		elif block is Command:
 			commands.append(block)
-		elif block is Weapon:
-			weapons.append(block)
 		elif block is Ammorack:
 			ammoracks.append(block)
 		elif block is Fueltank:
 			fueltanks.append(block)
 		for pos in grid_positions:
 			grid[pos] = block
-		
-		#connect_to_adjacent_blocks(block)
+		block.set_connection_enabled(true)
 	update_vehicle()
 
 func remove_block(block: Block):
@@ -133,8 +129,6 @@ func remove_block(block: Block):
 		powerpacks.erase(block)
 	if block in commands:
 		commands.erase(block)
-	if block in weapons:
-		weapons.erase(block)
 	if block in ammoracks:
 		ammoracks.erase(block)
 	if block in fueltanks:
@@ -254,20 +248,19 @@ func load_from_blueprint(bp: Dictionary):
 		var block_scene = load(block_data["path"])  # 使用完整路径加载
 		
 		if block_scene:
-			var block = block_scene.instantiate()
-			var size = Vector2(block_data["size"][0], block_data["size"][1])
+			var block:Block = block_scene.instantiate()
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
-			block.size = size
 			var local_pos = base_pos * GRID_SIZE + Vector2(block.size)*GRID_SIZE/2
 			
 			var target_grid = []
 			# 记录所有网格位置
-			for x in size.x:
-				for y in size.y:
+			for x in block.size.x:
+				for y in block.size.y:
 					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
 					target_grid.append(grid_pos)
 			_add_block(block, local_pos, target_grid)
+
 
 func get_rotation_angle(dir: String) -> float:
 	match dir:
@@ -293,38 +286,6 @@ func get_blueprint_path() -> String:
 	elif blueprint is Dictionary:
 		return "res://vehicles/blueprint/%s.json" % vehicle_name
 	return ""
-
-func connect_to_adjacent_blocks(block: Block):
-	# 找到方块在网格中的基准位置
-	var base_pos: Vector2i = Vector2i.ZERO
-	for pos in grid:
-		if grid[pos] == block:
-			base_pos = pos
-			break
-	
-	# 检查四个方向的相邻方块
-	var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
-	for x in block.size.x:
-		for y in block.size.y:
-			for dir in directions:
-				var neighbor_pos = base_pos + dir + Vector2i(x, y)
-				if grid.has(neighbor_pos):
-					var neighbor = grid[neighbor_pos]
-					if neighbor != block:
-						var global_base_pos = block.position - Vector2(block.size * GRID_SIZE)/2 + Vector2(8.0,8.0)
-						var global_joint_pos = Vector2(global_base_pos) + Vector2(x, y) * GRID_SIZE + Vector2(8* dir)
-						var joint_pos = Vector2(global_joint_pos) - block.position
-						connect_with_joint(block, neighbor, joint_pos)
-
-func connect_with_joint(a:Block, b:Block, joint_pos:Vector2):
-	var joint = PinJoint2D.new()
-	joint.node_a = a.get_path()
-	joint.node_b = b.get_path()
-	joint.global_position = joint_pos
-	joint.disable_collision = false
-	a.add_child(joint)
-	
-
 
 ########################## VEHICLE PHYSICS PROCESSING #######################
 
@@ -659,9 +620,3 @@ func update_vehicle_size():
 			max_y = grid_pos.y
 	
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
-	var grid_new = {}
-	for pos in grid:
-		var block:Block = grid[pos]
-		pos = Vector2i(pos.x - min_x, pos.y - min_y)
-		grid_new[pos] = block
-	grid = grid_new

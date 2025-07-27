@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://ywknmytaihqu"]
+[gd_scene load_steps=11 format=3 uid="uid://ywknmytaihqu"]
 
 [ext_resource type="Script" uid="uid://k5g8brs670ll" path="res://blocks/firepower/kwak45.gd" id="1_r7kom"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ynhj4"]
+[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/ConnectionPoint.tscn" id="3_3ymda"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b0pqf"]
 size = Vector2(32, 32)
@@ -82,3 +83,27 @@ position = Vector2(0, -46)
 libraries = {
 &"": SubResource("AnimationLibrary_ynhj4")
 }
+
+[node name="ConnectionPoint" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(-16, 8)
+
+[node name="ConnectionPoint2" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(-8, 16)
+
+[node name="ConnectionPoint3" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(8, 16)
+
+[node name="ConnectionPoint4" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(16, 8)
+
+[node name="ConnectionPoint5" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(16, -8)
+
+[node name="ConnectionPoint6" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(8, -16)
+
+[node name="ConnectionPoint7" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(-8, -16)
+
+[node name="ConnectionPoint8" parent="." instance=ExtResource("3_3ymda")]
+position = Vector2(-16, -8)

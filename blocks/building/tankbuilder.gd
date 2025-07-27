@@ -330,19 +330,14 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 	# 1. Pause physics and reset vehicle rotation
 	vehicle.rotation = 0
 	
-	# 2. Disconnect all physics joints
-	for block:Block in vehicle.blocks:
-		for child in block.get_children():
-			if child is Joint2D:
-				child.queue_free()
-	
 	# 3. Align blocks to grid
 	block_to_grid(vehicle)
 	
 	# 4. Reconnect adjacent blocks
-	for block in vehicle.blocks:
+	for block:Block in vehicle.blocks:
 		if is_instance_valid(block):
-			vehicle.connect_to_adjacent_blocks(block)
+			block.set_connection_enabled(true)
+			block.is_movable_on_connection = true
 	ui_instance.update_inventory_display(inventory)
 	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
 	create_ghost_block()
@@ -521,12 +516,10 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 		if not processed_blocks.has(block):
 			var base_pos = grid_pos
 			var rotation_str = get_rotation_direction(block.global_rotation - global_rotation)
-			
 			blueprint_data["blocks"][str(block_counter)] = {
-				"name": block.name,
+				"name": block.block_name,
 				"path": block.scene_file_path,
 				"base_pos": [base_pos.x - min_x, base_pos.y - min_y],
-				"size": [block.size.x, block.size.y],
 				"rotation": rotation_str,
 			}
 			block_counter += 1

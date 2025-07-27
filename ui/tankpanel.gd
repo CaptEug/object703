@@ -63,6 +63,7 @@ func draw_grid():
 	var line_width: float = 2.0
 	
 	var grid = selected_vehicle.grid
+	grid = find_grid(grid)
 	var vehicle_size = selected_vehicle.vehicle_size
 	var grid_size = 16
 	var draw_pos = $Marker2D.position - Vector2(vehicle_size/2) * grid_size
@@ -101,3 +102,34 @@ func _on_controlbutton_pressed():
 					vehicle.control = Callable()
 	else:
 		Input.set_custom_mouse_cursor(null)
+
+func find_grid(grid):
+	var min_x:int
+	var min_y:int
+	var max_x:int
+	var max_y:int
+	
+	for grid_pos in grid:
+		min_x = grid_pos.x
+		min_y = grid_pos.y
+		max_x = grid_pos.x
+		max_y = grid_pos.y
+		break
+	
+	for grid_pos in grid:
+		if min_x > grid_pos.x:
+			min_x = grid_pos.x
+		if min_y > grid_pos.y:
+			min_y = grid_pos.y
+		if max_x < grid_pos.x:
+			max_x = grid_pos.x
+		if max_y < grid_pos.y:
+			max_y = grid_pos.y
+	var grid_new = {}
+	for pos in grid:
+		var block:Block = grid[pos]
+		pos = Vector2i(pos.x - min_x, pos.y - min_y)
+		grid_new[pos] = block
+	grid = grid_new
+	return grid
+	

@@ -3,37 +3,62 @@ extends Marker2D
 
 # 严格对齐参数
 @export var is_connection_enabled := false
-@export var connection_range := 5.0  # 非常小的连接范围
+@export var connection_range := 3.0  # 非常小的连接范围
 @export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
 @export var connection_type := "default"
 
 var connected_to: ConnectionPoint = null
 var joint: Joint2D = null
+var detection_area: Area2D
+var overlapping_points: Array[ConnectionPoint] = []
 
 func _ready():
 	setup_detection_area()
 	queue_redraw()
+
+func _process(delta):
+	if not is_connection_enabled:
+		return
+	
+	# 持续检测区域内的连接点
+	for other_point in overlapping_points:
+		if (other_point != self and 
+			other_point.is_connection_enabled and 
+			not connected_to and 
+			not other_point.connected_to):
+			try_connect(other_point)
 
 func _draw():
 	var color = Color.GREEN if connected_to else Color.RED
 	draw_circle(Vector2.ZERO, 3, color)
 
 func setup_detection_area():
-	var area = Area2D.new()
+	detection_area = Area2D.new()
 	var collider = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
 	shape.radius = connection_range
 	collider.shape = shape
-	area.add_child(collider)
-	add_child(area)
-	area.connect("area_entered", Callable(self, "_on_area_entered"))
+	detection_area.add_child(collider)
+	add_child(detection_area)
+	
+	# 连接信号
+	detection_area.connect("area_entered", Callable(self, "_on_area_entered"))
+	detection_area.connect("area_exited", Callable(self, "_on_area_exited"))
 
 func _on_area_entered(area: Area2D):
-	if not is_connection_enabled:
-		return
 	var other_point = area.get_parent()
-	if other_point is ConnectionPoint and other_point != self:
-		try_connect(other_point)
+	if other_point is ConnectionPoint:
+		if not overlapping_points.has(other_point):
+			overlapping_points.append(other_point)
+
+func _on_area_exited(area: Area2D):
+	var other_point = area.get_parent()
+	if other_point is ConnectionPoint:
+		overlapping_points.erase(other_point)
+		# 如果断开的是当前连接的点
+		if connected_to == other_point:
+			disconnect_joint()
+
 
 func try_connect(other_point: ConnectionPoint) -> bool:
 	if not is_connection_enabled or not other_point.is_connection_enabled:
@@ -48,6 +73,14 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 	if not parent_block or not other_block:
 		return false
 	
+	# 检查两个块的移动性
+	var parent_can_move = parent_block.is_movable_on_connection
+	var other_can_move = other_block.is_movable_on_connection
+	
+	# 如果两个都不能移动，则不连接
+	if not parent_can_move and not other_can_move:
+		return false
+	
 	# 强制对齐旋转(0度或180度)
 	var angle_diff = other_block.global_rotation - parent_block.global_rotation
 	var snapped_angle = round(angle_diff / PI) * PI  # 对齐到0或PI弧度
@@ -55,7 +88,18 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 	
 	# 计算精确位置对齐
 	var offset = other_point.global_position - global_position
-	other_block.global_position -= offset
+	
+	# 根据移动性决定如何移动
+	if parent_can_move and other_can_move:
+		# 两个都可以移动，各自移动一半
+		parent_block.global_position += offset * 0.5
+		other_block.global_position -= offset * 0.5
+	elif parent_can_move and not other_can_move:
+		# 只有父块可以移动
+		parent_block.global_position += offset
+	elif not parent_can_move and other_can_move:
+		# 只有其他块可以移动
+		other_block.global_position -= offset
 	
 	# 创建固定连接
 	parent_block.create_joint_with(self, other_point, true)  # 最后一个参数表示严格对齐
