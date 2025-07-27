@@ -3,37 +3,62 @@ extends Marker2D
 
 # 严格对齐参数
 @export var is_connection_enabled := false
-@export var connection_range := 5.0  # 非常小的连接范围
+@export var connection_range := 3.0  # 非常小的连接范围
 @export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
 @export var connection_type := "default"
 
 var connected_to: ConnectionPoint = null
 var joint: Joint2D = null
+var detection_area: Area2D
+var overlapping_points: Array[ConnectionPoint] = []
 
 func _ready():
 	setup_detection_area()
 	queue_redraw()
+
+func _process(delta):
+	if not is_connection_enabled:
+		return
+	
+	# 持续检测区域内的连接点
+	for other_point in overlapping_points:
+		if (other_point != self and 
+			other_point.is_connection_enabled and 
+			not connected_to and 
+			not other_point.connected_to):
+			try_connect(other_point)
 
 func _draw():
 	var color = Color.GREEN if connected_to else Color.RED
 	draw_circle(Vector2.ZERO, 3, color)
 
 func setup_detection_area():
-	var area = Area2D.new()
+	detection_area = Area2D.new()
 	var collider = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
 	shape.radius = connection_range
 	collider.shape = shape
-	area.add_child(collider)
-	add_child(area)
-	area.connect("area_entered", Callable(self, "_on_area_entered"))
+	detection_area.add_child(collider)
+	add_child(detection_area)
+	
+	# 连接信号
+	detection_area.connect("area_entered", Callable(self, "_on_area_entered"))
+	detection_area.connect("area_exited", Callable(self, "_on_area_exited"))
 
 func _on_area_entered(area: Area2D):
-	if not is_connection_enabled:
-		return
 	var other_point = area.get_parent()
-	if other_point is ConnectionPoint and other_point != self:
-		try_connect(other_point)
+	if other_point is ConnectionPoint:
+		if not overlapping_points.has(other_point):
+			overlapping_points.append(other_point)
+
+func _on_area_exited(area: Area2D):
+	var other_point = area.get_parent()
+	if other_point is ConnectionPoint:
+		overlapping_points.erase(other_point)
+		# 如果断开的是当前连接的点
+		if connected_to == other_point:
+			disconnect_joint()
+
 
 func try_connect(other_point: ConnectionPoint) -> bool:
 	if not is_connection_enabled or not other_point.is_connection_enabled:

@@ -5,169 +5,117 @@
 				1,
 				0
 			],
-			"name": "Zis572",
+			"name": "57mm duel barrel gun Zis-57-2",
 			"path": "res://blocks/firepower/zis_57_2.tscn",
-			"rotation": "up",
-			"size": [
-				2,
-				2
-			]
+			"rotation": "up"
 		},
 		"10": {
 			"base_pos": [
 				3,
 				0
 			],
-			"name": "@RigidBody2D@64",
+			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"rotation": "up"
 		},
 		"11": {
 			"base_pos": [
 				3,
-				2
-			],
-			"name": "@RigidBody2D@67",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
 				1
-			]
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
 		},
 		"12": {
 			"base_pos": [
 				3,
-				1
+				2
 			],
-			"name": "@RigidBody2D@72",
+			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"rotation": "up"
 		},
 		"13": {
 			"base_pos": [
 				3,
 				3
 			],
-			"name": "@RigidBody2D@78",
+			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"rotation": "up"
 		},
 		"2": {
 			"base_pos": [
 				1,
 				2
 			],
-			"name": "Ammo",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"rotation": "up"
 		},
 		"3": {
-			"base_pos": [
-				1,
-				3
-			],
-			"name": "Engine",
-			"path": "res://blocks/mobility/maybach_hl_250.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
-		},
-		"4": {
-			"base_pos": [
-				2,
-				3
-			],
-			"name": "FuelTank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
-		},
-		"5": {
 			"base_pos": [
 				2,
 				2
 			],
-			"name": "Cupola",
+			"name": "command cupola",
 			"path": "res://blocks/command/cupola.tscn",
-			"rotation": "up",
-			"size": [
+			"rotation": "up"
+		},
+		"4": {
+			"base_pos": [
 				1,
-				1
-			]
+				3
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": "up"
+		},
+		"5": {
+			"base_pos": [
+				2,
+				3
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": "up"
 		},
 		"6": {
 			"base_pos": [
 				0,
-				1
+				3
 			],
-			"name": "Track",
+			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"rotation": "up"
 		},
 		"7": {
 			"base_pos": [
 				0,
 				2
 			],
-			"name": "@RigidBody2D@54",
+			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"rotation": "up"
 		},
 		"8": {
 			"base_pos": [
 				0,
-				3
-			],
-			"name": "@RigidBody2D@57",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
 				1
-			]
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
 		},
 		"9": {
 			"base_pos": [
 				0,
 				0
 			],
-			"name": "@RigidBody2D@61",
+			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
-			"size": [
-				1,
-				1
-			]
+			"rotation": "up"
 		}
 	},
 	"name": "object1",
