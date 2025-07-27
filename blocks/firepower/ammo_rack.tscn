@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://jbbm78mi6qb5"]
+[gd_scene load_steps=6 format=3 uid="uid://jbbm78mi6qb5"]
 
 [ext_resource type="Script" uid="uid://mksnqq0fauve" path="res://blocks/firepower/ammo_rack.gd" id="1_j1dh7"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_nkxv4"]
@@ -10,6 +10,9 @@ size = Vector2(16, 16)
 atlas = ExtResource("2_nkxv4")
 region = Rect2(0, 32, 16, 16)
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_3ma2v"]
+radius = 50.0
+
 [node name="Ammo" type="RigidBody2D"]
 script = ExtResource("1_j1dh7")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
@@ -19,3 +22,8 @@ shape = SubResource("RectangleShape2D_mhqor")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_2gyxe")
+
+[node name="ExplosionArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExplosionArea"]
+shape = SubResource("CircleShape2D_3ma2v")
