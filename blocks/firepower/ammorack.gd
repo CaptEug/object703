@@ -5,7 +5,8 @@ var ammo_storage :float
 var ammo_storage_cap:float
 var explosion_area:Area2D
 var explosion_shape:CollisionShape2D
-
+var exploded:bool = false
+var explosion_particle = preload("res://assets/particles/explosion.tscn")
 
 func _ready():
 	super._ready()
@@ -24,14 +25,21 @@ func deduct_ammo(amount:float) ->bool:
 	return false
 
 func destroy():
-	explode()
 	# Disconnect all joints before destroying
 	disconnect_all()
 	queue_free()
 	if parent_vehicle:
 		parent_vehicle.remove_block(self)
+	explode()
 
 func explode():
+	if exploded:
+		return
+	var explosion = explosion_particle.instantiate()
+	explosion.position = global_position
+	explosion.emitting = true
+	get_tree().current_scene.add_child(explosion)
+	exploded = true
 	var max_explosive_damage:int = ammo_storage * 10
 	var explosion_radius = ammo_storage * 1
 

@@ -45,8 +45,9 @@ func _process(_delta):
 
 func explode():
 	var explosion = explosion_particle.instantiate()
+	explosion.position = global_position
 	explosion.emitting = true
-	add_child(explosion)
+	get_tree().current_scene.add_child(explosion)
 	
 	for block in explosion_area.get_overlapping_bodies():
 		if block.has_method("damage"):

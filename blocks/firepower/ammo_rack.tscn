@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://jbbm78mi6qb5"]
+[gd_scene load_steps=7 format=3 uid="uid://jbbm78mi6qb5"]
 
 [ext_resource type="Script" uid="uid://mksnqq0fauve" path="res://blocks/firepower/ammo_rack.gd" id="1_j1dh7"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_nkxv4"]
