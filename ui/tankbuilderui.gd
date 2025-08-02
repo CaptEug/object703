@@ -1,10 +1,10 @@
 extends Control
 
-@onready var tab_container = $Panel/TabContainer
+@onready var tab_container = $TabContainer
 @onready var description_label = $Panel/RichTextLabel
-@onready var build_vehicle_button = $Panel/BuildButton
+@onready var build_vehicle_button = $Panel/SaveButton
 @onready var save_dialog = $SaveDialog
-@onready var name_input = $SaveDialog/NameInput
+@onready var name_input = $Panel/NameInput
 @onready var error_label = $SaveDialog/ErrorLabel
 
 signal build_vehicle_requested
@@ -145,11 +145,9 @@ func _on_build_vehicle_pressed():
 	show_save_dialog()
 
 func show_save_dialog():
-	name_input.text = ""
 	error_label.text = ""
 	error_label.hide()
 	save_dialog.popup_centered()
-	name_input.grab_focus()
 
 func _on_save_confirmed():
 	var vehicle_name = name_input.text.strip_edges()
@@ -172,9 +170,3 @@ func _on_save_canceled():
 
 func _on_name_input_changed(new_text: String):
 	error_label.hide()
-
-func set_edit_mode(is_editing: bool, vehicle_name: String = ""):
-	if is_editing:
-		build_vehicle_button.text = "保存修改"
-	else:
-		build_vehicle_button.text = "建造车辆"

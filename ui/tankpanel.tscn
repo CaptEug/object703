@@ -32,8 +32,8 @@ atlas = ExtResource("2_sh8cn")
 region = Rect2(16, 16, 16, 16)
 
 [node name="Tankpanel" type="Panel"]
-offset_right = 336.0
-offset_bottom = 336.0
+offset_right = 256.0
+offset_bottom = 256.0
 theme = ExtResource("1_sh8cn")
 theme_override_styles/panel = SubResource("StyleBoxTexture_kkd3v")
 script = ExtResource("2_b7f80")
@@ -64,19 +64,19 @@ text = "vehicle offline"
 
 [node name="Controlbutton" type="TextureButton" parent="."]
 layout_mode = 0
-offset_left = 292.0
+offset_left = 212.0
 offset_top = 12.0
-offset_right = 324.0
+offset_right = 244.0
 offset_bottom = 44.0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("4_bu53t")
 
 [node name="Fuel" type="ProgressBar" parent="."]
 layout_mode = 0
-offset_left = 289.0
-offset_top = 232.0
-offset_right = 297.0
-offset_bottom = 302.0
+offset_left = 214.0
+offset_top = 154.0
+offset_right = 222.0
+offset_bottom = 224.0
 fill_mode = 3
 show_percentage = false
 
@@ -86,10 +86,10 @@ texture = SubResource("AtlasTexture_b7f80")
 
 [node name="Ammo" type="ProgressBar" parent="."]
 layout_mode = 0
-offset_left = 307.0
-offset_top = 232.0
-offset_right = 315.0
-offset_bottom = 302.0
+offset_left = 230.0
+offset_top = 154.0
+offset_right = 238.0
+offset_bottom = 224.0
 fill_mode = 3
 show_percentage = false
 
@@ -98,6 +98,6 @@ position = Vector2(4, 78)
 texture = SubResource("AtlasTexture_sh8cn")
 
 [node name="Marker2D" type="Marker2D" parent="."]
-position = Vector2(168, 168)
+position = Vector2(128, 128)
 
 [connection signal="pressed" from="Controlbutton" to="." method="_on_controlbutton_pressed"]
