@@ -160,10 +160,6 @@ func enter_build_mode():
 	print("进入建造模式")
 	ui_instance.build_vehicle_button.visible = true
 	create_ghost_block()
-	if is_editing_vehicle:
-		ui_instance.set_edit_mode(true, current_vehicle.vehicle_name)
-	else:
-		ui_instance.set_edit_mode(false)
 
 func exit_build_mode():
 	"""Exit build mode cleanup"""
@@ -339,7 +335,6 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 			block.set_connection_enabled(true)
 			block.is_movable_on_connection = true
 	ui_instance.update_inventory_display(inventory)
-	ui_instance.set_edit_mode(true, vehicle.vehicle_name)
 	create_ghost_block()
 	
 

@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://ca320w2cj51gd"]
+[gd_scene load_steps=4 format=3 uid="uid://ca320w2cj51gd"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ils3j"]
 [ext_resource type="Script" uid="uid://ifelvwg72870" path="res://ui/tankbuilderui.gd" id="2_8aq6r"]
+[ext_resource type="Texture2D" uid="uid://cgm2m5vm4kkmi" path="res://assets/icons/save.png" id="3_8aq6r"]
 
 [node name="Tankbuilderui" type="Control"]
 layout_mode = 3
@@ -11,47 +12,49 @@ script = ExtResource("2_8aq6r")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
-offset_right = 328.0
+offset_top = 392.0
+offset_right = 256.0
 offset_bottom = 648.0
+
+[node name="NameInput" type="LineEdit" parent="Panel"]
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 211.0
+offset_bottom = 54.0
+placeholder_text = "MyTankDesign"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Panel"]
 layout_mode = 0
 offset_left = 4.0
-offset_top = 20.0
-offset_right = 326.0
-offset_bottom = 206.0
+offset_top = 54.0
+offset_right = 254.0
+offset_bottom = 252.0
 
-[node name="TabContainer" type="TabContainer" parent="Panel"]
+[node name="SaveButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 206.0
-offset_right = 326.0
-offset_bottom = 536.0
+offset_left = 214.0
+offset_top = 12.0
+offset_right = 246.0
+offset_bottom = 44.0
+texture_normal = ExtResource("3_8aq6r")
 
-[node name="BuildButton" type="Button" parent="Panel"]
-layout_mode = 2
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = 560.0
-offset_right = -16.0
-offset_bottom = -17.0
-text = "SAVE AND BUILD"
+[node name="TabContainer" type="TabContainer" parent="."]
+layout_mode = 0
+offset_left = 263.0
+offset_top = 453.0
+offset_right = 1144.0
+offset_bottom = 640.0
 
 [node name="SaveDialog" type="AcceptDialog" parent="."]
 transparent_bg = true
 title = "Enter vehicle name"
 position = Vector2i(0, 36)
 size = Vector2i(288, 160)
-visible = true
 transparent = true
 
 [node name="ErrorLabel" type="Label" parent="SaveDialog"]
 modulate = Color(1, 0, 0, 1)
-offset_right = 288.0
-offset_bottom = 110.0
-
-[node name="NameInput" type="LineEdit" parent="SaveDialog"]
-offset_right = 288.0
-offset_bottom = 110.0
-placeholder_text = "MyTankDesign"
+offset_left = 280.0
+offset_top = 440.0
+offset_right = 345.0
+offset_bottom = 474.0
