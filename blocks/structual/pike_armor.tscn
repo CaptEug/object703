@@ -12,10 +12,9 @@ region = Rect2(0, 176, 16, 16)
 script = ExtResource("1_plsjk")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
-position = Vector2(9.53674e-07, 9.53674e-07)
-scale = Vector2(0.3125, 0.3125)
-polygon = PackedVector2Array(-25.6, -25.6, 25.6, 25.6, -25.6, 25.6)
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+build_mode = 1
+polygon = PackedVector2Array(-8, 8, -8, -8, -4.43119, -4.43118, 8, 8)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_iyqv6")
