@@ -208,9 +208,9 @@ func handle_rotation_input(event):
 	"""Handle rotation input for ghost block"""
 	if not ghost_block:
 		return
-	if event.is_action_pressed("TURNLEFT"):
+	if event.is_action_pressed("TRUNLEFT"):
 		rotate_ghost_block(-1)  # 向左旋转90度
-	elif event.is_action_pressed("TURNRIGHT"):
+	elif event.is_action_pressed("TRUNRIGHT"):
 		rotate_ghost_block(1)   # 向右旋转90度
 
 

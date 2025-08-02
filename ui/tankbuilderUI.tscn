@@ -17,6 +17,7 @@ offset_right = 256.0
 offset_bottom = 648.0
 
 [node name="NameInput" type="LineEdit" parent="Panel"]
+layout_mode = 0
 offset_left = 4.0
 offset_top = 2.0
 offset_right = 211.0
