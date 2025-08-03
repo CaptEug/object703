@@ -2,8 +2,6 @@ class_name Vehicle
 extends Node2D
 
 const GRID_SIZE:int = 16
-const FORCE_CHANGE_RATE := 50.0
-const MAX_ROTING_POWER := 0.1
 
 var vehicle_size:Vector2i
 var vehicle_name:String
@@ -318,7 +316,6 @@ func calculate_center_of_mass() -> Vector2:
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var currunt_total_power = get_current_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -341,6 +338,7 @@ func calculate_balanced_forces():
 	# 分配结果
 	for point in thrust_points:
 		balanced_forces[point.track] = thrusts[point.track]
+	return balanced_forces
 
 # 最小二乘解法计算推力分布
 func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float, target_dir: Vector2) -> Dictionary:
@@ -401,7 +399,6 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 func calculate_rotation_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var currunt_total_power = get_current_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -417,12 +414,13 @@ func calculate_rotation_forces():
 	var thrusts = calculate_rotation_thrust_distribution(
 		thrust_points,
 		com - global_position, # 相对质心
-		0.1 # 总功率
+		1 # 总功率
 	)
 	
 	# 分配结果
 	for point in thrust_points:
 		rotation_forces[point.track] = thrusts[point.track]
+	return rotation_forces
 
 # 计算纯旋转时的推力分布
 func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float) -> Dictionary:
@@ -578,43 +576,42 @@ func update_tracks_state(control_input:Array, delta):
 		if forward_input != 0:
 			for engine:Powerpack in powerpacks:
 				engine.state["move"] = true
+		else:
+			for engine:Powerpack in powerpacks:
+				engine.state["move"] = false
 		if turn_input != 0:
 			for engine:Powerpack in powerpacks:
 				engine.state["rotate"] = true
-		for engine:Powerpack in powerpacks:
-			engine.Target_power()
-			engine.Power_increases(delta)
-	get_current_engine_power()
-	var total_forward = 0
-	var total_turn = 0
-	for track in balanced_forces:
-		track_target_forces[track] = balanced_forces[track] * forward_input + rotation_forces[track] * turn_input
-		total_forward += abs(balanced_forces[track] * forward_input)
-		total_turn += abs(rotation_forces[track] * turn_input)
-	if total_forward > 0:
-		currunt_scale = current_engine_power / (total_forward + total_turn)
-	else:
-		currunt_scale = current_engine_power * MAX_ROTING_POWER / (total_forward + total_turn)
-	for track in track_target_forces:
-		track_target_forces[track] *= currunt_scale
-	
+		else:
+			for engine:Powerpack in powerpacks:
+				engine.state["rotate"] = false
+	if get_track_forces(forward_input, turn_input) != null:
+		get_current_engine_power()
+		track_target_forces = get_track_forces(forward_input, turn_input)
 	apply_smooth_track_forces(delta)
 
+func get_track_forces(forward_input, turn_input):
+	var most_power = null
+	for engine:Powerpack in powerpacks:
+		engine.caculate_most_move_power(forward_input, turn_input)
+		if most_power == null:
+			most_power = engine.track_power_target
+		else:
+			for track in most_power:
+				most_power[track] += engine.track_power_target[track]
+	return most_power
+	
 
 func apply_smooth_track_forces(delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
-		var current = track_current_forces[track]
-		# 使用lerp平滑过渡
-		var new_force = lerp(current, target, FORCE_CHANGE_RATE * delta)
-		
+		var new_force = target
 		if tracks.has(track) and current_engine_power != 0:
 			if abs(new_force) > 0:
 				track.set_state_force(move_state, new_force)
 				track_current_forces[track] = new_force
 			else:
 				track.set_state_force('idle', 0)
-				track_current_forces[track] = 0.0
 
 func update_vehicle_size():
 	var min_x:int
