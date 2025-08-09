@@ -37,6 +37,7 @@ offset_left = 214.0
 offset_top = 12.0
 offset_right = 246.0
 offset_bottom = 44.0
+mouse_default_cursor_shape = 2
 texture_normal = ExtResource("3_8aq6r")
 
 [node name="TabContainer" type="TabContainer" parent="."]
