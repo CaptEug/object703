@@ -88,6 +88,14 @@ func draw_grid():
 				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
 				var rect = Rect2(draw_pos + Vector2(pos) * grid_size + Vector2(line_width,line_width)/2, extents * 2)
 				draw_rect(rect, line_color, false, line_width)
+			var collisionpolygon = grid[pos].find_child("CollisionShape2D") as CollisionPolygon2D
+			if collisionpolygon:
+				var points = []
+				for p in collisionpolygon.polygon:
+					points.append(p + draw_pos + Vector2(pos) * grid_size)
+				# Close the loop by adding the first point again
+				points.append(points[0])
+				draw_polyline(points, line_color, line_width)
 
 
 func _on_controlbutton_pressed():

@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://b3h2shwbm3oy8"]
 
-[ext_resource type="Script" path="res://blocks/structual/pike_armor.gd" id="1_plsjk"]
+[ext_resource type="Script" uid="uid://db3ysuq63xj6o" path="res://blocks/structual/pike_armor.gd" id="1_plsjk"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_n162s"]
 [ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/ConnectionPoint.tscn" id="3_n162s"]
 
@@ -14,7 +14,7 @@ metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
 build_mode = 1
-polygon = PackedVector2Array(-8, 8, -8, -8, -4.43119, -4.43118, 8, 8)
+polygon = PackedVector2Array(-8, -8, 8, 8, -8, 8)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_iyqv6")

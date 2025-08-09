@@ -24,8 +24,8 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta):
 	focus_on_vehicle()
-	if not focused:
-		movement(delta)
+	movement(delta)
+	smooth_move_to(target_pos)
 
 func focus_on_vehicle():
 	var focus_vehicle:Vehicle
@@ -33,10 +33,17 @@ func focus_on_vehicle():
 		if vehicle.control.get_method() == "manual_control":
 			focus_vehicle = vehicle
 	if focus_vehicle:
-		smooth_move_to(focus_vehicle.center_of_mass)
+		if Input.is_action_pressed("AIMING"):
+			var viewport_center = Vector2(get_viewport().size / 2)
+			var mouse_pos = get_viewport().get_mouse_position()
+			var mouse_offset = mouse_pos - viewport_center
+			target_pos = focus_vehicle.center_of_mass + mouse_offset
+		else:
+			target_pos = focus_vehicle.center_of_mass
 		focused = true
 	else:
 		focused = false
+
 
 func smooth_move_to(target_position:Vector2):
 	var tween = get_tree().create_tween()
@@ -58,4 +65,3 @@ func movement(delta):
 	if input.length() > 0:
 		input = input.normalized()
 	target_pos += input * move_speed * delta
-	smooth_move_to(target_pos)
