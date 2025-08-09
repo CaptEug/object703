@@ -229,11 +229,11 @@ func create_ghost_block():
 		return
 		
 	if ghost_block is Block:
-		ghost_block.collision_layer = 0
 		ghost_block.queue_free()
 	
 	ghost_block = current_block_scene.instantiate()
 	ghost_rotation = 0
+	ghost_block.collision_layer = 0
 	ghost_block.rotation_to_parent = ghost_rotation * PI * 0.5
 	configure_ghost_block()
 	add_child(ghost_block)
@@ -307,7 +307,7 @@ func place_block():
 		new_block.rotation_to_parent = ghost_block.rotation
 		current_vehicle._add_block(new_block, local_pos, grid_positions)
 		new_block.set_connection_enabled(true)	
-		print(new_block, new_block.neighbors, new_block.connected_blocks)
+		ghost_block.queue_free()
 		# Update grid records
 		for pos in grid_positions:
 			placed_blocks[pos] = new_block
