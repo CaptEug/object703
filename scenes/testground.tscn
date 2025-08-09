@@ -18,11 +18,13 @@ glow_blend_mode = 0
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Tankpanel" parent="CanvasLayer" instance=ExtResource("6_hie3q")]
+visible = false
 
 [node name="Tankbuilderui" parent="CanvasLayer" instance=ExtResource("2_hie3q")]
 visible = false
 
 [node name="Tooltip" parent="CanvasLayer" instance=ExtResource("3_m5lm4")]
+visible = false
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
@@ -31,10 +33,10 @@ environment = SubResource("Environment_m32x0")
 script = ExtResource("2_m5lm4")
 
 [node name="Object1" parent="." instance=ExtResource("2_5du73")]
-position = Vector2(-495, -210)
+position = Vector2(-181, -113)
 
 [node name="Object2" parent="." instance=ExtResource("7_hie3q")]
 position = Vector2(469, 191)
 
 [node name="Tankbuilder" parent="." instance=ExtResource("7_iwiij")]
-position = Vector2(100, 100)
+position = Vector2(-181, -114)

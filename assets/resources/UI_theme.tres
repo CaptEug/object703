@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=40 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=42 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
@@ -159,6 +159,17 @@ texture_margin_top = 8.0
 texture_margin_right = 16.0
 texture_margin_bottom = 8.0
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_d3oid"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(192, 48, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vrn5i"]
+texture = SubResource("AtlasTexture_d3oid")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_6vqaq"]
 atlas = ExtResource("3_vwcpp")
 region = Rect2(0, 0, 16, 16)
@@ -255,6 +266,9 @@ TabContainer/styles/tab_focus = SubResource("StyleBoxTexture_edc7y")
 TabContainer/styles/tab_hovered = SubResource("StyleBoxTexture_we4p1")
 TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_qdf78")
 TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_kwu70")
+TooltipLabel/colors/font_color = Color(1, 1, 1, 1)
+TooltipLabel/font_sizes/font_size = 8
+TooltipPanel/styles/panel = SubResource("StyleBoxTexture_vrn5i")
 Tree/colors/font_color = Color(0, 1, 0, 1)
 Tree/colors/font_hovered_color = Color(0, 1, 0, 1)
 Tree/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)

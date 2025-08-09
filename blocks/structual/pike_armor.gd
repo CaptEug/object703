@@ -3,7 +3,11 @@ extends Block
 const HITPOINT:float = 250
 const WEIGHT:float = 500
 const BLOCK_NAME:String = 'pike armor'
+const TYPE:= "Structual"
 const SIZE:= Vector2(1, 1)
+
+var description := ""
+var outline_tex := preload("res://assets/icons/pike_outline.png")
 
 func _init():
 	current_hp = HITPOINT

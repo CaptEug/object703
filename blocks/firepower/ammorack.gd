@@ -7,6 +7,7 @@ var explosion_area:Area2D
 var explosion_shape:CollisionShape2D
 var exploded:bool = false
 var explosion_particle = preload("res://assets/particles/explosion.tscn")
+var icons:Dictionary = {"normal":"res://assets/icons/ammo_icon.png","selected":"res://assets/icons/ammo_icon_n.png"}
 
 func _ready():
 	super._ready()
@@ -40,7 +41,7 @@ func explode():
 	explosion.emitting = true
 	get_tree().current_scene.add_child(explosion)
 	exploded = true
-	var max_explosive_damage:int = ammo_storage * 10
+	var max_explosive_damage = ammo_storage * 10
 	var explosion_radius = ammo_storage * 1
 
 	for block in explosion_area.get_overlapping_bodies():
