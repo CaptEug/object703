@@ -8,12 +8,10 @@ var block_name: String
 var type: String
 var size: Vector2i
 var parent_vehicle: Vehicle = null  
-var _cached_icon: Texture2D
 var neighbors := {}
 var connected_blocks := []
 var global_grid_pos := []
 var mouse_inside: bool
-var outline_tex: Texture
 var rotation_to_parent = 0.0
 
 ## Connection System

@@ -6,7 +6,6 @@ const BLOCK_NAME:String = 'ammo rack'
 const SIZE:= Vector2(1, 1)
 const TYPE:= "Firepower"
 const AMMO_CAPACITY:float = 50.0
-var icons:Dictionary = {"normal":"res://assets/icons/ammo_icon.png","selected":"res://assets/icons/ammo_icon_n.png"}
 
 var description := ""
 

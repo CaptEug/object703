@@ -3,7 +3,7 @@
 		"1": {
 			"base_pos": [
 				1,
-				3
+				4
 			],
 			"name": "122mm D-52S cannon",
 			"path": "res://blocks/firepower/d_52s.tscn",
@@ -12,7 +12,7 @@
 		"10": {
 			"base_pos": [
 				1,
-				2
+				3
 			],
 			"name": "ammo rack",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
@@ -21,7 +21,7 @@
 		"11": {
 			"base_pos": [
 				2,
-				2
+				3
 			],
 			"name": "ammo rack",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
@@ -30,7 +30,7 @@
 		"12": {
 			"base_pos": [
 				0,
-				3
+				4
 			],
 			"name": "fuel tank",
 			"path": "res://blocks/mobility/fuel_tank.tscn",
@@ -39,7 +39,7 @@
 		"13": {
 			"base_pos": [
 				3,
-				3
+				4
 			],
 			"name": "fuel tank",
 			"path": "res://blocks/mobility/fuel_tank.tscn",
@@ -48,7 +48,7 @@
 		"14": {
 			"base_pos": [
 				0,
-				4
+				5
 			],
 			"name": "maybach HL 250",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
@@ -57,7 +57,7 @@
 		"15": {
 			"base_pos": [
 				3,
-				4
+				5
 			],
 			"name": "maybach HL 250",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
@@ -66,7 +66,7 @@
 		"16": {
 			"base_pos": [
 				2,
-				1
+				2
 			],
 			"name": "command cupola",
 			"path": "res://blocks/command/cupola.tscn",
@@ -75,7 +75,7 @@
 		"17": {
 			"base_pos": [
 				1,
-				1
+				2
 			],
 			"name": "command cupola",
 			"path": "res://blocks/command/cupola.tscn",
@@ -83,17 +83,26 @@
 		},
 		"18": {
 			"base_pos": [
-				0,
-				5
+				3,
+				0
 			],
-			"name": "122mm D-52S cannon",
-			"path": "res://blocks/firepower/d_52s.tscn",
-			"rotation": "right"
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": "up"
+		},
+		"19": {
+			"base_pos": [
+				0,
+				0
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": "left"
 		},
 		"2": {
 			"base_pos": [
 				0,
-				2
+				3
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -102,7 +111,7 @@
 		"3": {
 			"base_pos": [
 				0,
-				1
+				2
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -111,7 +120,7 @@
 		"4": {
 			"base_pos": [
 				0,
-				0
+				1
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -120,7 +129,7 @@
 		"5": {
 			"base_pos": [
 				1,
-				0
+				1
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -129,7 +138,7 @@
 		"6": {
 			"base_pos": [
 				2,
-				0
+				1
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -138,7 +147,7 @@
 		"7": {
 			"base_pos": [
 				3,
-				0
+				1
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -147,7 +156,7 @@
 		"8": {
 			"base_pos": [
 				3,
-				1
+				2
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -156,16 +165,16 @@
 		"9": {
 			"base_pos": [
 				3,
-				2
+				3
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up"
 		}
 	},
-	"name": "1112111322",
+	"name": "object2",
 	"vehicle_size": [
 		4,
-		7
+		6
 	]
 }

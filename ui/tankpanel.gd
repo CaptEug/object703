@@ -29,6 +29,14 @@ func _process(delta):
 		$Offlinelabel.visible = selected_vehicle.destroyed
 		$Offlinelabel.add_theme_color_override("font_color", color*blink_strength)
 		retrieve_vehicle_data()
+		
+		#update cursor
+		if selected_vehicle.control.get_method() == "manual_control":
+			if not get_viewport().gui_get_hovered_control():
+				Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
+			else:
+				Input.set_custom_mouse_cursor(null)
+		
 		queue_redraw()
 	else:
 		visible = false
@@ -78,7 +86,7 @@ func draw_grid():
 				var blink_strength = 0.75 + 0.25 * sin(time * 4.0)  # range from 0 to 1
 				line_color = line_color * blink_strength
 			# draw outline if the block has one
-			if grid[pos].outline_tex:
+			if "outline_tex" in grid[pos]:
 				var mask_tex = grid[pos].outline_tex
 				draw_texture(mask_tex, draw_pos + Vector2(pos) * grid_size, line_color)
 				continue
@@ -88,28 +96,19 @@ func draw_grid():
 				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
 				var rect = Rect2(draw_pos + Vector2(pos) * grid_size + Vector2(line_width,line_width)/2, extents * 2)
 				draw_rect(rect, line_color, false, line_width)
-			var collisionpolygon = grid[pos].find_child("CollisionShape2D") as CollisionPolygon2D
-			if collisionpolygon:
-				var points = []
-				for p in collisionpolygon.polygon:
-					points.append(p + draw_pos + Vector2(pos) * grid_size)
-				# Close the loop by adding the first point again
-				points.append(points[0])
-				draw_polyline(points, line_color, line_width)
 
 
 func _on_controlbutton_pressed():
 	current_mode = (current_mode + 1) % control_modes.size()
 	selected_vehicle.control = control_modes[current_mode]
-	# return idle if other vehicle enter manual mode
+	
+	# return idle if any other vehicle enter manual mode
 	if selected_vehicle.control.get_method() == "manual_control":
-		Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
 		for vehicle in get_tree().get_nodes_in_group("vehicles"):
 			if vehicle != selected_vehicle:
 				if vehicle.control.get_method() == "manual_control":
 					vehicle.control = Callable()
-	else:
-		Input.set_custom_mouse_cursor(null)
+
 
 func find_grid(grid):
 	var min_x:int
@@ -140,4 +139,3 @@ func find_grid(grid):
 		grid_new[pos] = block
 	grid = grid_new
 	return grid
-	

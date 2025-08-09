@@ -7,6 +7,8 @@ extends Control
 @onready var name_input = $Panel/NameInput
 @onready var error_label = $SaveDialog/ErrorLabel
 
+var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
+
 signal build_vehicle_requested
 signal block_selected(scene_path: String)
 signal vehicle_saved(vehicle_name: String)

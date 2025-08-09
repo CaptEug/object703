@@ -345,7 +345,7 @@ func remove_block_at_mouse():
 			block.queue_free()
 		
 		# Remove from placement records
-		remove_block_from_grid(block, grid_pos)
+		remove_block_from_grid(block)
 
 #-----------------------------------------------------------------------------#
 #                          VEHICLE EDITING FUNCTIONS                          #
@@ -622,7 +622,7 @@ func is_position_occupied(positions: Array) -> bool:
 			return true
 	return false
 
-func remove_block_from_grid(block: Node, grid_pos: Vector2i):
+func remove_block_from_grid(block: Node):
 	"""Remove block from grid tracking"""
 	var positions_to_remove = []
 	for pos in placed_blocks:

@@ -206,6 +206,9 @@ func auto_target(delta):
 func manual_target(delta):
 	aim(delta, get_global_mouse_position())
 	if Input.is_action_pressed("FIRE_MAIN"):
+	# Skip firing if mouse is over UI
+		if get_viewport().gui_get_hovered_control():
+			return
 		fire()
 
 func has_common_element(a1: Array, a2: Array) -> bool:
