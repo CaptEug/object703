@@ -2,8 +2,6 @@ class_name Vehicle
 extends Node2D
 
 const GRID_SIZE:int = 16
-const FORCE_CHANGE_RATE := 50.0
-const MAX_ROTING_POWER := 0.1
 
 var vehicle_size:Vector2i
 var vehicle_name:String
@@ -38,7 +36,7 @@ var block_scenes := {}
 var selected:bool
 var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
-
+var ready_connect = true
 
 func _ready():
 	if blueprint:
@@ -56,6 +54,11 @@ func Get_ready_again():
 
 
 func _process(delta):
+	if ready_connect == false:
+		for block:Block in blocks:
+			if block.joint_connected_blocks.size() != 0:
+				block.set_connection_enabled(false)
+				ready_connect = true
 	center_of_mass = calculate_center_of_mass()
 	if control:
 		update_tracks_state(control.call(), delta)
@@ -63,8 +66,9 @@ func _process(delta):
 
 func update_vehicle():
 	#Check block connectivity
-	for block in blocks:
+	for block:Block in blocks:
 		block.get_neighbors()
+		block.get_all_connected_blocks()
 		
 	#Get all total parameters
 	get_max_engine_power()
@@ -94,7 +98,6 @@ func _add_block(block: Block,local_pos, grid_positions):
 		add_child(block)
 		blocks.append(block)
 		block.position = local_pos
-		block.global_rotation = rotation
 		
 		if block is Track:
 			tracks.append(block)
@@ -115,6 +118,7 @@ func _add_block(block: Block,local_pos, grid_positions):
 
 func remove_block(block: Block):
 	blocks.erase(block)
+	
 	
 	var keys_to_erase = []
 	for pos in grid:
@@ -164,7 +168,6 @@ func get_max_engine_power() -> float:
 	for engine in powerpacks:
 		if engine.is_inside_tree() and is_instance_valid(engine):
 			max_power += engine.max_power
-	current_engine_power = max_power
 	return max_power
 
 func get_current_engine_power() -> float:
@@ -235,6 +238,7 @@ func load_from_file(identifier):  # 允许接收多种类型参数
 		push_error("Failed to load file: ", path)
 
 func load_from_blueprint(bp: Dictionary):
+	ready_connect = false
 	clear_existing_blocks()
 	# 按数字键排序以保证加载顺序一致
 	var block_ids = bp["blocks"].keys()
@@ -252,7 +256,7 @@ func load_from_blueprint(bp: Dictionary):
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			var local_pos = base_pos * GRID_SIZE + Vector2(block.size)*GRID_SIZE/2
-			
+			block.rotation_to_parent = block.rotation
 			var target_grid = []
 			# 记录所有网格位置
 			for x in block.size.x:
@@ -260,6 +264,7 @@ func load_from_blueprint(bp: Dictionary):
 					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
 					target_grid.append(grid_pos)
 			_add_block(block, local_pos, target_grid)
+			
 
 
 func get_rotation_angle(dir: String) -> float:
@@ -311,7 +316,6 @@ func calculate_center_of_mass() -> Vector2:
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var currunt_total_power = get_current_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -327,13 +331,14 @@ func calculate_balanced_forces():
 	var thrusts = calculate_thrust_distribution(
 		thrust_points,
 		com - global_position, # 相对质心
-		currunt_total_power,
+		1,
 		direction # 目标方向
 	)
 	
 	# 分配结果
 	for point in thrust_points:
 		balanced_forces[point.track] = thrusts[point.track]
+	return balanced_forces
 
 # 最小二乘解法计算推力分布
 func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float, target_dir: Vector2) -> Dictionary:
@@ -394,7 +399,6 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 func calculate_rotation_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
-	var currunt_total_power = get_current_engine_power()
 	
 	# 准备推力点数据
 	var thrust_points = []
@@ -410,12 +414,13 @@ func calculate_rotation_forces():
 	var thrusts = calculate_rotation_thrust_distribution(
 		thrust_points,
 		com - global_position, # 相对质心
-		currunt_total_power * MAX_ROTING_POWER # 总功率
+		1 # 总功率
 	)
 	
 	# 分配结果
 	for point in thrust_points:
 		rotation_forces[point.track] = thrusts[point.track]
+	return rotation_forces
 
 # 计算纯旋转时的推力分布
 func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float) -> Dictionary:
@@ -562,39 +567,51 @@ func update_tracks_state(control_input:Array, delta):
 	
 	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
+		for engine:Powerpack in powerpacks:
+			engine.Power_reduction(delta)
+			engine.state["move"] = false
+			engine.state["rotate"] = false
 	else:
 		move_state = 'move'
-	
-	var total_forward = 0
-	var total_turn = 0
-	for track in balanced_forces:
-		track_target_forces[track] = balanced_forces[track] * forward_input + rotation_forces[track] * turn_input
-		total_forward += abs(balanced_forces[track] * forward_input)
-		total_turn += abs(rotation_forces[track] * turn_input)
-	if total_forward > 0:
-		currunt_scale = current_engine_power / (total_forward + total_turn)
-	else:
-		currunt_scale = current_engine_power * MAX_ROTING_POWER / (total_forward + total_turn)
-	for track in track_target_forces:
-		track_target_forces[track] *= currunt_scale
-	
+		if forward_input != 0:
+			for engine:Powerpack in powerpacks:
+				engine.state["move"] = true
+		else:
+			for engine:Powerpack in powerpacks:
+				engine.state["move"] = false
+		if turn_input != 0:
+			for engine:Powerpack in powerpacks:
+				engine.state["rotate"] = true
+		else:
+			for engine:Powerpack in powerpacks:
+				engine.state["rotate"] = false
+	if get_track_forces(forward_input, turn_input) != null:
+		get_current_engine_power()
+		track_target_forces = get_track_forces(forward_input, turn_input)
 	apply_smooth_track_forces(delta)
 
+func get_track_forces(forward_input, turn_input):
+	var most_power = null
+	for engine:Powerpack in powerpacks:
+		engine.caculate_most_move_power(forward_input, turn_input)
+		if most_power == null:
+			most_power = engine.track_power_target
+		else:
+			for track in most_power:
+				most_power[track] += engine.track_power_target[track]
+	return most_power
+	
 
 func apply_smooth_track_forces(delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
-		var current = track_current_forces[track]
-		# 使用lerp平滑过渡
-		var new_force = lerp(current, target, FORCE_CHANGE_RATE * delta)
-		
+		var new_force = target
 		if tracks.has(track) and current_engine_power != 0:
 			if abs(new_force) > 0:
 				track.set_state_force(move_state, new_force)
 				track_current_forces[track] = new_force
 			else:
 				track.set_state_force('idle', 0)
-				track_current_forces[track] = 0.0
 
 func update_vehicle_size():
 	var min_x:int

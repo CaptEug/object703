@@ -14,6 +14,7 @@ var connected_blocks := []
 var global_grid_pos := []
 var mouse_inside: bool
 var outline_tex: Texture
+var rotation_to_parent = 0.0
 
 ## Connection System
 @export var connection_point_script: Script
@@ -50,8 +51,14 @@ func _ready():
 	if connection_points.is_empty():
 		push_warning("Block '%s' has no connection points" % block_name)
 
-func _process(_delta):
-	pass
+func _process(delta):
+	# 处理现有连接的维持
+	for joint in joint_connected_blocks:
+		if is_instance_valid(joint):
+			var other_block = joint_connected_blocks[joint]
+			if is_instance_valid(other_block):
+
+				pass
 
 ## Physics and Drawing
 func _emit_relay_signal():
@@ -181,6 +188,7 @@ func can_connect(source: ConnectionPoint, target: ConnectionPoint) -> bool:
 		source.can_connect_with(target)
 	)
 
+
 func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, rigid_alignment: bool = false) -> Joint2D:
 	if not source.is_connection_enabled or not target.is_connection_enabled:
 		return null
@@ -215,6 +223,15 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, rigid_a
 	return joint
 
 func disconnect_joint(joint: Joint2D):
+	var should_disconnect = true
+	for point in connection_points:
+		if point.joint == joint and point.is_connection_enabled:
+			should_disconnect = false
+			break
+	
+	if not should_disconnect:
+		return
+	
 	if not joint_connected_blocks.has(joint):
 		return
 	
@@ -286,7 +303,21 @@ func _on_connection_broken(joint: Joint2D):
 	if other_block and connected_blocks.has(other_block):
 		connected_blocks.erase(other_block)
 
-func set_connection_enabled(enabled: bool):
+func set_connection_enabled(enabled: bool, keep_existing_joints: bool = true):
 	for point in connection_points:
-		point.is_connection_enabled = enabled
+		# 保存当前连接状态
+		var was_connected = point.is_joint_active()
+		
+		# 设置启用状态
+		point.set_connection_enabled(enabled, keep_existing_joints)
+		
+		# 恢复连接状态（如果需要）
+		if was_connected and keep_existing_joints and not enabled:
+			# 获取连接的另一个点
+			var other_point = point.connected_to
+			if other_point and is_instance_valid(other_point):
+				# 重新建立连接（但不物理断开）
+				point.connected_to = other_point
+				other_point.connected_to = point
+	
 	queue_redraw()

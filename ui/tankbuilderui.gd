@@ -16,7 +16,8 @@ const BLOCK_PATHS = {
 	"Firepower": "res://blocks/firepower/",
 	"Mobility": "res://blocks/mobility/",
 	"Command": "res://blocks/command/",
-	"Building": "res://blocks/building/"
+	"Building": "res://blocks/building/",
+	"Structual":"res://blocks/structual/"
 }
 
 var inventory = {}

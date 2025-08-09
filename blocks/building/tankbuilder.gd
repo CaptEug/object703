@@ -24,6 +24,7 @@ var ui_instance: Control
 var current_vehicle: Vehicle = null
 var original_parent = null
 var to_local_offset: Vector2
+var ghost_rotation := 0
 
 ### INVENTORY SYSTEM ###
 var inventory = {
@@ -35,7 +36,9 @@ var inventory = {
 	"fuel_tank":10,
 	"cupola":10,
 	"ammo_rack":10,
-	"tankbuilder":10
+	"tankbuilder":10,
+	"pike_armor":10,
+	"armor":10
 }
 
 #-----------------------------------------------------------------------------#
@@ -97,7 +100,19 @@ func _input(event):
 	if not is_build_mode:
 		return
 	handle_build_actions(event)
+	handle_rotation_input(event)
 
+func rotate_ghost_block(angle: float):
+	"""Rotate the ghost block by specified angle"""
+	if not ghost_block:
+		return
+	
+	ghost_rotation += angle
+	ghost_block.rotation = ghost_rotation * PI * 0.5 
+	ghost_block.rotation_to_parent = ghost_rotation * PI * 0.5
+	
+	# 更新幽灵方块的位置，确保旋转后仍然对齐网格
+	update_ghost_position()
 #-----------------------------------------------------------------------------#
 #                          FACTORY ZONE FUNCTIONS                             #
 #-----------------------------------------------------------------------------#
@@ -188,6 +203,17 @@ func handle_build_actions(event):
 			place_block()
 		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			remove_block_at_mouse()
+			
+func handle_rotation_input(event):
+	"""Handle rotation input for ghost block"""
+	if not ghost_block:
+		return
+	if event.is_action_pressed("TRUNLEFT"):
+		rotate_ghost_block(-1)  # 向左旋转90度
+	elif event.is_action_pressed("TRUNRIGHT"):
+		rotate_ghost_block(1)   # 向右旋转90度
+
+
 
 func toggle_codex_ui():
 	"""Toggle the builder UI visibility"""
@@ -207,6 +233,8 @@ func create_ghost_block():
 		ghost_block.queue_free()
 	
 	ghost_block = current_block_scene.instantiate()
+	ghost_rotation = 0
+	ghost_block.rotation_to_parent = ghost_rotation * PI * 0.5
 	configure_ghost_block()
 	add_child(ghost_block)
 
@@ -275,9 +303,11 @@ func place_block():
 		# Calculate local position relative to vehicle
 		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
 		new_block.position = local_pos
-		new_block.global_rotation = rotation
+		new_block.global_rotation = ghost_block.global_rotation
+		new_block.rotation_to_parent = ghost_block.rotation
 		current_vehicle._add_block(new_block, local_pos, grid_positions)
 		new_block.set_connection_enabled(true)	
+		print(new_block, new_block.neighbors, new_block.connected_blocks)
 		# Update grid records
 		for pos in grid_positions:
 			placed_blocks[pos] = new_block
@@ -351,13 +381,12 @@ func block_to_grid(vehicle:Vehicle):
 		var offset_from_com = original_global_pos - original_com
 		
 		# Reset block rotation
-		var original_rotation = block.global_rotation
-		block.global_rotation = global_rotation
-		
+		var original_rotation = block.global_rotation - block.rotation_to_parent
+		block.global_rotation = global_rotation + block.rotation_to_parent
 		# Calculate new position after rotation
-		var rotated_offset = offset_from_com.rotated(-original_rotation + block.global_rotation)
+		var rotated_offset = offset_from_com.rotated(-original_rotation + global_rotation)
 		block.position = vehicle.to_local(to_global(original_com + rotated_offset)) 
-	
+
 	# Move whole vehicle to align center with factory
 	vehicle.grid.clear()
 	placed_blocks.clear()
@@ -431,6 +460,8 @@ func _on_vehicle_saved(vehicle_name: String):
 	current_vehicle.calculate_center_of_mass()
 	current_vehicle.calculate_balanced_forces()
 	current_vehicle.calculate_rotation_forces()
+	for block:Block in current_vehicle.blocks:
+		block.set_connection_enabled(false)
 	
 	# Generate blueprint data
 	var blueprint_data = create_blueprint_data(vehicle_name)

@@ -17,12 +17,16 @@ func _ready():
 	queue_redraw()
 
 func _process(delta):
-	if not is_connection_enabled:
-		return
-	
-	# 持续检测区域内的连接点
+	# 即使 is_connection_enabled 为 false，也继续处理已存在的连接
 	for other_point in overlapping_points:
-		if (other_point != self and 
+		# 只处理已经连接的节点，不尝试新连接
+		if connected_to == other_point:
+			# 可以在这里添加维持连接的逻辑
+			pass
+		
+		# 只有当启用时才尝试新连接
+		if (is_connection_enabled and 
+			other_point != self and 
 			other_point.is_connection_enabled and 
 			not connected_to and 
 			not other_point.connected_to):
@@ -59,9 +63,8 @@ func _on_area_exited(area: Area2D):
 		if connected_to == other_point:
 			disconnect_joint()
 
-
 func try_connect(other_point: ConnectionPoint) -> bool:
-	if not is_connection_enabled or not other_point.is_connection_enabled:
+	if not (is_connection_enabled and other_point.is_connection_enabled):
 		return false
 	
 	if not can_connect_with(other_point):
@@ -81,9 +84,15 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 	if not parent_can_move and not other_can_move:
 		return false
 	
-	# 强制对齐旋转(0度或180度)
+	# 修改部分：强制对齐旋转到最近的90度增量 (0, 90, 180, 270)
 	var angle_diff = other_block.global_rotation - parent_block.global_rotation
-	var snapped_angle = round(angle_diff / PI) * PI  # 对齐到0或PI弧度
+	var angle_deg = rad_to_deg(angle_diff)
+	
+	# 计算最近的90度增量
+	var snapped_angle_deg = round(angle_deg / 90) * 90
+	var snapped_angle = deg_to_rad(snapped_angle_deg)
+	
+	# 应用旋转对齐
 	other_block.global_rotation = parent_block.global_rotation + snapped_angle
 	
 	# 计算精确位置对齐
@@ -109,15 +118,15 @@ func can_connect_with(other_point: ConnectionPoint) -> bool:
 	if connected_to or other_point.connected_to:
 		return false
 	
-	# 检查角度是否接近对齐
+	# 检查角度是否接近90度增量对齐
 	var parent_block = find_parent_block()
 	var other_block = other_point.find_parent_block()
 	if not parent_block or not other_block:
 		return false
 	
 	var angle_diff = rad_to_deg(abs(other_block.global_rotation - parent_block.global_rotation))
-	angle_diff = fmod(angle_diff, 180)
-	var angle_ok = min(angle_diff, 180 - angle_diff) < snap_angle_threshold
+	angle_diff = fmod(angle_diff, 90)  # 取模90度
+	var angle_ok = min(angle_diff, 90 - angle_diff) < snap_angle_threshold
 	
 	return (
 		connection_type == other_point.connection_type and
@@ -134,16 +143,38 @@ func find_parent_block() -> Node:
 	return null
 
 func disconnect_joint():
+	# 先保存对面的连接点引用
+	var other_point = connected_to
+	
 	if joint and is_instance_valid(joint):
 		var parent_block = find_parent_block()
 		if parent_block:
 			parent_block.disconnect_joint(joint)
 	
-	if connected_to and is_instance_valid(connected_to):
-		connected_to.connected_to = null
-		connected_to.joint = null
-		connected_to.queue_redraw()
-	
+	# 清空本地连接状态
 	connected_to = null
 	joint = null
+	
+	# 如果对面的连接点仍然有效，也清空它的连接状态
+	if other_point and is_instance_valid(other_point):
+		other_point.connected_to = null
+		other_point.joint = null
+		other_point.queue_redraw()
+	
 	queue_redraw()
+
+func set_connection_enabled(enabled: bool, keep_existing: bool = true):
+	if is_connection_enabled == enabled:
+		return
+	
+	is_connection_enabled = enabled
+	
+	# 只有当不保留现有连接且禁用时才断开
+	if not keep_existing and not enabled and connected_to:
+		disconnect_joint()
+	
+	queue_redraw()
+
+
+func is_joint_active() -> bool:
+	return joint != null and is_instance_valid(joint)
