@@ -20,6 +20,7 @@ var placed_blocks := {}
 var can_build := true
 var is_editing_vehicle := false
 var is_build_mode := false
+var is_recycle_mode := false
 var ui_instance: Control
 var current_vehicle: Vehicle = null
 var original_parent = null
@@ -53,6 +54,10 @@ func _ready():
 	setup_factory_zone()
 	factory_zone.body_entered.connect(_on_body_entered_factory)
 	factory_zone.body_exited.connect(_on_body_exited_factory)
+	
+	# Connect UI signals
+	if ui_instance:
+		ui_instance.recycle_mode_toggled.connect(_on_recycle_mode_toggled)
 
 func setup_factory_zone():
 	"""Initialize the factory zone collision shape and position"""
@@ -90,7 +95,7 @@ func setup_test_inventory():
 
 func _process(delta):
 	"""Main process loop for handling ghost block and grid updates"""
-	if ghost_block and is_build_mode:
+	if ghost_block and is_build_mode and not is_recycle_mode:
 		update_ghost_position()
 		update_build_indicator()
 
@@ -104,15 +109,30 @@ func _input(event):
 
 func rotate_ghost_block(angle: float):
 	"""Rotate the ghost block by specified angle"""
-	if not ghost_block:
+	if not ghost_block or is_recycle_mode:
 		return
 	
 	ghost_rotation += angle
 	ghost_block.rotation = ghost_rotation * PI * 0.5 
 	ghost_block.rotation_to_parent = ghost_rotation * PI * 0.5
-	
-	# 更新幽灵方块的位置，确保旋转后仍然对齐网格
 	update_ghost_position()
+
+#-----------------------------------------------------------------------------#
+#                          RECYCLE MODE FUNCTIONS                             #
+#-----------------------------------------------------------------------------#
+
+func _on_recycle_mode_toggled(is_active: bool):
+	"""Handle recycle mode toggle from UI"""
+	is_recycle_mode = is_active
+	if is_recycle_mode:
+		print("进入回收模式")
+		if ghost_block:
+			ghost_block.queue_free()
+			ghost_block = null
+	else:
+		print("退出回收模式")
+		create_ghost_block()
+
 #-----------------------------------------------------------------------------#
 #                          FACTORY ZONE FUNCTIONS                             #
 #-----------------------------------------------------------------------------#
@@ -174,11 +194,13 @@ func enter_build_mode():
 	"""Enter build mode setup"""
 	print("进入建造模式")
 	ui_instance.build_vehicle_button.visible = true
-	create_ghost_block()
+	if not is_recycle_mode:
+		create_ghost_block()
 
 func exit_build_mode():
 	"""Exit build mode cleanup"""
 	print("退出建造模式")
+	is_recycle_mode = false
 	var vehicle_to_update = current_vehicle
 	if ghost_block:
 		ghost_block.queue_free()
@@ -200,20 +222,21 @@ func handle_build_actions(event):
 	"""Handle build actions (left/right mouse clicks)"""
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			place_block()
-		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-			remove_block_at_mouse()
-			
+			if is_recycle_mode:
+				remove_block_at_mouse()
+			else:
+				place_block()
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and not is_recycle_mode:
+			rotate_ghost_block(1)  # Right click rotates clockwise
+
 func handle_rotation_input(event):
 	"""Handle rotation input for ghost block"""
-	if not ghost_block:
+	if not ghost_block or is_recycle_mode:
 		return
 	if event.is_action_pressed("TRUNLEFT"):
-		rotate_ghost_block(-1)  # 向左旋转90度
+		rotate_ghost_block(-1)
 	elif event.is_action_pressed("TRUNRIGHT"):
-		rotate_ghost_block(1)   # 向右旋转90度
-
-
+		rotate_ghost_block(1)
 
 func toggle_codex_ui():
 	"""Toggle the builder UI visibility"""
@@ -225,7 +248,7 @@ func toggle_codex_ui():
 
 func create_ghost_block():
 	"""Create a ghost block preview"""
-	if not current_block_scene:
+	if not current_block_scene or is_recycle_mode:
 		return
 		
 	if ghost_block is Block:
@@ -262,7 +285,7 @@ func update_ghost_position():
 
 func place_block():
 	"""Place the current ghost block"""
-	if not ghost_block or not can_build:
+	if not ghost_block or not can_build or is_recycle_mode:
 		return
 	
 	var block_name = ghost_block.scene_file_path.get_file().get_basename()
@@ -308,6 +331,7 @@ func place_block():
 		current_vehicle._add_block(new_block, local_pos, grid_positions)
 		new_block.set_connection_enabled(true)	
 		ghost_block.queue_free()
+		print(new_block.rotation_to_parent)
 		# Update grid records
 		for pos in grid_positions:
 			placed_blocks[pos] = new_block
@@ -365,7 +389,8 @@ func load_vehicle_for_editing(vehicle: Vehicle):
 			block.set_connection_enabled(true)
 			block.is_movable_on_connection = true
 	ui_instance.update_inventory_display(inventory)
-	create_ghost_block()
+	if not is_recycle_mode:
+		create_ghost_block()
 	
 
 func block_to_grid(vehicle:Vehicle):
@@ -647,7 +672,8 @@ func clear_builder():
 func _on_block_selected(scene_path: String):
 	"""Handle when a block is selected from UI"""
 	current_block_scene = load(scene_path)
-	create_ghost_block()
+	if not is_recycle_mode:
+		create_ghost_block()
 
 func _on_build_vehicle_requested():
 	"""Handle build vehicle request from UI"""

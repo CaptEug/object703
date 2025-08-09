@@ -22,6 +22,7 @@ offset_left = 4.0
 offset_top = 2.0
 offset_right = 211.0
 offset_bottom = 54.0
+scale = Vector2(0.86165, 1)
 placeholder_text = "MyTankDesign"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Panel"]
@@ -40,23 +41,31 @@ offset_bottom = 44.0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("3_8aq6r")
 
+[node name="RecycleButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 184.0
+offset_top = 12.0
+offset_right = 212.0
+offset_bottom = 44.0
+
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 0
 offset_left = 263.0
 offset_top = 453.0
 offset_right = 1144.0
 offset_bottom = 640.0
+scale = Vector2(1.02583, 1.03036)
 
 [node name="SaveDialog" type="AcceptDialog" parent="."]
 transparent_bg = true
 title = "Enter vehicle name"
 position = Vector2i(0, 36)
-size = Vector2i(288, 160)
+size = Vector2i(288, 80)
+visible = true
 transparent = true
 
 [node name="ErrorLabel" type="Label" parent="SaveDialog"]
 modulate = Color(1, 0, 0, 1)
-offset_left = 280.0
-offset_top = 440.0
-offset_right = 345.0
-offset_bottom = 474.0
+offset_right = 288.0
+offset_bottom = 30.0
+scale = Vector2(0.988571, 0.970947)

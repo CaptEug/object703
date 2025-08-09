@@ -6,11 +6,12 @@ extends Control
 @onready var save_dialog = $SaveDialog
 @onready var name_input = $Panel/NameInput
 @onready var error_label = $SaveDialog/ErrorLabel
+@onready var recycle_button = $Panel/RecycleButton
 
 signal build_vehicle_requested
 signal block_selected(scene_path: String)
 signal vehicle_saved(vehicle_name: String)
-
+signal recycle_mode_toggled(is_recycle_mode: bool)
 
 const BLOCK_PATHS = {
 	"Firepower": "res://blocks/firepower/",
@@ -22,17 +23,21 @@ const BLOCK_PATHS = {
 
 var inventory = {}
 var item_lists = {}  # Stores references to all ItemList nodes by tab name
+var is_recycle_mode := false
 
 func _ready():
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
 	save_dialog.get_ok_button().pressed.connect(_on_save_confirmed)
 	save_dialog.close_requested.connect(_on_save_canceled)
 	name_input.text_changed.connect(_on_name_input_changed)
+	recycle_button.pressed.connect(_on_recycle_button_pressed)
 	create_tabs()
 	
 	# Hide save dialog initially
 	save_dialog.hide()
 	error_label.hide()
+	
+	update_recycle_button()
 	
 func create_tabs():
 	# Clear existing tabs (except maybe the first one)
@@ -170,3 +175,14 @@ func _on_save_canceled():
 
 func _on_name_input_changed(new_text: String):
 	error_label.hide()
+
+func _on_recycle_button_pressed():
+	is_recycle_mode = !is_recycle_mode
+	update_recycle_button()
+	emit_signal("recycle_mode_toggled", is_recycle_mode)
+
+func update_recycle_button():
+	if is_recycle_mode:
+		recycle_button.add_theme_color_override("font_color", Color.RED)
+	else:
+		recycle_button.remove_theme_color_override("font_color")
