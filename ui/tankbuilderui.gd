@@ -6,7 +6,7 @@ extends Control
 @onready var save_dialog = $SaveDialog
 @onready var name_input = $Panel/NameInput
 @onready var error_label = $SaveDialog/ErrorLabel
-@onready var recycle_button = $Panel/RecycleButton
+@onready var recycle_button = $Panel/DismantleButton
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 
