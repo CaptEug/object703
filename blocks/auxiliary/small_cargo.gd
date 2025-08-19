@@ -1,10 +1,10 @@
 extends Block
 
 const HITPOINT:float = 300
-const WEIGHT:float = 1000
+const WEIGHT:float = 100
 const BLOCK_NAME:String = 'small cargo'
 const SIZE:= Vector2(1, 1)
-const MAX_LOAD:float = 5000
+const MAX_LOAD:float = 2000
 const TYPE:= 'Auxiliary'
 
 var inventory:Array = []

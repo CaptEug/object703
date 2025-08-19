@@ -1,10 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://cqye7fhmmkft8"]
+[gd_scene load_steps=12 format=3 uid="uid://cqye7fhmmkft8"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_sh8cn"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_6e8cr"]
 [ext_resource type="Script" uid="uid://dsrbwryh0conf" path="res://ui/tankpanel.gd" id="2_b7f80"]
 [ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/icons/arrows.png" id="2_sh8cn"]
 [ext_resource type="Texture2D" uid="uid://dnn2g7ksth8o" path="res://assets/icons/idle.png" id="4_bu53t"]
+[ext_resource type="Texture2D" uid="uid://80i1wkvsngsa" path="res://assets/icons/tab.png" id="5_i2tau"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3deui"]
 atlas = ExtResource("2_6e8cr")
@@ -70,6 +71,24 @@ offset_right = 244.0
 offset_bottom = 44.0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("4_bu53t")
+
+[node name="ModifyButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 223.0
+offset_right = 49.0
+offset_bottom = 239.0
+texture_normal = ExtResource("5_i2tau")
+
+[node name="Label" type="Label" parent="ModifyButton"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 6.0
+offset_right = 119.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 8
+text = "to modify vehicle"
 
 [node name="Fuel" type="ProgressBar" parent="."]
 layout_mode = 0
