@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://0nsuycjs05kg"]
+
+[ext_resource type="Script" uid="uid://b1yias26hr043" path="res://blocks/auxiliary/small_cargo.gd" id="1_koieb"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_koieb"]
+size = Vector2(16, 16)
+
+[node name="SmallCargo" type="RigidBody2D"]
+script = ExtResource("1_koieb")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_koieb")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
