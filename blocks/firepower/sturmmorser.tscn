@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bv7nc0n7dqkur"]
+
+[ext_resource type="Script" uid="uid://bs7loi5lgmjlr" path="res://blocks/firepower/sturmmorser.gd" id="1_nap6g"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2edsb"]
+size = Vector2(32, 32)
+
+[node name="Sturmmorser" type="RigidBody2D"]
+script = ExtResource("1_nap6g")
+metadata/_custom_type_script = "uid://umbrwl1bnc2h"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_2edsb")

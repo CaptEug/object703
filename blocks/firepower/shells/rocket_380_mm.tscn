@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwiyf51xkobmi"]
+
+[ext_resource type="Script" uid="uid://dhtn6iji0pso7" path="res://blocks/firepower/shells/shell.gd" id="1_6x7cm"]
+
+[node name="Rocket380Mm" type="RigidBody2D"]
+script = ExtResource("1_6x7cm")
+metadata/_custom_type_script = "uid://dhtn6iji0pso7"
