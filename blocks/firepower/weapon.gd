@@ -134,6 +134,8 @@ func shoot(muz:Marker2D, shell_picked:PackedScene):
 	var gun_rotation = muz.global_rotation
 	get_tree().current_scene.add_child(shell)
 	shell.global_position = muz.global_position
+	if shell.max_thrust:
+		shell.target_dir = Vector2.UP.rotated(gun_rotation)
 	shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
 	apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy)
 

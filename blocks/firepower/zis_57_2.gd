@@ -29,5 +29,3 @@ func _init():
 	muzzle_energy = MUZZLE_ENERGY
 	spread = SPREAD
 	shell_scene = ap_shell
-	linear_damp = 5.0
-	angular_damp = 1.0

@@ -17,7 +17,8 @@ func _ready():
 
 func _process(delta):
 	#update explosion radius
-	explosion_shape.shape.radius = ammo_storage
+	explosion_shape.shape.radius = ammo_storage/2
+	
 
 func deduct_ammo(amount:float) ->bool:
 	if amount <= ammo_storage:
@@ -42,7 +43,7 @@ func explode():
 	get_tree().current_scene.add_child(explosion)
 	exploded = true
 	var max_explosive_damage = ammo_storage * 10
-	var explosion_radius = ammo_storage * 1
+	var explosion_radius = ammo_storage/2
 
 	for block in explosion_area.get_overlapping_bodies():
 		if block.has_method("damage"):

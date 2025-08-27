@@ -6,11 +6,11 @@ const BLOCK_NAME:String = '38cm sturmmorser'
 const SIZE:= Vector2(3, 3)
 const TYPE:= "Firepower"
 const DETECT_RANGE:= 900
-const RELOAD:float = 10.0
+const RELOAD:float = 1.0
 const AMMO_COST:float= 10.0
-const ROTATION_SPEED:float = deg_to_rad(15)  # rads per second
+const ROTATION_SPEED:float = deg_to_rad(10)  # rads per second
 const TRAVERSE:= [-5, 5] #degree
-const MUZZLE_ENERGY:float = 1000
+const MUZZLE_ENERGY:float = 100
 const SPREAD:float = 0.05
 
 var description := ""
