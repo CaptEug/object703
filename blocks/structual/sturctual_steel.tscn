@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://mhdmtcnulntf"]
+
+[ext_resource type="Script" uid="uid://cc346cql45vws" path="res://blocks/structual/sturctual_steel.gd" id="1_wnjsi"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wnjsi"]
+size = Vector2(16, 16)
+
+[node name="SturctualSteel" type="RigidBody2D"]
+script = ExtResource("1_wnjsi")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_wnjsi")

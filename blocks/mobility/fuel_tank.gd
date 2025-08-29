@@ -17,5 +17,3 @@ func _init():
 	type = TYPE
 	size = SIZE
 	fuel_storage = FUEL_CAPACITY
-	linear_damp = 5.0
-	angular_damp = 1.0

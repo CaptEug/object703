@@ -13,6 +13,7 @@ var connected_blocks := []
 var global_grid_pos := []
 var mouse_inside: bool
 var rotation_to_parent = 0.0
+var cost:Dictionary = {}
 
 ## Connection System
 @export var connection_point_script: Script

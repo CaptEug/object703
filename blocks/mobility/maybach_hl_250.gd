@@ -18,7 +18,5 @@ func _init():
 	type = TYPE
 	size = SIZE
 	max_power = MAX_POWER
-	linear_damp = 5.0
-	angular_damp = 1.0
 	rotating_power = ROTATING_POWER
 	power_change_rate = POWER_CHANGE_RATE
