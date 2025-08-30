@@ -1,5 +1,51 @@
-[gd_scene format=3 uid="uid://bhfbejnhjf1f6"]
+[gd_scene load_steps=5 format=3 uid="uid://bhfbejnhjf1f6"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_bp3ib"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_y7f7o"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fwcxb"]
+atlas = ExtResource("2_y7f7o")
+region = Rect2(240, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_pnlvk"]
+texture = SubResource("AtlasTexture_fwcxb")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
 
 [node name="CargoUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 13.0
+offset_top = -60.0
+offset_right = 714.0
+offset_bottom = 326.0
+theme = ExtResource("1_bp3ib")
+theme_override_styles/panel = SubResource("StyleBoxTexture_pnlvk")
+
+[node name="Label" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = 16.0
+offset_right = 79.0
+offset_bottom = 39.0
+text = "Cargo"
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 707.0
+offset_top = 45.0
+offset_right = 775.0
+offset_bottom = 85.0
+text = "Close"
+
+[node name="SortButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 706.0
+offset_right = 774.0
+offset_bottom = 40.0
+text = "Sort"
