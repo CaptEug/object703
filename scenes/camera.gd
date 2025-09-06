@@ -12,16 +12,20 @@ func _ready():
 	pass
 
 func _input(event: InputEvent) -> void:
+	var target_zoom = zoom
 	if event is InputEventMouseButton:
 		if not get_viewport().gui_get_hovered_control():
 			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				zoom *= 1.0 + zoom_speed
+				target_zoom *= 1.0 + zoom_speed
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				zoom *= 1.0 - zoom_speed
+				target_zoom *= 1.0 - zoom_speed
 
 			# Clamp zoom to stay within limits
-			zoom.x = clamp(zoom.x, zoom_min, zoom_max)
-			zoom.y = clamp(zoom.y, zoom_min, zoom_max)
+			target_zoom.x = clamp(target_zoom.x, zoom_min, zoom_max)
+			target_zoom.y = clamp(target_zoom.y, zoom_min, zoom_max)
+			var tween = get_tree().create_tween()
+			tween.tween_property(self, "zoom", target_zoom, 0.5)
+			
 
 func _process(delta):
 	focus_on_vehicle()
