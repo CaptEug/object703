@@ -60,7 +60,6 @@ offset_left = 215.0
 offset_top = 93.0
 offset_right = 247.0
 offset_bottom = 125.0
-tooltip_text = "Dismantle"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("5_3clpp")
 

@@ -7,10 +7,10 @@ var selected_block:Block
 func _ready():
 	pass
 
-func _process(delta):
+func _process(_delta):
 	size = textlabel.size + Vector2(16,16)
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	var mouse_pos = get_tree().current_scene.get_local_mouse_position()
 	var space_state = get_world_2d().direct_space_state
 

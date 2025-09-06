@@ -81,8 +81,8 @@ func init_ui():
 		ui_instance.hide()
 		ui_instance.setup_inventory(inventory)
 		ui_instance.block_selected.connect(_on_block_selected)
-		ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
 		ui_instance.vehicle_saved.connect(_on_vehicle_saved)
+		#ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
 
 func setup_test_inventory():
 	"""Setup initial inventory for testing"""
@@ -93,7 +93,7 @@ func setup_test_inventory():
 #                             PROCESS FUNCTIONS                               #
 #-----------------------------------------------------------------------------#
 
-func _process(delta):
+func _process(_delta):
 	"""Main process loop for handling ghost block and grid updates"""
 	if ghost_block and is_build_mode and not is_recycle_mode:
 		update_ghost_position()
@@ -201,7 +201,6 @@ func exit_build_mode():
 	"""Exit build mode cleanup"""
 	print("退出建造模式")
 	is_recycle_mode = false
-	var vehicle_to_update = current_vehicle
 	if ghost_block:
 		ghost_block.queue_free()
 		ghost_block = null
@@ -233,10 +232,6 @@ func handle_rotation_input(event):
 	"""Handle rotation input for ghost block"""
 	if not ghost_block or is_recycle_mode:
 		return
-	if event.is_action_pressed("TRUNLEFT"):
-		rotate_ghost_block(-1)
-	elif event.is_action_pressed("TRUNRIGHT"):
-		rotate_ghost_block(1)
 
 func toggle_codex_ui():
 	"""Toggle the builder UI visibility"""
