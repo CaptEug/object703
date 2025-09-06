@@ -20,7 +20,6 @@ var loading:bool = false
 var detection_area:Area2D
 var connected_ammoracks := []
 var targeting:= Callable()
-var icons:Dictionary = {"normal":"res://assets/icons/turret_icon.png","selected":"res://assets/icons/turret_icon_n.png"}
 
 
 func _ready():
