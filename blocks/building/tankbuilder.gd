@@ -5,7 +5,7 @@ extends Block
 const GRID_SIZE := 16
 
 ### EXPORTS ###
-@export var factory_size := Vector2i(10, 10)
+@export var factory_size := Vector2i(100000, 100000)
 @export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
 
 ### NODE REFERENCES ###
@@ -39,8 +39,7 @@ var inventory = {
 	"ammo_rack":10,
 	"tankbuilder":10,
 	"pike_armor":10,
-	"armor":10,
-	"sturmmorser":1
+	"armor":10
 }
 
 #-----------------------------------------------------------------------------#
@@ -273,7 +272,8 @@ func update_ghost_position():
 		floor(mouse_pos.x / GRID_SIZE),
 		floor(mouse_pos.y / GRID_SIZE)
 	)
-	ghost_block.position = Vector2(snapped_pos * GRID_SIZE) + Vector2(ghost_block.size)/2 * GRID_SIZE
+	ghost_block.position = Vector2(mouse_pos)
+	 #+ Vector2(ghost_block.size)/2 * GRID_SIZE
 	ghost_block.global_grid_pos.clear()
 	for x in ghost_block.size.x:
 		for y in ghost_block.size.y:
