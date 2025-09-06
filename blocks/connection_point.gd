@@ -16,7 +16,7 @@ func _ready():
 	setup_detection_area()
 	queue_redraw()
 
-func _process(delta):
+func _process(_delta):
 	# 即使 is_connection_enabled 为 false，也继续处理已存在的连接
 	for other_point in overlapping_points:
 		# 只处理已经连接的节点，不尝试新连接

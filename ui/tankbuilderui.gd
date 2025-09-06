@@ -10,7 +10,6 @@ extends Control
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 
-signal build_vehicle_requested
 signal block_selected(scene_path: String)
 signal vehicle_saved(vehicle_name: String)
 signal recycle_mode_toggled(is_recycle_mode: bool)
@@ -175,7 +174,7 @@ func _on_save_confirmed():
 func _on_save_canceled():
 	save_dialog.hide()
 
-func _on_name_input_changed(new_text: String):
+func _on_name_input_changed(_new_text: String):
 	error_label.hide()
 
 func _on_recycle_button_pressed():

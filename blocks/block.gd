@@ -52,7 +52,7 @@ func _ready():
 	if connection_points.is_empty():
 		push_warning("Block '%s' has no connection points" % block_name)
 
-func _process(delta):
+func _process(_delta):
 	# 处理现有连接的维持
 	for joint in joint_connected_blocks:
 		if is_instance_valid(joint):
@@ -66,7 +66,7 @@ func _emit_relay_signal():
 	frame_post_drawn.emit()
 
 ## Input Handling
-func _on_input_event(viewport, event, shape_idx):
+func _on_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
@@ -190,7 +190,7 @@ func can_connect(source: ConnectionPoint, target: ConnectionPoint) -> bool:
 	)
 
 
-func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, rigid_alignment: bool = false) -> Joint2D:
+func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_alignment: bool = false) -> Joint2D:
 	if not source.is_connection_enabled or not target.is_connection_enabled:
 		return null
 	
@@ -294,7 +294,7 @@ func get_block_connected_by_joint(joint: Joint2D) -> Block:
 func find_parent_block() -> Block:
 	return self
 
-func _on_connection_established(from: ConnectionPoint, to: ConnectionPoint, joint: Joint2D):
+func _on_connection_established(_from: ConnectionPoint, to: ConnectionPoint, _joint: Joint2D):
 	var other_block = to.find_parent_block()
 	if other_block and not connected_blocks.has(other_block):
 		connected_blocks.append(other_block)

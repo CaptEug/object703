@@ -17,7 +17,7 @@ var shell_scene:PackedScene
 var reload_timer:Timer
 var loaded:bool = false
 var loading:bool = false
-var detection_area:Area2D
+var detect_area:Area2D
 var connected_ammoracks := []
 var targeting:= Callable()
 
@@ -29,7 +29,6 @@ func _ready():
 		if muz is Marker2D:
 			muzzles.append(muz)
 	animplayer = find_child("AnimationPlayer") as AnimationPlayer
-	generate_detection_area()
 	reload_timer = Timer.new()
 	reload_timer.one_shot = true
 	reload_timer.wait_time = reload
@@ -50,9 +49,9 @@ func _process(delta):
 	if get_parent_vehicle():
 		var control_method = get_parent_vehicle().control.get_method()
 		if control_method == "manual_control":
-			targeting = Callable(self, "manual_target")
+			targeting = Callable(self, "manual_fire")
 		elif (control_method == "remote_control") or (control_method == "AI_control"):
-			targeting = Callable(self, "auto_target")
+			targeting = Callable(self, "auto_fire")
 		else:
 			targeting = Callable()
 	
@@ -78,31 +77,6 @@ func _draw():
 		draw_polyline(points, line_color, line_width)
 	else:
 		draw_arc(Vector2.ZERO, detect_range, 0, TAU, segments, line_color, 2.0)
-
-func generate_detection_area():
-	# Get or create Area2D
-	detection_area = Area2D.new()
-	add_child(detection_area)
-	if traverse:
-		var segments: int = 32
-		var start_angle = deg_to_rad(traverse[0]-90)
-		var end_angle = deg_to_rad(traverse[-1]-90)
-		var points: PackedVector2Array = [Vector2.ZERO]
-		var collision_polygon = CollisionPolygon2D.new()
-		
-		for i in range(segments + 1):
-			var t = i / float(segments)
-			var angle = lerp(start_angle, end_angle, t)
-			points.append(Vector2(cos(angle), sin(angle)) * detect_range)
-
-		collision_polygon.polygon = points
-		detection_area.add_child(collision_polygon)
-	else:
-		var collision_shape = CollisionShape2D.new()
-		var circle = CircleShape2D.new()
-		circle.radius = detect_range
-		collision_shape.shape = circle
-		detection_area.add_child(collision_shape)
 
 
 
@@ -176,21 +150,9 @@ func find_all_connected_ammorack():
 
 
 
-func auto_target(delta):
-	# find target
-	var detected_bodies = detection_area.get_overlapping_bodies()
+func auto_fire(delta):
 	var targets := []
 	var closest_target:Block
-	
-	if detected_bodies.size() > 0:
-		for body in detected_bodies:
-			if body is Block:
-				if body not in get_parent_vehicle().blocks:
-					if body.get_parent_vehicle():
-						var their_side = body.get_parent_vehicle().get_groups()
-						var our_side = self.get_parent_vehicle().get_groups()
-						if not has_common_element(our_side, their_side):
-							targets.append(body)
 	
 	if targets.size() > 0:
 		closest_target = targets[0]
@@ -204,16 +166,10 @@ func auto_target(delta):
 
 
 
-func manual_target(delta):
+func manual_fire(delta):
 	aim(delta, get_global_mouse_position())
 	if Input.is_action_pressed("FIRE_MAIN"):
 	# Skip firing if mouse is over UI
 		if get_viewport().gui_get_hovered_control():
 			return
 		fire()
-
-func has_common_element(a1: Array, a2: Array) -> bool:
-	for item in a1:
-		if a2.has(item):
-			return true
-	return false

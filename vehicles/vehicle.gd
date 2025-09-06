@@ -563,7 +563,6 @@ func array_zero(size: int) -> Array:
 func update_tracks_state(control_input:Array, delta):
 	var forward_input = control_input[0]
 	var turn_input = control_input[1]
-	var currunt_scale = 0
 	
 	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
@@ -602,7 +601,7 @@ func get_track_forces(forward_input, turn_input):
 	return most_power
 	
 
-func apply_smooth_track_forces(delta):
+func apply_smooth_track_forces(_delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
 		var new_force = target
