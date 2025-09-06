@@ -7,7 +7,6 @@ var explosion_area:Area2D
 var explosion_shape:CollisionShape2D
 var exploded:bool = false
 var explosion_particle = preload("res://assets/particles/explosion.tscn")
-var icons:Dictionary = {"normal":"res://assets/icons/ammo_icon.png","selected":"res://assets/icons/ammo_icon_n.png"}
 
 func _ready():
 	super._ready()

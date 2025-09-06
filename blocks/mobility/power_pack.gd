@@ -5,7 +5,6 @@ extends Block
 var power: float = 0
 var max_power: float
 var rotating_power: float
-var icons:Dictionary = {"normal":"res://assets/icons/engine_icon.png","selected":"res://assets/icons/engine_icon_n.png"}
 var power_change_rate: float
 var target_power: float
 var state = {"move": false, "rotate": false}
