@@ -2,7 +2,7 @@
 	"blocks": {
 		"1": {
 			"base_pos": [
-				2,
+				1,
 				0
 			],
 			"name": "57mm duel barrel gun Zis-57-2",
@@ -11,7 +11,7 @@
 		},
 		"10": {
 			"base_pos": [
-				1,
+				0,
 				3
 			],
 			"name": "rusty track",
@@ -20,7 +20,7 @@
 		},
 		"11": {
 			"base_pos": [
-				1,
+				0,
 				2
 			],
 			"name": "rusty track",
@@ -29,7 +29,7 @@
 		},
 		"12": {
 			"base_pos": [
-				1,
+				0,
 				1
 			],
 			"name": "rusty track",
@@ -38,7 +38,7 @@
 		},
 		"13": {
 			"base_pos": [
-				1,
+				0,
 				0
 			],
 			"name": "rusty track",
@@ -47,97 +47,52 @@
 		},
 		"14": {
 			"base_pos": [
-				5,
-				0
+				4,
+				3
 			],
-			"name": "pike armor",
-			"path": "res://blocks/structual/pike_armor.tscn",
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
 			"rotation": "up"
 		},
 		"15": {
 			"base_pos": [
-				0,
-				0
+				6,
+				3
 			],
-			"name": "pike armor",
-			"path": "res://blocks/structual/pike_armor.tscn",
-			"rotation": "left"
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
+			"rotation": "up"
 		},
 		"16": {
 			"base_pos": [
-				0,
-				6
+				6,
+				5
 			],
-			"name": "pike armor",
-			"path": "res://blocks/structual/pike_armor.tscn",
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
 			"rotation": "up"
 		},
 		"17": {
 			"base_pos": [
-				0,
-				1
+				4,
+				5
 			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": "up"
-		},
-		"18": {
-			"base_pos": [
-				0,
-				2
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": "up"
-		},
-		"19": {
-			"base_pos": [
-				0,
-				3
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
 			"rotation": "up"
 		},
 		"2": {
 			"base_pos": [
-				4,
+				3,
 				0
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up"
 		},
-		"20": {
-			"base_pos": [
-				5,
-				1
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": "up"
-		},
-		"21": {
-			"base_pos": [
-				5,
-				2
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": "up"
-		},
-		"22": {
-			"base_pos": [
-				5,
-				3
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": "up"
-		},
 		"3": {
 			"base_pos": [
-				4,
+				3,
 				1
 			],
 			"name": "rusty track",
@@ -146,7 +101,7 @@
 		},
 		"4": {
 			"base_pos": [
-				4,
+				3,
 				2
 			],
 			"name": "rusty track",
@@ -155,7 +110,7 @@
 		},
 		"5": {
 			"base_pos": [
-				4,
+				3,
 				3
 			],
 			"name": "rusty track",
@@ -164,7 +119,7 @@
 		},
 		"6": {
 			"base_pos": [
-				2,
+				1,
 				2
 			],
 			"name": "maybach HL 250",
@@ -173,7 +128,7 @@
 		},
 		"7": {
 			"base_pos": [
-				3,
+				2,
 				2
 			],
 			"name": "command cupola",
@@ -182,7 +137,7 @@
 		},
 		"8": {
 			"base_pos": [
-				2,
+				1,
 				3
 			],
 			"name": "ammo rack",
@@ -191,7 +146,7 @@
 		},
 		"9": {
 			"base_pos": [
-				3,
+				2,
 				3
 			],
 			"name": "fuel tank",
@@ -199,9 +154,9 @@
 			"rotation": "up"
 		}
 	},
-	"name": "object1",
+	"name": "123",
 	"vehicle_size": [
-		6,
+		8,
 		7
 	]
 }
