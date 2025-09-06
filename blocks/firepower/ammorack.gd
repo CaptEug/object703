@@ -15,7 +15,7 @@ func _ready():
 	if explosion_area:
 		explosion_shape = explosion_area.find_child("CollisionShape2D") as CollisionShape2D
 
-func _process(delta):
+func _process(_delta):
 	#update explosion radius
 	explosion_shape.shape.radius = ammo_storage/2
 	
