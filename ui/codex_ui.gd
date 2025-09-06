@@ -1,8 +1,11 @@
 extends Control
 
 const BLOCK_PATHS = {
+	"Auxiliary": "res://blocks/auxiliary/",
+	"Commannd": "res://blocks/command/",
 	"Firepower": "res://blocks/firepower/",
 	"Mobility": "res://blocks/mobility/",
+	"Structual": "res://blocks/structual/"
 }
 
 @onready var tree = $Tree

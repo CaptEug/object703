@@ -6,7 +6,7 @@ const WEIGHT:float = 25
 const LIFETIME:float = 1.5
 const KENETIC_DAMAGE:int = 400
 const MAX_EXPLOSIVE_DAMAGE:int = 300
-const EXPLOSION_RADIUS:int = 50
+const EXPLOSION_RADIUS:int = 30
 
 func _init():
 	shell_name = SHELL_NAME

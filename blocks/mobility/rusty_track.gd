@@ -18,5 +18,3 @@ func _init():
 	size = SIZE
 	friction = FRICTION
 	max_force = MAX_FORCE
-	linear_damp = 5.0
-	angular_damp = 1.0

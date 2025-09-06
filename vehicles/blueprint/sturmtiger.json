@@ -1,0 +1,162 @@
+{
+	"blocks": {
+		"1": {
+			"base_pos": [
+				1,
+				0
+			],
+			"name": "38cm sturmmorser",
+			"path": "res://blocks/firepower/sturmmorser.tscn",
+			"rotation": "up"
+		},
+		"10": {
+			"base_pos": [
+				4,
+				2
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"11": {
+			"base_pos": [
+				4,
+				3
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"12": {
+			"base_pos": [
+				4,
+				4
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"13": {
+			"base_pos": [
+				0,
+				0
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"14": {
+			"base_pos": [
+				0,
+				1
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"15": {
+			"base_pos": [
+				0,
+				2
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"16": {
+			"base_pos": [
+				0,
+				3
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"17": {
+			"base_pos": [
+				0,
+				4
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"2": {
+			"base_pos": [
+				1,
+				3
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": "up"
+		},
+		"3": {
+			"base_pos": [
+				3,
+				3
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": "up"
+		},
+		"4": {
+			"base_pos": [
+				2,
+				3
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": "up"
+		},
+		"5": {
+			"base_pos": [
+				2,
+				4
+			],
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"rotation": "up"
+		},
+		"6": {
+			"base_pos": [
+				3,
+				4
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": "up"
+		},
+		"7": {
+			"base_pos": [
+				1,
+				4
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": "up"
+		},
+		"8": {
+			"base_pos": [
+				4,
+				0
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"9": {
+			"base_pos": [
+				4,
+				1
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		}
+	},
+	"name": "sturmtiger",
+	"vehicle_size": [
+		5,
+		5
+	]
+}

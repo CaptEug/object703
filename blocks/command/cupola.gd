@@ -12,8 +12,7 @@ func _init():
 	block_name = BLOCK_NAME
 	size = SIZE
 	type = TYPE
-	linear_damp = 5.0
-	angular_damp = 1.0
+
 
 func manual_control():
 	var forward_input = Input.get_action_strength("FORWARD") - Input.get_action_strength("BACKWARD")

@@ -1,0 +1,34 @@
+[gd_scene load_steps=6 format=3 uid="uid://0nsuycjs05kg"]
+
+[ext_resource type="Script" uid="uid://b1yias26hr043" path="res://blocks/auxiliary/small_cargo.gd" id="1_koieb"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_jiu6e"]
+[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/ConnectionPoint.tscn" id="3_gims6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_koieb"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gims6"]
+atlas = ExtResource("2_jiu6e")
+region = Rect2(32, 16, 16, 16)
+
+[node name="SmallCargo" type="RigidBody2D"]
+script = ExtResource("1_koieb")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_koieb")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_gims6")
+
+[node name="ConnectionPoint" parent="." instance=ExtResource("3_gims6")]
+position = Vector2(0, -8)
+
+[node name="ConnectionPoint2" parent="." instance=ExtResource("3_gims6")]
+position = Vector2(8, 0)
+
+[node name="ConnectionPoint3" parent="." instance=ExtResource("3_gims6")]
+position = Vector2(0, 8)
+
+[node name="ConnectionPoint4" parent="." instance=ExtResource("3_gims6")]
+position = Vector2(-8, 0)

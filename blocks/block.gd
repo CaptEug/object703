@@ -13,6 +13,7 @@ var connected_blocks := []
 var global_grid_pos := []
 var mouse_inside: bool
 var rotation_to_parent = 0.0
+var cost:Dictionary = {}
 
 ## Connection System
 @export var connection_point_script: Script
@@ -32,6 +33,8 @@ func _ready():
 	# Initialize physics properties
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight
+	linear_damp = 5.0
+	angular_damp = 1.0
 	
 	# Initialize parent vehicle reference
 	parent_vehicle = get_parent_vehicle()

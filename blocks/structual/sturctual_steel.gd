@@ -1,16 +1,13 @@
 extends Block
 
-const HITPOINT:float = 250
+const HITPOINT:float = 100
 const WEIGHT:float = 500
-const BLOCK_NAME:String = 'pike armor'
-const TYPE:= "Structual"
+const BLOCK_NAME:String = 'structual steel'
 const SIZE:= Vector2(1, 1)
 const COST:= [
+	{"scrap": 4},
 	{"metal": 1}
 	]
-
-var description := ""
-var outline_tex := preload("res://assets/icons/pike_outline.png")
 
 func _init():
 	current_hp = HITPOINT

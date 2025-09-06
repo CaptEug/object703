@@ -5,7 +5,7 @@ const WEIGHT:float = 500
 const BLOCK_NAME:String = 'ammo rack'
 const SIZE:= Vector2(1, 1)
 const TYPE:= "Firepower"
-const AMMO_CAPACITY:float = 50.0
+const AMMO_CAPACITY:float = 100.0
 
 var description := ""
 
@@ -17,5 +17,3 @@ func _init():
 	type = TYPE
 	ammo_storage = AMMO_CAPACITY
 	ammo_storage_cap = AMMO_CAPACITY
-	linear_damp = 5.0
-	angular_damp = 1.0

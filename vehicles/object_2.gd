@@ -1,7 +1,7 @@
 extends Vehicle
 
 func _init() -> void:
-	blueprint = "OBJECT2"
+	blueprint = "sturmtiger"
 
 func _ready():
 	super._ready()

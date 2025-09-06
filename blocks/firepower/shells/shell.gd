@@ -10,6 +10,10 @@ var max_explosive_damage:int
 var explosion_radius:int
 var explosion_area:Area2D = null
 var explosion_shape:CollisionShape2D
+var max_thrust:float
+var thrust:float = 0.0
+var acceleration:float
+var target_dir:Vector2
 var shell_body:Area2D
 var trail:Line2D
 
@@ -17,7 +21,7 @@ var from:Vehicle
 var stopped := false
 var explosion_particle = preload("res://assets/particles/explosion.tscn")
 
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	shell_body = find_child("Area2D") as Area2D
 	trail = find_child("Trail") as Line2D
@@ -36,12 +40,14 @@ func _ready():
 	if max_explosive_damage:
 		explosion_shape.shape.radius = explosion_radius
 
-func init():
-	pass
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	pass
+func _process(delta):
+	if max_thrust and not stopped:
+		propel(delta)
+
+func propel(delta):
+	thrust = clamp(thrust + delta * acceleration, 0, max_thrust)
+	self.apply_force(thrust * target_dir)
 
 func explode():
 	var explosion = explosion_particle.instantiate()
