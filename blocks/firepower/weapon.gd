@@ -1,7 +1,7 @@
 class_name Weapon
 extends Block
 
-var detect_range:float
+var range:float
 var reload:float
 var ammo_cost:float
 var rotation_speed:float # rads per second
@@ -17,7 +17,6 @@ var shell_scene:PackedScene
 var reload_timer:Timer
 var loaded:bool = false
 var loading:bool = false
-var detect_area:Area2D
 var connected_ammoracks := []
 var targeting:= Callable()
 
@@ -71,12 +70,12 @@ func _draw():
 		for i in range(segments + 1):
 			var t = i / float(segments)
 			var angle = lerp(start_angle, end_angle, t)
-			points.append(Vector2(cos(angle), sin(angle)) * detect_range)
+			points.append(Vector2(cos(angle), sin(angle)) * range)
 		draw_line(Vector2.ZERO, points[0], line_color, line_width)
 		draw_line(Vector2.ZERO, points[-1], line_color, line_width)
 		draw_polyline(points, line_color, line_width)
 	else:
-		draw_arc(Vector2.ZERO, detect_range, 0, TAU, segments, line_color, 2.0)
+		draw_arc(Vector2.ZERO, range, 0, TAU, segments, line_color, 2.0)
 
 
 

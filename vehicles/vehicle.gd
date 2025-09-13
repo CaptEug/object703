@@ -31,6 +31,7 @@ var balanced_forces := {} # 存储直线行驶时的理想出力分布
 var rotation_forces := {} # 存储纯旋转时的理想出力分布
 var control:Callable
 var controls:= []
+var targets:= []
 var is_assembled := false
 var block_scenes := {}
 var selected:bool
@@ -62,6 +63,11 @@ func _process(delta):
 	center_of_mass = calculate_center_of_mass()
 	if control:
 		update_tracks_state(control.call(), delta)
+	#updating targets
+	var current_targets = []
+	for block in commands:
+		current_targets.append(block.targets)
+	targets = current_targets.dublicate().dedup()
 
 
 func update_vehicle():
@@ -69,7 +75,7 @@ func update_vehicle():
 	for block:Block in blocks:
 		block.get_neighbors()
 		block.get_all_connected_blocks()
-		
+	
 	#Get all total parameters
 	get_max_engine_power()
 	get_current_engine_power()
