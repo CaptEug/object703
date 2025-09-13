@@ -1,8 +1,9 @@
 class_name Command
 extends Block
 
-var detect_range:float
+@export var detect_range:float
 var detect_area:Area2D
+var targets:=[]
 var traverse:Array
 
 func _ready():
@@ -11,7 +12,7 @@ func _ready():
 
 func targeting(delta):
 	var detected_bodies = detect_area.get_overlapping_bodies()
-	var targets = []
+	var detected_targets = []
 	
 	if detected_bodies.size() > 0:
 		for body in detected_bodies:
@@ -21,8 +22,10 @@ func targeting(delta):
 						var their_side = body.get_parent_vehicle().get_groups()
 						var our_side = self.get_parent_vehicle().get_groups()
 						if not has_common_element(our_side, their_side):
-							targets.append(body)
-	pass
+							detected_targets.append(body)
+	
+	targets = detected_bodies
+	
 
 
 func generate_detection_area():
