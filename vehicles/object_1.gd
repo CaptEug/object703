@@ -5,7 +5,7 @@ func _init() -> void:
 
 func _ready():
 	super._ready()
-	add_to_group("vehicles")
+	add_to_group("enimies")
 
 func _process(delta: float) -> void:
 	super._process(delta)

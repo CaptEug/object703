@@ -5,11 +5,13 @@ const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'command cupola'
 const SIZE:= Vector2(1, 1)
 const TYPE:= 'Command'
+const DETECT_RANGE:float = 800
 
 func _init():
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
+	detect_range = DETECT_RANGE
 	size = SIZE
 	type = TYPE
 
@@ -22,3 +24,6 @@ func manual_control():
 		turn_input
 	]
 	return control_input
+
+func AI_control():
+	return [0,0]

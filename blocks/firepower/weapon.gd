@@ -49,9 +49,9 @@ func _process(delta):
 	if get_parent_vehicle():
 		var control_method = get_parent_vehicle().control.get_method()
 		if control_method == "manual_control":
-			targeting = Callable(self, "manual_fire")
+			targeting = Callable(self, "manual_target")
 		elif (control_method == "remote_control") or (control_method == "AI_control"):
-			targeting = Callable(self, "auto_fire")
+			targeting = Callable(self, "auto_target")
 		else:
 			targeting = Callable()
 	
@@ -150,8 +150,8 @@ func find_all_connected_ammorack():
 
 
 
-func auto_fire(delta):
-	var targets := []
+func auto_target(delta):
+	var targets = get_parent_vehicle().targets
 	var closest_target:Block
 	
 	if targets.size() > 0:
@@ -166,7 +166,7 @@ func auto_fire(delta):
 
 
 
-func manual_fire(delta):
+func manual_target(delta):
 	aim(delta, get_global_mouse_position())
 	if Input.is_action_pressed("FIRE_MAIN"):
 	# Skip firing if mouse is over UI

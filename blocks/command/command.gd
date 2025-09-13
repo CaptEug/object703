@@ -5,6 +5,10 @@ var detect_range:float
 var detect_area:Area2D
 var traverse:Array
 
+func _ready():
+	super._ready()
+	generate_detection_area()
+
 func targeting(delta):
 	var detected_bodies = detect_area.get_overlapping_bodies()
 	var targets = []
