@@ -18,71 +18,71 @@ shape = SubResource("RectangleShape2D_2l62y")
 
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 node_a = NodePath("..")
-node_b = NodePath("../RotationPlain")
+node_b = NodePath("../Turret")
 
-[node name="RotationPlain" type="RigidBody2D" parent="."]
+[node name="Turret" type="RigidBody2D" parent="."]
 collision_layer = 0
 collision_mask = 0
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="RotationPlain"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Turret"]
 shape = SubResource("RectangleShape2D_wsjul")
 
-[node name="ConnectionPoint" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint" type="Marker2D" parent="Turret"]
 position = Vector2(0, -8)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint2" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint2" type="Marker2D" parent="Turret"]
 position = Vector2(-16, -8)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint3" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint3" type="Marker2D" parent="Turret"]
 position = Vector2(16, -8)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint4" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint4" type="Marker2D" parent="Turret"]
 position = Vector2(-8, -16)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint5" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint5" type="Marker2D" parent="Turret"]
 position = Vector2(8, -16)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint6" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint6" type="Marker2D" parent="Turret"]
 position = Vector2(-8, 0)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint7" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint7" type="Marker2D" parent="Turret"]
 position = Vector2(16, 8)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint8" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint8" type="Marker2D" parent="Turret"]
 position = Vector2(8, 0)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint9" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint9" type="Marker2D" parent="Turret"]
 position = Vector2(-16, 8)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint10" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint10" type="Marker2D" parent="Turret"]
 position = Vector2(0, 8)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint11" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint11" type="Marker2D" parent="Turret"]
 position = Vector2(-8, 16)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint12" type="Marker2D" parent="RotationPlain"]
+[node name="ConnectionPoint12" type="Marker2D" parent="Turret"]
 position = Vector2(8, 16)
 script = ExtResource("2_44b6w")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"

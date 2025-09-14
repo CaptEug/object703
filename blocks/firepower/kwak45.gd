@@ -5,7 +5,7 @@ const WEIGHT:float = 7000
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
 const TYPE:= "Firepower"
-const DETECT_RANGE:= 800
+const RANGE:= 800
 const RELOAD:float = 0.5
 const AMMO_COST:float= 1.0
 const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
@@ -22,7 +22,7 @@ func _init():
 	block_name = BLOCK_NAME
 	size = SIZE
 	type = TYPE
-	detect_range = DETECT_RANGE
+	range = RANGE
 	reload = RELOAD
 	ammo_cost = AMMO_COST
 	rotation_speed = ROTATION_SPEED

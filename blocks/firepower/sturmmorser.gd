@@ -5,7 +5,7 @@ const WEIGHT:float = 12000
 const BLOCK_NAME:String = '38cm sturmmorser'
 const SIZE:= Vector2(3, 3)
 const TYPE:= "Firepower"
-const DETECT_RANGE:= 900
+const RANGE:= 900
 const RELOAD:float = 1.0
 const AMMO_COST:float= 10.0
 const ROTATION_SPEED:float = deg_to_rad(10)  # rads per second
@@ -23,7 +23,7 @@ func _init():
 	block_name = BLOCK_NAME
 	size = SIZE
 	type = TYPE
-	detect_range = DETECT_RANGE
+	range = RANGE
 	reload = RELOAD
 	ammo_cost = AMMO_COST
 	rotation_speed = ROTATION_SPEED

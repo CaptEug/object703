@@ -81,11 +81,11 @@ func _draw():
 
 func aim(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
+	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 	if traverse:
 		var min_angle = deg_to_rad(traverse[0])
 		var max_angle = deg_to_rad(traverse[1])
-		target_angle = clamp(wrapf(target_angle, -PI, PI), min_angle, max_angle)
-	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
+		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
 	turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
@@ -152,10 +152,26 @@ func find_all_connected_ammorack():
 func auto_target(delta):
 	var targets = get_parent_vehicle().targets
 	var closest_target:Block
+	var targets_in_range:= []
 	
-	if targets.size() > 0:
-		closest_target = targets[0]
-		for target in targets:
+	for target in targets:
+		if not is_instance_valid(target):
+			continue  # skip freed objects
+		if not target.is_inside_tree():
+			continue  # skip nodes not in scene anymore
+		if self.global_position.distance_to(target.global_position) <= range:
+			if traverse:
+				var min_angle = deg_to_rad(traverse[0])
+				var max_angle = deg_to_rad(traverse[1])
+				var target_angle = (target.global_position - global_position).angle() - rotation + deg_to_rad(90)
+				if target_angle > min_angle and target_angle < max_angle:
+					targets_in_range.append(target)
+			else:
+				targets_in_range.append(target)
+	
+	if targets_in_range.size() > 0:
+		closest_target = targets_in_range[0]
+		for target in targets_in_range:
 			var distance = global_position.distance_to(target.global_position)
 			if distance < global_position.distance_to(closest_target.global_position):
 				closest_target = target

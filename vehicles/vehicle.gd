@@ -66,8 +66,8 @@ func _process(delta):
 	#updating targets
 	var current_targets = []
 	for block in commands:
-		current_targets.append(block.targets)
-	targets = current_targets.dublicate().dedup()
+		current_targets += block.targets
+	targets = current_targets
 
 
 func update_vehicle():

@@ -10,22 +10,24 @@ func _ready():
 	super._ready()
 	generate_detection_area()
 
-func targeting(delta):
+func _process(delta):
+	super._process(delta)
+	targeting()
+
+func targeting():
 	var detected_bodies = detect_area.get_overlapping_bodies()
 	var detected_targets = []
-	
 	if detected_bodies.size() > 0:
 		for body in detected_bodies:
 			if body is Block:
-				if body not in get_parent_vehicle().blocks:
+				if not body in get_parent_vehicle().blocks:
 					if body.get_parent_vehicle():
 						var their_side = body.get_parent_vehicle().get_groups()
 						var our_side = self.get_parent_vehicle().get_groups()
 						if not has_common_element(our_side, their_side):
 							detected_targets.append(body)
 	
-	targets = detected_bodies
-	
+	targets = detected_targets
 
 
 func generate_detection_area():
