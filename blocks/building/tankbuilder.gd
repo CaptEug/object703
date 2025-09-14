@@ -1,689 +1,426 @@
-class_name Tankeditor
-extends Block
+class_name VehicleEditor
+extends Node
 
 ### CONSTANTS ###
-const GRID_SIZE := 16
+const CONNECTION_SNAP_DISTANCE := 50.0  # 吸附距离
+const ROTATION_SNAP_ANGLE := 15.0  # 旋转吸附角度(度)
 
-### EXPORTS ###
-@export var factory_size := Vector2i(100000, 100000)
-@export var vehicle_scene: PackedScene = preload("res://vehicles/vehicle.tscn")
-
-### NODE REFERENCES ###
-@onready var factory_zone = $FactoryZone
-@onready var zone_shape: CollisionShape2D = $FactoryZone/CollisionShape2D
-@onready var texture: Sprite2D = $Sprite2D
-
-### BUILD SYSTEM VARIABLES ###
-var current_block_scene: PackedScene
-var ghost_block: Block
-var placed_blocks := {}
-var can_build := true
-var is_editing_vehicle := false
-var is_build_mode := false
-var is_recycle_mode := false
-var ui_instance: Control
+### EDITOR STATE ###
+var is_edit_mode := false
 var current_vehicle: Vehicle = null
-var original_parent = null
-var to_local_offset: Vector2
-var ghost_rotation := 0
+var ghost_block: Block = null
+var current_block_scene: PackedScene = null
+var available_connection_points: Array[ConnectionPoint] = []
+var current_snap_point: ConnectionPoint = null
+var ghost_rotation_index := 0
+var is_snapping := false
 
-### INVENTORY SYSTEM ###
-var inventory = {
+### INVENTORY ###
+var inventory := {
 	"rusty_track": 10,
 	"kwak45": 10,
 	"maybach_hl_250": 10,
-	"d_52s":10,
-	"zis_57_2":10,
-	"fuel_tank":10,
-	"cupola":10,
-	"ammo_rack":10,
-	"tankbuilder":10,
-	"pike_armor":10,
-	"armor":10
+	"d_52s": 10,
+	"zis_57_2": 10,
+	"fuel_tank": 10,
+	"cupola": 10,
+	"ammo_rack": 10,
+	"tankbuilder": 10,
+	"pike_armor": 10,
+	"armor": 10
 }
 
+### NODE REFERENCES ###
+var ui_instance: Control
+
 #-----------------------------------------------------------------------------#
-#                           INITIALIZATION FUNCTIONS                          #
+#                           CORE FUNCTIONS                                    #
 #-----------------------------------------------------------------------------#
 
 func _ready():
-	super._ready()
-	original_parent = parent_vehicle
-	init_ui()
-	setup_test_inventory()
-	setup_factory_zone()
-	factory_zone.body_entered.connect(_on_body_entered_factory)
-	factory_zone.body_exited.connect(_on_body_exited_factory)
-	
-	# Connect UI signals
-	if ui_instance:
-		ui_instance.recycle_mode_toggled.connect(_on_recycle_mode_toggled)
-
-func setup_factory_zone():
-	"""Initialize the factory zone collision shape and position"""
-	var rect = RectangleShape2D.new()
-	rect.size = factory_size * GRID_SIZE
-	zone_shape.shape = rect
-	factory_zone.position = Vector2.ZERO + Vector2(factory_size * GRID_SIZE)/2
-	texture.position = factory_zone.position
-	factory_zone.collision_layer = 0
-	factory_zone.collision_mask = 1
-
-func init_ui():
-	"""Initialize the builder UI"""
-	if parent_vehicle != null:
-		ui_instance = $"../../CanvasLayer/Tankbuilderui"
-	elif get_parent().has_node("CanvasLayer"):
-		ui_instance = $"../CanvasLayer/Tankbuilderui"
-	else:
-		ui_instance = $"../Tankbuilderui"
-	if ui_instance != null:
-		ui_instance.hide()
-		ui_instance.setup_inventory(inventory)
-		ui_instance.block_selected.connect(_on_block_selected)
-		ui_instance.vehicle_saved.connect(_on_vehicle_saved)
-		#ui_instance.build_vehicle_requested.connect(_on_build_vehicle_requested)
-
-func setup_test_inventory():
-	"""Setup initial inventory for testing"""
-	if ui_instance != null:
-		ui_instance.update_inventory_display(inventory)
-
-#-----------------------------------------------------------------------------#
-#                             PROCESS FUNCTIONS                               #
-#-----------------------------------------------------------------------------#
-
-func _process(_delta):
-	"""Main process loop for handling ghost block and grid updates"""
-	if ghost_block and is_build_mode and not is_recycle_mode:
-		update_ghost_position()
-		update_build_indicator()
+	# 查找UI实例
+	find_ui_instance()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _input(event):
-	"""Handle input events for build mode and actions"""
-	handle_build_mode_toggle(event)
-	if not is_build_mode:
-		return
-	handle_build_actions(event)
-	handle_rotation_input(event)
-
-func rotate_ghost_block(angle: float):
-	"""Rotate the ghost block by specified angle"""
-	if not ghost_block or is_recycle_mode:
-		return
+	if event is InputEventKey and event.keycode == KEY_TAB and event.pressed:
+		handle_edit_mode_toggle()
 	
-	ghost_rotation += angle
-	ghost_block.rotation = ghost_rotation * PI * 0.5 
-	ghost_block.rotation_to_parent = ghost_rotation * PI * 0.5
-	update_ghost_position()
+	if is_edit_mode:
+		handle_edit_mode_input(event)
+
+func _process(_delta):
+	if is_edit_mode and ghost_block:
+		update_ghost_position()
+		check_build_validity()
 
 #-----------------------------------------------------------------------------#
-#                          RECYCLE MODE FUNCTIONS                             #
+#                           EDIT MODE MANAGEMENT                              #
 #-----------------------------------------------------------------------------#
 
-func _on_recycle_mode_toggled(is_active: bool):
-	"""Handle recycle mode toggle from UI"""
-	is_recycle_mode = is_active
-	if is_recycle_mode:
-		print("进入回收模式")
-		if ghost_block:
-			ghost_block.queue_free()
-			ghost_block = null
+func handle_edit_mode_toggle():
+	if is_edit_mode:
+		exit_edit_mode()
 	else:
-		print("退出回收模式")
-		create_ghost_block()
+		try_enter_edit_mode()
 
-#-----------------------------------------------------------------------------#
-#                          FACTORY ZONE FUNCTIONS                             #
-#-----------------------------------------------------------------------------#
-
-func _on_body_entered_factory(body: Node):
-	"""Handle when a body enters the factory zone"""
-	if body is Block and body.parent_vehicle:
-		var vehicle = body.parent_vehicle
-		if not vehicle in get_current_vehicles():
-			if not is_build_mode:
-				toggle_build_mode()
-			current_vehicle = vehicle
-			is_editing_vehicle = true
-			load_vehicle_for_editing(vehicle)
-
-func _on_body_exited_factory(body: Node):
-	"""Handle when a body exits the factory zone"""
-	if body is Block and body.parent_vehicle:
-		var vehicle = body.parent_vehicle
-		print("车辆离开工厂区域: ", vehicle.vehicle_name)
-
-func get_current_vehicles() -> Array:
-	"""Get all vehicles currently in the factory zone"""
-	var vehicles = []
-	for body in factory_zone.get_overlapping_bodies():
-		if body is Block and body.parent_vehicle != null:
-			var vehicle = body.parent_vehicle
-			if vehicle is Vehicle and not vehicle in vehicles:
-				vehicles.append(vehicle)
-	return vehicles
-
-func find_vehicles_in_factory() -> Array:
-	"""Find all vehicles in the factory zone"""
-	return get_current_vehicles()
-
-#-----------------------------------------------------------------------------#
-#                          BUILD MODE FUNCTIONS                               #
-#-----------------------------------------------------------------------------#
-
-func toggle_build_mode():
-	"""Toggle build mode on/off"""
-	is_build_mode = !is_build_mode
-	if is_build_mode:
-		var vehicles = find_vehicles_in_factory()
-		print(vehicles)
-		if vehicles.size() > 0:
-			current_vehicle = vehicles[0]
-			is_editing_vehicle = true
-			load_vehicle_for_editing(current_vehicle)
-		else:
-			original_parent = parent_vehicle
-			is_editing_vehicle = false
-			current_vehicle = null
-		enter_build_mode()
+func try_enter_edit_mode():
+	var vehicle = get_vehicle_under_mouse()
+	if vehicle:
+		enter_edit_mode(vehicle)
 	else:
-		exit_build_mode()
+		print("没有找到可编辑的车辆")
 
-func enter_build_mode():
-	"""Enter build mode setup"""
-	print("进入建造模式")
-	ui_instance.build_vehicle_button.visible = true
-	if not is_recycle_mode:
-		create_ghost_block()
+func get_vehicle_under_mouse() -> Vehicle:
+	var viewport = get_viewport()
+	if not viewport:
+		return null
+		
+	var mouse_pos = viewport.get_mouse_position()
+	var space_state = viewport.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = viewport.get_camera_2d().get_global_mouse_position() if viewport.get_camera_2d() else Vector2.ZERO
+	query.collision_mask = 1  # 车辆所在的碰撞层
+	query.collide_with_areas = true
+	query.collide_with_bodies = true
+	
+	var result = space_state.intersect_point(query)
+	
+	for collision in result:
+		var collider = collision.collider
+		if collider is Block:
+			var vehicle = collider.get_parent_vehicle()
+			if vehicle:
+				return vehicle
+		elif collider is Vehicle:
+			return collider
+	
+	return null
 
-func exit_build_mode():
-	"""Exit build mode cleanup"""
-	print("退出建造模式")
-	is_recycle_mode = false
-	if ghost_block:
+func enter_edit_mode(vehicle: Vehicle):
+	is_edit_mode = true
+	current_vehicle = vehicle
+	
+	# 更新可用连接点
+	update_available_connection_points()
+	
+	# 显示UI
+	if ui_instance:
+		ui_instance.show()
+		ui_instance.setup_inventory(inventory)
+		ui_instance.block_selected.connect(_on_block_selected)
+	
+	# 设置鼠标模式
+	Input.set_mouse_mode(Input.MOUSE_MODE_CONFINED_HIDDEN)
+	
+	print("进入编辑模式: ", vehicle.vehicle_name)
+
+func exit_edit_mode():
+	is_edit_mode = false
+	
+	# 清理ghost block
+	if ghost_block and is_instance_valid(ghost_block):
 		ghost_block.queue_free()
 		ghost_block = null
-	ui_instance.build_vehicle_button.visible = false
-	is_editing_vehicle = false
-	if current_vehicle:
-		current_vehicle.update_vehicle_size()
+	
 	current_vehicle = null
-
-func handle_build_mode_toggle(event):
-	"""Handle build mode toggle input (TAB key)"""
-	if event is InputEventKey and event.keycode == KEY_TAB and event.pressed:
-		toggle_build_mode()
-	if event is InputEventKey and event.keycode == KEY_TAB and event.pressed:
-		toggle_codex_ui()
-
-func handle_build_actions(event):
-	"""Handle build actions (left/right mouse clicks)"""
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			if is_recycle_mode:
-				remove_block_at_mouse()
-			else:
-				place_block()
-		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed and not is_recycle_mode:
-			rotate_ghost_block(1)  # Right click rotates clockwise
-
-func handle_rotation_input(event):
-	"""Handle rotation input for ghost block"""
-	if not ghost_block or is_recycle_mode:
-		return
-
-func toggle_codex_ui():
-	"""Toggle the builder UI visibility"""
-	ui_instance.visible = !ui_instance.visible
+	available_connection_points.clear()
+	current_snap_point = null
+	is_snapping = false
+	
+	# 隐藏UI并断开信号
+	if ui_instance:
+		ui_instance.hide()
+		if ui_instance.block_selected.is_connected(_on_block_selected):
+			ui_instance.block_selected.disconnect(_on_block_selected)
+	
+	# 恢复鼠标模式
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	
+	print("退出编辑模式")
 
 #-----------------------------------------------------------------------------#
-#                          BLOCK PLACEMENT FUNCTIONS                          #
+#                           CONNECTION POINT MANAGEMENT                       #
 #-----------------------------------------------------------------------------#
 
-func create_ghost_block():
-	"""Create a ghost block preview"""
-	if not current_block_scene or is_recycle_mode:
-		return
-		
-	if ghost_block is Block:
-		ghost_block.queue_free()
+func update_available_connection_points():
+	available_connection_points.clear()
 	
-	ghost_block = current_block_scene.instantiate()
-	ghost_rotation = 0
-	ghost_block.collision_layer = 0
-	ghost_block.rotation_to_parent = ghost_rotation * PI * 0.5
-	configure_ghost_block()
-	add_child(ghost_block)
-
-func configure_ghost_block():
-	"""Configure ghost block appearance and properties"""
-	ghost_block.modulate = Color(1, 1, 1, 0.5)
-	for child in ghost_block.get_children():
-		if child is CollisionShape2D:
-			child.set_deferred("disabled", true)
-		if child is RigidBody2D:
-			child.freeze = true
-
-func update_ghost_position():
-	"""Update ghost block position based on mouse"""
-	var mouse_pos = to_local(get_global_mouse_position())
-	var snapped_pos = Vector2i(
-		floor(mouse_pos.x / GRID_SIZE),
-		floor(mouse_pos.y / GRID_SIZE)
-	)
-	ghost_block.position = Vector2(mouse_pos)
-	 #+ Vector2(ghost_block.size)/2 * GRID_SIZE
-	ghost_block.global_grid_pos.clear()
-	for x in ghost_block.size.x:
-		for y in ghost_block.size.y:
-			ghost_block.global_grid_pos.append(snapped_pos + Vector2i(x, y))
-
-func place_block():
-	"""Place the current ghost block"""
-	if not ghost_block or not can_build or is_recycle_mode:
+	if not current_vehicle or not is_instance_valid(current_vehicle):
 		return
 	
-	var block_name = ghost_block.scene_file_path.get_file().get_basename()
-	if not inventory.has(block_name) or inventory[block_name] <= 0:
-		print("没有足够的", block_name)
-		return
-		
-	var grid_positions = ghost_block.global_grid_pos
-	
-	# Check if position is occupied
-	for pos in grid_positions:
-		print(grid_positions, ghost_block)
-		if placed_blocks.has(pos):
-			print("位置被占用: ", pos)
-			return
-	
-	# If no current vehicle and not in edit mode, create new vehicle
-	if not current_vehicle and not is_editing_vehicle:
-		current_vehicle = vehicle_scene.instantiate()
-		get_parent().add_child(current_vehicle)
-		current_vehicle.global_position = factory_zone.position
-		is_editing_vehicle = true
-		print("创建新车辆")
-	
-	inventory[block_name] -= 1
-	ui_instance.update_inventory_display(inventory)
-	
-	if inventory[block_name] <= 0:
-		inventory.erase(block_name)
-		if ghost_block and ghost_block.name == block_name:
-			ghost_block.queue_free()
-			ghost_block = null
-	
-	var new_block:Block = current_block_scene.instantiate()
-	new_block.position = ghost_block.position
-	
-	if current_vehicle:
-		# Calculate local position relative to vehicle
-		var local_pos = current_vehicle.to_local(to_global(ghost_block.position))
-		new_block.position = local_pos
-		new_block.global_rotation = ghost_block.global_rotation
-		new_block.rotation_to_parent = ghost_block.rotation
-		current_vehicle._add_block(new_block, local_pos, grid_positions)
-		new_block.set_connection_enabled(true)	
-		ghost_block.queue_free()
-		print(new_block.rotation_to_parent)
-		# Update grid records
-		for pos in grid_positions:
-			placed_blocks[pos] = new_block
-				
-	create_ghost_block()
-
-func remove_block_at_mouse():
-	"""Remove block at mouse position"""
-	var mouse_pos = to_local(get_global_mouse_position())
-	var grid_pos = Vector2i(
-		floor(mouse_pos.x / GRID_SIZE),
-		floor(mouse_pos.y / GRID_SIZE)
-	)
-	if placed_blocks.has(grid_pos):
-		var block:Block = placed_blocks[grid_pos]
-		var block_name = block.scene_file_path.get_file().get_basename()
-		
-		# Return resources
-		if inventory.has(block_name):
-			inventory[block_name] += 1
-		else:
-			inventory[block_name] = 1
-		
-		ui_instance.update_inventory_display(inventory)
-		if is_editing_vehicle and current_vehicle:
-			# If in edit mode, remove from vehicle
-			current_vehicle.remove_block(block)
-			print(block,"已处理")
-			# Remove from vehicle grid
-			for pos in current_vehicle.grid:
-				if current_vehicle.grid[pos] == block:
-					current_vehicle.grid.erase(pos)
-		else:
-			# Otherwise remove from scene directly
-			block.queue_free()
-		
-		# Remove from placement records
-		remove_block_from_grid(block)
-
-#-----------------------------------------------------------------------------#
-#                          VEHICLE EDITING FUNCTIONS                          #
-#-----------------------------------------------------------------------------#
-
-func load_vehicle_for_editing(vehicle: Vehicle):
-	"""Load a vehicle for editing in the factory"""
-	# 1. Pause physics and reset vehicle rotation
-	vehicle.rotation = 0
-	
-	# 3. Align blocks to grid
-	block_to_grid(vehicle)
-	
-	# 4. Reconnect adjacent blocks
-	for block:Block in vehicle.blocks:
+	# 收集车辆上所有可用的连接点
+	for block in current_vehicle.blocks:
 		if is_instance_valid(block):
-			block.set_connection_enabled(true)
-			block.is_movable_on_connection = true
-	ui_instance.update_inventory_display(inventory)
-	if not is_recycle_mode:
-		create_ghost_block()
-	
+			for point in block.connection_points:
+				if point.is_connection_enabled and not point.is_joint_active():
+					available_connection_points.append(point)
 
-func block_to_grid(vehicle:Vehicle):
-	"""Align vehicle blocks to the factory grid"""
-	var original_com := to_local(vehicle.center_of_mass) 
-	
-	# Process each block's rotation
-	for block:Block in vehicle.blocks:
-		# Save original global position
-		var original_global_pos = to_local(block.global_position) 
-		#print(original_global_pos)
-		# Calculate vector from center of mass
-		var offset_from_com = original_global_pos - original_com
-		
-		# Reset block rotation
-		var original_rotation = block.global_rotation - block.rotation_to_parent
-		block.global_rotation = global_rotation + block.rotation_to_parent
-		# Calculate new position after rotation
-		var rotated_offset = offset_from_com.rotated(-original_rotation + global_rotation)
-		block.position = vehicle.to_local(to_global(original_com + rotated_offset)) 
-
-	# Move whole vehicle to align center with factory
-	vehicle.grid.clear()
-	placed_blocks.clear()
-	
-	# Grid alignment processing
-	for block:Block in vehicle.blocks:
-		var local_pos = to_local(block.global_position) - Vector2(GRID_SIZE, GRID_SIZE)/2*Vector2(block.size)
-		var grid_x = roundi(local_pos.x / GRID_SIZE)
-		var grid_y = roundi(local_pos.y / GRID_SIZE)
-		var grid_pos = Vector2i(grid_x, grid_y)
-		for x in block.size.x:
-			for y in block.size.y:
-				var cell_pos = grid_pos + Vector2i(x, y)
-				placed_blocks[cell_pos] = block
-				vehicle.grid = placed_blocks
-		block.position = current_vehicle.to_local(to_global(Vector2(grid_pos * GRID_SIZE) + Vector2(GRID_SIZE, GRID_SIZE)/2*Vector2(block.size)))
-
-
-#-----------------------------------------------------------------------------#
-#                          VEHICLE CREATION FUNCTIONS                         #
-#-----------------------------------------------------------------------------#
-
-func begin_vehicle_creation():
-	"""Begin creating a new vehicle from placed blocks"""
-	if placed_blocks.is_empty():
-		print("无法创建空车辆")
-		return
-	
-	# Use existing vehicle if available
-	if not current_vehicle:
-		current_vehicle = vehicle_scene.instantiate()
-		get_parent().add_child(current_vehicle)
-		current_vehicle.global_position = factory_zone.position
-	
-	# Transfer all blocks to vehicle node
-	var processed_blocks = []
-	for grid_pos in placed_blocks:
-		var block = placed_blocks[grid_pos]
-		if block in processed_blocks: 
+func find_nearest_connection_point(mouse_pos: Vector2) -> ConnectionPoint:
+	var nearest_point: ConnectionPoint = null
+	var min_distance := INF
+	print(available_connection_points)
+	for point in available_connection_points:
+		if not is_instance_valid(point) or point.is_joint_active():
 			continue
 			
-		if block is RigidBody2D:
-			block.collision_layer = 1  # Restore normal collision layer
-		remove_child(block)
-		processed_blocks.append(block)
-	
-	# Initialize vehicle grid
-	current_vehicle.grid = placed_blocks.duplicate()
-	
-	# Connect all adjacent blocks
-	for block in current_vehicle.blocks:
-		current_vehicle.connect_to_adjacent_blocks(block)
-	
-	current_vehicle.Get_ready_again()
-	
-	if is_instance_valid(ui_instance):
-		ui_instance.hide()
-	placed_blocks.clear()
-	print("车辆生成完成")
+		var distance = point.global_position.distance_to(mouse_pos)
+		if distance < min_distance and distance < CONNECTION_SNAP_DISTANCE:
+			min_distance = distance
+			nearest_point = point
+			print(nearest_point)
+	return nearest_point
 
 #-----------------------------------------------------------------------------#
-#                          BLUEPRINT FUNCTIONS                                #
-#-----------------------------------------------------------------------------#
-
-func _on_vehicle_saved(vehicle_name: String):
-	"""Save vehicle as blueprint"""
-	if placed_blocks.is_empty() or not current_vehicle:
-		push_error("没有可保存的方块或车辆无效")
-		return
-	current_vehicle.vehicle_name = vehicle_name
-	current_vehicle.calculate_center_of_mass()
-	current_vehicle.calculate_balanced_forces()
-	current_vehicle.calculate_rotation_forces()
-	for block:Block in current_vehicle.blocks:
-		block.set_connection_enabled(false)
-	
-	# Generate blueprint data
-	var blueprint_data = create_blueprint_data(vehicle_name)
-	
-	# Determine save path
-	var blueprint_path = ""
-	if current_vehicle.blueprint != null:
-		# Edit mode: Use existing path or generate default
-		if current_vehicle.blueprint is String:
-			blueprint_path = current_vehicle.blueprint
-		elif current_vehicle.blueprint is Dictionary:
-			blueprint_path = "res://vehicles/blueprint/%s.json" % vehicle_name
-	else:
-		# New mode: Use new path
-		blueprint_path = "res://vehicles/blueprint/%s.json" % vehicle_name
-	
-	# Save blueprint
-	if save_blueprint(blueprint_data, blueprint_path):
-		# Update vehicle reference
-		current_vehicle.blueprint = blueprint_data
-		
-		# If new mode, restore collision layers
-		if not is_editing_vehicle:
-			for block:Block in current_vehicle.blocks:
-				block.collision_layer = 1
-		
-		clear_builder()
-		toggle_codex_ui()
-		toggle_build_mode()
-	else:
-		push_error("蓝图保存失败")
-
-func create_blueprint_data(vehicle_name: String) -> Dictionary:
-	"""Create blueprint data from current vehicle"""
-	var blueprint_data = {
-		"name": vehicle_name,
-		"blocks": {}
-	}
-	
-	var block_counter = 1
-	var processed_blocks = {}
-	
-	# First collect all block base positions
-	var base_positions = {}
-	var min_x:int
-	var min_y:int
-	var max_x:int
-	var max_y:int
-	for grid_pos in placed_blocks:
-		min_x = grid_pos.x
-		min_y = grid_pos.y
-		max_x = grid_pos.x
-		max_y = grid_pos.y
-		break
-	
-	# Find bounds of vehicle
-	for grid_pos in placed_blocks:
-		if min_x > grid_pos.x:
-			min_x = grid_pos.x
-		if min_y > grid_pos.y:
-			min_y = grid_pos.y
-		if max_x < grid_pos.x:
-			max_x = grid_pos.x
-		if max_y < grid_pos.y:
-			max_y = grid_pos.y
-		
-	# Process each block
-	for grid_pos in placed_blocks:
-		var block = placed_blocks[grid_pos]
-		if not processed_blocks.has(block):
-			base_positions[block] = grid_pos
-			processed_blocks[block] = true
-	
-	# Process blocks and assign IDs
-	processed_blocks.clear()
-	for grid_pos in placed_blocks:
-		var block:Block = placed_blocks[grid_pos]
-		if not processed_blocks.has(block):
-			var base_pos = grid_pos
-			var rotation_str = get_rotation_direction(block.global_rotation - global_rotation)
-			blueprint_data["blocks"][str(block_counter)] = {
-				"name": block.block_name,
-				"path": block.scene_file_path,
-				"base_pos": [base_pos.x - min_x, base_pos.y - min_y],
-				"rotation": rotation_str,
-			}
-			block_counter += 1
-			processed_blocks[block] = true
-	
-	blueprint_data["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
-	return blueprint_data
-
-func get_rotation_direction(angle: float) -> String:
-	"""Convert rotation angle to direction string"""
-	var normalized = fmod(angle, TAU)
-	if abs(normalized) <= PI/4 or abs(normalized) >= 7*PI/4:
-		return "up"
-	elif normalized >= PI/4 and normalized <= 3*PI/4:
-		return "right"
-	elif normalized >= 3*PI/4 and normalized <= 5*PI/4:
-		return "down"
-	else:
-		return "left"
-
-func save_blueprint(blueprint_data: Dictionary, save_path: String) -> bool:
-	"""Save blueprint data to file"""
-	# Ensure directory exists
-	var dir = DirAccess.open("res://vehicles/blueprint/")
-	if not dir:
-		DirAccess.make_dir_absolute("res://vehicles/blueprint/")
-	
-	# Save file
-	var file = FileAccess.open(save_path, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(blueprint_data, "\t"))
-		file.close()
-		print("车辆蓝图已保存到:", save_path)
-		return true
-	else:
-		push_error("文件保存失败:", FileAccess.get_open_error())
-		return false
-
-#-----------------------------------------------------------------------------#
-#                          UTILITY FUNCTIONS                                  #
-#-----------------------------------------------------------------------------#
-
-func update_build_indicator():
-	"""Update build indicator based on ghost block position"""
-	can_build = is_position_in_factory(ghost_block)
-	ghost_block.modulate = Color(1, 1, 1, 0.5) if can_build else Color(1, 0.5, 0.5, 0.3)
-	
-	# Update button state
-	ui_instance.build_vehicle_button.disabled = placed_blocks.is_empty()
-	ui_instance.build_vehicle_button.visible = is_build_mode
-
-func is_position_in_factory(block:Block) -> bool:
-	"""Check if block is within factory bounds"""
-	# Calculate block's top-left world coordinates
-	var block_top_left = block.position - Vector2(block.size)/2 * GRID_SIZE
-	
-	# Calculate block's bottom-right world coordinates
-	var block_bottom_right = Vector2((block_top_left.x + block.size.x * GRID_SIZE), (block_top_left.y + block.size.y * GRID_SIZE))
-	
-	# Factory area bounds
-	var factory_top_left = factory_zone.position - Vector2(factory_size)/2 * GRID_SIZE
-	var factory_bottom_right = Vector2((factory_top_left.x + factory_size.x * GRID_SIZE), (factory_top_left.y + factory_size.y * GRID_SIZE))
-	
-	# Check if completely within factory bounds
-	return (block_top_left.x >= factory_top_left.x and
-			block_top_left.y >= factory_top_left.y and
-			block_bottom_right.x <= factory_bottom_right.x and
-			block_bottom_right.y <= factory_bottom_right.y)
-
-func is_position_occupied(positions: Array) -> bool:
-	"""Check if positions are occupied"""
-	for pos in positions:
-		if placed_blocks.has(pos):
-			return true
-	return false
-
-func remove_block_from_grid(block: Node):
-	"""Remove block from grid tracking"""
-	var positions_to_remove = []
-	for pos in placed_blocks:
-		if placed_blocks[pos] == block:
-			positions_to_remove.append(pos)
-	
-	for pos in positions_to_remove:
-		placed_blocks.erase(pos)
-	
-	block.queue_free()
-
-func clear_builder():
-	"""Clear all placed blocks"""
-	for block in get_children():
-		if block is RigidBody2D and block != ghost_block:
-			block.queue_free()
-
-#-----------------------------------------------------------------------------#
-#                          SIGNAL HANDLERS                                    #
+#                           GHOST BLOCK MANAGEMENT                            #
 #-----------------------------------------------------------------------------#
 
 func _on_block_selected(scene_path: String):
-	"""Handle when a block is selected from UI"""
 	current_block_scene = load(scene_path)
-	if not is_recycle_mode:
+	if current_block_scene:
 		create_ghost_block()
 
-func _on_build_vehicle_requested():
-	"""Handle build vehicle request from UI"""
-	if not is_build_mode: 
+func create_ghost_block():
+	# 清理旧的ghost block
+	if ghost_block and is_instance_valid(ghost_block):
+		ghost_block.queue_free()
+	
+	if not current_block_scene:
+		return
+	
+	# 创建新的ghost block
+	ghost_block = current_block_scene.instantiate()
+	if not ghost_block:
+		return
+	
+	# 设置ghost属性
+	ghost_block.modulate = Color(1, 1, 1, 0.5)
+	ghost_block.collision_layer = 0
+	ghost_block.collision_mask = 0
+	
+	# 禁用碰撞体和物理
+	for child in ghost_block.get_children():
+		if child is CollisionShape2D:
+			child.set_deferred("disabled", true)
+		elif child is RigidBody2D:
+			child.freeze = true
+	
+	add_child(ghost_block)
+	ghost_rotation_index = 0
+	apply_current_rotation()
+
+func apply_current_rotation():
+	if not ghost_block or not is_instance_valid(ghost_block):
+		return
+	
+	# 获取当前旋转配置下的连接点
+	var ghost_points = ghost_block.get_available_connection_points()
+	if ghost_points.is_empty():
+		return
+	
+	# 使用当前旋转索引对应的连接点
+	var target_index = ghost_rotation_index % ghost_points.size()
+	var target_point = ghost_points[target_index]
+	
+	# 计算旋转角度
+	var target_rotation = target_point.global_rotation - ghost_block.global_rotation
+	ghost_block.rotation = target_rotation
+
+func rotate_ghost_block():
+	if not ghost_block or not is_instance_valid(ghost_block):
+		return
+	
+	var ghost_points = ghost_block.get_available_connection_points()
+	if ghost_points.is_empty():
+		return
+	
+	ghost_rotation_index += 1
+	apply_current_rotation()
+	
+	print("旋转到连接点: ", ghost_rotation_index % ghost_points.size())
+
+#-----------------------------------------------------------------------------#
+#                           BUILD PROCESS                                     #
+#-----------------------------------------------------------------------------#
+
+func update_ghost_position():
+	var viewport = get_viewport()
+	if not viewport:
 		return
 		
-	if is_editing_vehicle and current_vehicle:
-		_on_vehicle_saved(current_vehicle.vehicle_name)
+	var mouse_pos = viewport.get_camera_2d().get_global_mouse_position() if viewport.get_camera_2d() else Vector2.ZERO
+	
+	# 寻找最近的连接点
+	var new_snap_point = find_nearest_connection_point(mouse_pos)
+	
+	if new_snap_point and is_instance_valid(new_snap_point):
+		# 吸附到连接点
+		current_snap_point = new_snap_point
+		is_snapping = true
+		snap_to_connection_point(current_snap_point)
 	else:
-		begin_vehicle_creation()
+		# 自由移动
+		current_snap_point = null
+		is_snapping = false
+		ghost_block.global_position = mouse_pos
 
-func spawn_vehicle_from_blueprint(blueprint: Dictionary):
-	"""Spawn vehicle from blueprint data"""
-	var vehicle = vehicle_scene.instantiate()
-	vehicle.blueprint = blueprint  # Pass dictionary instead of file path
-	get_parent().add_child(vehicle)
-	clear_builder()
+func snap_to_connection_point(snap_point: ConnectionPoint):
+	if not ghost_block or not is_instance_valid(ghost_block):
+		return
+	
+	# 获取ghost block的当前连接点
+	var ghost_points = ghost_block.get_available_connection_points()
+	if ghost_points.is_empty():
+		return
+	
+	var target_index = ghost_rotation_index % ghost_points.size()
+	var ghost_point = ghost_points[target_index]
+	
+	if not is_instance_valid(ghost_point):
+		return
+	
+	# 计算位置偏移
+	var local_offset = ghost_point.position
+	var rotated_offset = local_offset.rotated(ghost_block.rotation)
+	ghost_block.global_position = snap_point.global_position - rotated_offset
+	
+	# 对齐旋转
+	ghost_block.global_rotation = snap_point.global_rotation - ghost_point.rotation
+
+func check_build_validity():
+	if not ghost_block or not is_instance_valid(ghost_block):
+		return
+	
+	if not is_snapping or not current_snap_point:
+		ghost_block.modulate = Color(1, 0.5, 0.5, 0.5)  # 红色，不可建造
+		return
+	
+	# 检查连接点是否匹配
+	var ghost_points = ghost_block.get_available_connection_points()
+	if ghost_points.is_empty():
+		ghost_block.modulate = Color(1, 0.5, 0.5, 0.5)
+		return
+	
+	var target_index = ghost_rotation_index % ghost_points.size()
+	var ghost_point = ghost_points[target_index]
+	
+	if not is_instance_valid(ghost_point):
+		ghost_block.modulate = Color(1, 0.5, 0.5, 0.5)
+		return
+	
+	if ghost_point.can_connect_with(current_snap_point):
+		ghost_block.modulate = Color(1, 1, 1, 0.5)  # 白色，可建造
+	else:
+		ghost_block.modulate = Color(1, 0.5, 0.5, 0.5)  # 红色，不可建造
+
+func place_block():
+	if not can_place_block():
+		print("无法放置方块")
+		return
+	
+	var block_name = ghost_block.scene_file_path.get_file().get_basename()
+	if inventory.get(block_name, 0) <= 0:
+		print("库存不足: ", block_name)
+		return
+	
+	# 创建实际方块
+	var new_block: Block = current_block_scene.instantiate()
+	new_block.global_position = ghost_block.global_position
+	new_block.global_rotation = ghost_block.global_rotation
+	
+	# 添加到车辆
+	current_vehicle.add_child(new_block)
+	# 假设 _add_block 方法需要更多参数，这里需要根据实际情况调整
+	# current_vehicle._add_block(new_block, current_snap_point, ghost_point)
+	
+	# 建立连接
+	var ghost_points = ghost_block.get_available_connection_points()
+	var target_index = ghost_rotation_index % ghost_points.size()
+	var ghost_point = ghost_points[target_index]
+	
+	if ghost_point and current_snap_point:
+		new_block.request_connection(ghost_point, current_snap_point)
+	
+	# 更新库存
+	inventory[block_name] -= 1
+	if ui_instance:
+		ui_instance.update_inventory_display(inventory)
+	
+	# 更新可用连接点
+	update_available_connection_points()
+	
+	# 重新创建ghost block
+	create_ghost_block()
+	
+	print("放置方块: ", block_name)
+
+func can_place_block() -> bool:
+	return (is_edit_mode and 
+			ghost_block and 
+			is_instance_valid(ghost_block) and
+			is_snapping and
+			current_snap_point and
+			is_instance_valid(current_snap_point) and
+			current_vehicle and
+			is_instance_valid(current_vehicle) and
+			ghost_block.modulate != Color(1, 0.5, 0.5, 0.5))
+
+#-----------------------------------------------------------------------------#
+#                           INPUT HANDLING                                    #
+#-----------------------------------------------------------------------------#
+
+func handle_edit_mode_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			place_block()
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			rotate_ghost_block()
+	
+	elif event is InputEventKey:
+		if event.keycode == KEY_ESCAPE and event.pressed:
+			exit_edit_mode()
+		elif event.keycode == KEY_R and event.pressed:
+			rotate_ghost_block()
+
+#-----------------------------------------------------------------------------#
+#                           UTILITY FUNCTIONS                                 #
+#-----------------------------------------------------------------------------#
+
+func find_ui_instance():
+	# 尝试在不同位置查找UI
+	var paths_to_try = [
+		"../CanvasLayer/Tankbuilderui",
+		"../../CanvasLayer/Tankbuilderui",
+		"CanvasLayer/Tankbuilderui"
+	]
+	
+	for path in paths_to_try:
+		if has_node(path):
+			ui_instance = get_node(path)
+			break
+	
+	if not ui_instance:
+		push_warning("Tankbuilder UI not found")
+
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if is_edit_mode:
+			exit_edit_mode()
+
+#-----------------------------------------------------------------------------#
+#                           PUBLIC API                                        #
+#-----------------------------------------------------------------------------#
+
+func get_current_vehicle() -> Vehicle:
+	return current_vehicle
+
+func is_in_edit_mode() -> bool:
+	return is_edit_mode
+
+func get_available_blocks() -> Array:
+	return inventory.keys()
+
+func add_to_inventory(block_name: String, amount: int = 1):
+	inventory[block_name] = inventory.get(block_name, 0) + amount
+	if ui_instance:
+		ui_instance.update_inventory_display(inventory)
