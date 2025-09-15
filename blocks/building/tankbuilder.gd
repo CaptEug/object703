@@ -39,7 +39,8 @@ var inventory = {
 	"ammo_rack":10,
 	"tankbuilder":10,
 	"pike_armor":10,
-	"armor":10
+	"armor":10,
+	"small_cargo":10
 }
 
 #-----------------------------------------------------------------------------#
