@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://k5g8brs670ll" path="res://blocks/firepower/kwak45.gd" id="1_r7kom"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ynhj4"]
-[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/ConnectionPoint.tscn" id="3_3ymda"]
+[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/connection_point.tscn" id="3_3ymda"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b0pqf"]
 size = Vector2(32, 32)

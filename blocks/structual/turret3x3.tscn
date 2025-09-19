@@ -1,10 +1,15 @@
-[gd_scene load_steps=5 format=3 uid="uid://saiofmomjqe0"]
+[gd_scene load_steps=7 format=3 uid="uid://saiofmomjqe0"]
 
 [ext_resource type="Script" uid="uid://03cisq73wcw4" path="res://blocks/structual/turret_seat.gd" id="1_80h70"]
-[ext_resource type="Script" uid="uid://bk4hgv1vkhg6f" path="res://blocks/connection_point.gd" id="2_44b6w"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_2l62y"]
+[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/connection_point.tscn" id="2_44b6w"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2l62y"]
 size = Vector2(48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wsjul"]
+atlas = ExtResource("2_2l62y")
+region = Rect2(208, 208, 48, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wsjul"]
 size = Vector2(48, 48)
@@ -16,6 +21,9 @@ metadata/_custom_type_script = "uid://03cisq73wcw4"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_2l62y")
 
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_wsjul")
+
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 node_a = NodePath("..")
 node_b = NodePath("../Turret")
@@ -23,66 +31,43 @@ node_b = NodePath("../Turret")
 [node name="Turret" type="RigidBody2D" parent="."]
 collision_layer = 0
 collision_mask = 0
+angular_damp = 1.0
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="Turret"]
 shape = SubResource("RectangleShape2D_wsjul")
 
-[node name="ConnectionPoint" type="Marker2D" parent="Turret"]
-position = Vector2(0, -8)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(-16, -24)
 
-[node name="ConnectionPoint2" type="Marker2D" parent="Turret"]
-position = Vector2(-16, -8)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint2" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(0, -24)
 
-[node name="ConnectionPoint3" type="Marker2D" parent="Turret"]
-position = Vector2(16, -8)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint3" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(16, -24)
 
-[node name="ConnectionPoint4" type="Marker2D" parent="Turret"]
-position = Vector2(-8, -16)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint4" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(24, -16)
 
-[node name="ConnectionPoint5" type="Marker2D" parent="Turret"]
-position = Vector2(8, -16)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint5" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(24, 0)
 
-[node name="ConnectionPoint6" type="Marker2D" parent="Turret"]
-position = Vector2(-8, 0)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint6" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(24, 16)
 
-[node name="ConnectionPoint7" type="Marker2D" parent="Turret"]
-position = Vector2(16, 8)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint7" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(16, 24)
 
-[node name="ConnectionPoint8" type="Marker2D" parent="Turret"]
-position = Vector2(8, 0)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint8" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(0, 24)
 
-[node name="ConnectionPoint9" type="Marker2D" parent="Turret"]
-position = Vector2(-16, 8)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint9" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(-16, 24)
 
-[node name="ConnectionPoint10" type="Marker2D" parent="Turret"]
-position = Vector2(0, 8)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint10" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(-24, 16)
 
-[node name="ConnectionPoint11" type="Marker2D" parent="Turret"]
-position = Vector2(-8, 16)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint11" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(-24, 0)
 
-[node name="ConnectionPoint12" type="Marker2D" parent="Turret"]
-position = Vector2(8, 16)
-script = ExtResource("2_44b6w")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint12" parent="." instance=ExtResource("2_44b6w")]
+position = Vector2(-24, -16)
