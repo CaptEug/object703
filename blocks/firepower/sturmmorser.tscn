@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bs7loi5lgmjlr" path="res://blocks/firepower/sturmmorser.gd" id="1_nap6g"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_2edsb"]
-[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/ConnectionPoint.tscn" id="3_cix5x"]
+[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/connection_point.tscn" id="3_cix5x"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2edsb"]
 size = Vector2(48, 48)

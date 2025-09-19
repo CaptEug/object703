@@ -28,7 +28,8 @@ var inventory := {
 	"tankbuilder":10,
 	"pike_armor":10,
 	"armor":10,
-	"small_cargo":10
+	"small_cargo":10,
+	"turret3x3":10
 }
 
 ### NODE REFERENCES ###

@@ -1,13 +1,13 @@
 [gd_scene load_steps=3 format=3 uid="uid://bvbnqq014m5ku"]
 
-[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ld0rk"]
-[ext_resource type="Script" uid="uid://dlxhou30xvj1w" path="res://ui/codex_ui.gd" id="2_hqcu7"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_2m1fl"]
+[ext_resource type="Script" uid="uid://dlxhou30xvj1w" path="res://ui/codex_ui.gd" id="2_ayy8h"]
 
 [node name="CodexUi" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-theme = ExtResource("1_ld0rk")
-script = ExtResource("2_hqcu7")
+theme = ExtResource("1_2m1fl")
+script = ExtResource("2_ayy8h")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
