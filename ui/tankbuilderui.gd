@@ -182,9 +182,21 @@ func _on_recycle_button_pressed():
 	is_recycle_mode = !is_recycle_mode
 	update_recycle_button()
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
+	
+	# 设置编辑模式的回收状态
+	var editor_mode = get_tree().current_scene.find_child("EditorMode")
+	if editor_mode:
+		editor_mode.is_recycle_mode = is_recycle_mode
+
 
 func update_recycle_button():
 	if is_recycle_mode:
 		recycle_button.add_theme_color_override("font_color", Color.RED)
 	else:
 		recycle_button.remove_theme_color_override("font_color")
+
+func _on_block_selected(scene_path: String):
+	# 获取编辑模式实例并开始放置块
+	var editor_mode = get_tree().current_scene.find_child("EditorMode")
+	if editor_mode:
+		editor_mode.start_block_placement(scene_path)

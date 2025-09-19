@@ -3,7 +3,7 @@ extends Marker2D
 
 # 严格对齐参数
 @export var is_connection_enabled := false
-@export var connection_range := 3.0  # 非常小的连接范围
+@export var connection_range := 5.0  # 非常小的连接范围
 @export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
 @export var connection_type := "default"
 
@@ -35,6 +35,10 @@ func _process(_delta):
 func _draw():
 	var color = Color.GREEN if connected_to else Color.RED
 	draw_circle(Vector2.ZERO, 3, color)
+	
+	# 绘制连接范围（调试用）
+	if Engine.is_editor_hint():
+		draw_arc(Vector2.ZERO, connection_range, 0, TAU, 32, Color(1, 1, 1, 0.2), 1.0)
 
 func setup_detection_area():
 	detection_area = Area2D.new()
@@ -60,8 +64,8 @@ func _on_area_exited(area: Area2D):
 	if other_point is ConnectionPoint:
 		overlapping_points.erase(other_point)
 		# 如果断开的是当前连接的点
-		if connected_to == other_point:
-			disconnect_joint()
+		#if connected_to == other_point:
+			#disconnect_joint()
 
 func try_connect(other_point: ConnectionPoint) -> bool:
 	if not (is_connection_enabled and other_point.is_connection_enabled):
@@ -163,18 +167,97 @@ func disconnect_joint():
 	
 	queue_redraw()
 
-func set_connection_enabled(enabled: bool, keep_existing: bool = true):
+func set_connection_enabled(enabled: bool, keep_existing: bool = true, protect_internal: bool = true):
+	"""设置连接点启用状态
+	enabled: 是否启用
+	keep_existing: 是否保留现有连接
+	protect_internal: 是否保护内部连接不断开
+	"""
 	if is_connection_enabled == enabled:
 		return
 	
 	is_connection_enabled = enabled
 	
-	# 只有当不保留现有连接且禁用时才断开
+	# 只有当不保留现有连接且禁用时才需要检查是否断开
 	if not keep_existing and not enabled and connected_to:
+		# 检查是否需要保护内部连接
+		if protect_internal and is_internal_connection():
+			print("保护内部连接不断开: ", self.name)
+			return
+		
+		# 外部连接或不需要保护，正常断开
 		disconnect_joint()
 	
 	queue_redraw()
 
+func is_internal_connection() -> bool:
+	"""检查当前连接是否是内部连接（同一个车辆）"""
+	if not connected_to:
+		return false
+	
+	var parent_block = find_parent_block()
+	var other_block = connected_to.find_parent_block()
+	
+	if not parent_block or not other_block:
+		return false
+	
+	# 获取父车辆
+	var parent_vehicle = get_parent_vehicle(parent_block)
+	var other_vehicle = get_parent_vehicle(other_block)
+	
+	return parent_vehicle == other_vehicle and parent_vehicle != null
+
+func get_parent_vehicle(block: Node) -> Node:
+	"""获取块所在的车辆"""
+	if not block:
+		return null
+	
+	# 向上查找直到找到Vehicle节点
+	var current = block
+	while current:
+		if current is Vehicle:
+			return current
+		current = current.get_parent()
+	return null
 
 func is_joint_active() -> bool:
 	return joint != null and is_instance_valid(joint)
+
+func highlight():
+	var tween = create_tween()
+	tween.tween_property(self, "modulate", Color.YELLOW, 0.1)
+	tween.tween_property(self, "modulate", Color.WHITE, 0.3)
+
+func unhighlight():
+	modulate = Color.WHITE
+
+# 新增：获取连接状态信息
+func get_connection_info() -> String:
+	var info = "ConnectionPoint: " + name + "\n"
+	info += "Enabled: " + str(is_connection_enabled) + "\n"
+	info += "Connected: " + str(connected_to != null) + "\n"
+	info += "Type: " + connection_type + "\n"
+	
+	if connected_to:
+		info += "Connected to: " + connected_to.name + "\n"
+		info += "Internal: " + str(is_internal_connection()) + "\n"
+	
+	return info
+
+# 新增：安全地检查连接状态
+func is_safely_connected() -> bool:
+	if not connected_to:
+		return false
+	
+	# 检查连接是否仍然有效
+	if not is_instance_valid(connected_to):
+		connected_to = null
+		joint = null
+		return false
+	
+	return true
+
+# 新增：强制断开连接（即使内部连接）
+func force_disconnect():
+	"""强制断开连接，忽略内部连接保护"""
+	disconnect_joint()
