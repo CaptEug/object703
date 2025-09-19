@@ -270,8 +270,9 @@ func disconnect_all():
 ## Query Methods
 func get_available_connection_points() -> Array[ConnectionPoint]:
 	return connection_points.filter(
-		func(point): return not point.connected_to
-	) if connection_points else []
+		func(point): 
+			return point.is_connection_enabled and not point.is_joint_active()
+	)
 
 func get_connected_points() -> Array[ConnectionPoint]:
 	return connection_points.filter(
@@ -323,3 +324,9 @@ func set_connection_enabled(enabled: bool, keep_existing_joints: bool = true):
 				other_point.connected_to = point
 	
 	queue_redraw()
+
+func get_connection_point_by_index(index: int) -> ConnectionPoint:
+	var available_points = get_available_connection_points()
+	if index >= 0 and index < available_points.size():
+		return available_points[index]
+	return null

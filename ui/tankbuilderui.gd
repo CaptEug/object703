@@ -19,7 +19,8 @@ const BLOCK_PATHS = {
 	"Mobility": "res://blocks/mobility/",
 	"Command": "res://blocks/command/",
 	"Building": "res://blocks/building/",
-	"Structual":"res://blocks/structual/"
+	"Structual": "res://blocks/structual/",
+	"Auxiliary": "res://blocks/auxiliary/"
 }
 
 var inventory = {}
@@ -97,7 +98,7 @@ func update_inventory_display(current_inventory: Dictionary):
 						var scene_path = BLOCK_PATHS[category] + file_name
 						var scene = load(scene_path)
 						var block = scene.instantiate()
-						if block:
+						if block is Block:
 							# Add to "All" tab
 							all_blocks.append({
 								"name": block.block_name,
