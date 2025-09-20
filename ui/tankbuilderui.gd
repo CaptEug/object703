@@ -23,7 +23,6 @@ const BLOCK_PATHS = {
 	"Auxiliary": "res://blocks/auxiliary/"
 }
 
-var inventory = {}
 var item_lists = {}  # Stores references to all ItemList nodes by tab name
 var is_recycle_mode := false
 
@@ -40,6 +39,9 @@ func _ready():
 	error_label.hide()
 	
 	update_recycle_button()
+	
+	# 初始化时加载所有方块
+	load_all_blocks()
 	
 func create_tabs():
 	# Clear existing tabs (except maybe the first one)
@@ -72,19 +74,14 @@ func create_tab_with_itemlist(tab_name: String):
 	tab_container.add_child(item_list)
 	item_lists[tab_name] = item_list
 
-func setup_inventory(initial_inventory: Dictionary):
-	inventory = initial_inventory.duplicate()
-	update_inventory_display(inventory)
+# 移除setup_inventory函数，因为不再需要库存系统
 
-func update_inventory_display(current_inventory: Dictionary):
-	# Clear all item lists first
-	for item_list in item_lists.values():
-		item_list.clear()
-	
+func load_all_blocks():
+	"""加载所有分类文件夹中的方块"""
 	var all_blocks = []
 	var categorized_blocks = {}
 	
-	# First collect all blocks and organize them by category
+	# 首先收集所有方块并按分类组织
 	for category in BLOCK_PATHS:
 		categorized_blocks[category] = []
 		var dir = DirAccess.open(BLOCK_PATHS[category])
@@ -93,41 +90,37 @@ func update_inventory_display(current_inventory: Dictionary):
 			var file_name = dir.get_next()
 			while file_name != "":
 				if file_name.ends_with(".tscn"):
-					var block_basename = file_name.get_basename()
-					if current_inventory.has(block_basename) and current_inventory[block_basename] > 0:
-						var scene_path = BLOCK_PATHS[category] + file_name
-						var scene = load(scene_path)
-						var block = scene.instantiate()
-						if block is Block:
-							# Add to "All" tab
-							all_blocks.append({
-								"name": block.block_name,
-								"count": current_inventory[block_basename],
-								"icon": block.get_icon_texture(),
-								"path": scene_path
-							})
-							
-							# Add to category tab
-							categorized_blocks[category].append({
-								"name": block.block_name,
-								"count": current_inventory[block_basename],
-								"icon": block.get_icon_texture(),
-								"path": scene_path
-							})
-							block.queue_free()
+					var scene_path = BLOCK_PATHS[category] + file_name
+					var scene = load(scene_path)
+					var block = scene.instantiate()
+					if block is Block:
+						# 添加到"全部"标签页
+						all_blocks.append({
+							"name": block.block_name,
+							"icon": block.get_icon_texture(),
+							"path": scene_path
+						})
+						
+						# 添加到分类标签页
+						categorized_blocks[category].append({
+							"name": block.block_name,
+							"icon": block.get_icon_texture(),
+							"path": scene_path
+						})
+						block.queue_free()
 				file_name = dir.get_next()
 	
-	# Populate "All" tab
+	# 填充"全部"标签页
 	populate_item_list(item_lists["All"], all_blocks)
 	
-	# Populate category tabs
+	# 填充分类标签页
 	for category in categorized_blocks:
 		if item_lists.has(category):
 			populate_item_list(item_lists[category], categorized_blocks[category])
 
 func populate_item_list(item_list: ItemList, items: Array):
 	for item in items:
-		var idx = item_list.add_item("%s (%d)" % [item.name, item.count])
+		var idx = item_list.add_item(item.name)
 		item_list.set_item_icon(idx, item.icon)
 		item_list.set_item_metadata(idx, item.path)
 
@@ -143,9 +136,11 @@ func update_description(scene_path: String):
 	var block = scene.instantiate()
 	if block:
 		description_label.clear()
-		description_label.append_text("[b]%s[/b]\n\n" % block.name)
+		description_label.append_text("[b]%s[/b]\n\n" % block.block_name)
 		description_label.append_text("TYPE: %s\n" % block.type)
 		description_label.append_text("SIZE: %s\n" % str(block.size))
+		if block.has_method("get_description"):
+			description_label.append_text("DESCRIPTION: %s\n" % block.get_description())
 		block.queue_free()
 
 func _on_build_vehicle_pressed():
@@ -182,12 +177,6 @@ func _on_recycle_button_pressed():
 	is_recycle_mode = !is_recycle_mode
 	update_recycle_button()
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
-	
-	# 设置编辑模式的回收状态
-	var editor_mode = get_tree().current_scene.find_child("EditorMode")
-	if editor_mode:
-		editor_mode.is_recycle_mode = is_recycle_mode
-
 
 func update_recycle_button():
 	if is_recycle_mode:
@@ -195,8 +184,10 @@ func update_recycle_button():
 	else:
 		recycle_button.remove_theme_color_override("font_color")
 
-func _on_block_selected(scene_path: String):
-	# 获取编辑模式实例并开始放置块
-	var editor_mode = get_tree().current_scene.find_child("EditorMode")
-	if editor_mode:
-		editor_mode.start_block_placement(scene_path)
+# 添加一个重新加载方块的方法，方便开发时使用
+func reload_blocks():
+	"""重新加载所有方块（开发时使用）"""
+	for item_list in item_lists.values():
+		item_list.clear()
+	load_all_blocks()
+	print("方块列表已重新加载")

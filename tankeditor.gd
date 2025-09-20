@@ -21,11 +21,8 @@ var best_snap_position := Vector2.ZERO
 var best_snap_rotation := 0.0
 var current_rotation := 0
 
-var inventory: Dictionary = {
-	"rusty_track": 10, "kwak45": 10, "maybach_hl_250": 10, "d_52s": 10,
-	"zis_57_2": 10, "fuel_tank": 10, "cupola": 10, "ammo_rack": 10,
-	"tankbuilder": 10, "pike_armor": 10, "armor": 10
-}
+# 移除库存限制，改为无限使用
+var inventory: Dictionary = {}
 
 func _ready():
 	print("EditorMode 初始化 - Testground 场景")
@@ -158,7 +155,8 @@ func enter_editor_mode(vehicle: Vehicle):
 	vehicle.control = Callable()
 	
 	ui_instance.show()
-	ui_instance.setup_inventory(inventory)
+	# 移除库存设置，因为现在是无限使用
+	# ui_instance.setup_inventory(inventory)
 	
 	editor_mode_changed.emit(true)
 	print("=== 编辑模式就绪 ===")
@@ -407,10 +405,8 @@ func try_place_block():
 		print("无法放置: 没有选择块或车辆")
 		return
 	
+	# 移除库存检查，所有方块都可以无限使用
 	var block_name = current_ghost_block.scene_file_path.get_file().get_basename()
-	if inventory.get(block_name, 0) <= 0:
-		print("库存不足: ", block_name)
-		return
 	
 	if best_snap_score <= 0:
 		print("错误: 必须靠近车辆或连接点放置")
@@ -437,9 +433,7 @@ func try_place_block():
 	# 重新启用连接点（只针对新块和受影响块）
 	enable_connection_points_for_blocks([new_block] + get_affected_blocks())
 	
-	inventory[block_name] -= 1
-	if ui_instance:
-		ui_instance.update_inventory_display(inventory)
+	# 移除库存更新逻辑，因为所有方块都是无限的
 	
 	# 延迟检查稳定性，避免性能问题
 	call_deferred("check_vehicle_stability")
@@ -521,9 +515,8 @@ func try_remove_block():
 				print("不能移除命令块")
 				continue
 			
-			# 获取方块名称并更新库存
+			# 移除库存返还逻辑，因为所有方块都是无限的
 			var block_name = block.block_name
-			inventory[block_name] = inventory.get(block_name, 0) + 1
 			
 			# 断开与被移除块相关的连接
 			var connections_to_disconnect = find_connections_for_block(block)
@@ -538,9 +531,7 @@ func try_remove_block():
 			# 重新启用受影响块的连接点
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			
-			# 更新UI库存显示
-			if ui_instance and ui_instance.has_method("update_inventory_from_editor"):
-				ui_instance.update_inventory_from_editor(inventory)
+			# 移除UI库存更新逻辑
 			
 			# 检查车辆稳定性
 			call_deferred("check_vehicle_stability")

@@ -99,7 +99,8 @@ func destroy():
 ## Block Management
 func get_icon_texture():
 	var texture_blocks := find_child("Sprite2D") as Sprite2D
-	return texture_blocks.texture
+	if texture_blocks != null:
+		return texture_blocks.texture
 
 func get_parent_vehicle():
 	parent_vehicle = get_parent() as Vehicle
@@ -209,7 +210,6 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_
 	joint.node_b = target_block.get_path()
 	joint.position = source.position
 	joint.disable_collision = false
-	joint.softness = 0.5
 	
 	add_child(joint)
 	
