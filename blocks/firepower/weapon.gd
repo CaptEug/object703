@@ -6,6 +6,7 @@ var reload:float
 var ammo_cost:float
 var rotation_speed:float # rads per second
 var traverse:Array # degree
+var has_turret:bool
 var muzzle_energy:float
 var turret:Sprite2D 
 var muzzles:Array
@@ -24,9 +25,14 @@ var targeting:= Callable()
 func _ready():
 	super._ready()
 	turret = find_child("Turret") as Sprite2D
-	for muz in turret.get_children():
-		if muz is Marker2D:
-			muzzles.append(muz)
+	has_turret = turret != null
+	if has_turret:
+		for muz in turret.get_children():
+			if muz is Marker2D:
+				muzzles.append(muz)
+	else:
+		muzzles.append(find_child("Muzzle") as Marker2D)
+	
 	animplayer = find_child("AnimationPlayer") as AnimationPlayer
 	reload_timer = Timer.new()
 	reload_timer.one_shot = true
@@ -86,7 +92,8 @@ func aim(delta, target_pos):
 		var min_angle = deg_to_rad(traverse[0])
 		var max_angle = deg_to_rad(traverse[1])
 		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
-	turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
+	if has_turret:
+		turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
 

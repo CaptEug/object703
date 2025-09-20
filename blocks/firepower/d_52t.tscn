@@ -1,0 +1,107 @@
+[gd_scene load_steps=11 format=3 uid="uid://bemq1c5f0brs7"]
+
+[ext_resource type="Script" uid="uid://gwmvgjhiuk7g" path="res://blocks/firepower/d_52t.gd" id="1_yqdh3"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_c60hf"]
+[ext_resource type="Script" uid="uid://bk4hgv1vkhg6f" path="res://blocks/connection_point.gd" id="3_yqdh3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yqdh3"]
+size = Vector2(16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tauxs"]
+atlas = ExtResource("2_c60hf")
+region = Rect2(192, 192, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dcorw"]
+atlas = ExtResource("2_c60hf")
+region = Rect2(160, 128, 16, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7qhwx"]
+atlas = ExtResource("2_c60hf")
+region = Rect2(176, 192, 16, 32)
+
+[sub_resource type="Animation" id="Animation_ideco"]
+resource_name = "recoil"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Gun:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 6), Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_qmyrl"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Gun:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_h3pux"]
+_data = {
+&"RESET": SubResource("Animation_qmyrl"),
+&"recoil0": SubResource("Animation_ideco")
+}
+
+[node name="D52t" type="RigidBody2D"]
+script = ExtResource("1_yqdh3")
+metadata/_custom_type_script = "uid://umbrwl1bnc2h"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_yqdh3")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_tauxs")
+
+[node name="Gun" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_dcorw")
+offset = Vector2(0, -32)
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_7qhwx")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_h3pux")
+}
+
+[node name="Muzzle" type="Marker2D" parent="."]
+position = Vector2(0, -72)
+
+[node name="ConnectionPoint" type="Marker2D" parent="."]
+position = Vector2(8, -8)
+script = ExtResource("3_yqdh3")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="ConnectionPoint2" type="Marker2D" parent="."]
+position = Vector2(8, 8)
+script = ExtResource("3_yqdh3")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="ConnectionPoint3" type="Marker2D" parent="."]
+position = Vector2(0, 16)
+script = ExtResource("3_yqdh3")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="ConnectionPoint4" type="Marker2D" parent="."]
+position = Vector2(-8, 8)
+script = ExtResource("3_yqdh3")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="ConnectionPoint5" type="Marker2D" parent="."]
+position = Vector2(-8, -8)
+script = ExtResource("3_yqdh3")
+metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"

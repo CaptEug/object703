@@ -31,7 +31,7 @@ var balanced_forces := {} # 存储直线行驶时的理想出力分布
 var rotation_forces := {} # 存储纯旋转时的理想出力分布
 var control:Callable
 var controls:= []
-var targets:= []
+var targets:Array[Block] = []
 var is_assembled := false
 var block_scenes := {}
 var selected:bool
