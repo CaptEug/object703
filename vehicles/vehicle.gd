@@ -124,7 +124,7 @@ func _add_block(block: Block,local_pos, grid_positions):
 
 func remove_block(block: Block):
 	blocks.erase(block)
-	
+	block.queue_free()
 	
 	var keys_to_erase = []
 	for pos in grid:

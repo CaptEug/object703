@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://enrio73qhfmx"]
 
 [ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/tankbuilderUI.tscn" id="1_kcdmp"]
-[ext_resource type="PackedScene" uid="uid://c04b61ykvsi34" path="res://blocks/building/tankbuilder.tscn" id="1_vokvl"]
+[ext_resource type="PackedScene" uid="uid://c04b61ykvsi34" path="res://backup/tankbuilder.tscn" id="1_vokvl"]
 
 [node name="Testbuilder" type="Node2D"]
 scale = Vector2(0.80315, 0.964736)

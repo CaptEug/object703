@@ -209,6 +209,7 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_
 	joint.node_b = target_block.get_path()
 	joint.position = source.position
 	joint.disable_collision = false
+	joint.softness = 0.5
 	
 	add_child(joint)
 	
@@ -270,9 +271,9 @@ func disconnect_all():
 ## Query Methods
 func get_available_connection_points() -> Array[ConnectionPoint]:
 	return connection_points.filter(
-		func(point): 
-			return point.is_connection_enabled and not point.is_joint_active()
-	)
+		func(point): return not point.connected_to
+	) if connection_points else []
+
 
 func get_connected_points() -> Array[ConnectionPoint]:
 	return connection_points.filter(
