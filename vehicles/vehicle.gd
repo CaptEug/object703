@@ -261,6 +261,7 @@ func load_from_blueprint(bp: Dictionary):
 			var block:Block = block_scene.instantiate()
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
+			block.rotation_to_parent = block_data["rotation"]
 			var local_pos = base_pos * GRID_SIZE + Vector2(block.size)*GRID_SIZE/2
 			block.rotation_to_parent = block.rotation
 			var target_grid = []
