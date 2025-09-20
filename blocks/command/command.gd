@@ -12,7 +12,8 @@ func _ready():
 
 func _process(delta):
 	super._process(delta)
-	targeting()
+	if parent_vehicle:
+		targeting()
 
 func targeting():
 	var detected_bodies = detect_area.get_overlapping_bodies()

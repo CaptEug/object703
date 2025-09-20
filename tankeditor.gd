@@ -24,7 +24,7 @@ var current_rotation := 0
 var inventory: Dictionary = {
 	"rusty_track": 10, "kwak45": 10, "maybach_hl_250": 10, "d_52s": 10,
 	"zis_57_2": 10, "fuel_tank": 10, "cupola": 10, "ammo_rack": 10,
-	"tankbuilder": 10, "pike_armor": 10, "armor": 10
+	"tankbuilder": 10, "pike_armor": 10, "armor": 10, 
 }
 
 func _ready():
