@@ -10,6 +10,7 @@ var current_block_scene: PackedScene = null
 var hovered_connection_point: ConnectionPoint = null
 var is_recycle_mode := false
 var ui_instance: Control = null
+var panel_instance: Control = null
 
 # 存储原始连接状态
 var original_connection_states: Dictionary = {}
@@ -91,6 +92,7 @@ func initialize_editor():
 		var canvas_layer = testground.find_child("CanvasLayer", false, false)
 		if canvas_layer:
 			ui_instance = canvas_layer.find_child("Tankbuilderui", false, false)
+			panel_instance = canvas_layer.find_child("Tankpanel", false, false)
 			if ui_instance:
 				print("成功找到UI: ", ui_instance.name)
 		
@@ -105,17 +107,11 @@ func initialize_editor():
 func find_and_select_vehicle():
 	var testground = get_parent()
 	if testground:
-		for child in testground.get_children():
-			if child is Vehicle:
-				selected_vehicle = child
-				print("找到车辆: ", selected_vehicle.vehicle_name)
-				return
-		
-		var vehicles = []
-		find_vehicles_in_children(testground, vehicles)
-		if vehicles.size() > 0:
-			selected_vehicle = vehicles[0]
-			print("深度搜索找到车辆: ", selected_vehicle.vehicle_name)
+		if panel_instance.selected_vehicle:
+			selected_vehicle = panel_instance.selected_vehicle
+			ui_instance.name_input.placeholder_text = selected_vehicle.vehicle_name
+			print("找到车辆: ", selected_vehicle.vehicle_name, ui_instance.name_input)
+			return
 
 func find_vehicles_in_children(node: Node, result: Array):
 	for child in node.get_children():
