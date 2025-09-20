@@ -87,12 +87,13 @@ func _draw():
 
 func aim(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
-	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
+	var angle_diff = wrapf(target_angle - rotation, -PI, PI)
 	if traverse:
 		var min_angle = deg_to_rad(traverse[0])
 		var max_angle = deg_to_rad(traverse[1])
 		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
 	if has_turret:
+		angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 		turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
