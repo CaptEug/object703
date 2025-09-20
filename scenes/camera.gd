@@ -6,6 +6,7 @@ var zoom_max:float = 3.0
 var move_speed:float = 500
 var focused:bool
 var target_pos:= Vector2(0,0)
+var target_rot:= 0.0
 @onready var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
 
 func _ready():
@@ -34,20 +35,25 @@ func _process(delta):
 
 func focus_on_vehicle():
 	var focus_vehicle:Vehicle
-	for vehicle in get_tree().get_nodes_in_group("vehicles"):
-		if vehicle.control.get_method() == "manual_control":
-			focus_vehicle = vehicle
-	if focus_vehicle:
-		if Input.is_action_pressed("AIMING"):
-			var viewport_center = Vector2(get_viewport().size / 2)
-			var mouse_pos = get_viewport().get_mouse_position()
-			var mouse_offset = mouse_pos - viewport_center
-			target_pos = focus_vehicle.center_of_mass + mouse_offset
+	var tankpanel = control_ui.find_child("Tankpanel") as Panel
+	var selected_vehicle = tankpanel.selected_vehicle as Vehicle
+	if selected_vehicle:
+		if selected_vehicle.control.get_method() == "manual_control":
+			if Input.is_action_pressed("AIMING"):
+				var viewport_center = Vector2(get_viewport().size / 2)
+				var mouse_pos = get_viewport().get_mouse_position()
+				var mouse_offset = mouse_pos - viewport_center
+				target_pos = focus_vehicle.center_of_mass + mouse_offset
+			else:
+				target_pos = focus_vehicle.center_of_mass
+			focused = true
 		else:
-			target_pos = focus_vehicle.center_of_mass
-		focused = true
-	else:
-		focused = false
+			focused = false
+
+
+func sync_rotation_with(target_rotation:float):
+	var tween = get_tree().create_tween()
+	tween.tween_property(self, "global_rotation", target_rotation, 0.5) #rotate to angle in 0.5s
 
 
 func smooth_move_to(target_position:Vector2):
