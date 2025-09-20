@@ -37,6 +37,8 @@ func _process(delta):
 				Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
 			else:
 				Input.set_custom_mouse_cursor(null)
+		else:
+			camera.target_rot = 0.0
 		
 		queue_redraw()
 	else:
