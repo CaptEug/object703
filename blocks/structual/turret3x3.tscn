@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://03cisq73wcw4" path="res://blocks/structual/turret_seat.gd" id="1_80h70"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_2l62y"]
-[ext_resource type="PackedScene" uid="uid://xgrelrplmvil" path="res://blocks/connection_point.tscn" id="2_44b6w"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="2_44b6w"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2l62y"]
 size = Vector2(48, 48)

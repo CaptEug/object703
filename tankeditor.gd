@@ -420,7 +420,7 @@ func try_place_block():
 	
 	# 只断开必要的连接，而不是所有连接
 	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
-	disconnect_specific_connections(connections_to_disconnect)
+	disconnect_connections(connections_to_disconnect)
 	
 	var new_block = current_block_scene.instantiate()
 	selected_vehicle.add_child(new_block)
@@ -455,7 +455,8 @@ func find_connections_to_disconnect_for_placement() -> Array:
 		})
 	return connections_to_disconnect
 
-func disconnect_specific_connections(connections: Array):
+func disconnect_connections(connections: Array):
+	"""断开特定的连接（重命名以避免重复）"""
 	for connection in connections:
 		if is_instance_valid(connection.from):
 			connection.from.disconnect_joint()
@@ -505,39 +506,49 @@ func try_remove_block():
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	
+	# 使用物理查询检测鼠标下的方块
 	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = global_mouse_pos
-	query.collision_mask = 1
+	query.collision_mask = 1  # 确保只检测正确的碰撞层
 	
 	var result = space_state.intersect_point(query)
 	for collision in result:
 		var block = collision.collider
 		if block is Block and block.get_parent() == selected_vehicle:
+			# 检查是否是命令块（不能移除）
 			if block is Command:
 				print("不能移除命令块")
 				continue
 			
+			# 获取方块名称并更新库存
 			var block_name = block.block_name
 			inventory[block_name] = inventory.get(block_name, 0) + 1
 			
-			# 只断开与被移除块相关的连接
+			# 断开与被移除块相关的连接
 			var connections_to_disconnect = find_connections_for_block(block)
-			disconnect_specific_connections(connections_to_disconnect)
+			disconnect_connections(connections_to_disconnect)
 			
+			# 从车辆中移除方块
+			print(selected_vehicle.blocks)
+			print("             ")
 			selected_vehicle.remove_block(block)
+			print(selected_vehicle.blocks)
 			
 			# 重新启用受影响块的连接点
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			
-			if ui_instance:
-				ui_instance.update_inventory_display(inventory)
+			# 更新UI库存显示
+			if ui_instance and ui_instance.has_method("update_inventory_from_editor"):
+				ui_instance.update_inventory_from_editor(inventory)
 			
+			# 检查车辆稳定性
 			call_deferred("check_vehicle_stability")
 			print("移除块: ", block_name)
 			break
 
 func find_connections_for_block(block: Block) -> Array:
+	"""查找与指定块相关的所有连接"""
 	var connections = []
 	for point in block.connection_points:
 		if point.connected_to:
@@ -548,6 +559,7 @@ func find_connections_for_block(block: Block) -> Array:
 	return connections
 
 func get_affected_blocks_for_removal(removed_block: Block) -> Array:
+	"""获取受移除操作影响的所有块"""
 	var affected_blocks = []
 	for point in removed_block.connection_points:
 		if point.connected_to:
@@ -663,7 +675,11 @@ func _on_block_selected(scene_path: String):
 	start_block_placement(scene_path)
 
 func _on_vehicle_saved(vehicle_name: String):
-	print("保存车辆: ", vehicle_name)
+	save_vehicle(vehicle_name)
+	
+	# 通知UI保存成功
+	if ui_instance and ui_instance.has_method("on_vehicle_saved_successfully"):
+		ui_instance.on_vehicle_saved_successfully()
 
 func _on_recycle_mode_toggled(is_recycle: bool):
 	is_recycle_mode = is_recycle
@@ -673,3 +689,99 @@ func _on_recycle_mode_toggled(is_recycle: bool):
 		Input.set_custom_mouse_cursor(load("res://assets/icons/saw_cursor.png"), Input.CURSOR_ARROW)
 	else:
 		Input.set_custom_mouse_cursor(null)
+
+func save_vehicle(vehicle_name: String):
+	if not selected_vehicle:
+		print("错误: 没有选中的车辆")
+		return
+	
+	print("正在保存车辆: ", vehicle_name)
+	
+	# 生成蓝图数据
+	var blueprint_data = create_blueprint_data(vehicle_name)
+	
+	# 确定保存路径
+	var blueprint_path = "res://vehicles/blueprint/%s.json" % vehicle_name
+	
+	# 保存蓝图
+	if save_blueprint(blueprint_data, blueprint_path):
+		# 更新车辆引用
+		selected_vehicle.vehicle_name = vehicle_name
+		selected_vehicle.blueprint = blueprint_data
+		
+		print("车辆保存成功: ", blueprint_path)
+	else:
+		push_error("车辆保存失败")
+
+func create_blueprint_data(vehicle_name: String) -> Dictionary:
+	"""从当前车辆创建蓝图数据"""
+	var blueprint_data = {
+		"name": vehicle_name,
+		"blocks": {},
+		"vehicle_size": [0, 0]
+	}
+	
+	var block_counter = 1
+	var processed_blocks = {}
+	
+	# 计算车辆边界
+	var min_x = INF
+	var min_y = INF
+	var max_x = -INF
+	var max_y = -INF
+	
+	# 首先计算所有网格位置的范围
+	for grid_pos in selected_vehicle.grid:
+		min_x = min(min_x, grid_pos.x)
+		min_y = min(min_y, grid_pos.y)
+		max_x = max(max_x, grid_pos.x)
+		max_y = max(max_y, grid_pos.y)
+	
+	# 处理每个块
+	for grid_pos in selected_vehicle.grid:
+		var block = selected_vehicle.grid[grid_pos]
+		if not processed_blocks.has(block):
+			var relative_pos = Vector2i(grid_pos.x - min_x, grid_pos.y - min_y)
+			var rotation_str = get_rotation_direction(block.global_rotation)
+			
+			blueprint_data["blocks"][str(block_counter)] = {
+				"name": block.block_name,
+				"path": block.scene_file_path,
+				"base_pos": [relative_pos.x, relative_pos.y],
+				"rotation": rotation_str,
+			}
+			block_counter += 1
+			processed_blocks[block] = true
+	
+	blueprint_data["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
+	return blueprint_data
+
+func get_rotation_direction(angle: float) -> String:
+	"""将旋转角度转换为方向字符串"""
+	var normalized = fmod(angle, TAU)
+	if abs(normalized) <= PI/4 or abs(normalized) >= 7*PI/4:
+		return "up"
+	elif normalized >= PI/4 and normalized <= 3*PI/4:
+		return "right"
+	elif normalized >= 3*PI/4 and normalized <= 5*PI/4:
+		return "down"
+	else:
+		return "left"
+
+func save_blueprint(blueprint_data: Dictionary, save_path: String) -> bool:
+	"""将蓝图数据保存到文件"""
+	# 确保目录存在
+	var dir = DirAccess.open("res://vehicles/blueprint/")
+	if not dir:
+		DirAccess.make_dir_absolute("res://vehicles/blueprint/")
+	
+	# 保存文件
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(blueprint_data, "\t"))
+		file.close()
+		print("车辆蓝图已保存到:", save_path)
+		return true
+	else:
+		push_error("文件保存失败:", FileAccess.get_open_error())
+		return false
