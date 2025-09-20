@@ -29,6 +29,7 @@ visible = false
 environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+ignore_rotation = false
 script = ExtResource("2_m5lm4")
 
 [node name="Object1" parent="." instance=ExtResource("2_5du73")]

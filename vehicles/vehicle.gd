@@ -263,7 +263,6 @@ func load_from_blueprint(bp: Dictionary):
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			block.rotation_to_parent = block_data["rotation"]
 			var local_pos = base_pos * GRID_SIZE + Vector2(block.size)*GRID_SIZE/2
-			block.rotation_to_parent = block.rotation
 			var target_grid = []
 			# 记录所有网格位置
 			for x in block.size.x:

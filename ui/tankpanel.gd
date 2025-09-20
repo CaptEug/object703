@@ -32,7 +32,7 @@ func _process(delta):
 		
 		#update cursor and cam
 		if selected_vehicle.control.get_method() == "manual_control":
-			camera.focus_on_vehicle(selected_vehicle, false)
+			camera.focus_on_vehicle(selected_vehicle, true)
 			if not get_viewport().gui_get_hovered_control():
 				Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
 			else:
