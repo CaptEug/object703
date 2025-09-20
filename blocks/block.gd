@@ -12,7 +12,7 @@ var neighbors := {}
 var connected_blocks := []
 var global_grid_pos := []
 var mouse_inside: bool
-var rotation_to_parent = 0.0
+var rotation_to_parent = "up"
 var cost:Dictionary = {}
 var turret_compatible: bool
 
