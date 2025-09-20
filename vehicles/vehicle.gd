@@ -280,7 +280,7 @@ func get_rotation_angle(dir: String) -> float:
 		"up": return 0
 		"right":  return -PI/2
 		"down":  return PI
-		_:       return PI/2
+		_:       return 0
 
 func clear_existing_blocks():
 	for block in blocks:
