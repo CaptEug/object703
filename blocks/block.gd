@@ -68,6 +68,9 @@ func _emit_relay_signal():
 
 ## Input Handling
 func _on_input_event(_viewport, event, _shape_idx):
+	for vehicle in get_tree().get_nodes_in_group("vehicles"):
+		if vehicle.control.get_method() == "manual_control":
+			return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer

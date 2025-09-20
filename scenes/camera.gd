@@ -26,29 +26,28 @@ func _input(event: InputEvent) -> void:
 			target_zoom.y = clamp(target_zoom.y, zoom_min, zoom_max)
 			var tween = get_tree().create_tween()
 			tween.tween_property(self, "zoom", target_zoom, 0.5)
-			
+
 
 func _process(delta):
-	focus_on_vehicle()
 	movement(delta)
 	smooth_move_to(target_pos)
 
-func focus_on_vehicle():
-	var focus_vehicle:Vehicle
-	var tankpanel = control_ui.find_child("Tankpanel") as Panel
-	var selected_vehicle = tankpanel.selected_vehicle as Vehicle
-	if selected_vehicle:
-		if selected_vehicle.control.get_method() == "manual_control":
-			if Input.is_action_pressed("AIMING"):
-				var viewport_center = Vector2(get_viewport().size / 2)
-				var mouse_pos = get_viewport().get_mouse_position()
-				var mouse_offset = mouse_pos - viewport_center
-				target_pos = focus_vehicle.center_of_mass + mouse_offset
-			else:
-				target_pos = focus_vehicle.center_of_mass
-			focused = true
-		else:
-			focused = false
+
+func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
+	target_pos = vehicle.center_of_mass
+	
+	if vehicle.control.get_method() == "manual_control":
+		if Input.is_action_pressed("AIMING"):
+			var viewport_center = Vector2(get_viewport().size / 2)
+			var mouse_pos = get_viewport().get_mouse_position()
+			var mouse_offset = mouse_pos - viewport_center
+			target_pos += mouse_offset
+	
+	if sync_rotation:
+		var vehicle_control_block = vehicle.controls[0]
+		var vehicle_rotation = vehicle_control_block.global_rotation - 
+	focused = true
+	
 
 
 func sync_rotation_with(target_rotation:float):

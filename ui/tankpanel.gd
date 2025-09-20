@@ -5,7 +5,7 @@ extends Panel
 @export var health_gradient: Gradient  # Set this from the Inspector
 var time:float = 0
 var selected_vehicle:Vehicle
-
+var camera:Camera2D
 var control_modes := []
 var current_mode := 0
 var idle_icon:Texture = preload("res://assets/icons/idle.png")
@@ -15,7 +15,7 @@ var ai_icon:Texture = preload("res://assets/icons/ai.png")
 var crosshair:Texture = preload("res://assets/icons/crosshair.png")
 
 func _ready():
-	pass
+	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 
 
 func _process(delta):
@@ -30,8 +30,9 @@ func _process(delta):
 		$Offlinelabel.add_theme_color_override("font_color", color*blink_strength)
 		retrieve_vehicle_data()
 		
-		#update cursor
+		#update cursor and cam
 		if selected_vehicle.control.get_method() == "manual_control":
+			camera.focus_on_vehicle(selected_vehicle, false)
 			if not get_viewport().gui_get_hovered_control():
 				Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
 			else:
