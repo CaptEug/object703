@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cqcmwr4jdsk4a"]
-
-[ext_resource type="Script" uid="uid://cq4ql182hmbxg" path="res://tankeditor.gd" id="1_1qplg"]
-
-[node name="tankeditor" type="Node2D"]
-script = ExtResource("1_1qplg")

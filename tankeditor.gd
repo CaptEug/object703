@@ -151,8 +151,6 @@ func enter_editor_mode(vehicle: Vehicle):
 	vehicle.control = Callable()
 	
 	ui_instance.show()
-	# 移除库存设置，因为现在是无限使用
-	# ui_instance.setup_inventory(inventory)
 	
 	editor_mode_changed.emit(true)
 	print("=== 编辑模式就绪 ===")

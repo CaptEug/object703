@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
 [ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/tankbuilderUI.tscn" id="2_hie3q"]
@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://cqye7fhmmkft8" path="res://ui/tankpanel.tscn" id="6_hie3q"]
 [ext_resource type="PackedScene" uid="uid://bl2tikk55bsp1" path="res://vehicles/object2.tscn" id="7_hie3q"]
-[ext_resource type="PackedScene" uid="uid://cqcmwr4jdsk4a" path="res://blocks/building/tankeditor.tscn" id="7_iwiij"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3
@@ -38,6 +37,3 @@ rotation = -0.00688074
 
 [node name="Object2" parent="." instance=ExtResource("7_hie3q")]
 position = Vector2(469, 191)
-
-[node name="tankeditor" parent="." instance=ExtResource("7_iwiij")]
-position = Vector2(-181, -114)
