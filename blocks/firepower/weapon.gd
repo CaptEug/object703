@@ -11,6 +11,7 @@ var muzzle_energy:float
 var turret:Sprite2D 
 var muzzles:Array
 var current_muzzle:int = 0
+var crosshair:Sprite2D
 var animplayer:AnimationPlayer
 var gun_fire_sound:AudioStreamPlayer2D
 var spread:float
@@ -31,8 +32,10 @@ func _ready():
 		for muz in turret.get_children():
 			if muz is Marker2D:
 				muzzles.append(muz)
+		crosshair = turret.find_child("Crosshair") as Sprite2D
 	else:
 		muzzles.append(find_child("Muzzle") as Marker2D)
+		crosshair = find_child("Crosshair") as Sprite2D
 	
 	animplayer = find_child("AnimationPlayer") as AnimationPlayer
 	gun_fire_sound = find_child("GunFireSound") as AudioStreamPlayer2D
@@ -55,6 +58,7 @@ func _process(delta):
 	#check targeting method
 	if get_parent_vehicle():
 		var control_method = get_parent_vehicle().control.get_method()
+		crosshair.visible = (control_method == "manual_control")
 		if control_method == "manual_control":
 			targeting = Callable(self, "manual_target")
 		elif (control_method == "remote_control") or (control_method == "AI_control"):
@@ -99,7 +103,7 @@ func aim(delta, target_pos):
 		turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 		return abs(angle_diff) < deg_to_rad(1)
 	# return true if aimed
-	return abs(angle_diff) < deg_to_rad(3)
+	return abs(angle_diff) < deg_to_rad(2)
 
 
 func fire():
@@ -196,8 +200,13 @@ func auto_target(delta):
 
 func manual_target(delta):
 	aim(delta, get_global_mouse_position())
+
 	if Input.is_action_pressed("FIRE_MAIN"):
 	# Skip firing if mouse is over UI
 		if get_viewport().gui_get_hovered_control():
 			return
 		fire()
+	
+	var dis = clamp(global_position.distance_to(get_global_mouse_position()),0,range)
+	var tween = get_tree().create_tween()
+	tween.tween_property(crosshair, "position", Vector2(0,-dis), 0.2)
