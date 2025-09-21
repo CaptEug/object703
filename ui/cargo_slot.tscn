@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://dnwpcmifp3o6j"]
+
+[ext_resource type="Texture2D" uid="uid://v16sigblato1" path="res://assets/icons/item_slot.png" id="1_oauvc"]
+[ext_resource type="Script" uid="uid://bxf3fqjbfiuls" path="res://ui/cargo_slot.gd" id="2_84368"]
+
+[node name="CargoSlot" type="TextureRect"]
+custom_minimum_size = Vector2(64, 64)
+anchors_preset = -1
+anchor_right = 0.056
+anchor_bottom = 0.099
+offset_right = -0.512001
+offset_bottom = -0.152008
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_oauvc")
+script = ExtResource("2_84368")
