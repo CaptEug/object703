@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dpuxgggnlwf7j"]
-
-[ext_resource type="Script" uid="uid://bp6qvvq40qgik" path="res://blocks/block.gd" id="1_fiklf"]
-
-[node name="Cabin" type="RigidBody2D"]
-script = ExtResource("1_fiklf")
-metadata/_custom_type_script = "uid://bp6qvvq40qgik"

@@ -42,8 +42,32 @@ fit_content = true
 
 [node name="GridContainer" type="GridContainer" parent="."]
 layout_mode = 0
-offset_left = 6.0
-offset_top = 25.0
-offset_right = 70.0
-offset_bottom = 89.0
+offset_left = 9.0
+offset_top = 31.0
+offset_right = 73.0
+offset_bottom = 95.0
 columns = 6
+
+[node name="CargoSlot" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot2" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot3" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot4" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot5" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot6" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot7" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
+
+[node name="CargoSlot8" parent="GridContainer" instance=ExtResource("4_f63i6")]
+layout_mode = 2
