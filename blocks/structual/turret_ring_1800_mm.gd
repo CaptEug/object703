@@ -1,0 +1,18 @@
+extends TurretRing
+
+const HITPOINT:float = 800
+const WEIGHT:float = 2000
+const BLOCK_NAME:String = 'TurretRing1800mm'
+const SIZE:= Vector2(3, 3)
+const MAX_TORQUE:float = 1000
+const DAMPING:float = 100
+const COST:= [
+	
+	]
+
+
+func _init():
+	current_hp = HITPOINT
+	weight = WEIGHT
+	block_name = BLOCK_NAME
+	size = SIZE

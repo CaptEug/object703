@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://xjn5knyr2ii6"]
+[gd_scene load_steps=12 format=3 uid="uid://xjn5knyr2ii6"]
 
 [ext_resource type="Script" uid="uid://km7153n6lesi" path="res://blocks/firepower/d_52s.gd" id="1_7v3xy"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_8pcul"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_vnb2s"]
+[ext_resource type="AudioStream" uid="uid://cmad1oirqcjqc" path="res://assets/sound/war-thunder-d-25t-plink-made-with-Voicemod.mp3" id="4_7tvxp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ww6jp"]
 size = Vector2(32, 32)
@@ -107,3 +108,6 @@ position = Vector2(8, -16)
 
 [node name="ConnectionPoint8" parent="." instance=ExtResource("3_vnb2s")]
 position = Vector2(-8, -16)
+
+[node name="GunFireSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_7tvxp")

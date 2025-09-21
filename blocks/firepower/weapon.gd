@@ -12,6 +12,7 @@ var turret:Sprite2D
 var muzzles:Array
 var current_muzzle:int = 0
 var animplayer:AnimationPlayer
+var gun_fire_sound:AudioStreamPlayer2D
 var spread:float
 var shell_scene:PackedScene
 
@@ -34,6 +35,7 @@ func _ready():
 		muzzles.append(find_child("Muzzle") as Marker2D)
 	
 	animplayer = find_child("AnimationPlayer") as AnimationPlayer
+	gun_fire_sound = find_child("GunFireSound") as AudioStreamPlayer2D
 	reload_timer = Timer.new()
 	reload_timer.one_shot = true
 	reload_timer.wait_time = reload
@@ -86,8 +88,8 @@ func _draw():
 
 
 func aim(delta, target_pos):
-	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
-	var angle_diff = wrapf(target_angle - rotation, -PI, PI)
+	var target_angle = (target_pos - global_position).angle() - global_rotation + deg_to_rad(90)
+	var angle_diff = wrapf(target_angle, -PI, PI)
 	if traverse:
 		var min_angle = deg_to_rad(traverse[0])
 		var max_angle = deg_to_rad(traverse[1])
@@ -95,8 +97,9 @@ func aim(delta, target_pos):
 	if has_turret:
 		angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 		turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
+		return abs(angle_diff) < deg_to_rad(1)
 	# return true if aimed
-	return abs(angle_diff) < deg_to_rad(1)
+	return abs(angle_diff) < deg_to_rad(3)
 
 
 func fire():
@@ -106,6 +109,8 @@ func fire():
 	if animplayer:
 		animplayer.play('recoil'+str(current_muzzle))
 	current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
+	if gun_fire_sound:
+		gun_fire_sound.play()
 	loaded = false
 
 func shoot(muz:Marker2D, shell_picked:PackedScene):

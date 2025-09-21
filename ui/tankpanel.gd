@@ -35,10 +35,9 @@ func _process(delta):
 			camera.focus_on_vehicle(selected_vehicle, true)
 			if not get_viewport().gui_get_hovered_control():
 				Input.set_custom_mouse_cursor(crosshair, Input.CURSOR_ARROW, Vector2(8, 8))
-			else:
-				Input.set_custom_mouse_cursor(null)
 		else:
 			camera.target_rot = 0.0
+			Input.set_custom_mouse_cursor(null)
 		
 		queue_redraw()
 	else:

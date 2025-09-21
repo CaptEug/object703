@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://bemq1c5f0brs7"]
+[gd_scene load_steps=14 format=3 uid="uid://bemq1c5f0brs7"]
 
 [ext_resource type="Script" uid="uid://gwmvgjhiuk7g" path="res://blocks/firepower/d_52t.gd" id="1_yqdh3"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_c60hf"]
 [ext_resource type="Script" uid="uid://bk4hgv1vkhg6f" path="res://blocks/connection_point.gd" id="3_yqdh3"]
+[ext_resource type="AudioStream" uid="uid://cmad1oirqcjqc" path="res://assets/sound/war-thunder-d-25t-plink-made-with-Voicemod.mp3" id="4_tauxs"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yqdh3"]
 size = Vector2(16, 32)
@@ -22,6 +23,10 @@ region = Rect2(192, 192, 16, 16)
 [sub_resource type="AtlasTexture" id="AtlasTexture_yqdh3"]
 atlas = ExtResource("2_c60hf")
 region = Rect2(208, 192, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ideco"]
+atlas = ExtResource("2_c60hf")
+region = Rect2(192, 144, 16, 48)
 
 [sub_resource type="Animation" id="Animation_qmyrl"]
 length = 0.001
@@ -106,6 +111,11 @@ offset = Vector2(0, -8)
 texture = SubResource("AtlasTexture_yqdh3")
 offset = Vector2(0, -8)
 
+[node name="Roof" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("AtlasTexture_ideco")
+offset = Vector2(0, -8)
+
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
 &"": SubResource("AnimationLibrary_h3pux")
@@ -138,3 +148,6 @@ metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 position = Vector2(-8, -8)
 script = ExtResource("3_yqdh3")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+
+[node name="GunFireSound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_tauxs")
