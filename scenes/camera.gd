@@ -4,6 +4,7 @@ var zoom_speed:float = 0.1
 var zoom_min:float = 0.5
 var zoom_max:float = 3.0
 var move_speed:float = 500
+var rotation_speed:float = 5.0
 var focused:bool
 var target_pos:= Vector2(0,0)
 var target_rot:= 0.0
@@ -31,6 +32,7 @@ func _input(event: InputEvent) -> void:
 func _process(delta):
 	movement(delta)
 	smooth_move_to(target_pos)
+	sync_rotation_with(delta, target_rot)
 
 
 func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
@@ -44,15 +46,17 @@ func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
 			target_pos += mouse_offset
 	
 	if sync_rotation:
-		var vehicle_control_block = vehicle.controls[0]
-		var vehicle_rotation = vehicle_control_block.global_rotation
+		var command_block = vehicle.commands[0]
+		var vehicle_rotation = command_block.global_rotation - get_rotation_angle(command_block.rotation_to_parent)
+		target_rot = vehicle_rotation
+
 	focused = true
-	
 
 
-func sync_rotation_with(target_rotation:float):
-	var tween = get_tree().create_tween()
-	tween.tween_property(self, "global_rotation", target_rotation, 0.5) #rotate to angle in 0.5s
+
+func sync_rotation_with(delta, target_rotation: float) -> void:
+	var angle_diff = wrapf(target_rotation - global_rotation, -PI, PI)
+	global_rotation += angle_diff * rotation_speed * delta
 
 
 func smooth_move_to(target_position:Vector2):
@@ -75,3 +79,12 @@ func movement(delta):
 	if input.length() > 0:
 		input = input.normalized()
 	target_pos += input * move_speed * delta
+
+
+func get_rotation_angle(dir: String) -> float:
+	match dir:
+		"left":    return PI/2
+		"up": return 0
+		"right":  return -PI/2
+		"down":  return PI
+		_:       return 0

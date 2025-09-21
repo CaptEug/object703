@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://gyeypfw6qi8x"]
-
-[ext_resource type="Script" uid="uid://bvcpxcsjegevt" path="res://ui/cargo_box.gd" id="1_rs3w1"]
-
-[node name="CargoBox" type="Node2D"]
-script = ExtResource("1_rs3w1")

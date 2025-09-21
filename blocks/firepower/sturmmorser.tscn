@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://co54klm2vtcgl"]
+[gd_scene load_steps=8 format=3 uid="uid://co54klm2vtcgl"]
 
 [ext_resource type="Script" uid="uid://bs7loi5lgmjlr" path="res://blocks/firepower/sturmmorser.gd" id="1_nap6g"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_2edsb"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_cix5x"]
+[ext_resource type="Texture2D" uid="uid://brtjidrm0jx83" path="res://assets/icons/crosshair.png" id="3_fqeka"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2edsb"]
 size = Vector2(48, 48)
@@ -31,6 +32,10 @@ offset = Vector2(0, -8)
 
 [node name="Marker2D" type="Marker2D" parent="Turret"]
 position = Vector2(0, -30)
+
+[node name="Crosshair" type="Sprite2D" parent="Turret"]
+visible = false
+texture = ExtResource("3_fqeka")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(-16, -24)
