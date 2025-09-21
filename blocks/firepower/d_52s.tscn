@@ -118,6 +118,7 @@ rotation = -1.57079
 
 [node name="ConnectionPoint8" parent="." instance=ExtResource("3_vnb2s")]
 position = Vector2(-8, -16)
+rotation = -1.57079
 
 [node name="GunFireSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("4_7tvxp")
