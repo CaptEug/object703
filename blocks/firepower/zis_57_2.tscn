@@ -128,9 +128,11 @@ libraries = {
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-8, 16)
+rotation = 1.57079
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(8, 16)
+rotation = 1.57079
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(16, 8)
@@ -140,12 +142,16 @@ position = Vector2(16, -8)
 
 [node name="ConnectionPoint5" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(8, -16)
+rotation = -1.57079
 
 [node name="ConnectionPoint6" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-8, -16)
+rotation = -1.57079
 
 [node name="ConnectionPoint7" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-16, -8)
+rotation = 3.14159
 
 [node name="ConnectionPoint8" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-16, 8)
+rotation = 3.14159

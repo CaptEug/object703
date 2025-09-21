@@ -2,7 +2,7 @@ class_name ConnectionPoint
 extends Marker2D
 
 # 严格对齐参数
-@export var is_connection_enabled := false
+@export var is_connection_enabled := true
 @export var connection_range := 5.0  # 非常小的连接范围
 @export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
 @export var connection_type := "default"
@@ -11,34 +11,24 @@ var connected_to: ConnectionPoint = null
 var joint: Joint2D = null
 var detection_area: Area2D
 var overlapping_points: Array[ConnectionPoint] = []
+var qeck = true
 
 func _ready():
 	setup_detection_area()
 	queue_redraw()
 
 func _process(_delta):
+	if find_parent_block() != null:
+		if find_parent_block().do_connect == false:
+			qeck = false
+		else:
+			qeck = true
 	# 即使 is_connection_enabled 为 false，也继续处理已存在的连接
 	for other_point in overlapping_points:
 		# 只处理已经连接的节点，不尝试新连接
 		if connected_to == other_point:
 			# 可以在这里添加维持连接的逻辑
 			pass
-		
-		# 只有当启用时才尝试新连接
-		if (is_connection_enabled and 
-			other_point != self and 
-			other_point.is_connection_enabled and 
-			not connected_to and 
-			not other_point.connected_to):
-			try_connect(other_point)
-
-func _draw():
-	var color = Color.GREEN if connected_to else Color.RED
-	draw_circle(Vector2.ZERO, 3, color)
-	
-	# 绘制连接范围（调试用）
-	if Engine.is_editor_hint():
-		draw_arc(Vector2.ZERO, connection_range, 0, TAU, 32, Color(1, 1, 1, 0.2), 1.0)
 
 func setup_detection_area():
 	detection_area = Area2D.new()
@@ -57,65 +47,35 @@ func _on_area_entered(area: Area2D):
 	var other_point = area.get_parent()
 	if other_point is ConnectionPoint:
 		if not overlapping_points.has(other_point):
+			var con = [other_point, self]
+			if find_parent_block().is_movable_on_connection == true:
+				find_parent_block().overlapping_points.append(con)
 			overlapping_points.append(other_point)
 
 func _on_area_exited(area: Area2D):
 	var other_point = area.get_parent()
 	if other_point is ConnectionPoint:
 		overlapping_points.erase(other_point)
-		# 如果断开的是当前连接的点
-		#if connected_to == other_point:
-			#disconnect_joint()
 
 func try_connect(other_point: ConnectionPoint) -> bool:
-	if not (is_connection_enabled and other_point.is_connection_enabled):
-		return false
+	#if not (is_connection_enabled and other_point.is_connection_enabled):
+		#return false
 	
 	if not can_connect_with(other_point):
 		return false
 	
 	var parent_block = find_parent_block()
 	var other_block = other_point.find_parent_block()
-	
-	if not parent_block or not other_block:
-		return false
-	
-	# 检查两个块的移动性
-	var parent_can_move = parent_block.is_movable_on_connection
-	var other_can_move = other_block.is_movable_on_connection
-	
-	# 如果两个都不能移动，则不连接
-	if not parent_can_move and not other_can_move:
-		return false
-	
-	# 修改部分：强制对齐旋转到最近的90度增量 (0, 90, 180, 270)
-	var angle_diff = other_block.global_rotation - parent_block.global_rotation
-	var angle_deg = rad_to_deg(angle_diff)
-	
-	# 计算最近的90度增量
-	var snapped_angle_deg = round(angle_deg / 90) * 90
-	var snapped_angle = deg_to_rad(snapped_angle_deg)
-	
-	# 应用旋转对齐
-	other_block.global_rotation = parent_block.global_rotation + snapped_angle
-	
-	# 计算精确位置对齐
-	var offset = other_point.global_position - global_position
-	
-	# 根据移动性决定如何移动
-	if parent_can_move and other_can_move:
-		# 两个都可以移动，各自移动一半
-		parent_block.global_position += offset * 0.5
-		other_block.global_position -= offset * 0.5
-	elif parent_can_move and not other_can_move:
-		# 只有父块可以移动
-		parent_block.global_position += offset
-	elif not parent_can_move and other_can_move:
-		# 只有其他块可以移动
-		other_block.global_position -= offset
-	
-	# 创建固定连接
-	parent_block.create_joint_with(self, other_point, true)  # 最后一个参数表示严格对齐
+	if not other_block.is_movable_on_connection:
+		# 检查两个块的移动性
+		var parent_can_move = parent_block.is_movable_on_connection
+		var other_can_move = other_block.is_movable_on_connection
+		var offset = other_point.global_position - global_position
+		var rotate = other_point.global_rotation - PI
+		if parent_can_move and not other_can_move and qeck == true:
+			parent_block.global_position += offset
+			parent_block.global_rotation = rotate - rotation
+			parent_block.create_joint_with(self, other_point, true) 
 	return true
 
 func can_connect_with(other_point: ConnectionPoint) -> bool:
@@ -177,17 +137,6 @@ func set_connection_enabled(enabled: bool, keep_existing: bool = true, protect_i
 		return
 	
 	is_connection_enabled = enabled
-	
-	# 只有当不保留现有连接且禁用时才需要检查是否断开
-	if not keep_existing and not enabled and connected_to:
-		# 检查是否需要保护内部连接
-		if protect_internal and is_internal_connection():
-			print("保护内部连接不断开: ", self.name)
-			return
-		
-		# 外部连接或不需要保护，正常断开
-		disconnect_joint()
-	
 	queue_redraw()
 
 func is_internal_connection() -> bool:

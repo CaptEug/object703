@@ -15,6 +15,8 @@ var mouse_inside: bool
 var rotation_to_parent = "up"
 var cost:Dictionary = {}
 var turret_compatible: bool
+var do_connect = true
+
 
 ## Connection System
 @export var connection_point_script: Script
@@ -23,6 +25,7 @@ var turret_compatible: bool
 @export var is_movable_on_connection := true
 
 var connection_points: Array[ConnectionPoint] = []
+var overlapping_points := []
 var joint_connected_blocks := {}  # Tracks which blocks are connected through which joints
 
 ## Signals
@@ -36,6 +39,7 @@ func _ready():
 	mass = weight
 	linear_damp = 5.0
 	angular_damp = 1.0
+	collision_layer = 0
 	
 	# Initialize parent vehicle reference
 	parent_vehicle = get_parent_vehicle()
@@ -53,15 +57,31 @@ func _ready():
 	if connection_points.is_empty():
 		push_warning("Block '%s' has no connection points" % block_name)
 
+
 func _process(_delta):
+	connect_aready()
 	# 处理现有连接的维持
 	for joint in joint_connected_blocks:
 		if is_instance_valid(joint):
 			var other_block = joint_connected_blocks[joint]
 			if is_instance_valid(other_block):
-
 				pass
-
+	
+	
+func connect_aready():
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if len(overlapping_points) > 0:
+		for point_con in overlapping_points:
+			var point1 = point_con[1]
+			if point1 is ConnectionPoint and is_movable_on_connection == true:
+				point1.try_connect(point_con[0])
+				print(point1.find_parent_block().block_name, point_con[0].find_parent_block().block_name, "lian")
+	is_movable_on_connection = false
+			
 ## Physics and Drawing
 func _emit_relay_signal():
 	frame_post_drawn.emit()
@@ -174,15 +194,6 @@ func collect_connection_points():
 			for node in nodes:
 				connection_points.append(node as ConnectionPoint)
 
-func request_connection(source: ConnectionPoint, target: ConnectionPoint):
-	if not can_connect(source, target):
-		return
-	
-	# Create the joint through the parent block
-	var joint = create_joint_with(source, target)
-	if joint:
-		connection_established.emit(source, target, joint)
-
 func can_connect(source: ConnectionPoint, target: ConnectionPoint) -> bool:
 	var source_block = source.find_parent_block()
 	var target_block = target.find_parent_block()
@@ -196,37 +207,34 @@ func can_connect(source: ConnectionPoint, target: ConnectionPoint) -> bool:
 
 
 func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_alignment: bool = false) -> Joint2D:
-	if not source.is_connection_enabled or not target.is_connection_enabled:
-		return null
-	
-	var target_block = target.find_parent_block()
-	if not target_block:
-		return null
-	
-	# 检查移动性
-	if not self.is_movable_on_connection and not target_block.is_movable_on_connection:
-		return null
-	
-	# 使用焊接关节保证严格对齐
-	var joint = PinJoint2D.new()
-	joint.node_a = get_path()
-	joint.node_b = target_block.get_path()
-	joint.position = source.position
-	joint.disable_collision = false
-	
-	add_child(joint)
-	
-	joint_connected_blocks[joint] = target_block
-	if not target_block.joint_connected_blocks.has(joint):
-		target_block.joint_connected_blocks[joint] = self
-	
-	source.joint = joint
-	source.connected_to = target
-	target.joint = joint
-	target.connected_to = source
-	
-	connection_established.emit(source, target, joint)
-	return joint
+	if do_connect == true:
+		var target_block = target.find_parent_block()
+		if not target_block:
+			return null
+		
+		# 使用焊接关节保证严格对齐
+		var joint = PinJoint2D.new()
+		joint.node_a = get_path()
+		joint.node_b = target_block.get_path()
+		joint.position = source.position
+		joint.disable_collision = true
+		joint.softness = 0
+		
+		add_child(joint)
+		
+		joint_connected_blocks[joint] = target_block
+		if not target_block.joint_connected_blocks.has(joint):
+			target_block.joint_connected_blocks[joint] = self
+		
+		source.joint = joint
+		source.connected_to = target
+		target.joint = joint
+		target.connected_to = source
+		
+		connection_established.emit(source, target, joint)
+		collision_layer = 1
+		return joint
+	return null
 
 func disconnect_joint(joint: Joint2D):
 	var should_disconnect = true

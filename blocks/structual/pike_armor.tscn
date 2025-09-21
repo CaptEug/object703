@@ -20,6 +20,8 @@ texture = SubResource("AtlasTexture_iyqv6")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_n162s")]
 position = Vector2(0, 8)
+rotation = 1.57079
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("3_n162s")]
 position = Vector2(-8, 0)
+rotation = -3.14159

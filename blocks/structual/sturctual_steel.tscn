@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://mhdmtcnulntf"]
 
-[ext_resource type="Script" uid="uid://cc346cql45vws" path="res://blocks/structual/sturctual_steel.gd" id="1_wnjsi"]
+[ext_resource type="Script" path="res://blocks/structual/sturctual_steel.gd" id="1_wnjsi"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wnjsi"]
 size = Vector2(16, 16)

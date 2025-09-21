@@ -34,12 +34,15 @@ position = Vector2(0, -30)
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(-16, -24)
+rotation = -1.5708
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(0, -24)
+rotation = -1.5708
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(16, -24)
+rotation = -1.5708
 
 [node name="ConnectionPoint4" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(24, -16)
@@ -52,18 +55,24 @@ position = Vector2(24, 16)
 
 [node name="ConnectionPoint7" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(16, 24)
+rotation = 1.5708
 
 [node name="ConnectionPoint8" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(0, 24)
+rotation = 1.5708
 
 [node name="ConnectionPoint9" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(-16, 24)
+rotation = 1.5708
 
 [node name="ConnectionPoint10" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(-24, 16)
+rotation = -3.14159
 
 [node name="ConnectionPoint11" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(-24, 0)
+rotation = 3.14159
 
 [node name="ConnectionPoint12" parent="." instance=ExtResource("3_cix5x")]
 position = Vector2(-24, -16)
+rotation = 3.14159

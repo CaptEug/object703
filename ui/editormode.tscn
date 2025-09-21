@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://ca320w2cj51gd"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ils3j"]
-[ext_resource type="Script" uid="uid://ifelvwg72870" path="res://ui/tankbuilderui.gd" id="2_8aq6r"]
+[ext_resource type="Script" uid="uid://ifelvwg72870" path="res://ui/editormode.gd" id="2_8aq6r"]
 [ext_resource type="Texture2D" uid="uid://cgm2m5vm4kkmi" path="res://assets/icons/save.png" id="3_8aq6r"]
 [ext_resource type="Texture2D" uid="uid://caat8hifeusxt" path="res://assets/icons/file.png" id="4_bwild"]
 [ext_resource type="Texture2D" uid="uid://bg1vodjxg6bmh" path="res://assets/icons/dismantle.png" id="5_3clpp"]

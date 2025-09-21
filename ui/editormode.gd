@@ -26,23 +26,23 @@ const BLOCK_PATHS = {
 var item_lists = {}
 var is_recycle_mode := false
 
-# === 从 EditorMode 整合的变量 ===
+# === 编辑器模式变量 ===
 var is_editing := false
 var selected_vehicle: Vehicle = null
 var current_ghost_block: Node2D = null
 var current_block_scene: PackedScene = null
-var hovered_connection_point: ConnectionPoint = null
 var panel_instance: Control = null
+
+# 连接点吸附系统
+var current_ghost_connection_index := 0
+var current_vehicle_connection_index := 0
+var available_ghost_points: Array[ConnectionPoint] = []
+var available_vehicle_points: Array[ConnectionPoint] = []
+var current_snap_config: Dictionary = {}
+var base_ghost_rotation := 0.0 
 
 # 存储原始连接状态
 var original_connections: Dictionary = {}
-
-# 吸附系统变量
-var best_snap_score := 0.0
-var best_snap_position := Vector2.ZERO
-var best_snap_rotation := 0.0
-var current_rotation := 0
-# ===============================
 
 func _ready():
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
@@ -52,14 +52,12 @@ func _ready():
 	recycle_button.pressed.connect(_on_recycle_button_pressed)
 	create_tabs()
 	
-	# Hide save dialog initially
 	save_dialog.hide()
 	error_label.hide()
 	
 	update_recycle_button()
 	load_all_blocks()
 	
-	# 初始化编辑器模式
 	call_deferred("initialize_editor")
 
 func _input(event):
@@ -84,7 +82,9 @@ func _input(event):
 			KEY_ESCAPE:
 				cancel_placement()
 			KEY_R:
-				rotate_ghost_block()
+				rotate_ghost_connection()  # 旋转幽灵块90度
+			KEY_T:
+				switch_vehicle_connection()  # 切换车辆连接点
 			KEY_F:
 				print_connection_points_info()
 	
@@ -94,28 +94,16 @@ func _input(event):
 				try_remove_block()
 			else:
 				try_place_block()
-		elif event.button_index == MOUSE_BUTTON_RIGHT:
-			cancel_placement()
+
 
 func _process(delta):
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
 	
-	# 减少计算频率（每2帧计算一次）
 	if Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		
-		find_best_snap_position(global_mouse_pos)
-		
-		if best_snap_score > 0:
-			current_ghost_block.global_position = best_snap_position
-			current_ghost_block.rotation = best_snap_rotation
-			current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.5)
-		else:
-			current_ghost_block.global_position = global_mouse_pos
-			current_ghost_block.rotation = current_rotation * PI / 2
-			current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
+		update_ghost_block_position(global_mouse_pos)
 
 # === UI 相关函数 ===
 func create_tabs():
@@ -139,7 +127,6 @@ func create_tab_with_itemlist(tab_name: String):
 	item_list.icon_mode = ItemList.ICON_MODE_TOP
 	item_list.fixed_column_width = 100
 	item_list.fixed_icon_size = Vector2(64, 64)
-	
 	item_list.allow_reselect = false
 	item_list.allow_search = false
 	
@@ -278,8 +265,12 @@ func find_and_select_vehicle():
 func enter_editor_mode(vehicle: Vehicle):
 	if is_editing:
 		exit_editor_mode()
-	
 	selected_vehicle = vehicle
+	var camera:Camera2D
+	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
+	camera.focus_on_vehicle(selected_vehicle, false)
+
+	
 	is_editing = true
 	
 	print("=== 进入编辑模式 ===")
@@ -288,8 +279,12 @@ func enter_editor_mode(vehicle: Vehicle):
 	enable_all_connection_points_for_editing()
 	
 	vehicle.control = Callable()
-	
 	show()
+	
+	# 重置连接点索引
+	current_ghost_connection_index = 0
+	current_vehicle_connection_index = 0
+	
 	print("=== 编辑模式就绪 ===")
 
 func exit_editor_mode():
@@ -305,7 +300,6 @@ func exit_editor_mode():
 		current_ghost_block = null
 	
 	hide()
-	
 	is_editing = false
 	selected_vehicle = null
 	print("=== 编辑模式已退出 ===")
@@ -339,10 +333,10 @@ func get_connection_key(point_a: ConnectionPoint, point_b: ConnectionPoint) -> S
 	paths.sort()
 	return paths[0] + "<->" + paths[1]
 
-
 func enable_all_connection_points_for_editing():
 	if not selected_vehicle:
-		return	
+		return
+	
 	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
 			for point in block.connection_points:
@@ -373,7 +367,8 @@ func restore_original_connections():
 				if connection.from_point.can_connect_with(connection.to_point):
 					connection.from_point.request_connection(connection.from_point, connection.to_point)
 					restored_count += 1
-
+	
+	print("成功恢复 ", restored_count, " 个连接")
 
 func start_block_placement(scene_path: String):
 	if not is_editing or not selected_vehicle:
@@ -394,11 +389,18 @@ func start_block_placement(scene_path: String):
 	get_tree().current_scene.add_child(current_ghost_block)
 	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
 	current_ghost_block.z_index = 100
+	current_ghost_block.do_connect = false
+	
+	# 重置基础旋转角度
+	base_ghost_rotation = 0
+	current_ghost_block.rotation = base_ghost_rotation
 	
 	setup_ghost_block_collision(current_ghost_block)
 	
-	current_rotation = 0
-	hovered_connection_point = null
+	# 重置连接点索引
+	current_ghost_connection_index = 0
+	current_vehicle_connection_index = 0
+	current_snap_config = {}
 
 func setup_ghost_block_collision(ghost: Node2D):
 	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
@@ -414,132 +416,314 @@ func setup_ghost_block_collision(ghost: Node2D):
 		ghost.collision_layer = 0
 		ghost.collision_mask = 0
 
-func rotate_ghost_block():
-	if current_ghost_block:
-		current_rotation = (current_rotation + 1) % 4
-		current_ghost_block.rotation = current_rotation * PI / 2
-		print("旋转块: ", rad_to_deg(current_ghost_block.rotation))
-		
-		var mouse_pos = get_viewport().get_mouse_position()
-		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		find_best_snap_position(global_mouse_pos)
-
-func find_best_snap_position(mouse_position: Vector2):
-	best_snap_score = -1.0
-	best_snap_position = mouse_position
-	best_snap_rotation = 0.0
-	hovered_connection_point = null
+# === 新的连接点吸附系统 ===
+func update_ghost_block_position(mouse_position: Vector2):
+	# 获取附近的车辆连接点
+	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 50.0)
+	available_ghost_points = get_ghost_block_available_connection_points()
 	
-	if not selected_vehicle or not current_ghost_block:
+	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
+		# 没有可用连接点，自由移动
+		current_ghost_block.global_position = mouse_position
+		current_ghost_block.rotation = base_ghost_rotation  # 使用基础旋转
+		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
+		current_snap_config = {}
 		return
 	
-	var connection_snap = find_connection_point_snap(mouse_position)
-	if connection_snap.score > 0:
-		best_snap_score = connection_snap.score
-		best_snap_position = connection_snap.position
-		best_snap_rotation = connection_snap.rotation
-		hovered_connection_point = connection_snap.connection_point
+	# 获取当前连接配置
+	var snap_config = get_current_snap_config()
+	
+	if snap_config:
+		# 应用吸附位置和自动对齐的旋转
+		current_ghost_block.global_position = snap_config.ghost_position
+		current_ghost_block.rotation = snap_config.ghost_rotation
+		current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.5)
+		current_snap_config = snap_config
 	else:
-		if is_near_vehicle(mouse_position) and not would_overlap_anywhere():
-			best_snap_score = 1.0
-			best_snap_position = mouse_position
-			best_snap_rotation = current_rotation * PI / 2
+		# 自由移动
+		current_ghost_block.global_position = mouse_position
+		current_ghost_block.rotation = base_ghost_rotation  # 使用基础旋转
+		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
+		current_snap_config = {}
 
-func find_connection_point_snap(mouse_position: Vector2) -> Dictionary:
-	var result = { "score": -1.0, "position": mouse_position, "rotation": 0.0, "connection_point": null }
-	
-	var ghost_points = get_ghost_block_connection_points()
-	if ghost_points.is_empty():
-		return result
-	
-	for block in selected_vehicle.blocks:
-		if not is_instance_valid(block):
-			continue
-		
-		for vehicle_point in block.connection_points:
-			if not is_instance_valid(vehicle_point) or not vehicle_point.is_connection_enabled or vehicle_point.connected_to:
-				continue
-			
-			var vehicle_point_pos = get_connection_point_world_position(block, vehicle_point)
-			var distance = mouse_position.distance_to(vehicle_point_pos)
-			
-			if distance < 35.0:
-				for ghost_point in ghost_points:
-					if can_points_connect(vehicle_point, ghost_point):
-						var score = 100.0 / (distance + 1.0)
-						if score > result.score:
-							result.score = score
-							result.position = calculate_snap_position(vehicle_point, ghost_point, block)
-							result.rotation = calculate_snap_rotation(block, vehicle_point, ghost_point)
-							result.connection_point = vehicle_point
-	
-	return result
-
-func get_connection_point_world_position(block: Block, point: ConnectionPoint) -> Vector2:
-	return block.global_position + point.position.rotated(block.global_rotation)
-
-func can_points_connect(point_a: ConnectionPoint, point_b: ConnectionPoint) -> bool:
-	return (point_a.connection_type == point_b.connection_type and 
-			point_a.is_connection_enabled and point_b.is_connection_enabled)
-
-func calculate_snap_position(vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint, vehicle_block: Block) -> Vector2:
-	var vehicle_point_pos = get_connection_point_world_position(vehicle_block, vehicle_point)
-	var ghost_local_offset = ghost_point.position.rotated(current_ghost_block.rotation)
-	return vehicle_point_pos - ghost_local_offset
-
-func calculate_snap_rotation(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
-	var base_rotation = vehicle_block.global_rotation
-	var vehicle_point_rotation = vehicle_point.rotation
-	var ghost_point_rotation = ghost_point.rotation
-	return base_rotation + vehicle_point_rotation - ghost_point_rotation + PI
-
-func get_ghost_block_connection_points() -> Array:
-	var points = []
+func get_ghost_block_available_connection_points() -> Array[ConnectionPoint]:
+	var points: Array[ConnectionPoint] = []
 	if current_ghost_block:
-		var connection_points = current_ghost_block.find_children("*", "ConnectionPoint")
+		var connection_points = current_ghost_block.get_available_connection_points()
 		for point in connection_points:
-			if point is ConnectionPoint and point.is_connection_enabled:
+			if point is ConnectionPoint:
+				point.qeck = false
 				points.append(point)
 	return points
+
+func get_current_snap_config() -> Dictionary:
+	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
+		return {}
+	# 寻找最佳匹配的连接点（基于基础旋转来寻找合适的对齐）
+	var best_config = find_best_snap_config()
+	return best_config
+
+func find_best_snap_config() -> Dictionary:
+	var best_config = {}
+	var min_distance = INF
+	
+	for vehicle_point in available_vehicle_points:
+		var vehicle_block = vehicle_point.find_parent_block()
+		if not vehicle_block:
+			continue
+		var vehicle_point_global = get_connection_point_global_position(vehicle_point, vehicle_block)
+		for ghost_point in available_ghost_points:
+			# 基于基础旋转计算最佳对齐角度
+			var target_rotation = calculate_aligned_rotation_from_base(vehicle_block, vehicle_point, ghost_point)
+			# 检查连接点是否可以连接
+			#current_ghost_block.global_rotation = target_rotation
+			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
+				continue
+			# 计算幽灵块的位置
+			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
+			var ghost_position = vehicle_point_global - ghost_local_offset
+			
+			# 计算鼠标位置与连接点的距离
+			var mouse_pos = get_viewport().get_mouse_position()
+			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+			var distance = global_mouse_pos.distance_to(ghost_position)
+			
+			# 选择距离鼠标最近的点
+			if distance < min_distance:
+				min_distance = distance
+				best_config = {
+					"vehicle_point": vehicle_point,
+					"ghost_point": ghost_point,
+					"ghost_position": ghost_position,
+					"ghost_rotation": target_rotation,
+					"vehicle_block": vehicle_block
+				}
+	
+	return best_config
+
+func calculate_aligned_rotation_from_base(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
+	# 计算相对于基础旋转的对齐角度
+	var result_rotation = 0.0
+	# 计算连接点之间的角度差异
+	var angle_diff = vehicle_block.global_rotation - base_ghost_rotation
+	angle_diff = normalize_rotation_simple(angle_diff)	
+	if PI/2 - abs(angle_diff) >= abs(angle_diff):
+		result_rotation = base_ghost_rotation + angle_diff
+	else:
+		result_rotation = base_ghost_rotation + (PI/2 - abs(angle_diff))	
+		
+	return result_rotation
+
+func normalize_rotation_simple(angle: float) -> float:
+	var normalized = fmod(angle + PI, PI * 2) - PI
+	if abs(normalized) > PI / 2:
+		normalized -= sign(normalized) * PI
+	return normalized
+
+func can_points_connect_with_rotation(point_a: ConnectionPoint, point_b: ConnectionPoint, ghost_rotation: float) -> bool:
+	# 检查连接点类型是否匹配
+	if point_a.connection_type != point_b.connection_type:
+		return false
+	# 检查连接点是否启用
+	if not point_a.is_connection_enabled or not point_b.is_connection_enabled:
+		return false
+	# 计算幽灵块连接点在指定旋转下的全局方向
+	var ghost_point_direction = point_b.rotation + ghost_rotation
+	var angle_diff = are_rotations_opposite_best(ghost_point_direction, point_a.global_rotation, 0.1)
+	return angle_diff   # 允许稍大的误差，因为是基于基础旋转的对齐
+
+func are_rotations_opposite_best(rot1: float, rot2: float, tolerance: float = 0.1) -> bool:
+	"""
+	最可靠的相对角度检测
+	"""
+	# 使用向量点积的方法来检测方向相对性
+	var dir1 = Vector2(cos(rot1), sin(rot1))
+	var dir2 = Vector2(cos(rot2), sin(rot2))
+	
+	# 如果两个方向相反，点积应该接近-1
+	var dot_product = dir1.dot(dir2)
+	return dot_product < -0.9  # 对应约±25度的误差范围
+
+func get_connection_point_global_position(point: ConnectionPoint, block: Block) -> Vector2:
+	return block.global_position + point.position.rotated(block.global_rotation)
+
+func rotate_ghost_connection():
+	if not current_ghost_block:
+		return
+	
+	# 旋转基础旋转90度
+	base_ghost_rotation += PI / 2
+	base_ghost_rotation = fmod(base_ghost_rotation + PI, PI * 2)
+	
+	# 更新幽灵方块显示（使用基础旋转）
+	current_ghost_block.rotation = base_ghost_rotation
+	
+	# 更新位置
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	update_ghost_block_position(global_mouse_pos)
+	
+	print("基础旋转调整到: ", rad_to_deg(base_ghost_rotation), " 度")
+
+func switch_vehicle_connection():
+	if available_vehicle_points.is_empty():
+		return
+	
+	# 切换到下一个车辆连接点
+	current_vehicle_connection_index = (current_vehicle_connection_index + 1) % available_vehicle_points.size()
+	print("切换到车辆连接点: ", current_vehicle_connection_index)
+	
+	# 更新位置
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	update_ghost_block_position(global_mouse_pos)
+
+func can_points_connect(point_a: ConnectionPoint, point_b: ConnectionPoint) -> bool:
+	# 检查连接点类型是否匹配
+	if point_a.connection_type != point_b.connection_type:
+		return false
+	
+	# 检查连接点是否启用
+	if not point_a.is_connection_enabled or not point_b.is_connection_enabled:
+		return false
+	
+	# 检查连接点方向是否相对（相差约180度）
+	var angle_diff = abs(fmod(point_a.global_rotation - point_b.global_rotation + PI, PI * 2) - PI)
+	return angle_diff < 0.1  # 允许小的误差
+
+func calculate_aligned_rotation(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
+	# 计算基础旋转角度（使连接点方向相对）
+	var base_rotation = vehicle_block.global_rotation + vehicle_point.rotation - ghost_point.rotation + PI
+	
+	# 对齐到最近的90度倍数（0, 90, 180, 270度）
+	var degrees = rad_to_deg(base_rotation)
+	var aligned_degrees = round(degrees / 90) * 90
+	return deg_to_rad(aligned_degrees)
 
 func try_place_block():
 	if not current_ghost_block or not selected_vehicle:
 		print("无法放置: 没有选择块或车辆")
 		return
 	
-	var block_name = current_ghost_block.scene_file_path.get_file().get_basename()
-	
-	if best_snap_score <= 0:
-		print("错误: 必须靠近车辆或连接点放置")
+	if not current_snap_config:
+		print("错误: 必须靠近连接点放置")
 		return
 	
-	print("放置块: ", block_name)
+	var block_name = current_ghost_block.scene_file_path.get_file().get_basename()
+	print("放置块: ", block_name, " 使用连接点配置")
 	
+	# 断开可能冲突的连接
 	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
 	disconnect_connections(connections_to_disconnect)
 	
-	var new_block = current_block_scene.instantiate()
+	# 创建新块
+	var new_block:Block = current_block_scene.instantiate()
 	selected_vehicle.add_child(new_block)
-	new_block.global_position = best_snap_position
-	new_block.rotation = best_snap_rotation
+	new_block.global_position = current_snap_config.ghost_position
+	new_block.global_rotation = current_ghost_block.global_rotation
 	
-	var grid_positions = calculate_grid_positions_from_world(new_block)
+	# 计算网格位置并更新
+	var grid_positions = calculate_rotated_grid_positions(new_block)
 	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
 	
-	if hovered_connection_point:
-		establish_connection(hovered_connection_point, new_block)
 	
-	enable_connection_points_for_blocks([new_block] + get_affected_blocks())
+	# 继续放置同一类型的块（保持当前基础旋转）
+	start_block_placement_with_rotation(current_block_scene.resource_path, base_ghost_rotation)
+
+func start_block_placement_with_rotation(scene_path: String, rotation: float):
+	if not is_editing or not selected_vehicle:
+		return
 	
-	call_deferred("check_vehicle_stability")
-	start_block_placement(current_block_scene.resource_path)
+	print("开始放置块: ", scene_path.get_file(), " 基础旋转: ", rad_to_deg(rotation), " 度")
+	
+	if current_ghost_block:
+		current_ghost_block.queue_free()
+		current_ghost_block = null
+	
+	current_block_scene = load(scene_path)
+	if not current_block_scene:
+		push_error("无法加载块场景: ", scene_path)
+		return
+	
+	current_ghost_block = current_block_scene.instantiate()
+	get_tree().current_scene.add_child(current_ghost_block)
+	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
+	current_ghost_block.z_index = 100
+	current_ghost_block.do_connect = false
+	
+	# 保持之前的基础旋转
+	base_ghost_rotation = rotation
+	current_ghost_block.rotation = base_ghost_rotation
+	
+	setup_ghost_block_collision(current_ghost_block)
+	
+	# 重置连接点索引
+	current_ghost_connection_index = 0
+	current_vehicle_connection_index = 0
+	current_snap_config = {}
+
+func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghost_point: ConnectionPoint):
+	# 在新块中查找对应的连接点
+	var new_block_points = new_block.find_children("*", "ConnectionPoint")
+	var target_point = null
+	
+	for point in new_block_points:
+		if point is ConnectionPoint and point.name == ghost_point.name:
+			target_point = point
+			break
+	
+	if target_point is ConnectionPoint:
+		target_point.is_connection_enabled = true
+		vehicle_point.try_connect(target_point)
+		print("连接建立: ", vehicle_point.name, " -> ", target_point.name)
+	else:
+		print("警告: 无法建立连接")
+
+func calculate_rotated_grid_positions(block: Block) -> Array:
+	var grid_positions = []
+	var world_pos = block.global_position
+	
+	if not selected_vehicle:
+		return grid_positions
+	
+	var block_size = get_block_size(block)
+	var rotation_rad = block.global_rotation
+	
+	# 计算块的中心网格位置
+	var grid_center = Vector2i(
+		round((world_pos.x - selected_vehicle.global_position.x) / 16),
+		round((world_pos.y - selected_vehicle.global_position.y) / 16)
+	)
+	
+	# 根据旋转计算每个单元格的位置
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			# 计算相对位置
+			var rel_x = x - block_size.x / 2 + 0.5
+			var rel_y = y - block_size.y / 2 + 0.5
+			
+			# 应用旋转
+			var cos_rot = cos(rotation_rad)
+			var sin_rot = sin(rotation_rad)
+			var rotated_x = rel_x * cos_rot - rel_y * sin_rot
+			var rotated_y = rel_x * sin_rot + rel_y * cos_rot
+			
+			# 计算网格位置
+			var grid_pos = Vector2i(
+				grid_center.x + round(rotated_x),
+				grid_center.y + round(rotated_y)
+			)
+			
+			grid_positions.append(grid_pos)
+	
+	return grid_positions
 
 func find_connections_to_disconnect_for_placement() -> Array:
 	var connections_to_disconnect = []
-	if hovered_connection_point and hovered_connection_point.connected_to:
+	if current_snap_config.vehicle_point and current_snap_config.vehicle_point.connected_to:
 		connections_to_disconnect.append({
-			"from": hovered_connection_point,
-			"to": hovered_connection_point.connected_to
+			"from": current_snap_config.vehicle_point,
+			"to": current_snap_config.vehicle_point.connected_to
 		})
 	return connections_to_disconnect
 
@@ -552,8 +736,8 @@ func disconnect_connections(connections: Array):
 
 func get_affected_blocks() -> Array:
 	var affected_blocks = []
-	if hovered_connection_point:
-		var parent_block = hovered_connection_point.find_parent_block()
+	if current_snap_config.vehicle_point:
+		var parent_block = current_snap_config.vehicle_point.find_parent_block()
 		if parent_block:
 			affected_blocks.append(parent_block)
 	return affected_blocks
@@ -564,26 +748,6 @@ func enable_connection_points_for_blocks(blocks: Array):
 			for point in block.connection_points:
 				if is_instance_valid(point):
 					point.set_connection_enabled(true)
-
-func establish_connection(vehicle_point: ConnectionPoint, new_block: Block):
-	var ghost_points = new_block.find_children("*", "ConnectionPoint")
-	var best_ghost_point = null
-	var best_score = -1.0
-	
-	for ghost_point in ghost_points:
-		if ghost_point is ConnectionPoint and can_points_connect(vehicle_point, ghost_point):
-			var ghost_point_pos = get_connection_point_world_position(new_block, ghost_point)
-			var vehicle_point_pos = get_connection_point_world_position(vehicle_point.find_parent_block(), vehicle_point)
-			var distance = ghost_point_pos.distance_to(vehicle_point_pos)
-			var score = 100.0 / (distance + 1.0)
-			
-			if score > best_score:
-				best_score = score
-				best_ghost_point = ghost_point
-	
-	if best_ghost_point:
-		vehicle_point.request_connection(vehicle_point, best_ghost_point)
-		print("连接建立: ", vehicle_point.name, " -> ", best_ghost_point.name)
 
 func try_remove_block():
 	if not selected_vehicle:
@@ -606,14 +770,11 @@ func try_remove_block():
 				continue
 			
 			var block_name = block.block_name
-			
 			var connections_to_disconnect = find_connections_for_block(block)
 			disconnect_connections(connections_to_disconnect)
 			
 			selected_vehicle.remove_block(block)
-			
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
-			
 			call_deferred("check_vehicle_stability")
 			print("移除块: ", block_name)
 			break
@@ -642,47 +803,8 @@ func cancel_placement():
 		current_ghost_block.queue_free()
 		current_ghost_block = null
 	current_block_scene = null
-	hovered_connection_point = null
+	current_snap_config = {}
 	print("放置已取消")
-
-func is_near_vehicle(position: Vector2) -> bool:
-	if not selected_vehicle:
-		return false
-	
-	var vehicle_center = selected_vehicle.global_position
-	var max_distance = 200.0
-	return position.distance_to(vehicle_center) < max_distance
-
-func would_overlap_anywhere() -> bool:
-	if not current_ghost_block or not selected_vehicle:
-		return true
-	
-	var expected_positions = calculate_grid_positions_from_world(current_ghost_block)
-	for pos in expected_positions:
-		if selected_vehicle.grid.has(pos):
-			return true
-	return false
-
-func calculate_grid_positions_from_world(block: Block) -> Array:
-	var grid_positions = []
-	var world_pos = block.global_position
-	
-	if not selected_vehicle:
-		return grid_positions
-	
-	var grid_center = Vector2i(
-		floor((world_pos.x - selected_vehicle.global_position.x) / 16),
-		floor((world_pos.y - selected_vehicle.global_position.y) / 16)
-	)
-	
-	var block_size = get_block_size(block)
-	for x in range(block_size.x):
-		for y in range(block_size.y):
-			var offset = Vector2i(x - block_size.x / 2, y - block_size.y / 2)
-			var grid_pos = grid_center + offset
-			grid_positions.append(grid_pos)
-	
-	return grid_positions
 
 func get_block_size(block: Block) -> Vector2i:
 	if block.has_method("get_size"):

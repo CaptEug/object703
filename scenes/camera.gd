@@ -45,7 +45,7 @@ func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
 	
 	if sync_rotation:
 		var vehicle_control_block = vehicle.controls[0]
-		var vehicle_rotation = vehicle_control_block.global_rotation - 
+		var vehicle_rotation = vehicle_control_block.global_rotation
 	focused = true
 	
 
