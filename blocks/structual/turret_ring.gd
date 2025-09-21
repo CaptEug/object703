@@ -1,4 +1,4 @@
-class_name TurretSeat
+class_name TurretRing
 extends Block
 
 var load:float
