@@ -1,10 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=7 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
 [ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/tankbuilderUI.tscn" id="2_hie3q"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_m5lm4"]
-[ext_resource type="PackedScene" uid="uid://cqye7fhmmkft8" path="res://ui/tankpanel.tscn" id="6_hie3q"]
 [ext_resource type="PackedScene" uid="uid://bl2tikk55bsp1" path="res://vehicles/object2.tscn" id="7_hie3q"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
@@ -15,9 +14,6 @@ glow_blend_mode = 0
 [node name="Testground" type="Node2D"]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="Tankpanel" parent="CanvasLayer" instance=ExtResource("6_hie3q")]
-visible = false
 
 [node name="Tankbuilderui" parent="CanvasLayer" instance=ExtResource("2_hie3q")]
 visible = false

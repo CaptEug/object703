@@ -23,6 +23,7 @@ var tracks:= []
 var ammoracks:= []
 var fueltanks:= []
 var commands:= []
+var vehicle_panel:Panel
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
 var track_target_forces:= {}  # 存储每个履带的目标力
@@ -642,3 +643,15 @@ func update_vehicle_size():
 			max_y = grid_pos.y
 	
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
+
+
+func open_vehicle_panel():
+	if vehicle_panel:
+		vehicle_panel.visible = true
+	else:
+		var HUD = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+		var panel = load("res://ui/tankpanel.tscn").instantiate()
+		panel.selected_vehicle = self
+		vehicle_panel = panel
+		HUD.add_child(panel)
+	

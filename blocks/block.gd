@@ -70,13 +70,7 @@ func _emit_relay_signal():
 func _on_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
-			if control_ui:
-				var tank_panel := control_ui.find_child("Tankpanel") as Panel
-				if tank_panel.selected_vehicle:
-					if tank_panel.selected_vehicle.control.get_method() == "manual_control":
-						return
-				tank_panel.selected_vehicle = get_parent_vehicle()
+			parent_vehicle.open_vehicle_panel()
 
 func _on_mouse_entered():
 	mouse_inside = true

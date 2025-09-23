@@ -22,23 +22,22 @@ offset_bottom = 648.0
 layout_mode = 0
 offset_left = 4.0
 offset_top = 2.0
-offset_right = 242.0
+offset_right = 222.0
 offset_bottom = 54.0
-scale = Vector2(0.86165, 1)
 placeholder_text = "MyTankDesign"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Panel"]
 layout_mode = 0
 offset_left = 4.0
 offset_top = 54.0
-offset_right = 211.0
+offset_right = 222.0
 offset_bottom = 252.0
 
 [node name="SaveButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 215.0
+offset_left = 222.0
 offset_top = 12.0
-offset_right = 247.0
+offset_right = 254.0
 offset_bottom = 44.0
 tooltip_text = "save blueprint"
 mouse_default_cursor_shape = 2
@@ -46,9 +45,9 @@ texture_normal = ExtResource("3_8aq6r")
 
 [node name="LoadButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 215.0
+offset_left = 222.0
 offset_top = 53.0
-offset_right = 247.0
+offset_right = 254.0
 offset_bottom = 85.0
 tooltip_text = "load from blueprint"
 mouse_default_cursor_shape = 2
@@ -56,9 +55,9 @@ texture_normal = ExtResource("4_bwild")
 
 [node name="DismantleButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 215.0
+offset_left = 222.0
 offset_top = 93.0
-offset_right = 247.0
+offset_right = 254.0
 offset_bottom = 125.0
 tooltip_text = "Dismantle Part"
 mouse_default_cursor_shape = 2
@@ -66,9 +65,9 @@ texture_normal = ExtResource("5_3clpp")
 
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 0
-offset_left = 263.0
+offset_left = 262.0
 offset_top = 453.0
-offset_right = 1144.0
+offset_right = 1124.0
 offset_bottom = 640.0
 scale = Vector2(1.02583, 1.03036)
 
