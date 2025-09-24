@@ -125,8 +125,8 @@ func _add_block(block: Block,local_pos, grid_positions):
 
 func remove_block(block: Block):
 	blocks.erase(block)
-	block.queue_free()
-	
+	#block.queue_free()
+
 	var keys_to_erase = []
 	for pos in grid:
 		if grid[pos] == block:
@@ -648,10 +648,13 @@ func update_vehicle_size():
 func open_vehicle_panel():
 	if vehicle_panel:
 		vehicle_panel.visible = true
+		vehicle_panel.move_to_front()
 	else:
 		var HUD = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
 		var panel = load("res://ui/tankpanel.tscn").instantiate()
 		panel.selected_vehicle = self
 		vehicle_panel = panel
 		HUD.add_child(panel)
+		while panel.any_overlap():
+			panel.position += Vector2(32, 32)
 	

@@ -61,7 +61,7 @@ func explode():
 			var dir = (block.global_position - global_position).normalized()
 			var ratio = clamp(1.0 - dist / explosion_radius, 0.0, 1.0)
 			var dmg = max_explosive_damage * ratio
-			var impulse_strength = 10000.0 * dmg
+			var impulse_strength = 1000.0 * dmg
 			block.apply_impulse(dir * impulse_strength)
 			block.damage(dmg)
 

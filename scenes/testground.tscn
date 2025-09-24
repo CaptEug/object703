@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
 [ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/tankbuilderUI.tscn" id="2_hie3q"]
@@ -10,6 +10,9 @@
 background_mode = 3
 glow_enabled = true
 glow_blend_mode = 0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5du73"]
+size = Vector2(1391.6, 124.497)
 
 [node name="Testground" type="Node2D"]
 
@@ -24,6 +27,20 @@ visible = false
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
 
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(115, -903)
+scale = Vector2(1.67573, -4.2956)
+shape = SubResource("RectangleShape2D_5du73")
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="StaticBody2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D/StaticBody2D2"]
+position = Vector2(114, 934)
+scale = Vector2(1.67573, -4.2956)
+shape = SubResource("RectangleShape2D_5du73")
+
 [node name="Camera2D" type="Camera2D" parent="."]
 ignore_rotation = false
 script = ExtResource("2_m5lm4")
@@ -34,3 +51,19 @@ rotation = -0.00688074
 
 [node name="Object2" parent="." instance=ExtResource("7_hie3q")]
 position = Vector2(469, 191)
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
+position = Vector2(-782, 70)
+rotation = 1.57025
+scale = Vector2(1.67573, -4.2956)
+shape = SubResource("RectangleShape2D_5du73")
+
+[node name="StaticBody2D3" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D3"]
+position = Vector2(1003, 19)
+rotation = 1.57025
+scale = Vector2(1.67573, -4.2956)
+shape = SubResource("RectangleShape2D_5du73")

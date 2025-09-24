@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://jbbm78mi6qb5"]
+[gd_scene load_steps=8 format=3 uid="uid://jbbm78mi6qb5"]
 
 [ext_resource type="Script" uid="uid://mksnqq0fauve" path="res://blocks/firepower/ammo_rack.gd" id="1_j1dh7"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_nkxv4"]
@@ -10,6 +10,10 @@ size = Vector2(16, 16)
 [sub_resource type="AtlasTexture" id="AtlasTexture_2gyxe"]
 atlas = ExtResource("2_nkxv4")
 region = Rect2(0, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rvs0d"]
+atlas = ExtResource("2_nkxv4")
+region = Rect2(16, 32, 16, 16)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_3ma2v"]
 radius = 50.0
@@ -23,6 +27,10 @@ shape = SubResource("RectangleShape2D_mhqor")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_2gyxe")
+
+[node name="Broken" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("AtlasTexture_rvs0d")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_rvs0d")]
 position = Vector2(-8, 0)

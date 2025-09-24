@@ -55,6 +55,7 @@ mouse_default_cursor_shape = 2
 texture_normal = ExtResource("4_3deui")
 
 [node name="Controlbutton" type="TextureButton" parent="."]
+layout_mode = 0
 offset_left = 276.0
 offset_top = 156.0
 offset_right = 308.0
@@ -78,6 +79,7 @@ grow_vertical = 2
 text = "vehicle offline"
 
 [node name="Namelabel" type="Label" parent="."]
+layout_mode = 0
 offset_left = 18.0
 offset_top = 16.0
 offset_right = 116.0
@@ -85,6 +87,7 @@ offset_bottom = 36.0
 text = "tankname"
 
 [node name="CargoButton" type="TextureButton" parent="."]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 270.0
 offset_right = 32.0
@@ -92,6 +95,7 @@ offset_bottom = 286.0
 texture_normal = ExtResource("5_6e8cr")
 
 [node name="Label" type="Label" parent="CargoButton"]
+layout_mode = 0
 offset_left = 18.0
 offset_top = 6.0
 offset_right = 144.0
@@ -101,6 +105,7 @@ theme_override_font_sizes/font_size = 8
 text = "to toggle inventory"
 
 [node name="ModifyButton" type="TextureButton" parent="."]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 288.0
 offset_right = 48.0
@@ -118,6 +123,7 @@ theme_override_font_sizes/font_size = 8
 text = "to modify vehicle"
 
 [node name="Fuel" type="ProgressBar" parent="."]
+layout_mode = 0
 offset_left = 281.0
 offset_top = 192.0
 offset_right = 289.0
@@ -130,6 +136,7 @@ position = Vector2(4, 104)
 texture = SubResource("AtlasTexture_b7f80")
 
 [node name="Ammo" type="ProgressBar" parent="."]
+layout_mode = 0
 offset_left = 295.0
 offset_top = 192.0
 offset_right = 303.0

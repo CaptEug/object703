@@ -18,6 +18,8 @@ func _ready():
 		parent_vehicle.powerpacks.append(self)
 
 func _process(delta: float) -> void:
+	if not functioning:
+		return
 	if parent_vehicle != null:
 		if parent_vehicle.get_current_fuel() > 0:
 				fuel_enough = true

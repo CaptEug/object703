@@ -20,3 +20,13 @@ func _gui_input(event: InputEvent) -> void:
 		# keep it inside the screen bounds
 		var rect = get_viewport_rect()
 		global_position = global_position.clamp(Vector2.ZERO, rect.size - size)
+
+
+func any_overlap() -> bool:
+	var HUD = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+	for p in HUD.get_children():
+		if p is FloatingPanel and p != self:
+			var r = Rect2(p.position, Vector2(32, 32))
+			if r.intersects(Rect2(position, size)):
+				return true
+	return false
