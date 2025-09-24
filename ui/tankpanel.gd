@@ -31,7 +31,7 @@ func _process(delta):
 		
 		#update cursor and cam
 		if selected_vehicle.control.get_method() == "manual_control":
-			camera.focus_on_vehicle(selected_vehicle, true)
+			camera.focus_on_vehicle(selected_vehicle, false)
 		else:
 			camera.target_rot = 0.0
 		
