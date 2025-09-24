@@ -40,6 +40,8 @@ var available_ghost_points: Array[ConnectionPoint] = []
 var available_vehicle_points: Array[ConnectionPoint] = []
 var current_snap_config: Dictionary = {}
 var base_ghost_rotation := 0.0 
+var vehiclepoint
+var ghostpoint
 
 # 存储原始连接状态
 var original_connections: Dictionary = {}
@@ -480,6 +482,8 @@ func find_best_snap_config() -> Dictionary:
 			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
 				continue
 			# 计算幽灵块的位置
+			vehiclepoint = vehicle_point
+			ghostpoint = ghost_point
 			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
 			var ghost_position = vehicle_point_global - ghost_local_offset
 			
@@ -623,7 +627,7 @@ func try_place_block():
 	new_block.global_rotation = current_ghost_block.global_rotation
 	
 	# 计算网格位置并更新
-	var grid_positions = calculate_rotated_grid_positions(new_block)
+	var grid_positions = calculate_rotated_grid_positions(new_block, selected_vehicle)
 	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
 	
 	
@@ -679,7 +683,7 @@ func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghos
 	else:
 		print("警告: 无法建立连接")
 
-func calculate_rotated_grid_positions(block: Block) -> Array:
+func calculate_rotated_grid_positions(block: Block, vehicle:Vehicle) -> Array:
 	var grid_positions = []
 	var world_pos = block.global_position
 	
