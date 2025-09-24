@@ -52,23 +52,19 @@ func _ready():
 	
 	# Collect connection points
 	collect_connection_points()
-	
+	connect_aready()
 	# Validation
 	if connection_points.is_empty():
 		push_warning("Block '%s' has no connection points" % block_name)
 
 
 func _process(_delta):
-	connect_aready()
-	# 处理现有连接的维持
-	for joint in joint_connected_blocks:
-		if is_instance_valid(joint):
-			var other_block = joint_connected_blocks[joint]
-			if is_instance_valid(other_block):
-				pass
+	pass
 	
 	
 func connect_aready():
+	await get_tree().process_frame
+	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -79,8 +75,19 @@ func connect_aready():
 			var point1 = point_con[1]
 			if point1 is ConnectionPoint and is_movable_on_connection == true:
 				point1.try_connect(point_con[0])
-				print(point1.find_parent_block().block_name, point_con[0].find_parent_block().block_name, "lian")
+		for point_con in overlapping_points:
+			var point1 = point_con[1]
+			if point_con[0].find_parent_block() is Block:
+				if point_con[0].find_parent_block().freeze == true:
+					point_con[0].find_parent_block().freeze = false
+					print(point_con[0].find_parent_block().block_name)
 	is_movable_on_connection = false
+	collision_layer = 1
+	for joint in joint_connected_blocks:
+		if is_instance_valid(joint):
+			var other_block = joint_connected_blocks[joint]
+			if is_instance_valid(other_block):
+				pass
 			
 ## Physics and Drawing
 func _emit_relay_signal():
@@ -211,17 +218,13 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_
 		var target_block = target.find_parent_block()
 		if not target_block:
 			return null
-		
 		# 使用焊接关节保证严格对齐
 		var joint = PinJoint2D.new()
 		joint.node_a = get_path()
 		joint.node_b = target_block.get_path()
 		joint.position = source.position
-		joint.disable_collision = true
-		joint.softness = 0
-		
+		joint.disable_collision = false
 		add_child(joint)
-		
 		joint_connected_blocks[joint] = target_block
 		if not target_block.joint_connected_blocks.has(joint):
 			target_block.joint_connected_blocks[joint] = self
@@ -232,7 +235,7 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_
 		target.connected_to = source
 		
 		connection_established.emit(source, target, joint)
-		collision_layer = 1
+		
 		return joint
 	return null
 

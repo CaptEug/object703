@@ -6,6 +6,7 @@ extends Marker2D
 @export var connection_range := 5.0  # 非常小的连接范围
 @export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
 @export var connection_type := "default"
+@export var location:= Vector2i()
 
 var connected_to: ConnectionPoint = null
 var joint: Joint2D = null
@@ -16,6 +17,7 @@ var qeck = true
 func _ready():
 	setup_detection_area()
 	queue_redraw()
+	
 
 func _process(_delta):
 	if find_parent_block() != null:
@@ -67,15 +69,21 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 	var parent_block = find_parent_block()
 	var other_block = other_point.find_parent_block()
 	if not other_block.is_movable_on_connection:
+		if other_block is Block:
+			other_block.freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
+			other_block.freeze = true
 		# 检查两个块的移动性
 		var parent_can_move = parent_block.is_movable_on_connection
 		var other_can_move = other_block.is_movable_on_connection
-		var offset = other_point.global_position - global_position
-		var rotate = other_point.global_rotation - PI
 		if parent_can_move and not other_can_move and qeck == true:
-			parent_block.global_position += offset
-			parent_block.global_rotation = rotate - rotation
+			parent_block.global_position += other_point.global_position - global_position
+			parent_block.global_rotation = other_point.global_rotation - PI - rotation
+			parent_block.global_position += other_point.global_position - global_position
+			print(other_point.global_position - global_position)
+			print(" ")
 			parent_block.create_joint_with(self, other_point, true) 
+		#if other_block is Block:
+			#other_block.freeze = false
 	return true
 
 func can_connect_with(other_point: ConnectionPoint) -> bool:

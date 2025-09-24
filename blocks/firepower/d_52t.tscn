@@ -138,18 +138,21 @@ metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 [node name="ConnectionPoint2" type="Marker2D" parent="."]
 position = Vector2(8, 8)
 script = ExtResource("3_yqdh3")
+location = Vector2i(0, 1)
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint3" type="Marker2D" parent="."]
 position = Vector2(0, 16)
 rotation = 1.5708
 script = ExtResource("3_yqdh3")
+location = Vector2i(0, 1)
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint4" type="Marker2D" parent="."]
 position = Vector2(-8, 8)
 rotation = 3.14159
 script = ExtResource("3_yqdh3")
+location = Vector2i(0, 1)
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint5" type="Marker2D" parent="."]

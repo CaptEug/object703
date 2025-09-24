@@ -134,20 +134,25 @@ texture = ExtResource("3_sg6v4")
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-8, 16)
 rotation = 1.57079
+location = Vector2i(0, 1)
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(8, 16)
 rotation = 1.57079
+location = Vector2i(1, 1)
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(16, 8)
+location = Vector2i(1, 1)
 
 [node name="ConnectionPoint4" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(16, -8)
+location = Vector2i(1, 0)
 
 [node name="ConnectionPoint5" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(8, -16)
 rotation = -1.57079
+location = Vector2i(1, 0)
 
 [node name="ConnectionPoint6" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-8, -16)
@@ -160,3 +165,4 @@ rotation = 3.14159
 [node name="ConnectionPoint8" parent="." instance=ExtResource("3_6sner")]
 position = Vector2(-16, 8)
 rotation = 3.14159
+location = Vector2i(0, 1)
