@@ -251,12 +251,24 @@ func initialize_editor():
 	if testground:
 		var canvas_layer = testground.find_child("CanvasLayer", false, false)
 		if canvas_layer:
-			panel_instance = canvas_layer.find_child("Tankpanel", false, false)
+			var panels = canvas_layer.get_children()
+			for item in panels:
+				if item is FloatingPanel and item.selected_vehicle != null:
+					panel_instance = item
+					break
 	
 	print("编辑器初始化完成")
 
 func find_and_select_vehicle():
 	var testground = get_tree().current_scene
+	if testground:
+		var canvas_layer = testground.find_child("CanvasLayer", false, false)
+		if canvas_layer:
+			var panels = canvas_layer.get_children()
+			for item in range(panels.size() - 1, -1, -1):
+				if panels[item] is FloatingPanel and panels[item].selected_vehicle != null:
+					panel_instance = panels[item]
+					break
 	if testground and panel_instance:
 		if panel_instance.selected_vehicle:
 			selected_vehicle = panel_instance.selected_vehicle
@@ -627,7 +639,7 @@ func try_place_block():
 	new_block.global_rotation = current_ghost_block.global_rotation
 	
 	# 计算网格位置并更新
-	var grid_positions = calculate_rotated_grid_positions(new_block, selected_vehicle)
+	var grid_positions = calculate_rotated_grid_positions(new_block)
 	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
 	
 	
@@ -683,7 +695,7 @@ func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghos
 	else:
 		print("警告: 无法建立连接")
 
-func calculate_rotated_grid_positions(block: Block, vehicle:Vehicle) -> Array:
+func calculate_rotated_grid_positions(block: Block) -> Array:
 	var grid_positions = []
 	var world_pos = block.global_position
 	
