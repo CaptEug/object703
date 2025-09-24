@@ -4,3 +4,8 @@
 
 [node name="ConnectionPoint" type="Marker2D"]
 script = ExtResource("1_83p0k")
+
+[node name="Line2D" type="Line2D" parent="."]
+points = PackedVector2Array(5, 0, 0, 0)
+width = 1.0
+default_color = Color(1, 0.09, 0.09, 1)

@@ -49,7 +49,7 @@ func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
 		var command_block = vehicle.commands[0]
 		var vehicle_rotation = command_block.global_rotation - get_rotation_angle(command_block.rotation_to_parent)
 		target_rot = vehicle_rotation
-	
+
 	focused = true
 
 

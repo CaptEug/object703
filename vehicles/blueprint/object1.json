@@ -45,15 +45,6 @@
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": "up"
 		},
-		"2": {
-			"base_pos": [
-				1,
-				2
-			],
-			"name": "maybach HL 250",
-			"path": "res://blocks/mobility/maybach_hl_250.tscn",
-			"rotation": "up"
-		},
 		"3": {
 			"base_pos": [
 				2,
@@ -88,6 +79,15 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": "up"
+		},
+		"2": {
+			"base_pos": [
+				1,
+				2
+			],
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
 			"rotation": "up"
 		},
 		"7": {

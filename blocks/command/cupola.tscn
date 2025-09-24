@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/command/cupola.gd" id="1_5uqw0"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ahdwv"]
-[ext_resource type="Script" uid="uid://bk4hgv1vkhg6f" path="res://blocks/connection_point.gd" id="3_uw1rn"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_uw1rn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_x12pa"]
 size = Vector2(16, 16)
@@ -30,23 +30,17 @@ visible = false
 texture = SubResource("AtlasTexture_uw1rn")
 offset = Vector2(0, 8)
 
-[node name="ConnectionPoint" type="Marker2D" parent="."]
+[node name="ConnectionPoint" parent="." instance=ExtResource("3_uw1rn")]
 position = Vector2(8, 0)
-script = ExtResource("3_uw1rn")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
-[node name="ConnectionPoint2" type="Marker2D" parent="."]
+[node name="ConnectionPoint2" parent="." instance=ExtResource("3_uw1rn")]
 position = Vector2(0, -8)
-script = ExtResource("3_uw1rn")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+rotation = -1.57079
 
-[node name="ConnectionPoint3" type="Marker2D" parent="."]
+[node name="ConnectionPoint3" parent="." instance=ExtResource("3_uw1rn")]
 position = Vector2(-8, 0)
-script = ExtResource("3_uw1rn")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+rotation = -3.14159
 
-[node name="ConnectionPoint4" type="Marker2D" parent="."]
-position = Vector2(0, 8)
-rotation = -0.00130637
-script = ExtResource("3_uw1rn")
-metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
+[node name="ConnectionPoint4" parent="." instance=ExtResource("3_uw1rn")]
+position = Vector2(9.53674e-07, 8)
+rotation = -4.71238

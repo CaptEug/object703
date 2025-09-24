@@ -40,6 +40,7 @@ var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
 var ready_connect = true
 
+
 func _ready():
 	if blueprint:
 		Get_ready_again()
@@ -271,7 +272,6 @@ func load_from_blueprint(bp: Dictionary):
 					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
 					target_grid.append(grid_pos)
 			_add_block(block, local_pos, target_grid)
-			
 
 
 func get_rotation_angle(dir: String) -> float:
@@ -643,6 +643,28 @@ func update_vehicle_size():
 			max_y = grid_pos.y
 	
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
+
+# 获取距离某个位置一定范围内的可用连接点
+func get_available_points_near_position(position: Vector2, max_distance: float = 30.0) -> Array[ConnectionPoint]:
+	var temp_points = []
+	var max_distance_squared = max_distance * max_distance
+	
+	for block in blocks:
+		if is_instance_valid(block):
+			for point in block.get_available_connection_points():
+				var point_global_pos = block.global_position + point.position.rotated(block.global_rotation)
+				var distance_squared = point_global_pos.distance_squared_to(position)
+				
+				if distance_squared <= max_distance_squared:
+					temp_points.append(point)
+	
+	# 显式转换类型
+	var available_points: Array[ConnectionPoint] = []
+	for point in temp_points:
+		if point is ConnectionPoint:
+			available_points.append(point)
+	
+	return available_points
 
 
 func open_vehicle_panel():

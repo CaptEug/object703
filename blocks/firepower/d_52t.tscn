@@ -1,6 +1,6 @@
 [gd_scene load_steps=16 format=3 uid="uid://bemq1c5f0brs7"]
 
-[ext_resource type="Script" uid="uid://gwmvgjhiuk7g" path="res://blocks/firepower/d_52t.gd" id="1_yqdh3"]
+[ext_resource type="Script" path="res://blocks/firepower/d_52t.gd" id="1_yqdh3"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_c60hf"]
 [ext_resource type="Texture2D" uid="uid://brtjidrm0jx83" path="res://assets/icons/crosshair.png" id="3_dcorw"]
 [ext_resource type="Script" uid="uid://bk4hgv1vkhg6f" path="res://blocks/connection_point.gd" id="3_yqdh3"]
@@ -142,16 +142,19 @@ metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint3" type="Marker2D" parent="."]
 position = Vector2(0, 16)
+rotation = 1.5708
 script = ExtResource("3_yqdh3")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint4" type="Marker2D" parent="."]
 position = Vector2(-8, 8)
+rotation = 3.14159
 script = ExtResource("3_yqdh3")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint5" type="Marker2D" parent="."]
 position = Vector2(-8, -8)
+rotation = -3.14159
 script = ExtResource("3_yqdh3")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
-[ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/tankbuilderUI.tscn" id="2_hie3q"]
+[ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/editormode.tscn" id="2_hie3q"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://bl2tikk55bsp1" path="res://vehicles/object2.tscn" id="7_hie3q"]
@@ -47,7 +47,7 @@ script = ExtResource("2_m5lm4")
 
 [node name="Object1" parent="." instance=ExtResource("2_5du73")]
 position = Vector2(-181, -113)
-rotation = -0.00688074
+rotation = 0.494908
 
 [node name="Object2" parent="." instance=ExtResource("7_hie3q")]
 position = Vector2(469, 191)

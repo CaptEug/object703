@@ -18,6 +18,7 @@ func _ready():
 		parent_vehicle.powerpacks.append(self)
 
 func _process(delta: float) -> void:
+	super._process(delta)
 	if not functioning:
 		return
 	if parent_vehicle != null:
