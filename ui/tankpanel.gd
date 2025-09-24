@@ -1,4 +1,4 @@
-extends Panel
+extends FloatingPanel
 
 @onready var fuel_progressbar = $Fuel
 @onready var ammo_progressbar = $Ammo
@@ -21,7 +21,6 @@ func _ready():
 func _process(delta):
 	time += delta
 	if selected_vehicle:
-		visible = true
 		var color = Color.RED if selected_vehicle.destroyed else Color.GREEN
 		var blink_strength = 0.75 + 0.25 * sin(time * 4.0)
 		$Namelabel.add_theme_color_override("font_color", color)
@@ -37,8 +36,6 @@ func _process(delta):
 			camera.target_rot = 0.0
 		
 		queue_redraw()
-	else:
-		visible = false
 
 func _draw():
 	if selected_vehicle:
@@ -138,3 +135,7 @@ func find_grid(grid):
 		grid_new[pos] = block
 	grid = grid_new
 	return grid
+
+
+func _on_close_button_pressed():
+	visible = false

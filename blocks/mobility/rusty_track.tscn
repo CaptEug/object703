@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://ynw68d3flv12"]
+[gd_scene load_steps=7 format=3 uid="uid://ynw68d3flv12"]
 
 [ext_resource type="Script" uid="uid://bptpkf87ghxkg" path="res://blocks/mobility/rusty_track.gd" id="1_1jm28"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_1cqs3"]
@@ -11,6 +11,10 @@ size = Vector2(16, 16)
 atlas = ExtResource("2_1cqs3")
 region = Rect2(0, 64, 16, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_uigyy"]
+atlas = ExtResource("2_1cqs3")
+region = Rect2(64, 64, 16, 16)
+
 [node name="rusty_track" type="RigidBody2D"]
 script = ExtResource("1_1jm28")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
@@ -20,6 +24,10 @@ shape = SubResource("RectangleShape2D_pt07c")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_11o0d")
+
+[node name="Broken" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("AtlasTexture_uigyy")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_uigyy")]
 position = Vector2(0, 8)

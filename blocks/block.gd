@@ -2,19 +2,24 @@ class_name Block
 extends RigidBody2D
 
 ## Basic Properties
-var current_hp: float
-var weight: float
-var block_name: String
-var type: String
-var size: Vector2i
+var current_hp:float
+var function_hp:= 0.0
+var weight:float
+var block_name:String
+var type:String
+var size:Vector2i
 var parent_vehicle: Vehicle = null  
 var neighbors := {}
 var connected_blocks := []
 var global_grid_pos := []
-var mouse_inside: bool
+var mouse_inside:bool
 var rotation_to_parent = "up"
 var cost:Dictionary = {}
-var turret_compatible: bool
+var turret_compatible:bool
+var functioning:bool = true
+var destroyed:bool
+var sprite:Sprite2D
+var broken_sprite:Sprite2D
 var do_connect = true
 
 
@@ -40,6 +45,10 @@ func _ready():
 	linear_damp = 5.0
 	angular_damp = 1.0
 	collision_layer = 0
+	# init sprite
+	sprite = find_child("Sprite2D") as Sprite2D
+	broken_sprite = find_child("Broken") as Sprite2D
+	
 	
 	# Initialize parent vehicle reference
 	parent_vehicle = get_parent_vehicle()
@@ -97,13 +106,7 @@ func _emit_relay_signal():
 func _on_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
-			if control_ui:
-				var tank_panel := control_ui.find_child("Tankpanel") as Panel
-				if tank_panel.selected_vehicle:
-					if tank_panel.selected_vehicle.control.get_method() == "manual_control":
-						return
-				tank_panel.selected_vehicle = get_parent_vehicle()
+			parent_vehicle.open_vehicle_panel()
 
 func _on_mouse_entered():
 	mouse_inside = true
@@ -116,15 +119,21 @@ func _on_mouse_exited():
 func damage(amount:int):
 	print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
+	if current_hp <= function_hp:
+		functioning = false
+		if broken_sprite:
+			sprite.visible = false
+			broken_sprite.visible = true
 	if current_hp <= 0:
 		destroy()
 
 func destroy():
 	# Disconnect all joints before destroying
 	disconnect_all()
-	queue_free()
+	
 	if parent_vehicle:
 		parent_vehicle.remove_block(self)
+	destroyed = true
 
 ## Block Management
 func get_icon_texture():
@@ -277,7 +286,7 @@ func disconnect_all():
 	# Create a copy of keys to avoid modification during iteration
 	var joints = joint_connected_blocks.keys()
 	for joint in joints:
-		disconnect_joint(joint)
+			disconnect_joint(joint)
 	
 	# Clear any remaining connections
 	joint_connected_blocks.clear()

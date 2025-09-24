@@ -19,6 +19,8 @@ func _ready():
 
 func _process(delta: float) -> void:
 	super._process(delta)
+	if not functioning:
+		return
 	if parent_vehicle != null:
 		if parent_vehicle.get_current_fuel() > 0:
 				fuel_enough = true

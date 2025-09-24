@@ -30,6 +30,8 @@ func apply_track_force():
 		apply_impulse(force_direction * state_force[1])
 
 func _physics_process(_delta):
+	if not functioning:
+		return
 	apply_track_force()
 
 func _on_received_state_force_signal(state_force_signal):

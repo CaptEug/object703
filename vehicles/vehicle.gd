@@ -23,6 +23,7 @@ var tracks:= []
 var ammoracks:= []
 var fueltanks:= []
 var commands:= []
+var vehicle_panel:Panel
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
 var track_target_forces:= {}  # 存储每个履带的目标力
@@ -125,8 +126,8 @@ func _add_block(block: Block,local_pos, grid_positions):
 
 func remove_block(block: Block):
 	blocks.erase(block)
-	block.queue_free()
-	
+	#block.queue_free()
+
 	var keys_to_erase = []
 	for pos in grid:
 		if grid[pos] == block:
@@ -664,3 +665,18 @@ func get_available_points_near_position(position: Vector2, max_distance: float =
 			available_points.append(point)
 	
 	return available_points
+
+
+func open_vehicle_panel():
+	if vehicle_panel:
+		vehicle_panel.visible = true
+		vehicle_panel.move_to_front()
+	else:
+		var HUD = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+		var panel = load("res://ui/tankpanel.tscn").instantiate()
+		panel.selected_vehicle = self
+		vehicle_panel = panel
+		HUD.add_child(panel)
+		while panel.any_overlap():
+			panel.position += Vector2(32, 32)
+	

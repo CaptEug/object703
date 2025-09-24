@@ -12,6 +12,8 @@ func _ready():
 
 func _process(delta):
 	super._process(delta)
+	if not functioning:
+		return
 	if parent_vehicle:
 		targeting()
 

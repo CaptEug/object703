@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://byo7xm5tw3n2w"]
+[gd_scene load_steps=7 format=3 uid="uid://byo7xm5tw3n2w"]
 
 [ext_resource type="Script" uid="uid://c1vkn3rxhhqak" path="res://blocks/command/cupola.gd" id="1_5uqw0"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ahdwv"]
@@ -11,6 +11,10 @@ size = Vector2(16, 16)
 atlas = ExtResource("2_ahdwv")
 region = Rect2(0, 0, 16, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_uw1rn"]
+atlas = ExtResource("2_ahdwv")
+region = Rect2(16, 0, 16, 32)
+
 [node name="Cupola" type="RigidBody2D"]
 script = ExtResource("1_5uqw0")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
@@ -20,6 +24,11 @@ shape = SubResource("RectangleShape2D_x12pa")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_fxiys")
+
+[node name="Broken" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("AtlasTexture_uw1rn")
+offset = Vector2(0, 8)
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_uw1rn")]
 position = Vector2(8, 0)

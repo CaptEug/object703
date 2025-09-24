@@ -49,7 +49,9 @@ func _ready():
 
 func _process(delta):
 	super._process(delta)
-	
+	if not functioning:
+		crosshair.visible = false
+		return
 	#check reload every frame
 	if has_ammo():
 		if not loading and not loaded:
@@ -66,8 +68,8 @@ func _process(delta):
 		else:
 			targeting = Callable()
 	
-	if targeting:
-		targeting.call(delta)
+		if targeting:
+			targeting.call(delta)
 
 func _draw():
 	var line_color = Color(1,1,1)
