@@ -1,6 +1,7 @@
 extends Command
 
-const HITPOINT:float = 300
+const HITPOINT:float = 500
+const FUNCTION_HP = 125
 const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'command cupola'
 const SIZE:= Vector2(1, 1)
@@ -9,6 +10,7 @@ const DETECT_RANGE:float = 800
 
 func _init():
 	current_hp = HITPOINT
+	function_hp = FUNCTION_HP
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	detect_range = DETECT_RANGE

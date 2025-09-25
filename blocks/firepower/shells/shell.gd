@@ -20,6 +20,7 @@ var trail:Line2D
 var from:Vehicle
 var stopped := false
 var explosion_particle = preload("res://assets/particles/explosion.tscn")
+var spark_particla = preload("res://assets/particles/spark.tscn")
 
 
 func _ready():
@@ -82,16 +83,27 @@ func _on_timer_timeout():
 
 func _on_shell_body_entered(block:Block):
 	var vehicle_hit = block.parent_vehicle
+	
+	#check if the vehicle is not self
 	if vehicle_hit == from and from != null:
 		return
+	
+	# apply hit inpluse
+	var momentum:Vector2 = weight * linear_velocity
+	block.apply_impulse(momentum)
+	
 	var block_hp = block.current_hp
 	if block_hp >= 0:
 		var damage_to_deal = min(kenetic_damage, block_hp)
-		var momentum:Vector2 = weight * linear_velocity
-		block.apply_impulse(momentum)
 		block.damage(damage_to_deal)
 		kenetic_damage -= damage_to_deal
 		if kenetic_damage <= 0:
 			if max_explosive_damage:
 				explode()
+			else:
+				var spark = spark_particla.instantiate()
+				spark.position = global_position
+				spark.rotation =  linear_velocity.angle()
+				spark.emitting = true
+				get_tree().current_scene.add_child(spark)
 			stop()

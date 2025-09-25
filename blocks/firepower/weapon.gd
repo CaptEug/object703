@@ -16,6 +16,7 @@ var animplayer:AnimationPlayer
 var gun_fire_sound:AudioStreamPlayer2D
 var spread:float
 var shell_scene:PackedScene
+var broken_turret:Sprite2D
 
 var reload_timer:Timer
 var loaded:bool = false
@@ -33,6 +34,7 @@ func _ready():
 			if muz is Marker2D:
 				muzzles.append(muz)
 		crosshair = turret.find_child("Crosshair") as Sprite2D
+		broken_turret =  find_child("BrokenTurret") as Sprite2D
 	else:
 		muzzles.append(find_child("Muzzle") as Marker2D)
 		crosshair = find_child("Crosshair") as Sprite2D
@@ -212,3 +214,11 @@ func manual_target(delta):
 	var dis = clamp(global_position.distance_to(get_global_mouse_position()),0,range)
 	var tween = get_tree().create_tween()
 	tween.tween_property(crosshair, "position", Vector2(0,-dis), 0.2)
+
+
+func broke():
+	if turret:
+		turret.visible = false
+	if broken_turret:
+		broken_turret.rotation = turret.rotation
+		broken_turret.visible = true

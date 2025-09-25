@@ -30,7 +30,7 @@ environment = SubResource("Environment_m32x0")
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(115, -903)
+position = Vector2(91, -885)
 scale = Vector2(1.67573, -4.2956)
 shape = SubResource("RectangleShape2D_5du73")
 
@@ -38,6 +38,22 @@ shape = SubResource("RectangleShape2D_5du73")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D/StaticBody2D2"]
 position = Vector2(114, 934)
+scale = Vector2(1.67573, -4.2956)
+shape = SubResource("RectangleShape2D_5du73")
+
+[node name="StaticBody2D3" type="StaticBody2D" parent="StaticBody2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D/StaticBody2D3"]
+position = Vector2(-782, 70)
+rotation = 1.57025
+scale = Vector2(1.67573, -4.2956)
+shape = SubResource("RectangleShape2D_5du73")
+
+[node name="StaticBody2D4" type="StaticBody2D" parent="StaticBody2D"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D/StaticBody2D4"]
+position = Vector2(1003, 19)
+rotation = 1.57025
 scale = Vector2(1.67573, -4.2956)
 shape = SubResource("RectangleShape2D_5du73")
 
@@ -51,19 +67,3 @@ rotation = 0.494908
 
 [node name="Object2" parent="." instance=ExtResource("7_hie3q")]
 position = Vector2(469, 191)
-
-[node name="StaticBody2D2" type="StaticBody2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
-position = Vector2(-782, 70)
-rotation = 1.57025
-scale = Vector2(1.67573, -4.2956)
-shape = SubResource("RectangleShape2D_5du73")
-
-[node name="StaticBody2D3" type="StaticBody2D" parent="."]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D3"]
-position = Vector2(1003, 19)
-rotation = 1.57025
-scale = Vector2(1.67573, -4.2956)
-shape = SubResource("RectangleShape2D_5du73")
