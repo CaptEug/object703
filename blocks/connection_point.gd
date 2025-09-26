@@ -79,11 +79,8 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 			parent_block.global_position += other_point.global_position - global_position
 			parent_block.global_rotation = other_point.global_rotation - PI - rotation
 			parent_block.global_position += other_point.global_position - global_position
-			print(other_point.global_position - global_position)
-			print(" ")
 			parent_block.create_joint_with(self, other_point, true) 
-		#if other_block is Block:
-			#other_block.freeze = false
+			connected_to = other_point
 	return true
 
 func can_connect_with(other_point: ConnectionPoint) -> bool:

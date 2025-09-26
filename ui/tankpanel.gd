@@ -13,6 +13,7 @@ var manual_icon:Texture = preload("res://assets/icons/driving_wheel.png")
 var remote_icon:Texture = preload("res://assets/icons/remote_control.png")
 var ai_icon:Texture = preload("res://assets/icons/ai.png")
 var crosshair:Texture = preload("res://assets/icons/crosshair.png")
+var exit_focus = true
 
 func _ready():
 	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
@@ -31,9 +32,12 @@ func _process(delta):
 		
 		#update cursor and cam
 		if selected_vehicle.control.get_method() == "manual_control":
-			camera.focus_on_vehicle(selected_vehicle, false)
+			camera.focus_on_vehicle(selected_vehicle)
+			exit_focus = false
 		else:
-			camera.target_rot = 0.0
+			if exit_focus == false:
+				camera.target_rot = 0.0
+				exit_focus = true
 		
 		queue_redraw()
 	
@@ -97,6 +101,8 @@ func draw_grid():
 				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
 				var rect = Rect2(draw_pos + Vector2(pos) * grid_size + Vector2(line_width,line_width)/2, extents * 2)
 				draw_rect(rect, line_color, false, line_width)
+
+
 
 
 func _on_controlbutton_pressed():
