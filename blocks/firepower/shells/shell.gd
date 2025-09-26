@@ -29,8 +29,12 @@ func _ready():
 	explosion_area = find_child("ExplosionArea") as Area2D
 	if explosion_area:
 		explosion_shape = explosion_area.find_child("CollisionShape2D") as CollisionShape2D
+	if max_explosive_damage:
+		explosion_shape.shape.radius = explosion_radius
 	collision_layer = 0
 	collision_mask = 0
+	linear_damp = 0.1
+	mass = weight
 	trail.lifetime = lifetime
 	var timer = Timer.new()
 	timer.wait_time = lifetime
@@ -38,8 +42,7 @@ func _ready():
 	timer.timeout.connect(_on_timer_timeout)
 	add_child(timer)
 	shell_body.body_entered.connect(_on_shell_body_entered)
-	if max_explosive_damage:
-		explosion_shape.shape.radius = explosion_radius
+	
 
 
 func _process(delta):
@@ -55,6 +58,8 @@ func explode():
 	explosion.position = global_position
 	explosion.emitting = true
 	get_tree().current_scene.add_child(explosion)
+	
+	await get_tree().process_frame
 	
 	for block in explosion_area.get_overlapping_bodies():
 		if block.has_method("damage"):
