@@ -162,8 +162,11 @@ func get_neighbors():
 	if get_parent_vehicle():
 		var grid = get_parent_vehicle().grid
 		var grid_pos = parent_vehicle.find_pos(grid, self)
-		for x in size.x:
-			for y in size.y:
+		var s = size
+		if base_rotation_degree == 90 or base_rotation_degree == -90:
+			s = Vector2i(s.y, s.x)
+		for x in s.x:
+			for y in s.y:
 				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
 				for dir in directions:
 					var neighbor_pos = grid_pos + Vector2i(x, y) + dir

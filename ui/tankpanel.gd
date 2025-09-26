@@ -74,49 +74,55 @@ func retrieve_vehicle_data():
 
 func draw_grid():
 	var line_width: float = 2.0
-	
-	var grid = selected_vehicle.grid
-	grid = find_grid(grid)
+	var result = normalize_grid(selected_vehicle.grid)
+	var grid = result[0]
+	var max_x = result[1]
+	var max_y = result[2]
 	var vehicle_size = selected_vehicle.vehicle_size
 	var grid_size = 16
 	var draw_pos = $Marker2D.position - Vector2(vehicle_size/2) * grid_size
 	var blocks = []
-	
-	for pos in grid:
-		if is_instance_valid(grid[pos]) and not blocks.has(grid[pos]):
-			blocks.append(grid[pos])
-			
-			var health_ratio = grid[pos].current_hp/grid[pos].HITPOINT
-			var line_color = health_gradient.sample(clamp(health_ratio, 0.0, 1.0))
-			var rot = 100*time # grid[pos].base_rotation_degree
-			var topleft = Vector2(pos) * grid_size
-			var center = Vector2(grid[pos].size) * grid_size / 2
-			
-			# Apply rotation
-			draw_set_transform(draw_pos + topleft + center, deg_to_rad(rot), Vector2.ONE)
-			
-			# If health is not full, make it pulse
-			if health_ratio < 1.0:
-				var blink_strength = 0.75 + 0.25 * sin(time * 4.0)  # range from 0 to 1
-				line_color = line_color * blink_strength
-			
-			# draw outline if the block has one
-			if "outline_tex" in grid[pos]:
-				var mask_tex = grid[pos].outline_tex
-				draw_texture(mask_tex, -mask_tex.get_size() / 2, line_color)
+	for x in max_x+1:
+		for y in max_y+1:
+			var pos = Vector2i(x, y)
+			if not grid.has(pos):
 				continue
-			
-			# else only draw the shape
-			var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
-			if collisionshape and collisionshape.shape is RectangleShape2D:
-				if rot == 90 or rot == 270:
-					center = Vector2(center.y, center.x)
-				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
-				var rect = Rect2(-extents, extents * 2)
-				draw_rect(rect, line_color, false, line_width)
-			
-			# Reset rotaion
-			draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+			if is_instance_valid(grid[pos]) and not blocks.has(grid[pos]):
+				blocks.append(grid[pos])
+				var health_ratio = grid[pos].current_hp/grid[pos].HITPOINT
+				var line_color = health_gradient.sample(clamp(health_ratio, 0.0, 1.0))
+				var rot = grid[pos].base_rotation_degree
+				var topleft = Vector2(pos) * grid_size
+				var center = Vector2(grid[pos].size) * grid_size / 2
+				
+				# If health is not full, make it pulse
+				if health_ratio < 1.0:
+					var blink_strength = 0.75 + 0.25 * sin(time * 4.0)  # range from 0 to 1
+					line_color = line_color * blink_strength
+				
+				# Apply rotation
+				draw_set_transform(draw_pos + topleft + center, deg_to_rad(rot), Vector2.ONE)
+				
+				# draw outline if the block has one
+				if "outline_tex" in grid[pos]:
+					var mask_tex = grid[pos].outline_tex
+					draw_texture(mask_tex, -mask_tex.get_size() / 2, line_color)
+					continue
+				
+				# else only draw the shape
+				
+				var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
+				if collisionshape and collisionshape.shape is RectangleShape2D:
+					var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
+					if rot == 90 or rot == -90:
+						extents = Vector2(extents.y, extents.x)
+					var rect = Rect2(Vector2(line_width,line_width)/2, extents * 2)
+					draw_set_transform(draw_pos + topleft, 0, Vector2.ONE)
+					draw_rect(rect, line_color, false, line_width)
+					
+				# Reset rotaion
+				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+
 
 
 
@@ -133,35 +139,37 @@ func _on_controlbutton_pressed():
 					vehicle.control = Callable()
 
 
-func find_grid(grid):
-	var min_x:int
-	var min_y:int
-	var max_x:int
-	var max_y:int
-	
-	for grid_pos in grid:
-		min_x = grid_pos.x
-		min_y = grid_pos.y
-		max_x = grid_pos.x
-		max_y = grid_pos.y
-		break
-	
-	for grid_pos in grid:
-		if min_x > grid_pos.x:
-			min_x = grid_pos.x
-		if min_y > grid_pos.y:
-			min_y = grid_pos.y
-		if max_x < grid_pos.x:
-			max_x = grid_pos.x
-		if max_y < grid_pos.y:
-			max_y = grid_pos.y
+func normalize_grid(grid: Dictionary) -> Array:
+	if grid.size() == 0:
+		return [{}, 0, 0]
+
+	var keys = grid.keys()
+	var first = keys[0]
+	var min_x = first.x
+	var min_y = first.y
+	var max_x = first.x
+	var max_y = first.y
+
+	# Find min/max
+	for pos in keys:
+		if pos.x < min_x:
+			min_x = pos.x
+		if pos.y < min_y:
+			min_y = pos.y
+		if pos.x > max_x:
+			max_x = pos.x
+		if pos.y > max_y:
+			max_y = pos.y
+
+	# Normalize positions
 	var grid_new = {}
-	for pos in grid:
-		var block:Block = grid[pos]
-		pos = Vector2i(pos.x - min_x, pos.y - min_y)
-		grid_new[pos] = block
-	grid = grid_new
-	return grid
+	for pos in keys:
+		var block = grid[pos]
+		var new_pos = Vector2i(pos.x - min_x, pos.y - min_y)
+		grid_new[new_pos] = block
+
+	return [grid_new, max_x - min_x, max_y - min_y]
+
 
 
 func _on_close_button_pressed():

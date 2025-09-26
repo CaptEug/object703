@@ -157,11 +157,16 @@ func has_block(block_name:String):
 		if block.block_name == block_name:
 			return block
 
-func find_pos(Dic: Dictionary, block:Block) -> Vector2i:
+func find_pos(Dic: Dictionary, block:Block):
+	var positions = []
 	for pos in Dic:
 		if Dic[pos] == block:
-			return pos
-	return Vector2i.ZERO
+			positions.append(pos)
+	var top_left = positions[0]
+	for v in positions:
+		if v.x < top_left.x or (v.x == top_left.x and v.y < top_left.y):
+			top_left = v
+	return top_left
 
 
 ##################### VEHICLE PARAMETER MANAGEMENT #####################
