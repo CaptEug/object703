@@ -124,9 +124,10 @@ func _add_block(block: Block,local_pos, grid_positions):
 		block.set_connection_enabled(true)
 	update_vehicle()
 
-func remove_block(block: Block):
+func remove_block(block: Block, imd: bool):
 	blocks.erase(block)
-	block.queue_free()
+	if imd:
+		block.queue_free()
 
 	var keys_to_erase = []
 	for pos in grid:
@@ -276,9 +277,9 @@ func load_from_blueprint(bp: Dictionary):
 
 func get_rotation_angle(dir: String) -> float:
 	match dir:
-		"left":    return PI/2
+		"left":    return -PI/2
 		"up": return 0
-		"right":  return -PI/2
+		"right":  return PI/2
 		"down":  return PI
 		_:       return 0
 

@@ -140,7 +140,7 @@ func destroy():
 	disconnect_all()
 	
 	if parent_vehicle:
-		parent_vehicle.remove_block(self)
+		parent_vehicle.remove_block(self, false)
 	destroyed = true
 
 ## Block Management
@@ -192,7 +192,7 @@ func check_connectivity():
 		return
 	if not get_all_connected_blocks().any(func(item): return item is Command):
 		if get_parent_vehicle():
-			parent_vehicle.remove_block(self)
+			parent_vehicle.remove_block(self, false)
 
 ## Enhanced Connection Point System
 func collect_connection_points():

@@ -30,7 +30,7 @@ func destroy():
 	# Disconnect all joints before destroying
 	disconnect_all()
 	if parent_vehicle:
-		parent_vehicle.remove_block(self)
+		parent_vehicle.remove_block(self, false)
 	explode()
 
 func explode():
