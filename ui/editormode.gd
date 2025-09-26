@@ -253,6 +253,10 @@ func _on_name_input_changed(_new_text: String):
 
 func _on_recycle_button_pressed():
 	is_recycle_mode = !is_recycle_mode
+	if is_recycle_mode:
+		Input.set_custom_mouse_cursor(preload("res://assets/icons/saw_cursor.png"))
+	else:
+		Input.set_custom_mouse_cursor(null)
 	update_recycle_button()
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
 
@@ -661,15 +665,12 @@ func calculate_aligned_rotation(vehicle_block: Block, vehicle_point: ConnectionP
 
 func try_place_block():
 	if not current_ghost_block or not selected_vehicle:
-		print("无法放置: 没有选择块或车辆")
 		return
 	
 	if not current_snap_config:
-		print("错误: 必须靠近连接点放置")
 		return
 	
 	var block_name = current_ghost_block.scene_file_path.get_file().get_basename()
-	print("放置块: ", block_name, " 使用连接点配置")
 	
 	# 断开可能冲突的连接
 	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
