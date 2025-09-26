@@ -14,9 +14,23 @@ config/name="Object703"
 run/main_scene="uid://dawkb0e8tm4e8"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
+[autoload]
+
+GlobalTimeManager="*res://GlobalTimeManager.gd"
+
 [display]
 
 window/stretch/scale_mode="integer"
+
+[editor]
+
+version_control/autoload_on_startup=true
+
+[importer_defaults]
+
+animation_library={
+&"import_script/path": "uid://d2a6yhs05eko2"
+}
 
 [input]
 

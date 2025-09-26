@@ -39,11 +39,12 @@ signal connection_established(from: ConnectionPoint, to: ConnectionPoint, joint:
 signal connection_broken(joint: Joint2D)
 
 func _ready():
+	GlobalTimeManager.time_scale = 1
 	# Initialize physics properties
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight
-	linear_damp = 5.0
-	angular_damp = 1.0
+	linear_damp = 10
+	angular_damp = 10
 	collision_layer = 0
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
@@ -68,6 +69,10 @@ func _ready():
 
 
 func _process(_delta):
+	var pin = get_children()
+	for ping in pin:
+		if ping is PinJoint2D:
+			var target = joint_connected_blocks[ping]
 	pass
 	
 	
@@ -89,7 +94,6 @@ func connect_aready():
 			if point_con[0].find_parent_block() is Block:
 				if point_con[0].find_parent_block().freeze == true:
 					point_con[0].find_parent_block().freeze = false
-					print(point_con[0].find_parent_block().block_name)
 	is_movable_on_connection = false
 	collision_layer = 1
 	for joint in joint_connected_blocks:
@@ -228,11 +232,14 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_
 		if not target_block:
 			return null
 		# 使用焊接关节保证严格对齐
-		var joint = PinJoint2D.new()
+		var joint = GrooveJoint2D.new()
+		joint.initial_offset = 0
+		joint.length = 0.0001
 		joint.node_a = get_path()
 		joint.node_b = target_block.get_path()
 		joint.position = source.position
 		joint.disable_collision = false
+		joint.bias = 0.3 
 		add_child(joint)
 		joint_connected_blocks[joint] = target_block
 		if not target_block.joint_connected_blocks.has(joint):
@@ -354,3 +361,15 @@ func get_connection_point_by_index(index: int) -> ConnectionPoint:
 	if index >= 0 and index < available_points.size():
 		return available_points[index]
 	return null
+
+func caculate_direction_to_parent(rad:float):
+	var rad_r = round(rad)
+	
+	if rad_r == 0:
+		rotation_to_parent = "up"
+	elif rad_r == 2:
+		rotation_to_parent = "right"
+	elif rad_r == -2:
+		rotation_to_parent = "left"
+	else:
+		rotation_to_parent = "down"

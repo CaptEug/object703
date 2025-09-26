@@ -32,6 +32,7 @@ var selected_vehicle: Vehicle = null
 var current_ghost_block: Node2D = null
 var current_block_scene: PackedScene = null
 var panel_instance: Control = null
+var camera:Camera2D
 
 # 连接点吸附系统
 var current_ghost_connection_index := 0
@@ -40,13 +41,13 @@ var available_ghost_points: Array[ConnectionPoint] = []
 var available_vehicle_points: Array[ConnectionPoint] = []
 var current_snap_config: Dictionary = {}
 var base_ghost_rotation := 0.0 
-var vehiclepoint
-var ghostpoint
+var snap_config
 
 # 存储原始连接状态
 var original_connections: Dictionary = {}
 
 func _ready():
+	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
 	save_dialog.get_ok_button().pressed.connect(_on_save_confirmed)
 	save_dialog.close_requested.connect(_on_save_canceled)
@@ -56,6 +57,17 @@ func _ready():
 	
 	save_dialog.hide()
 	error_label.hide()
+	
+	var connect_result = vehicle_saved.connect(_on_vehicle_saved)
+	if connect_result == OK:
+		print("✅ vehicle_saved 信号连接成功")
+	else:
+		print("❌ vehicle_saved 信号连接失败，错误代码:", connect_result)
+		# 检查连接状态
+		if vehicle_saved.is_connected(_on_vehicle_saved):
+			print("⚠️  信号已经连接")
+		else:
+			print("⚠️  信号未连接")
 	
 	update_recycle_button()
 	load_all_blocks()
@@ -99,9 +111,12 @@ func _input(event):
 
 
 func _process(delta):
+	if is_editing and selected_vehicle:
+		camera.sync_rotation_to_vehicle(selected_vehicle)
+		
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
-	
+		
 	if Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
@@ -197,28 +212,38 @@ func update_description(scene_path: String):
 		block.queue_free()
 
 func _on_build_vehicle_pressed():
+	print("=== 保存按钮被点击 ===")
+	print("当前选中的车辆: ", selected_vehicle)
+	print("编辑模式状态: ", is_editing)
 	show_save_dialog()
 
 func show_save_dialog():
 	error_label.text = ""
-	error_label.hide()
+	var vehicle_name = name_input.text.strip_edges()
+	if vehicle_name.is_empty():
+		error_label.text = "Name cannot be empty!"
+		error_label.show()
+	elif vehicle_name.contains("/") or vehicle_name.contains("\\"):
+		error_label.text = "The name cannot contain special characters!"
+		error_label.show()
+	else:
+		save_dialog.title = "Make sure?"
+		error_label.text = vehicle_name
+		error_label.show()
 	save_dialog.popup_centered()
 
 func _on_save_confirmed():
 	var vehicle_name = name_input.text.strip_edges()
 	
 	if vehicle_name.is_empty():
-		error_label.text = "Name cannot be empty!"
-		error_label.show()
 		return
 	
 	if vehicle_name.contains("/") or vehicle_name.contains("\\"):
-		error_label.text = "The name cannot contain special characters!"
-		error_label.show()
 		return
 	
-	emit_signal("vehicle_saved", vehicle_name)
+	save_vehicle(vehicle_name)
 	save_dialog.hide()
+
 
 func _on_save_canceled():
 	save_dialog.hide()
@@ -272,7 +297,7 @@ func find_and_select_vehicle():
 	if testground and panel_instance:
 		if panel_instance.selected_vehicle:
 			selected_vehicle = panel_instance.selected_vehicle
-			name_input.placeholder_text = selected_vehicle.vehicle_name
+			name_input.text = selected_vehicle.vehicle_name
 			print("找到车辆: ", selected_vehicle.vehicle_name)
 			return
 
@@ -280,12 +305,11 @@ func enter_editor_mode(vehicle: Vehicle):
 	if is_editing:
 		exit_editor_mode()
 	selected_vehicle = vehicle
-	var camera:Camera2D
-	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
-	camera.focus_on_vehicle(selected_vehicle, false)
 
-	
 	is_editing = true
+	
+	camera.focus_on_vehicle(selected_vehicle)
+	camera.sync_rotation_to_vehicle(selected_vehicle)
 	
 	print("=== 进入编辑模式 ===")
 	
@@ -312,6 +336,9 @@ func exit_editor_mode():
 	if current_ghost_block:
 		current_ghost_block.queue_free()
 		current_ghost_block = null
+	
+	camera.target_rot = 0.0
+	print("yes")
 	
 	hide()
 	is_editing = false
@@ -433,24 +460,25 @@ func setup_ghost_block_collision(ghost: Node2D):
 # === 新的连接点吸附系统 ===
 func update_ghost_block_position(mouse_position: Vector2):
 	# 获取附近的车辆连接点
-	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 50.0)
+	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
 	available_ghost_points = get_ghost_block_available_connection_points()
 	
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
 		# 没有可用连接点，自由移动
 		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = base_ghost_rotation  # 使用基础旋转
+		current_ghost_block.rotation = base_ghost_rotation + camera.target_rot# 使用基础旋转
 		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
 		current_snap_config = {}
 		return
 	
 	# 获取当前连接配置
-	var snap_config = get_current_snap_config()
+	snap_config = get_current_snap_config()
 	
 	if snap_config:
+		
 		# 应用吸附位置和自动对齐的旋转
 		current_ghost_block.global_position = snap_config.ghost_position
-		current_ghost_block.rotation = snap_config.ghost_rotation
+		current_ghost_block.global_rotation = snap_config.ghost_rotation
 		current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.5)
 		current_snap_config = snap_config
 	else:
@@ -480,7 +508,8 @@ func get_current_snap_config() -> Dictionary:
 func find_best_snap_config() -> Dictionary:
 	var best_config = {}
 	var min_distance = INF
-	
+	var best_ghost_pos = null
+	var best_vehicle_pos = null
 	for vehicle_point in available_vehicle_points:
 		var vehicle_block = vehicle_point.find_parent_block()
 		if not vehicle_block:
@@ -490,50 +519,64 @@ func find_best_snap_config() -> Dictionary:
 			# 基于基础旋转计算最佳对齐角度
 			var target_rotation = calculate_aligned_rotation_from_base(vehicle_block, vehicle_point, ghost_point)
 			# 检查连接点是否可以连接
-			#current_ghost_block.global_rotation = target_rotation
 			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
 				continue
+				
+			var positions = calculate_rotated_grid_positions(vehicle_point, ghost_point, target_rotation)
+			if positions is bool:
+				continue
 			# 计算幽灵块的位置
-			vehiclepoint = vehicle_point
-			ghostpoint = ghost_point
 			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
 			var ghost_position = vehicle_point_global - ghost_local_offset
-			
 			# 计算鼠标位置与连接点的距离
 			var mouse_pos = get_viewport().get_mouse_position()
 			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 			var distance = global_mouse_pos.distance_to(ghost_position)
-			
 			# 选择距离鼠标最近的点
 			if distance < min_distance:
+				best_vehicle_pos = vehicle_point
+				best_ghost_pos = ghost_point
 				min_distance = distance
 				best_config = {
 					"vehicle_point": vehicle_point,
 					"ghost_point": ghost_point,
 					"ghost_position": ghost_position,
 					"ghost_rotation": target_rotation,
-					"vehicle_block": vehicle_block
+					"vehicle_block": vehicle_block,
+					"positions":positions
 				}
 	
 	return best_config
 
 func calculate_aligned_rotation_from_base(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
+	var dir = vehicle_block.rotation_to_parent
+	var dir_to_rad = 0
+	if dir == "up":
+		dir_to_rad = 0
+	elif dir == "right":
+		dir_to_rad = -PI/2
+	elif dir == "left":
+		dir_to_rad = PI/2
+	else:
+		dir_to_rad = PI
+	return base_ghost_rotation + dir_to_rad + vehicle_block.global_rotation
+
+func calculate_aligned_direction_from_base(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
 	# 计算相对于基础旋转的对齐角度
 	var result_rotation = 0.0
 	# 计算连接点之间的角度差异
-	var angle_diff = vehicle_block.global_rotation - base_ghost_rotation
+	var angle_diff = fmod(vehicle_block.global_rotation + PI, PI * 2) - PI - base_ghost_rotation
 	angle_diff = normalize_rotation_simple(angle_diff)	
-	if PI/2 - abs(angle_diff) >= abs(angle_diff):
-		result_rotation = base_ghost_rotation + angle_diff
-	else:
-		result_rotation = base_ghost_rotation + (PI/2 - abs(angle_diff))	
+	if angle_diff >= 0:
+		if PI/2 - angle_diff >= angle_diff:
+			result_rotation = base_ghost_rotation + angle_diff
+		else:
+			result_rotation = base_ghost_rotation - (PI/2 - abs(angle_diff))	
 		
 	return result_rotation
 
 func normalize_rotation_simple(angle: float) -> float:
-	var normalized = fmod(angle + PI, PI * 2) - PI
-	if abs(normalized) > PI / 2:
-		normalized -= sign(normalized) * PI
+	var normalized = wrapf(angle, 0, PI/2)
 	return normalized
 
 func can_points_connect_with_rotation(point_a: ConnectionPoint, point_b: ConnectionPoint, ghost_rotation: float) -> bool:
@@ -545,7 +588,7 @@ func can_points_connect_with_rotation(point_a: ConnectionPoint, point_b: Connect
 		return false
 	# 计算幽灵块连接点在指定旋转下的全局方向
 	var ghost_point_direction = point_b.rotation + ghost_rotation
-	var angle_diff = are_rotations_opposite_best(ghost_point_direction, point_a.global_rotation, 0.1)
+	var angle_diff = are_rotations_opposite_best(ghost_point_direction, point_a.global_rotation, 0.5)
 	return angle_diff   # 允许稍大的误差，因为是基于基础旋转的对齐
 
 func are_rotations_opposite_best(rot1: float, rot2: float, tolerance: float = 0.1) -> bool:
@@ -569,7 +612,7 @@ func rotate_ghost_connection():
 	
 	# 旋转基础旋转90度
 	base_ghost_rotation += PI / 2
-	base_ghost_rotation = fmod(base_ghost_rotation + PI, PI * 2)
+	base_ghost_rotation = fmod(base_ghost_rotation + PI, PI * 2) - PI
 	
 	# 更新幽灵方块显示（使用基础旋转）
 	current_ghost_block.rotation = base_ghost_rotation
@@ -632,16 +675,18 @@ func try_place_block():
 	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
 	disconnect_connections(connections_to_disconnect)
 	
+	var grid_positions = snap_config.positions
 	# 创建新块
 	var new_block:Block = current_block_scene.instantiate()
 	selected_vehicle.add_child(new_block)
 	new_block.global_position = current_snap_config.ghost_position
 	new_block.global_rotation = current_ghost_block.global_rotation
-	
+	new_block.caculate_direction_to_parent(base_ghost_rotation)
+	var control = selected_vehicle.control
 	# 计算网格位置并更新
-	var grid_positions = calculate_rotated_grid_positions(new_block)
 	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
 	
+	selected_vehicle.control = control
 	
 	# 继续放置同一类型的块（保持当前基础旋转）
 	start_block_placement_with_rotation(current_block_scene.resource_path, base_ghost_rotation)
@@ -695,44 +740,128 @@ func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghos
 	else:
 		print("警告: 无法建立连接")
 
-func calculate_rotated_grid_positions(block: Block) -> Array:
+func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation):
 	var grid_positions = []
-	var world_pos = block.global_position
+	var grid_block = {}
 	
 	if not selected_vehicle:
 		return grid_positions
 	
-	var block_size = get_block_size(block)
-	var rotation_rad = block.global_rotation
+	var block_size = current_ghost_block.size
 	
-	# 计算块的中心网格位置
-	var grid_center = Vector2i(
-		round((world_pos.x - selected_vehicle.global_position.x) / 16),
-		round((world_pos.y - selected_vehicle.global_position.y) / 16)
-	)
+	var location_g = ghostpoint.location
+	var location_v = vehiclepoint.location
 	
-	# 根据旋转计算每个单元格的位置
-	for x in range(block_size.x):
-		for y in range(block_size.y):
-			# 计算相对位置
-			var rel_x = x - block_size.x / 2 + 0.5
-			var rel_y = y - block_size.y / 2 + 0.5
-			
-			# 应用旋转
-			var cos_rot = cos(rotation_rad)
-			var sin_rot = sin(rotation_rad)
-			var rotated_x = rel_x * cos_rot - rel_y * sin_rot
-			var rotated_y = rel_x * sin_rot + rel_y * cos_rot
-			
-			# 计算网格位置
-			var grid_pos = Vector2i(
-				grid_center.x + round(rotated_x),
-				grid_center.y + round(rotated_y)
-			)
-			
-			grid_positions.append(grid_pos)
+	var rotation_b = round(vehiclepoint.find_parent_block().rotation)
+	var grid_b = {}
+	var grid_b_pos = {}
+	
+	for key in selected_vehicle.grid:
+		if selected_vehicle.grid[key] == vehiclepoint.find_parent_block():
+			grid_b[key] = selected_vehicle.grid[key]
+	
+	grid_b_pos = get_rectangle_corners(grid_b)
+	var grid_connect_g
+	if grid_b_pos.is_empty():
+		return false
+	# 提取重复的连接点计算逻辑
+	if rotation_b == 0:
+		var connect_pos_v = Vector2i(grid_b_pos["1"].x + location_v.x, grid_b_pos["1"].y + location_v.y)
+		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
+	elif rotation_b == -2:
+		var connect_pos_v = Vector2i(grid_b_pos["4"].x + location_v.y, grid_b_pos["4"].y - location_v.x)
+		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
+	elif rotation_b == -3:
+		var connect_pos_v = Vector2i(grid_b_pos["3"].x - location_v.x, grid_b_pos["3"].y - location_v.y)
+		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
+	elif rotation_b == 2:
+		var connect_pos_v = Vector2i(grid_b_pos["2"].x - location_v.y, grid_b_pos["2"].y + location_v.x)
+		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
+	
+	if grid_connect_g != null and block_size != null and ghostpoint.location != null:
+		grid_block = to_grid(grid_connect_g, block_size, ghostpoint.location, target_rotation)
+	
+	for pos in grid_block:
+		if selected_vehicle.grid.has(pos):
+			return false
+		grid_positions.append(pos)
 	
 	return grid_positions
+
+# 提取的重复逻辑函数
+func get_connection_offset(connect_pos_v: Vector2i, rotation: float, direction: String) -> Vector2i:
+	var rounded_rotation_or = rotation
+	var rounded_rotation = 0
+	if direction == "up":
+		rounded_rotation = rounded_rotation_or
+	elif direction == "left":
+		rounded_rotation = rounded_rotation_or - PI/2
+	elif direction == "right":
+		rounded_rotation = rounded_rotation_or + PI/2
+	elif direction == "down":
+		rounded_rotation = rounded_rotation_or + PI
+	
+	rounded_rotation = round(wrapf(rounded_rotation, -PI, PI))
+	
+	if rounded_rotation == 0:
+		return Vector2i(connect_pos_v.x + 1, connect_pos_v.y)
+	elif rounded_rotation == -2:
+		return Vector2i(connect_pos_v.x, connect_pos_v.y - 1)
+	elif rounded_rotation == -3 or rounded_rotation == 3:
+		return Vector2i(connect_pos_v.x - 1, connect_pos_v.y)
+	elif rounded_rotation == 2:
+		return Vector2i(connect_pos_v.x, connect_pos_v.y + 1)
+	
+	return connect_pos_v
+
+func get_rectangle_corners(grid_data: Dictionary) -> Dictionary:
+	if grid_data.is_empty():
+		return {}
+	
+	var x_coords = []
+	var y_coords = []
+	
+	for coord in grid_data.keys():
+		x_coords.append(coord[0])
+		y_coords.append(coord[1])
+	
+	x_coords.sort()
+	y_coords.sort()
+	
+	var min_x = x_coords[0]
+	var max_x = x_coords[x_coords.size() - 1]
+	var min_y = y_coords[0]
+	var max_y = y_coords[y_coords.size() - 1]
+	
+	var corners = {
+		"1": Vector2i(min_x, min_y),
+		"2": Vector2i(max_x, min_y),
+		"3": Vector2i(max_x, max_y),
+		"4": Vector2i(min_x, max_y)
+	}
+	
+	return corners
+
+func to_grid(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g: Vector2i, target_rotaion: float) -> Dictionary:
+	var grid_block = {}
+	var current_xd_rotaion = selected_vehicle
+	for i in block_size.x:
+		for j in block_size.y:
+			if round(base_ghost_rotation) == 0:
+				var left_up = Vector2i(grid_connect_g.x - connect_pos_g.x, grid_connect_g.y - connect_pos_g.y)
+				grid_block[Vector2i(left_up.x + i, left_up.y + j)] = current_ghost_block
+			elif round(base_ghost_rotation) == -2:
+				var left_up = Vector2i(grid_connect_g.x - connect_pos_g.y, grid_connect_g.y + connect_pos_g.x)
+				grid_block[Vector2i(left_up.x + j, left_up.y - i)] = current_ghost_block
+			elif round(base_ghost_rotation) == -3:
+				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.x, grid_connect_g.y + connect_pos_g.y)
+				grid_block[Vector2i(left_up.x - i, left_up.y - j)] = current_ghost_block
+			elif round(base_ghost_rotation) == 2:
+				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.y, grid_connect_g.y - connect_pos_g.x)
+				grid_block[Vector2i(left_up.x - j, left_up.y + i)] = current_ghost_block
+	
+	return grid_block
+	
 
 func find_connections_to_disconnect_for_placement() -> Array:
 	var connections_to_disconnect = []

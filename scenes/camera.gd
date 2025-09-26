@@ -35,7 +35,7 @@ func _process(delta):
 	sync_rotation_with(delta, target_rot)
 
 
-func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
+func focus_on_vehicle(vehicle:Vehicle):
 	target_pos = vehicle.center_of_mass
 	
 	if vehicle.control.get_method() == "manual_control":
@@ -44,14 +44,13 @@ func focus_on_vehicle(vehicle:Vehicle, sync_rotation:bool):
 			var mouse_pos = get_viewport().get_mouse_position()
 			var mouse_offset = mouse_pos - viewport_center
 			target_pos += mouse_offset
-	
-	if sync_rotation:
-		var command_block = vehicle.commands[0]
-		var vehicle_rotation = command_block.global_rotation - get_rotation_angle(command_block.rotation_to_parent)
-		target_rot = vehicle_rotation
 
 	focused = true
 
+func sync_rotation_to_vehicle(vehicle:Vehicle):
+	var command_block = vehicle.commands[0]
+	var vehicle_rotation = command_block.global_rotation - get_rotation_angle(command_block.rotation_to_parent)
+	target_rot = vehicle_rotation
 
 
 func sync_rotation_with(delta, target_rotation: float) -> void:
