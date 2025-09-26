@@ -263,18 +263,18 @@ func load_from_blueprint(bp: Dictionary):
 		if block_scene:
 			var block:Block = block_scene.instantiate()
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
-			block.rotation = get_rotation_angle(block_data["rotation"])
-			block.rotation_to_parent = block_data["rotation"]
+			block.rotation = deg_to_rad(block_data["rotation"][0])
+			block.base_rotation_degree = block_data["rotation"][0]
 			var target_grid = []
 			# 记录所有网格位置
 			for x in block.size.x:
 				for y in block.size.y:
 					var grid_pos
-					if block.rotation_to_parent == "up":
+					if block.base_rotation_degree == 0:
 						grid_pos = Vector2i(base_pos) + Vector2i(x, y)
-					elif block.rotation_to_parent == "right":
+					elif block.base_rotation_degree == 90:
 						grid_pos = Vector2i(base_pos) + Vector2i(-y, x)
-					elif block.rotation_to_parent == "left":
+					elif block.base_rotation_degree == -90:
 						grid_pos = Vector2i(base_pos) + Vector2i(y, -x)
 					else:
 						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)

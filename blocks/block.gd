@@ -13,7 +13,7 @@ var neighbors := {}
 var connected_blocks := []
 var global_grid_pos := []
 var mouse_inside:bool
-var rotation_to_parent = "up"
+var base_rotation_degree = 0
 var cost:Dictionary = {}
 var turret_compatible:bool
 var functioning:bool = true
@@ -365,15 +365,3 @@ func get_connection_point_by_index(index: int) -> ConnectionPoint:
 	if index >= 0 and index < available_points.size():
 		return available_points[index]
 	return null
-
-func caculate_direction_to_parent(rad:float):
-	var rad_r = round(rad)
-	
-	if rad_r == 0:
-		rotation_to_parent = "up"
-	elif rad_r == 2:
-		rotation_to_parent = "right"
-	elif rad_r == -2:
-		rotation_to_parent = "left"
-	else:
-		rotation_to_parent = "down"
