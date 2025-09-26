@@ -7,8 +7,8 @@ const LIFETIME:float = 5
 const KENETIC_DAMAGE:int = 50
 const MAX_EXPLOSIVE_DAMAGE:int = 3000
 const EXPLOSION_RADIUS:int = 100
-const MAX_THRUST:float = 800
-const ACCELERATION:float = 600
+const MAX_THRUST:float = 150000
+const ACCELERATION:float = 100000
 
 
 func _init():
