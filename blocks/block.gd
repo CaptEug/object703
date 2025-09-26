@@ -43,8 +43,8 @@ func _ready():
 	# Initialize physics properties
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight
-	linear_damp = 10
-	angular_damp = 10
+	linear_damp = 5
+	angular_damp = 5
 	collision_layer = 0
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D

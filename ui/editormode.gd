@@ -255,8 +255,12 @@ func _on_recycle_button_pressed():
 	is_recycle_mode = !is_recycle_mode
 	if is_recycle_mode:
 		Input.set_custom_mouse_cursor(preload("res://assets/icons/saw_cursor.png"))
+		if current_ghost_block:
+			current_ghost_block.visible = false
 	else:
 		Input.set_custom_mouse_cursor(null)
+		if current_ghost_block:
+			current_ghost_block.visible = true
 	update_recycle_button()
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
 
@@ -918,8 +922,9 @@ func try_remove_block():
 			var block_name = block.block_name
 			var connections_to_disconnect = find_connections_for_block(block)
 			disconnect_connections(connections_to_disconnect)
-			
+			var control = selected_vehicle.control
 			selected_vehicle.remove_block(block)
+			selected_vehicle.control = control
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			call_deferred("check_vehicle_stability")
 			print("移除块: ", block_name)
