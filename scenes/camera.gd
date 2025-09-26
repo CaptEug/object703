@@ -76,7 +76,7 @@ func movement(delta):
 
 	# Normalize to prevent diagonal speed boost
 	if input.length() > 0:
-		input = input.normalized()
+		input = input.normalized().rotated(target_rot)
 	target_pos += input * move_speed * delta
 
 
