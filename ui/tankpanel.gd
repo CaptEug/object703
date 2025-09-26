@@ -40,6 +40,11 @@ func _process(delta):
 				exit_focus = true
 		
 		queue_redraw()
+	
+	$CargoButton.visible = is_frontmost()
+	$ModifyButton.visible = is_frontmost()
+	
+		
 
 func _draw():
 	if selected_vehicle:
@@ -145,3 +150,9 @@ func find_grid(grid):
 
 func _on_close_button_pressed():
 	visible = false
+
+func is_frontmost() -> bool:
+	var parent = get_parent()
+	if parent == null:
+		return true  # Root node is always "frontmost" by default
+	return get_index() == parent.get_child_count() - 1

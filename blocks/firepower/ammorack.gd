@@ -41,7 +41,7 @@ func explode():
 	explosion.emitting = true
 	get_tree().current_scene.add_child(explosion)
 	exploded = true
-	var max_explosive_damage = ammo_storage * 10
+	var max_explosive_damage = ammo_storage * 5
 	var explosion_radius = ammo_storage/2
 	ammo_storage = 0
 	for block in explosion_area.get_overlapping_bodies():

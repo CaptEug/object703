@@ -1,6 +1,7 @@
 extends Weapon
 
 const HITPOINT:float = 4000
+const FUNCTION_HP:float = 1000
 const WEIGHT:float = 12000
 const BLOCK_NAME:String = '38cm sturmmorser'
 const SIZE:= Vector2(3, 3)
@@ -19,6 +20,7 @@ var rocket = preload("res://blocks/firepower/shells/rocket_380_mm.tscn")
 
 func _init():
 	current_hp = HITPOINT
+	function_hp = FUNCTION_HP
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE

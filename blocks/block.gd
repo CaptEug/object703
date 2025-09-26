@@ -125,11 +125,15 @@ func damage(amount:int):
 	current_hp -= amount
 	if current_hp <= function_hp:
 		functioning = false
+		broke()
 		if broken_sprite:
 			sprite.visible = false
 			broken_sprite.visible = true
 	if current_hp <= 0:
 		destroy()
+
+func broke():
+	pass
 
 func destroy():
 	# Disconnect all joints before destroying
