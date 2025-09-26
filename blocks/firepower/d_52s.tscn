@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://xjn5knyr2ii6"]
+[gd_scene load_steps=15 format=3 uid="uid://xjn5knyr2ii6"]
 
 [ext_resource type="Script" uid="uid://km7153n6lesi" path="res://blocks/firepower/d_52s.gd" id="1_7v3xy"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_8pcul"]
@@ -12,6 +12,10 @@ size = Vector2(32, 32)
 [sub_resource type="AtlasTexture" id="AtlasTexture_pcn55"]
 atlas = ExtResource("2_8pcul")
 region = Rect2(64, 192, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3wxfb"]
+atlas = ExtResource("2_8pcul")
+region = Rect2(64, 224, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ww6jp"]
 atlas = ExtResource("2_8pcul")
@@ -58,6 +62,10 @@ _data = {
 &"recoil0": SubResource("Animation_ww6jp")
 }
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_53buf"]
+atlas = ExtResource("2_8pcul")
+region = Rect2(32, 128, 32, 96)
+
 [node name="D52s" type="RigidBody2D"]
 script = ExtResource("1_7v3xy")
 metadata/_custom_type_script = "uid://umbrwl1bnc2h"
@@ -67,6 +75,10 @@ shape = SubResource("RectangleShape2D_ww6jp")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_pcn55")
+
+[node name="Broken" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("AtlasTexture_3wxfb")
 
 [node name="Turret" type="Sprite2D" parent="."]
 z_index = 2
@@ -89,6 +101,12 @@ libraries = {
 [node name="Crosshair" type="Sprite2D" parent="Turret"]
 visible = false
 texture = ExtResource("3_3wxfb")
+
+[node name="BrokenTurret" type="Sprite2D" parent="."]
+visible = false
+z_index = 2
+texture = SubResource("AtlasTexture_53buf")
+offset = Vector2(0, -32)
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_vnb2s")]
 position = Vector2(-16, 8)

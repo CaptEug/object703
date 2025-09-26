@@ -81,26 +81,42 @@ func draw_grid():
 	var grid_size = 16
 	var draw_pos = $Marker2D.position - Vector2(vehicle_size/2) * grid_size
 	var blocks = []
+	
 	for pos in grid:
 		if is_instance_valid(grid[pos]) and not blocks.has(grid[pos]):
 			blocks.append(grid[pos])
+			
 			var health_ratio = grid[pos].current_hp/grid[pos].HITPOINT
 			var line_color = health_gradient.sample(clamp(health_ratio, 0.0, 1.0))
+			var rot = 100*time # grid[pos].base_rotation_degree
+			var topleft = Vector2(pos) * grid_size
+			var center = Vector2(grid[pos].size) * grid_size / 2
+			
+			# Apply rotation
+			draw_set_transform(draw_pos + topleft + center, deg_to_rad(rot), Vector2.ONE)
+			
 			# If health is not full, make it pulse
 			if health_ratio < 1.0:
 				var blink_strength = 0.75 + 0.25 * sin(time * 4.0)  # range from 0 to 1
 				line_color = line_color * blink_strength
+			
 			# draw outline if the block has one
 			if "outline_tex" in grid[pos]:
 				var mask_tex = grid[pos].outline_tex
-				draw_texture(mask_tex, draw_pos + Vector2(pos) * grid_size, line_color)
+				draw_texture(mask_tex, -mask_tex.get_size() / 2, line_color)
 				continue
+			
 			# else only draw the shape
 			var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
 			if collisionshape and collisionshape.shape is RectangleShape2D:
+				if rot == 90 or rot == 270:
+					center = Vector2(center.y, center.x)
 				var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
-				var rect = Rect2(draw_pos + Vector2(pos) * grid_size + Vector2(line_width,line_width)/2, extents * 2)
+				var rect = Rect2(-extents, extents * 2)
 				draw_rect(rect, line_color, false, line_width)
+			
+			# Reset rotaion
+			draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 
 
 

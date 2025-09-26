@@ -6,7 +6,7 @@ const BLOCK_NAME:String = 'maybach HL 250'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)
 const MAX_POWER:float = 200000.0
-const ROTATING_POWER: float = 0.1
+const ROTATING_POWER: float = 0.2
 const POWER_CHANGE_RATE: float = 100000
 
 var description := ""

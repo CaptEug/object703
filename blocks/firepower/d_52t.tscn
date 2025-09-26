@@ -157,7 +157,7 @@ metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 
 [node name="ConnectionPoint5" type="Marker2D" parent="."]
 position = Vector2(-8, -8)
-rotation = -3.14159
+rotation = -3.14863
 script = ExtResource("3_yqdh3")
 metadata/_custom_type_script = "uid://bk4hgv1vkhg6f"
 

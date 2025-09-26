@@ -69,7 +69,7 @@ location = Vector2i(2, 2)
 
 [node name="ConnectionPoint7" parent="." instance=ExtResource("3_txfcf")]
 position = Vector2(16, 24)
-rotation = 1.58922
+rotation = 1.5708
 location = Vector2i(2, 2)
 
 [node name="ConnectionPoint8" parent="." instance=ExtResource("3_txfcf")]
