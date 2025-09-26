@@ -586,7 +586,7 @@ func remove_block_at_mouse():
 		ui_instance.update_inventory_display(inventory)
 		if is_editing_vehicle and current_vehicle:
 			# If in edit mode, remove from vehicle
-			current_vehicle.remove_block(block)
+			current_vehicle.remove_block(block, false)
 			print(block,"已处理")
 			# Remove from vehicle grid
 			for pos in current_vehicle.grid:

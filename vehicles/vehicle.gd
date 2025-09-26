@@ -124,9 +124,10 @@ func _add_block(block: Block,local_pos, grid_positions):
 		block.set_connection_enabled(true)
 	update_vehicle()
 
-func remove_block(block: Block):
+func remove_block(block: Block, imd: bool):
 	blocks.erase(block)
-	block.queue_free()
+	if imd:
+		block.queue_free()
 
 	var keys_to_erase = []
 	for pos in grid:
@@ -264,21 +265,62 @@ func load_from_blueprint(bp: Dictionary):
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = get_rotation_angle(block_data["rotation"])
 			block.rotation_to_parent = block_data["rotation"]
-			var local_pos = base_pos * GRID_SIZE + Vector2(block.size)*GRID_SIZE/2
 			var target_grid = []
 			# 记录所有网格位置
 			for x in block.size.x:
 				for y in block.size.y:
-					var grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+					var grid_pos
+					if block.rotation_to_parent == "up":
+						grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+					elif block.rotation_to_parent == "right":
+						grid_pos = Vector2i(base_pos) + Vector2i(-y, x)
+					elif block.rotation_to_parent == "left":
+						grid_pos = Vector2i(base_pos) + Vector2i(y, -x)
+					else:
+						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
 					target_grid.append(grid_pos)
+			var local_pos = get_rectangle_corners(target_grid)
 			_add_block(block, local_pos, target_grid)
+
+func get_rectangle_corners(grid_data):
+	if grid_data.is_empty():
+		return []
+	
+	var x_coords = []
+	var y_coords = []
+	
+	for coord in grid_data:
+		x_coords.append(coord[0])
+		y_coords.append(coord[1])
+	
+	x_coords.sort()
+	y_coords.sort()
+	
+	var min_x = x_coords[0]
+	var max_x = x_coords[x_coords.size() - 1]
+	var min_y = y_coords[0]
+	var max_y = y_coords[y_coords.size() - 1]
+	
+	var corners = {
+		"1": Vector2i(min_x, min_y),
+		"2": Vector2i(max_x, min_y),
+		"3": Vector2i(max_x, max_y),
+		"4": Vector2i(min_x, max_y)
+	}
+	
+	var vc_1 = Vector2(min_x * GRID_SIZE - GRID_SIZE/2, min_y * GRID_SIZE - GRID_SIZE/2)
+	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE/2, max_y * GRID_SIZE + GRID_SIZE/2)
+	
+	var pos = (vc_1 + vc_2)/2
+	
+	return pos
 
 
 func get_rotation_angle(dir: String) -> float:
 	match dir:
-		"left":    return PI/2
+		"left":    return -PI/2
 		"up": return 0
-		"right":  return -PI/2
+		"right":  return PI/2
 		"down":  return PI
 		_:       return 0
 

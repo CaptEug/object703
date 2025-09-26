@@ -79,6 +79,7 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		if is_editing:
 			exit_editor_mode()
+			
 		else:
 			if selected_vehicle == null:
 				find_and_select_vehicle()
@@ -321,8 +322,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	
 	print("=== 进入编辑模式 ===")
 	
-	save_original_connections()
-	enable_all_connection_points_for_editing()
+	enable_all_connection_points_for_editing(true)
 	
 	vehicle.control = Callable()
 	show()
@@ -340,6 +340,9 @@ func exit_editor_mode():
 	print("=== 退出编辑模式 ===")
 	
 	restore_original_connections()
+	if is_recycle_mode:
+		is_recycle_mode = false
+		Input.set_custom_mouse_cursor(null)
 	
 	if current_ghost_block:
 		current_ghost_block.queue_free()
@@ -353,36 +356,8 @@ func exit_editor_mode():
 	selected_vehicle = null
 	print("=== 编辑模式已退出 ===")
 
-func save_original_connections():
-	original_connections.clear()
-	
-	if not selected_vehicle:
-		return
-	
-	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			for point in block.connection_points:
-				if is_instance_valid(point) and point.connected_to:
-					var connection_key = get_connection_key(point, point.connected_to)
-					original_connections[connection_key] = {
-						"from_point": point,
-						"to_point": point.connected_to,
-						"from_block": block,
-						"to_block": point.connected_to.find_parent_block()
-					}
 
-func get_connection_key(point_a: ConnectionPoint, point_b: ConnectionPoint) -> String:
-	var block_a = point_a.find_parent_block()
-	var block_b = point_b.find_parent_block()
-	
-	if not block_a or not block_b:
-		return ""
-	
-	var paths = [str(block_a.get_path()) + ":" + point_a.name, str(block_b.get_path()) + ":" + point_b.name]
-	paths.sort()
-	return paths[0] + "<->" + paths[1]
-
-func enable_all_connection_points_for_editing():
+func enable_all_connection_points_for_editing(open: bool):
 	if not selected_vehicle:
 		return
 	
@@ -390,34 +365,17 @@ func enable_all_connection_points_for_editing():
 		if is_instance_valid(block):
 			for point in block.connection_points:
 				if is_instance_valid(point):
-					point.set_connection_enabled(true)
+					point.set_connection_enabled(open)
 
 func restore_original_connections():
 	if not selected_vehicle:
 		return
 	
-	enable_all_connection_points_for_editing()
+	enable_all_connection_points_for_editing(false)
 	await get_tree().process_frame
 	
 	var restored_count = 0
-	for connection_key in original_connections:
-		var connection = original_connections[connection_key]
-		
-		if (is_instance_valid(connection.from_point) and 
-			is_instance_valid(connection.to_point) and
-			is_instance_valid(connection.from_block) and
-			is_instance_valid(connection.to_block)):
-			
-			if (connection.from_point.is_connection_enabled and 
-				connection.to_point.is_connection_enabled and
-				not connection.from_point.connected_to and
-				not connection.to_point.connected_to):
-				
-				if connection.from_point.can_connect_with(connection.to_point):
-					connection.from_point.request_connection(connection.from_point, connection.to_point)
-					restored_count += 1
-	
-	print("成功恢复 ", restored_count, " 个连接")
+
 
 func start_block_placement(scene_path: String):
 	if not is_editing or not selected_vehicle:
@@ -923,7 +881,7 @@ func try_remove_block():
 			var connections_to_disconnect = find_connections_for_block(block)
 			disconnect_connections(connections_to_disconnect)
 			var control = selected_vehicle.control
-			selected_vehicle.remove_block(block)
+			selected_vehicle.remove_block(block, true)
 			selected_vehicle.control = control
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			call_deferred("check_vehicle_stability")
@@ -1054,7 +1012,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 		var block = selected_vehicle.grid[grid_pos]
 		if not processed_blocks.has(block):
 			var relative_pos = Vector2i(grid_pos.x - min_x, grid_pos.y - min_y)
-			var rotation_str = get_rotation_direction(block.global_rotation)
+			var rotation_str = block.rotation_to_parent
 			
 			blueprint_data["blocks"][str(block_counter)] = {
 				"name": block.block_name,
