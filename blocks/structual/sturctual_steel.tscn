@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://mhdmtcnulntf"]
+[gd_scene load_steps=6 format=3 uid="uid://mhdmtcnulntf"]
 
 [ext_resource type="Script" path="res://blocks/structual/sturctual_steel.gd" id="1_wnjsi"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_h62yd"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_xlf4v"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wnjsi"]
 size = Vector2(16, 16)
@@ -19,3 +20,18 @@ shape = SubResource("RectangleShape2D_wnjsi")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_xlf4v")
+
+[node name="ConnectionPoint" parent="." instance=ExtResource("3_xlf4v")]
+position = Vector2(0, -8)
+rotation = -1.57079
+
+[node name="ConnectionPoint2" parent="." instance=ExtResource("3_xlf4v")]
+position = Vector2(8, 0)
+
+[node name="ConnectionPoint3" parent="." instance=ExtResource("3_xlf4v")]
+position = Vector2(0, 8)
+rotation = 1.57079
+
+[node name="ConnectionPoint4" parent="." instance=ExtResource("3_xlf4v")]
+position = Vector2(-8, 0)
+rotation = 3.13841

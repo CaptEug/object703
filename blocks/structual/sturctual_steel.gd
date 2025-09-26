@@ -1,7 +1,7 @@
 extends Block
 
-const HITPOINT:float = 100
-const WEIGHT:float = 500
+const HITPOINT:float = 200
+const WEIGHT:float = 100
 const BLOCK_NAME:String = 'structual steel'
 const SIZE:= Vector2(1, 1)
 const COST:= [
