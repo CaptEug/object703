@@ -7,7 +7,7 @@
 			],
 			"name": "38cm sturmmorser",
 			"path": "res://blocks/firepower/sturmmorser.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"10": {
 			"base_pos": [
@@ -16,7 +16,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"11": {
 			"base_pos": [
@@ -25,7 +25,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"12": {
 			"base_pos": [
@@ -34,7 +34,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"13": {
 			"base_pos": [
@@ -43,7 +43,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"14": {
 			"base_pos": [
@@ -52,7 +52,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"15": {
 			"base_pos": [
@@ -61,7 +61,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"16": {
 			"base_pos": [
@@ -70,7 +70,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"17": {
 			"base_pos": [
@@ -79,7 +79,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"2": {
 			"base_pos": [
@@ -88,7 +88,7 @@
 			],
 			"name": "ammo rack",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"3": {
 			"base_pos": [
@@ -97,7 +97,7 @@
 			],
 			"name": "ammo rack",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"4": {
 			"base_pos": [
@@ -106,7 +106,7 @@
 			],
 			"name": "command cupola",
 			"path": "res://blocks/command/cupola.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"5": {
 			"base_pos": [
@@ -115,7 +115,7 @@
 			],
 			"name": "maybach HL 250",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"6": {
 			"base_pos": [
@@ -124,7 +124,7 @@
 			],
 			"name": "fuel tank",
 			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"7": {
 			"base_pos": [
@@ -133,7 +133,7 @@
 			],
 			"name": "fuel tank",
 			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"8": {
 			"base_pos": [
@@ -142,7 +142,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		},
 		"9": {
 			"base_pos": [
@@ -151,7 +151,7 @@
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up"
+			"rotation": [0]
 		}
 	},
 	"name": "sturmtiger",

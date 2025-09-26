@@ -7,7 +7,7 @@
 			],
 			"name": "Kwak45",
 			"path": "res://blocks/firepower/d_52s.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				2,
 				2
@@ -20,7 +20,7 @@
 			],
 			"name": "rusty_track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -33,7 +33,7 @@
 			],
 			"name": "@RigidBody2D@177",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -46,7 +46,7 @@
 			],
 			"name": "@RigidBody2D@180",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -59,7 +59,7 @@
 			],
 			"name": "@RigidBody2D@183",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -72,7 +72,7 @@
 			],
 			"name": "@RigidBody2D@186",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -85,7 +85,7 @@
 			],
 			"name": "@RigidBody2D@190",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -98,7 +98,7 @@
 			],
 			"name": "@RigidBody2D@192",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -111,7 +111,7 @@
 			],
 			"name": "@RigidBody2D@196",
 			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -124,7 +124,7 @@
 			],
 			"name": "Ammo",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -137,7 +137,7 @@
 			],
 			"name": "@RigidBody2D@161",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -150,7 +150,7 @@
 			],
 			"name": "FuelTank",
 			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -163,7 +163,7 @@
 			],
 			"name": "@RigidBody2D@164",
 			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -176,7 +176,7 @@
 			],
 			"name": "Engine",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -189,7 +189,7 @@
 			],
 			"name": "@RigidBody2D@167",
 			"path": "res://blocks/mobility/maybach_hl_250.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -202,7 +202,7 @@
 			],
 			"name": "Cupola",
 			"path": "res://blocks/command/cupola.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1
@@ -215,7 +215,7 @@
 			],
 			"name": "@RigidBody2D@171",
 			"path": "res://blocks/command/cupola.tscn",
-			"rotation": "up",
+			"rotation": [0],
 			"size": [
 				1,
 				1

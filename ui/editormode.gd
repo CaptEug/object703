@@ -40,7 +40,6 @@ var current_vehicle_connection_index := 0
 var available_ghost_points: Array[ConnectionPoint] = []
 var available_vehicle_points: Array[ConnectionPoint] = []
 var current_snap_config: Dictionary = {}
-var base_ghost_rotation := 0.0 
 var snap_config
 
 # 存储原始连接状态
@@ -117,6 +116,7 @@ func _process(delta):
 		
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
+	
 		
 	if Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
@@ -349,7 +349,6 @@ func exit_editor_mode():
 		current_ghost_block = null
 	
 	camera.target_rot = 0.0
-	print("yes")
 	
 	hide()
 	is_editing = false
@@ -399,8 +398,8 @@ func start_block_placement(scene_path: String):
 	current_ghost_block.do_connect = false
 	
 	# 重置基础旋转角度
-	base_ghost_rotation = 0
-	current_ghost_block.rotation = base_ghost_rotation
+	current_ghost_block.base_rotation_degree = 0
+	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
 	setup_ghost_block_collision(current_ghost_block)
 	
@@ -432,7 +431,7 @@ func update_ghost_block_position(mouse_position: Vector2):
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
 		# 没有可用连接点，自由移动
 		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = base_ghost_rotation + camera.target_rot# 使用基础旋转
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot# 使用基础旋转
 		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
 		current_snap_config = {}
 		return
@@ -450,7 +449,7 @@ func update_ghost_block_position(mouse_position: Vector2):
 	else:
 		# 自由移动
 		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = base_ghost_rotation  # 使用基础旋转
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)  # 使用基础旋转
 		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
 		current_snap_config = {}
 
@@ -515,31 +514,8 @@ func find_best_snap_config() -> Dictionary:
 	return best_config
 
 func calculate_aligned_rotation_from_base(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
-	var dir = vehicle_block.rotation_to_parent
-	var dir_to_rad = 0
-	if dir == "up":
-		dir_to_rad = 0
-	elif dir == "right":
-		dir_to_rad = -PI/2
-	elif dir == "left":
-		dir_to_rad = PI/2
-	else:
-		dir_to_rad = PI
-	return base_ghost_rotation + dir_to_rad + vehicle_block.global_rotation
-
-func calculate_aligned_direction_from_base(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
-	# 计算相对于基础旋转的对齐角度
-	var result_rotation = 0.0
-	# 计算连接点之间的角度差异
-	var angle_diff = fmod(vehicle_block.global_rotation + PI, PI * 2) - PI - base_ghost_rotation
-	angle_diff = normalize_rotation_simple(angle_diff)	
-	if angle_diff >= 0:
-		if PI/2 - angle_diff >= angle_diff:
-			result_rotation = base_ghost_rotation + angle_diff
-		else:
-			result_rotation = base_ghost_rotation - (PI/2 - abs(angle_diff))	
-		
-	return result_rotation
+	var dir = vehicle_block.base_rotation_degree
+	return deg_to_rad(current_ghost_block.base_rotation_degree) + deg_to_rad(-dir) + vehicle_block.global_rotation
 
 func normalize_rotation_simple(angle: float) -> float:
 	var normalized = wrapf(angle, 0, PI/2)
@@ -577,19 +553,17 @@ func rotate_ghost_connection():
 		return
 	
 	# 旋转基础旋转90度
-	base_ghost_rotation += PI / 2
-	base_ghost_rotation = fmod(base_ghost_rotation + PI, PI * 2) - PI
+	current_ghost_block.base_rotation_degree += 90
+	current_ghost_block.base_rotation_degree = fmod(current_ghost_block.base_rotation_degree + 90, 360) - 90
 	
 	# 更新幽灵方块显示（使用基础旋转）
-	current_ghost_block.rotation = base_ghost_rotation
+	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
 	# 更新位置
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	update_ghost_block_position(global_mouse_pos)
 	
-	print("基础旋转调整到: ", rad_to_deg(base_ghost_rotation), " 度")
-
 func switch_vehicle_connection():
 	if available_vehicle_points.is_empty():
 		return
@@ -644,7 +618,7 @@ func try_place_block():
 	selected_vehicle.add_child(new_block)
 	new_block.global_position = current_snap_config.ghost_position
 	new_block.global_rotation = current_ghost_block.global_rotation
-	new_block.caculate_direction_to_parent(base_ghost_rotation)
+	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
 	var control = selected_vehicle.control
 	# 计算网格位置并更新
 	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
@@ -652,13 +626,15 @@ func try_place_block():
 	selected_vehicle.control = control
 	
 	# 继续放置同一类型的块（保持当前基础旋转）
-	start_block_placement_with_rotation(current_block_scene.resource_path, base_ghost_rotation)
+	start_block_placement_with_rotation(current_block_scene.resource_path, current_ghost_block.base_rotation_degree)
 
 func start_block_placement_with_rotation(scene_path: String, rotation: float):
 	if not is_editing or not selected_vehicle:
 		return
 	
 	print("开始放置块: ", scene_path.get_file(), " 基础旋转: ", rad_to_deg(rotation), " 度")
+	
+	var base_rotation_degree = current_ghost_block.base_rotation_degree
 	
 	if current_ghost_block:
 		current_ghost_block.queue_free()
@@ -676,8 +652,8 @@ func start_block_placement_with_rotation(scene_path: String, rotation: float):
 	current_ghost_block.do_connect = false
 	
 	# 保持之前的基础旋转
-	base_ghost_rotation = rotation
-	current_ghost_block.rotation = base_ghost_rotation
+	current_ghost_block.base_rotation_degree = base_rotation_degree
+	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
 	
 	setup_ghost_block_collision(current_ghost_block)
 	
@@ -715,7 +691,7 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation)
 	var location_g = ghostpoint.location
 	var location_v = vehiclepoint.location
 	
-	var rotation_b = round(vehiclepoint.find_parent_block().rotation)
+	var rotation_b = vehiclepoint.find_parent_block().base_rotation_degree
 	var grid_b = {}
 	var grid_b_pos = {}
 	
@@ -728,18 +704,16 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation)
 	if grid_b_pos.is_empty():
 		return false
 	# 提取重复的连接点计算逻辑
+	var connect_pos_v
 	if rotation_b == 0:
-		var connect_pos_v = Vector2i(grid_b_pos["1"].x + location_v.x, grid_b_pos["1"].y + location_v.y)
-		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
-	elif rotation_b == -2:
-		var connect_pos_v = Vector2i(grid_b_pos["4"].x + location_v.y, grid_b_pos["4"].y - location_v.x)
-		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
-	elif rotation_b == -3:
-		var connect_pos_v = Vector2i(grid_b_pos["3"].x - location_v.x, grid_b_pos["3"].y - location_v.y)
-		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
-	elif rotation_b == 2:
-		var connect_pos_v = Vector2i(grid_b_pos["2"].x - location_v.y, grid_b_pos["2"].y + location_v.x)
-		grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().rotation_to_parent)
+		connect_pos_v = Vector2i(grid_b_pos["1"].x + location_v.x, grid_b_pos["1"].y + location_v.y)
+	elif rotation_b == -90:
+		connect_pos_v = Vector2i(grid_b_pos["4"].x + location_v.y, grid_b_pos["4"].y - location_v.x)
+	elif rotation_b == -180 or rotation_b == 180:
+		connect_pos_v = Vector2i(grid_b_pos["3"].x - location_v.x, grid_b_pos["3"].y - location_v.y)
+	elif rotation_b == 90:
+		connect_pos_v = Vector2i(grid_b_pos["2"].x - location_v.y, grid_b_pos["2"].y + location_v.x)
+	grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().base_rotation_degree)
 	
 	if grid_connect_g != null and block_size != null and ghostpoint.location != null:
 		grid_block = to_grid(grid_connect_g, block_size, ghostpoint.location, target_rotation)
@@ -749,30 +723,22 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation)
 			return false
 		grid_positions.append(pos)
 	
+	
 	return grid_positions
 
 # 提取的重复逻辑函数
-func get_connection_offset(connect_pos_v: Vector2i, rotation: float, direction: String) -> Vector2i:
-	var rounded_rotation_or = rotation
-	var rounded_rotation = 0
-	if direction == "up":
-		rounded_rotation = rounded_rotation_or
-	elif direction == "left":
-		rounded_rotation = rounded_rotation_or - PI/2
-	elif direction == "right":
-		rounded_rotation = rounded_rotation_or + PI/2
-	elif direction == "down":
-		rounded_rotation = rounded_rotation_or + PI
-	
-	rounded_rotation = round(wrapf(rounded_rotation, -PI, PI))
+func get_connection_offset(connect_pos_v: Vector2i, rotation: float, direction: int) -> Vector2i:
+	var rounded_rotation_or = round(rad_to_deg(rotation))
+	var rounded_rotation = direction + rounded_rotation_or
+	rounded_rotation = wrapf(rounded_rotation, -180, 180)
 	
 	if rounded_rotation == 0:
 		return Vector2i(connect_pos_v.x + 1, connect_pos_v.y)
-	elif rounded_rotation == -2:
+	elif rounded_rotation == -90:
 		return Vector2i(connect_pos_v.x, connect_pos_v.y - 1)
-	elif rounded_rotation == -3 or rounded_rotation == 3:
+	elif rounded_rotation == -180 or rounded_rotation == 180:
 		return Vector2i(connect_pos_v.x - 1, connect_pos_v.y)
-	elif rounded_rotation == 2:
+	elif rounded_rotation == 90:
 		return Vector2i(connect_pos_v.x, connect_pos_v.y + 1)
 	
 	return connect_pos_v
@@ -807,22 +773,20 @@ func get_rectangle_corners(grid_data: Dictionary) -> Dictionary:
 
 func to_grid(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g: Vector2i, target_rotaion: float) -> Dictionary:
 	var grid_block = {}
-	var current_xd_rotaion = selected_vehicle
 	for i in block_size.x:
 		for j in block_size.y:
-			if round(base_ghost_rotation) == 0:
+			if current_ghost_block.base_rotation_degree == 0:
 				var left_up = Vector2i(grid_connect_g.x - connect_pos_g.x, grid_connect_g.y - connect_pos_g.y)
 				grid_block[Vector2i(left_up.x + i, left_up.y + j)] = current_ghost_block
-			elif round(base_ghost_rotation) == -2:
+			elif current_ghost_block.base_rotation_degree == -90:
 				var left_up = Vector2i(grid_connect_g.x - connect_pos_g.y, grid_connect_g.y + connect_pos_g.x)
 				grid_block[Vector2i(left_up.x + j, left_up.y - i)] = current_ghost_block
-			elif round(base_ghost_rotation) == -3:
+			elif current_ghost_block.base_rotation_degree == -180 or current_ghost_block.base_rotation_degree == 180:
 				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.x, grid_connect_g.y + connect_pos_g.y)
 				grid_block[Vector2i(left_up.x - i, left_up.y - j)] = current_ghost_block
-			elif round(base_ghost_rotation) == 2:
+			elif current_ghost_block.base_rotation_degree == 90:
 				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.y, grid_connect_g.y - connect_pos_g.x)
 				grid_block[Vector2i(left_up.x - j, left_up.y + i)] = current_ghost_block
-	
 	return grid_block
 	
 
@@ -991,7 +955,8 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	var blueprint_data = {
 		"name": vehicle_name,
 		"blocks": {},
-		"vehicle_size": [0, 0]
+		"vehicle_size": [0, 0],
+		"rotation": [0]
 	}
 	
 	var block_counter = 1
@@ -1012,13 +977,13 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 		var block = selected_vehicle.grid[grid_pos]
 		if not processed_blocks.has(block):
 			var relative_pos = Vector2i(grid_pos.x - min_x, grid_pos.y - min_y)
-			var rotation_str = block.rotation_to_parent
+			var rotation_str = block.base_rotation_degree
 			
 			blueprint_data["blocks"][str(block_counter)] = {
 				"name": block.block_name,
 				"path": block.scene_file_path,
 				"base_pos": [relative_pos.x, relative_pos.y],
-				"rotation": rotation_str,
+				"rotation": [rotation_str],
 			}
 			block_counter += 1
 			processed_blocks[block] = true
