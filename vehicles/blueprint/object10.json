@@ -1,0 +1,199 @@
+{
+	"blocks": {
+		"1": {
+			"base_pos": [
+				1,
+				0
+			],
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"10": {
+			"base_pos": [
+				1,
+				3
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"11": {
+			"base_pos": [
+				2,
+				3
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"12": {
+			"base_pos": [
+				3,
+				0
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"13": {
+			"base_pos": [
+				0,
+				0
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": [
+				-90.0
+			]
+		},
+		"14": {
+			"base_pos": [
+				3,
+				4
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": [
+				90.0
+			]
+		},
+		"15": {
+			"base_pos": [
+				0,
+				4
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": [
+				180.0
+			]
+		},
+		"16": {
+			"base_pos": [
+				1,
+				4
+			],
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"17": {
+			"base_pos": [
+				2,
+				4
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"2": {
+			"base_pos": [
+				0,
+				3
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"3": {
+			"base_pos": [
+				0,
+				2
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"4": {
+			"base_pos": [
+				0,
+				1
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"5": {
+			"base_pos": [
+				3,
+				1
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"6": {
+			"base_pos": [
+				3,
+				2
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"7": {
+			"base_pos": [
+				3,
+				3
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"8": {
+			"base_pos": [
+				1,
+				2
+			],
+			"name": "maybach HL 250",
+			"path": "res://blocks/mobility/maybach_hl_250.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"9": {
+			"base_pos": [
+				2,
+				2
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": [
+				0.0
+			]
+		}
+	},
+	"name": "object10",
+	"rotation": [
+		0
+	],
+	"vehicle_size": [
+		4,
+		5
+	]
+}

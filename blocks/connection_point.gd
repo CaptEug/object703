@@ -1,6 +1,7 @@
 class_name ConnectionPoint
 extends Marker2D
 
+@onready var line = $Line2D
 # 严格对齐参数
 @export var is_connection_enabled := true
 @export var connection_range := 5.0  # 非常小的连接范围
@@ -14,7 +15,9 @@ var detection_area: Area2D
 var overlapping_points: Array[ConnectionPoint] = []
 var qeck = true
 
+
 func _ready():
+	line.visible = false
 	setup_detection_area()
 	queue_redraw()
 	
@@ -31,6 +34,7 @@ func _process(_delta):
 		if connected_to == other_point:
 			# 可以在这里添加维持连接的逻辑
 			pass
+	
 
 func setup_detection_area():
 	detection_area = Area2D.new()
