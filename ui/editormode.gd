@@ -59,7 +59,7 @@ func _ready():
 	
 	var connect_result = vehicle_saved.connect(_on_vehicle_saved)
 	if connect_result == OK:
-		print("✅ vehicle_saved 信号连接成功")
+		print("✅ vehicle_saved Signal connected successfully")
 	else:
 		print("❌ vehicle_saved 信号连接失败，错误代码:", connect_result)
 		# 检查连接状态
@@ -279,7 +279,7 @@ func reload_blocks():
 
 # === 编辑器模式功能 ===
 func initialize_editor():
-	print("正在初始化编辑器...")
+	print("Initializing editor...")
 	
 	var testground = get_tree().current_scene
 	if testground:
@@ -291,7 +291,7 @@ func initialize_editor():
 					panel_instance = item
 					break
 	
-	print("编辑器初始化完成")
+	print("Editor initialization completed")
 
 func find_and_select_vehicle():
 	var testground = get_tree().current_scene
@@ -307,7 +307,7 @@ func find_and_select_vehicle():
 		if panel_instance.selected_vehicle:
 			selected_vehicle = panel_instance.selected_vehicle
 			name_input.text = selected_vehicle.vehicle_name
-			print("找到车辆: ", selected_vehicle.vehicle_name)
+			print("Find the vehicle: ", selected_vehicle.vehicle_name)
 			return
 
 func enter_editor_mode(vehicle: Vehicle):
@@ -320,7 +320,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	camera.focus_on_vehicle(selected_vehicle)
 	camera.sync_rotation_to_vehicle(selected_vehicle)
 	
-	print("=== 进入编辑模式 ===")
+	print("=== Enter edit mode ===")
 	
 	enable_all_connection_points_for_editing(true)
 	
@@ -331,13 +331,13 @@ func enter_editor_mode(vehicle: Vehicle):
 	current_ghost_connection_index = 0
 	current_vehicle_connection_index = 0
 	
-	print("=== 编辑模式就绪 ===")
+	print("=== Edit mode ready ===")
 
 func exit_editor_mode():
 	if not is_editing:
 		return
 	
-	print("=== 退出编辑模式 ===")
+	print("=== Exit edit mode ===")
 	
 	restore_original_connections()
 	if is_recycle_mode:
@@ -380,7 +380,7 @@ func start_block_placement(scene_path: String):
 	if not is_editing or not selected_vehicle:
 		return
 	
-	print("开始放置块: ", scene_path.get_file())
+	print("Start placing blocks: ", scene_path.get_file())
 	
 	if current_ghost_block:
 		current_ghost_block.queue_free()
@@ -388,7 +388,7 @@ func start_block_placement(scene_path: String):
 	
 	current_block_scene = load(scene_path)
 	if not current_block_scene:
-		push_error("无法加载块场景: ", scene_path)
+		push_error("Unable to load block scene: ", scene_path)
 		return
 	
 	current_ghost_block = current_block_scene.instantiate()
@@ -632,7 +632,7 @@ func start_block_placement_with_rotation(scene_path: String, rotation: float):
 	if not is_editing or not selected_vehicle:
 		return
 	
-	print("开始放置块: ", scene_path.get_file(), " 基础旋转: ", rad_to_deg(rotation), " 度")
+	print("Start placing blocks: ", current_ghost_block.block_name, " Basic rotation: ", current_ghost_block.base_rotation_degree, " degree")
 	
 	var base_rotation_degree = current_ghost_block.base_rotation_degree
 	
@@ -838,7 +838,7 @@ func try_remove_block():
 		var block = collision.collider
 		if block is Block and block.get_parent() == selected_vehicle:
 			if block is Command:
-				print("不能移除命令块")
+				print("Cannot remove command block")
 				continue
 			
 			var block_name = block.block_name
@@ -849,7 +849,7 @@ func try_remove_block():
 			selected_vehicle.control = control
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			call_deferred("check_vehicle_stability")
-			print("移除块: ", block_name)
+			print("Remove block: ", block_name)
 			break
 
 func find_connections_for_block(block: Block) -> Array:
@@ -936,10 +936,10 @@ func _on_vehicle_saved(vehicle_name: String):
 
 func save_vehicle(vehicle_name: String):
 	if not selected_vehicle:
-		print("错误: 没有选中的车辆")
+		print("Error: No vehicle selected")
 		return
 	
-	print("正在保存车辆: ", vehicle_name)
+	print("Saving vehicle: ", vehicle_name)
 	
 	var blueprint_data = create_blueprint_data(vehicle_name)
 	var blueprint_path = "res://vehicles/blueprint/%s.json" % vehicle_name
@@ -947,9 +947,9 @@ func save_vehicle(vehicle_name: String):
 	if save_blueprint(blueprint_data, blueprint_path):
 		selected_vehicle.vehicle_name = vehicle_name
 		selected_vehicle.blueprint = blueprint_data
-		print("车辆保存成功: ", blueprint_path)
+		print("Vehicle saved successfully: ", blueprint_path)
 	else:
-		push_error("车辆保存失败")
+		push_error("Failed to save the vehicle")
 
 func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	var blueprint_data = {
@@ -1011,8 +1011,8 @@ func save_blueprint(blueprint_data: Dictionary, save_path: String) -> bool:
 	if file:
 		file.store_string(JSON.stringify(blueprint_data, "\t"))
 		file.close()
-		print("车辆蓝图已保存到:", save_path)
+		print("Vehicle blueprint has been saved to:", save_path)
 		return true
 	else:
-		push_error("文件保存失败:", FileAccess.get_open_error())
+		push_error("Failed to save file:", FileAccess.get_open_error())
 		return false
