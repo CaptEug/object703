@@ -69,10 +69,6 @@ func _ready():
 
 
 func _process(_delta):
-	var pin = get_children()
-	for ping in pin:
-		if ping is PinJoint2D:
-			var target = joint_connected_blocks[ping]
 	pass
 	
 	
