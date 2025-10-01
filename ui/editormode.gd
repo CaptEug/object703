@@ -426,6 +426,7 @@ func setup_ghost_block_collision(ghost: Node2D):
 func update_ghost_block_position(mouse_position: Vector2):
 	# 获取附近的车辆连接点
 	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
+	print(available_vehicle_points)
 	available_ghost_points = get_ghost_block_available_connection_points()
 	
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():

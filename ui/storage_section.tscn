@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqixwd0vdlyat"]
+
+[ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="1_k7c5s"]
+
+[node name="PanelContainer" type="PanelContainer"]
+offset_right = 20.0
+offset_bottom = 24.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_k7c5s")
+text = "C1"
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+columns = 6

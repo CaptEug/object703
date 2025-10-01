@@ -23,12 +23,15 @@ texture = SubResource("AtlasTexture_gims6")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_gims6")]
 position = Vector2(0, -8)
+rotation = -1.57079
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("3_gims6")]
 position = Vector2(8, 0)
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("3_gims6")]
 position = Vector2(0, 8)
+rotation = 1.57079
 
 [node name="ConnectionPoint4" parent="." instance=ExtResource("3_gims6")]
 position = Vector2(-8, 0)
+rotation = -3.14159
