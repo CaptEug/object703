@@ -1,7 +1,6 @@
 extends Weapon
 
 const HITPOINT:float = 800
-const FUNCTION_HP:float = 200
 const WEIGHT:float = 5000
 const BLOCK_NAME:String = '57mm duel barrel gun Zis-57-2'
 const SIZE:= Vector2(2, 2)
@@ -18,8 +17,8 @@ var description := ""
 var ap_shell = preload("res://blocks/firepower/shells/br_273_p.tscn")
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
-	function_hp = FUNCTION_HP
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE

@@ -3,7 +3,7 @@ extends RigidBody2D
 
 ## Basic Properties
 var current_hp:float
-var function_hp:= 0.0
+var max_hp:float
 var weight:float
 var block_name:String
 var type:String
@@ -69,10 +69,6 @@ func _ready():
 
 
 func _process(_delta):
-	var pin = get_children()
-	for ping in pin:
-		if ping is PinJoint2D:
-			var target = joint_connected_blocks[ping]
 	pass
 	
 	
@@ -123,17 +119,24 @@ func _on_mouse_exited():
 func damage(amount:int):
 	print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
-	if current_hp <= function_hp:
-		functioning = false
+	# phase 1
+	if current_hp <= max_hp * 0.5:
 		broke()
-		if broken_sprite:
-			sprite.visible = false
-			broken_sprite.visible = true
-	if current_hp <= 0:
+	
+	# phase 2
+	if current_hp <= max_hp * 0.25:
 		destroy()
+	
+	# phase 3
+	if current_hp <= 0:
+		queue_free()
 
 func broke():
-	pass
+	functioning = false
+	if broken_sprite:
+		sprite.visible = false
+		broken_sprite.visible = true
+
 
 func destroy():
 	# Disconnect all joints before destroying

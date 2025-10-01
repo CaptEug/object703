@@ -221,6 +221,7 @@ func manual_target(delta):
 
 
 func broke():
+	super.broke()
 	if turret:
 		turret.visible = false
 	if broken_turret:

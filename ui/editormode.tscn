@@ -14,9 +14,8 @@ script = ExtResource("2_8aq6r")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
-offset_top = 392.0
+offset_top = -256.0
 offset_right = 256.0
-offset_bottom = 648.0
 
 [node name="NameInput" type="LineEdit" parent="Panel"]
 layout_mode = 0
@@ -65,10 +64,10 @@ texture_normal = ExtResource("5_3clpp")
 
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 0
-offset_left = 262.0
-offset_top = 453.0
-offset_right = 1124.0
-offset_bottom = 640.0
+offset_left = 260.0
+offset_top = -197.0
+offset_right = 1122.0
+offset_bottom = -10.0
 scale = Vector2(1.02583, 1.03036)
 
 [node name="SaveDialog" type="AcceptDialog" parent="."]

@@ -12,6 +12,7 @@ const POWER_CHANGE_RATE: float = 100000
 var description := ""
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME

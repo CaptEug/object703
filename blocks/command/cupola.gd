@@ -9,8 +9,8 @@ const TYPE:= 'Command'
 const DETECT_RANGE:float = 800
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
-	function_hp = FUNCTION_HP
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	detect_range = DETECT_RANGE

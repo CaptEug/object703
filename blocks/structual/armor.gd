@@ -10,6 +10,7 @@ const COST:= [
 
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME

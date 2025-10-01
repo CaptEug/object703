@@ -18,6 +18,7 @@ var description := ""
 var sap_shell = preload("res://blocks/firepower/shells/br_473.tscn")
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME

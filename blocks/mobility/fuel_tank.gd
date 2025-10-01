@@ -6,11 +6,11 @@ const BLOCK_NAME:String = 'fuel tank'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)
 const FUEL_CAPACITY:= 100000000
-var icons:Dictionary = {"normal":"res://assets/icons/engine_icon.png","selected":"res://assets/icons/engine_icon_n.png"}
 
 var description := ""
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME

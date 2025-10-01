@@ -11,6 +11,7 @@ var inventory:Array = []
 @export var slot_count := 20
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME

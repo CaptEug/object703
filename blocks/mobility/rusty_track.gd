@@ -12,6 +12,7 @@ var description := ""
 var outline_tex := preload("res://assets/icons/track_outline.png")
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME

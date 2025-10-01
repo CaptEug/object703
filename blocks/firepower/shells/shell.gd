@@ -20,7 +20,7 @@ var trail:Line2D
 var from:Vehicle
 var stopped := false
 var explosion_particle = preload("res://assets/particles/explosion.tscn")
-var spark_particla = preload("res://assets/particles/spark.tscn")
+var spark_particle = preload("res://assets/particles/spark.tscn")
 
 
 func _ready():
@@ -45,7 +45,7 @@ func _ready():
 	
 
 
-func _process(delta):
+func _physics_process(delta):
 	if max_thrust and not stopped:
 		propel(delta)
 
@@ -106,9 +106,9 @@ func _on_shell_body_entered(block:Block):
 			if max_explosive_damage:
 				explode()
 			else:
-				var spark = spark_particla.instantiate()
+				var spark = spark_particle.instantiate()
 				spark.position = global_position
-				spark.rotation =  linear_velocity.angle()
+				spark.rotation = linear_velocity.angle()
 				spark.emitting = true
 				get_tree().current_scene.add_child(spark)
 			stop()

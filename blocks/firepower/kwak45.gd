@@ -1,7 +1,6 @@
 extends Weapon
 
 const HITPOINT:float = 1000
-const FUNCTION_HP = 250
 const WEIGHT:float = 7000
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
@@ -18,8 +17,8 @@ var description := ""
 var ap_shell = preload("res://blocks/firepower/shells/pzgr_75.tscn")
 
 func _init():
+	max_hp = HITPOINT
 	current_hp = HITPOINT
-	function_hp = FUNCTION_HP
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE
