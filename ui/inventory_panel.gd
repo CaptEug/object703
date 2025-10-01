@@ -1,7 +1,7 @@
 extends Control
 
 @onready var section_container = $ScrollContainer/VBoxContainer
-@export var storage_section_scene: PackedScene = preload("res://ui/inventory_panel.tscn")
+@export var storage_section_scene: PackedScene = preload("res://ui/storage_section.tscn")
 @export var slot_scene: PackedScene = preload("res://ui/cargo_slot.tscn")
 
 var current_tank: Vehicle = null
@@ -28,6 +28,7 @@ func refresh_inventory():
 		var slot_count = block.get("slot_count")
 		if slot_count != null:
 			add_storage_section(block)
+			
 	# 如果你有 panel 尺寸更新函数，可以延迟调用以保证布局完成
 	call_deferred("update_panel_size")  # 可选：如果实现了 update_panel_size
 			
@@ -41,9 +42,8 @@ func clear_container(container: Node) -> void:
 
 func add_storage_section(block) -> void:
 	var section = storage_section_scene.instantiate()
-	var title_label: Label = section.get_node("VBoxContainer/Label")
-	var grid: GridContainer = section.get_node("VBoxContainer/GridContainer")
-
+	var title_label: Label = section.get_node("Label")
+	var grid: GridContainer = section.get_node("GridContainer")
 	title_label.text = "%s (%d slots)" % [block.block_name, int(block.slot_count)]
 
 	# 清空 grid（保险起见）
