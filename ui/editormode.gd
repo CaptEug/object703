@@ -216,35 +216,34 @@ func _on_build_vehicle_pressed():
 	print("=== 保存按钮被点击 ===")
 	print("当前选中的车辆: ", selected_vehicle)
 	print("编辑模式状态: ", is_editing)
-	show_save_dialog()
+	
+	# 直接尝试保存，不显示确认弹窗
+	try_save_vehicle()
 
-func show_save_dialog():
-	error_label.text = ""
-	var vehicle_name = name_input.text.strip_edges()
-	if vehicle_name.is_empty():
-		error_label.text = "Name cannot be empty!"
-		error_label.show()
-	elif vehicle_name.contains("/") or vehicle_name.contains("\\"):
-		error_label.text = "The name cannot contain special characters!"
-		error_label.show()
-	else:
-		save_dialog.title = "Make sure?"
-		error_label.text = vehicle_name
-		error_label.show()
-	save_dialog.popup_centered()
-
-func _on_save_confirmed():
+func try_save_vehicle():
 	var vehicle_name = name_input.text.strip_edges()
 	
+	# 验证名称
 	if vehicle_name.is_empty():
+		show_error_dialog("Name cannot be empty!")
 		return
 	
 	if vehicle_name.contains("/") or vehicle_name.contains("\\"):
+		show_error_dialog("The name cannot contain special characters!")
 		return
 	
+	# 直接保存
 	save_vehicle(vehicle_name)
-	save_dialog.hide()
 
+func show_error_dialog(error_message: String):
+	error_label.text = error_message
+	error_label.show()
+	save_dialog.title = "Save Error"
+	save_dialog.popup_centered()
+
+func _on_save_confirmed():
+	# 确认按钮现在只用于错误确认，关闭弹窗即可
+	save_dialog.hide()
 
 func _on_save_canceled():
 	save_dialog.hide()
@@ -949,7 +948,7 @@ func save_vehicle(vehicle_name: String):
 		selected_vehicle.blueprint = blueprint_data
 		print("Vehicle saved successfully: ", blueprint_path)
 	else:
-		push_error("Failed to save the vehicle")
+		show_error_dialog("Failed to save the vehicle")
 
 func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	var blueprint_data = {
