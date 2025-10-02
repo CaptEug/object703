@@ -11,7 +11,7 @@ var size:Vector2i
 var parent_vehicle: Vehicle = null  
 var neighbors := {}
 var connected_blocks := []
-var global_grid_pos := []
+var global_grid_pos
 var mouse_inside:bool
 var base_rotation_degree = 0
 var cost:Dictionary = {}
@@ -73,13 +73,9 @@ func _process(_delta):
 	
 	
 func connect_aready():
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+
 	if len(overlapping_points) > 0:
 		for point_con in overlapping_points:
 			var point1 = point_con[1]
@@ -117,7 +113,7 @@ func _on_mouse_exited():
 
 
 func damage(amount:int):
-	print(str(name)+' receive damage:'+str(amount))
+	#print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
 	# phase 1
 	if current_hp <= max_hp * 0.5:
@@ -132,16 +128,15 @@ func damage(amount:int):
 		queue_free()
 
 func broke():
-	functioning = false
-	if broken_sprite:
-		sprite.visible = false
-		broken_sprite.visible = true
+	if parent_vehicle:
+		functioning = false
+		if broken_sprite:
+			sprite.visible = false
+			broken_sprite.visible = true
 
 
 func destroy():
 	# Disconnect all joints before destroying
-	disconnect_all()
-	
 	if parent_vehicle:
 		parent_vehicle.remove_block(self, false)
 	destroyed = true

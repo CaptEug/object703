@@ -106,6 +106,7 @@ func _add_block(block: Block,local_pos, grid_positions):
 		add_child(block)
 		blocks.append(block)
 		block.position = local_pos
+		block.global_grid_pos = get_rectangle_corners(grid_positions)
 		
 		if block is Track:
 			tracks.append(block)
@@ -373,8 +374,10 @@ func calculate_balanced_forces():
 	
 	# 准备推力点数据
 	var thrust_points = []
-	for track in active_tracks:
-		var dir = Vector2.UP.rotated(track.rotation) # 履带前进方向
+	for track:Track in active_tracks:
+		#var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree - 90.0)).normalized()
+		var dir = Vector2.UP.rotated(track.global_rotation)
+		direction = (Vector2.UP.rotated(track.global_rotation - deg_to_rad(track.base_rotation_degree))).normalized()
 		thrust_points.append({
 			"position": track.global_position - global_position, # 相对位置
 			"direction": dir,
@@ -438,9 +441,9 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 	var results = {}
 	var total = 0.0
 	for i in range(num_points):
-		var thrust = max(x[i], 0.0)  # 确保非负
+		var thrust = x[i] # 确保非负
 		results[thrust_points[i].track] = thrust
-		total += thrust
+		total += abs(thrust)
 	
 	# 标准化到总功率
 	if total > 0:
@@ -458,6 +461,7 @@ func calculate_rotation_forces():
 	var thrust_points = []
 	for track in active_tracks:
 		var dir = Vector2.UP.rotated(track.rotation) # 履带前进方向
+		direction = (Vector2.UP.rotated(track.global_rotation - deg_to_rad(track.base_rotation_degree))).normalized()
 		thrust_points.append({
 			"position": track.global_position - global_position, # 相对位置
 			"direction": dir,
@@ -473,7 +477,10 @@ func calculate_rotation_forces():
 	
 	# 分配结果
 	for point in thrust_points:
-		rotation_forces[point.track] = thrusts[point.track]
+		if direction.y > 0:
+			rotation_forces[point.track] = -thrusts[point.track]
+		else:
+			rotation_forces[point.track] = thrusts[point.track]
 	return rotation_forces
 
 # 计算纯旋转时的推力分布

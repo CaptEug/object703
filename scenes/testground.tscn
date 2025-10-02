@@ -34,6 +34,7 @@ script = ExtResource("2_m5lm4")
 
 [node name="Object1" parent="." instance=ExtResource("2_5du73")]
 position = Vector2(-182, -114)
+rotation = 5.49778
 
 [node name="Object2" parent="." instance=ExtResource("7_hie3q")]
 position = Vector2(469, 191)

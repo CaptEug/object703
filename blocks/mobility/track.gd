@@ -22,7 +22,7 @@ func set_state_force(new_state: String, force_value: float):
 
 func update_force_direction():
 	"""更新力的方向"""
-	force_direction = Vector2.UP.rotated(rotation)
+	force_direction = Vector2.UP.rotated(global_rotation)
 
 func apply_track_force():
 	"""应用力的抽象方法"""
@@ -41,9 +41,16 @@ func _on_received_state_force_signal(state_force_signal):
 	elif state_force_signal is Dictionary:
 		set_state_force(state_force_signal.get("state", ""), state_force_signal.get("force", 0))
 
-#func broke():
-	#super.broke()
-	#var vehicle = get_parent_vehicle()
-	#if vehicle is Vehicle:
-		#if vehicle.tracks.has(self):
-			#vehicle.tracks.erase(self)
+func broke():
+	super.broke()
+	var vehicle = get_parent_vehicle()
+	if vehicle is Vehicle:
+		if vehicle.tracks.has(self):
+			vehicle.tracks.erase(self)
+			vehicle.calculate_balanced_forces()
+			print(vehicle.balanced_forces)
+			var a = 0
+			for key in vehicle.balanced_forces.keys():
+				a += vehicle.balanced_forces[key]
+			if a < 0.5:
+				print()
