@@ -25,10 +25,14 @@ func _init():
 
 
 func _physics_process(delta):
+	#apply_force(Vector2.UP*200)
+	#print("GLOBAL POS of saw:", global_position)
+	#print("position:", position)
+	#print("LINERA velocity:", linear_velocity)
 	if not functioning:
 		return
 	if on:
-		saw.apply_torque(1000000)
+		saw.apply_torque(1000)
 		damage_contacted_blocks()
 
 

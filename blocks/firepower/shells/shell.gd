@@ -34,7 +34,7 @@ func _ready():
 	collision_layer = 0
 	collision_mask = 0
 	linear_damp = 0.1
-	mass = weight
+	mass = weight/1000
 	trail.lifetime = lifetime
 	var timer = Timer.new()
 	timer.wait_time = lifetime
@@ -67,7 +67,7 @@ func explode():
 			var dir = (block.global_position - global_position).normalized()
 			var ratio = clamp(1.0 - dist / explosion_radius, 0.0, 1.0)
 			var dmg = max_explosive_damage * ratio
-			var impulse_strength = 1000.0 * dmg
+			var impulse_strength = dmg
 			block.apply_impulse(dir * impulse_strength)
 			block.damage(dmg)
 
@@ -94,7 +94,7 @@ func _on_shell_body_entered(block:Block):
 		return
 	
 	# apply hit inpluse
-	var momentum:Vector2 = weight * linear_velocity
+	var momentum:Vector2 = mass * linear_velocity
 	block.apply_impulse(momentum)
 	
 	var block_hp = block.current_hp
