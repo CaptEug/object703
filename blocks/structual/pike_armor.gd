@@ -1,6 +1,6 @@
 extends Block
 
-const HITPOINT:float = 250
+const HITPOINT:float = 500
 const WEIGHT:float = 500
 const BLOCK_NAME:String = 'pike armor'
 const TYPE:= "Structual"

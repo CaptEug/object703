@@ -1,6 +1,6 @@
 extends Ammorack
 
-const HITPOINT:float = 200
+const HITPOINT:float = 600
 const WEIGHT:float = 500
 const BLOCK_NAME:String = 'ammo rack'
 const SIZE:= Vector2(1, 1)

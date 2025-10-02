@@ -1,6 +1,6 @@
 extends Powerpack
 
-const HITPOINT:float = 200
+const HITPOINT:float = 600
 const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'maybach HL 250'
 const TYPE:= "Mobility"

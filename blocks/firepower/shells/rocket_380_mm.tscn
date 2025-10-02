@@ -19,6 +19,7 @@ colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.757, 2, 1, 0.5, 1)
 [node name="Rocket380Mm" type="RigidBody2D"]
 collision_layer = 0
 collision_mask = 0
+mass = 350.0
 script = ExtResource("1_6x7cm")
 metadata/_custom_type_script = "uid://dhtn6iji0pso7"
 

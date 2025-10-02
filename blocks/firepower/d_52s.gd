@@ -1,6 +1,6 @@
 extends Weapon
 
-const HITPOINT:float = 1000
+const HITPOINT:float = 1800
 const WEIGHT:float = 9000
 const BLOCK_NAME:String = '122mm D-52S cannon'
 const SIZE:= Vector2(2, 2)

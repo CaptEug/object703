@@ -1,6 +1,6 @@
 extends TurretRing
 
-const HITPOINT:float = 800
+const HITPOINT:float = 1600
 const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'TurretRing1800mm'
 const SIZE:= Vector2(3, 3)

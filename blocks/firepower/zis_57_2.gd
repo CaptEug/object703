@@ -1,6 +1,6 @@
 extends Weapon
 
-const HITPOINT:float = 800
+const HITPOINT:float = 1200
 const WEIGHT:float = 5000
 const BLOCK_NAME:String = '57mm duel barrel gun Zis-57-2'
 const SIZE:= Vector2(2, 2)

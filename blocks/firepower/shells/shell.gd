@@ -59,7 +59,7 @@ func explode():
 	explosion.emitting = true
 	get_tree().current_scene.add_child(explosion)
 	
-	await get_tree().process_frame
+	await get_tree().physics_frame
 	
 	for block in explosion_area.get_overlapping_bodies():
 		if block.has_method("damage"):

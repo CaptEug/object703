@@ -130,9 +130,11 @@ func shoot(muz:Marker2D, shell_picked:PackedScene):
 	if shell.max_thrust:
 		shell.target_dir = Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread))
 	
-	await get_tree().process_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	
-	shell.apply_impulse(Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)) * muzzle_energy)
+	var dir = Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread))
+	shell.apply_impulse(dir * muzzle_energy)
 	#To simulate recoil force
 	apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy * 10)
 
