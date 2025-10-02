@@ -361,7 +361,7 @@ func calculate_center_of_mass() -> Vector2:
 					continue
 				var rid = body.get_rid()
 				var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
-				var global_com: Vector2 = body.to_global(local_com)
+				var global_com:Vector2 = body.to_global(local_com)
 				weighted_sum += global_com * body.mass
 				total_mass += body.mass
 				has_calculated[body.get_instance_id()] = true

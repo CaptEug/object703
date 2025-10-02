@@ -1,6 +1,6 @@
 extends Weapon
 
-const HITPOINT:float = 1000
+const HITPOINT:float = 1500
 const WEIGHT:float = 7000
 const BLOCK_NAME:String = '7.5cm Kwak 45 L/70'
 const SIZE:= Vector2(2, 2)
@@ -9,7 +9,7 @@ const RANGE:= 800
 const RELOAD:float = 0.5
 const AMMO_COST:float= 1.0
 const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
-const MUZZLE_ENERGY:float = 1000
+const MUZZLE_ENERGY:float = 10
 const SPREAD:float = 0.02
 
 var description := ""

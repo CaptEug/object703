@@ -10,8 +10,8 @@ var description := ""
 var outline_tex := preload("res://assets/icons/dismantler_outline.png")
 
 var inventory:Array = []
-var on:= true
-var dmg:= 10
+var on:bool
+var dmg:= 15
 var contacted_blocks:Array[Block] = []
 @onready var saw:RigidBody2D = $Saw
 
@@ -25,10 +25,23 @@ func _init():
 
 
 func _physics_process(delta):
+	#apply_force(Vector2.UP*200)
+	#print("GLOBAL POS of saw:", global_position)
+	#print("position:", position)
+	#print("LINERA velocity:", linear_velocity)
+	if not functioning:
+		return
 	if on:
-		saw.apply_torque(1000000)
+		saw.apply_torque(1000)
 		damage_contacted_blocks()
 
+
+func _unhandled_input(event: InputEvent) -> void:
+	if get_parent_vehicle():
+		var control_method = get_parent_vehicle().control.get_method()
+		if control_method == "manual_control":
+			if event.is_action("FIRE_MAIN"):  # only respond to FIRE_MAIN events
+				on = event.is_action_pressed("FIRE_MAIN")  # true on press, false on release
 
 func damage_contacted_blocks():
 	for block in contacted_blocks:

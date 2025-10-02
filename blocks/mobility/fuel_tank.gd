@@ -1,7 +1,7 @@
 extends Fueltank
 
-const HITPOINT:float = 200
-const WEIGHT:float = 2000
+const HITPOINT:float = 400
+const WEIGHT:float = 100
 const BLOCK_NAME:String = 'fuel tank'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)

@@ -1,6 +1,6 @@
 extends Weapon
 
-const HITPOINT:float = 800
+const HITPOINT:float = 1200
 const WEIGHT:float = 5000
 const BLOCK_NAME:String = '57mm duel barrel gun Zis-57-2'
 const SIZE:= Vector2(2, 2)
@@ -9,7 +9,7 @@ const RANGE:= 600
 const RELOAD:float = 0.2
 const AMMO_COST:float= 0.25
 const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
-const MUZZLE_ENERGY:float = 3600
+const MUZZLE_ENERGY:float = 3.6
 const SPREAD:float = 0.03
 
 var description := ""

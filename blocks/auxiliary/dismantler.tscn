@@ -32,7 +32,7 @@ node_a = NodePath("..")
 node_b = NodePath("../Saw")
 
 [node name="Saw" type="RigidBody2D" parent="."]
-mass = 200.0
+mass = 0.2
 contact_monitor = true
 max_contacts_reported = 5
 angular_damp = 0.1

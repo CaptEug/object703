@@ -42,7 +42,7 @@ func _ready():
 	GlobalTimeManager.time_scale = 1
 	# Initialize physics properties
 	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
-	mass = weight
+	mass = weight/1000
 	linear_damp = 5
 	angular_damp = 5
 	collision_layer = 0
