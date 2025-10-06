@@ -35,6 +35,7 @@ offset_right = 222.0
 offset_bottom = 252.0
 
 [node name="BuildButton" type="TextureButton" parent="Panel"]
+visible = false
 layout_mode = 0
 offset_left = 221.0
 offset_top = 12.0
@@ -45,12 +46,11 @@ mouse_default_cursor_shape = 2
 texture_normal = ExtResource("3_7lnpe")
 
 [node name="SaveButton" type="TextureButton" parent="Panel"]
-visible = false
 layout_mode = 0
-offset_left = 222.0
-offset_top = 2.0
-offset_right = 254.0
-offset_bottom = 34.0
+offset_left = 221.0
+offset_top = 11.0
+offset_right = 253.0
+offset_bottom = 43.0
 tooltip_text = "save blueprint"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("3_8aq6r")

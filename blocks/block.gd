@@ -137,6 +137,7 @@ func broke():
 
 
 func destroy():
+	disconnect_all()
 	# Disconnect all joints before destroying
 	if parent_vehicle:
 		parent_vehicle.remove_block(self, false)
