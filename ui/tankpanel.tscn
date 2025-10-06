@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://d3l7auv8n1vja" path="res://assets/icons/crossI.png" id="4_3deui"]
 [ext_resource type="Texture2D" uid="uid://dnn2g7ksth8o" path="res://assets/icons/idle.png" id="4_bu53t"]
 [ext_resource type="Texture2D" uid="uid://e0sne2h1x0sa" path="res://assets/icons/I.png" id="5_6e8cr"]
-[ext_resource type="Texture2D" uid="uid://80i1wkvsngsa" path="res://assets/icons/tab.png" id="5_i2tau"]
+[ext_resource type="Texture2D" uid="uid://bgqcxa847i8fu" path="res://assets/icons/b.png" id="7_3deui"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
 atlas = ExtResource("2_6e8cr")
@@ -108,15 +108,15 @@ text = "to toggle inventory"
 layout_mode = 0
 offset_left = 16.0
 offset_top = 288.0
-offset_right = 48.0
+offset_right = 32.0
 offset_bottom = 304.0
-texture_normal = ExtResource("5_i2tau")
+texture_normal = ExtResource("7_3deui")
 
 [node name="Label" type="Label" parent="ModifyButton"]
 layout_mode = 0
-offset_left = 34.0
+offset_left = 18.0
 offset_top = 6.0
-offset_right = 119.0
+offset_right = 103.0
 offset_bottom = 16.0
 theme_override_colors/font_color = Color(0, 1, 0, 1)
 theme_override_font_sizes/font_size = 8

@@ -20,6 +20,7 @@ atlas = ExtResource("2_878ay")
 region = Rect2(0, 0, 32, 32)
 
 [node name="Dismantler" type="RigidBody2D"]
+center_of_mass_mode = 1
 script = ExtResource("1_878ay")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
