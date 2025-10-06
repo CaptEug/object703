@@ -13,6 +13,7 @@ var inventory:Array = []
 var on:bool
 var dmg:= 15
 var contacted_blocks:Array[Block] = []
+var connected_cargo:Array[Cargo] = []
 @onready var saw:RigidBody2D = $Saw
 
 func _init():
@@ -48,8 +49,21 @@ func damage_contacted_blocks():
 		var block_hp = block.current_hp
 		if block_hp >= 0:
 			var damage_to_deal = min(dmg, block_hp)
+			if block_hp <= dmg:
+				gain_scrap(block)
 			block.damage(damage_to_deal)
 
+func gain_scrap(block):
+	var amount = block.size.x * block.size.y
+	
+
+func find_all_connected_cargo():
+	connected_cargo.clear()
+	for block in get_all_connected_blocks():
+		if block is Cargo:
+			connected_cargo.append(block)
+	return connected_cargo
+	
 
 func _on_saw_body_entered(block:Block):
 	var vehicle_hit = block.parent_vehicle

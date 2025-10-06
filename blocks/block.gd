@@ -71,12 +71,12 @@ func _ready():
 
 func _process(_delta):
 	pass
-	
-	
+
+
 func connect_aready():
 	await get_tree().physics_frame
 	await get_tree().physics_frame
-
+	
 	if len(overlapping_points) > 0:
 		for point_con in overlapping_points:
 			var point1 = point_con[1]
@@ -93,7 +93,8 @@ func connect_aready():
 			var other_block = joint_connected_blocks[joint]
 			if is_instance_valid(other_block):
 				pass
-			
+
+
 ## Physics and Drawing
 func _emit_relay_signal():
 	frame_post_drawn.emit()
