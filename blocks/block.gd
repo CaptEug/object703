@@ -82,7 +82,6 @@ func connect_aready():
 			if point1 is ConnectionPoint and is_movable_on_connection == true:
 				point1.try_connect(point_con[0])
 		for point_con in overlapping_points:
-			var point1 = point_con[1]
 			if point_con[0].find_parent_block() is Block:
 				if point_con[0].find_parent_block().freeze == true:
 					point_con[0].find_parent_block().freeze = false
@@ -131,6 +130,7 @@ func damage(amount:int):
 func broke():
 	if parent_vehicle:
 		functioning = false
+		parent_vehicle.update_vehicle()
 		if broken_sprite:
 			sprite.visible = false
 			broken_sprite.visible = true
@@ -138,6 +138,7 @@ func broke():
 
 func destroy():
 	# Disconnect all joints before destroying
+	disconnect_all()
 	if parent_vehicle:
 		parent_vehicle.remove_block(self, false)
 	destroyed = true

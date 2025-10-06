@@ -27,10 +27,7 @@ func deduct_ammo(amount:float) ->bool:
 	return false
 
 func destroy():
-	# Disconnect all joints before destroying
-	disconnect_all()
-	if parent_vehicle:
-		parent_vehicle.remove_block(self, false)
+	super.destroy()
 	explode()
 
 func explode():

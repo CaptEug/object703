@@ -97,6 +97,13 @@ func update_vehicle():
 				control = Callable()
 			else: control = check_control("remote_control")
 		else: control = check_control("AI_control")
+	
+	#check vehicle destroyed
+	var has_command:= false
+	for blk in commands:
+		if blk.functioning:
+			has_command = true
+	destroyed = not has_command
 
 ###################### BLOCK MANAGEMENT ######################
 
@@ -148,10 +155,8 @@ func remove_block(block: Block, imd: bool):
 	if block in fueltanks:
 		fueltanks.erase(block)
 	update_vehicle()
-	for blk in blocks:
+	for blk:Block in blocks:
 		blk.check_connectivity()
-	if commands.size() == 0:
-		destroyed = true
 
 func has_block(block_name:String):
 	for block in blocks:
@@ -174,7 +179,7 @@ func find_pos(Dic: Dictionary, block:Block):
 
 func check_control(control_name:String):
 	for block in commands:
-		if block.has_method(control_name):
+		if block.has_method(control_name) and block.functioning:
 			return Callable(block, control_name)
 	return false
 
