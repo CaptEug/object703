@@ -573,8 +573,8 @@ func get_rectangle_corners_arry(grid_data):
 	var min_y = y_coords[0]
 	var max_y = y_coords[y_coords.size() - 1]
 	
-	var vc_1 = Vector2(min_x * GRID_SIZE - GRID_SIZE * 0.5, min_y * GRID_SIZE - GRID_SIZE * 0.5)
-	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE * 0.5, max_y * GRID_SIZE + GRID_SIZE * 0.5)
+	var vc_1 = Vector2(min_x * GRID_SIZE , min_y * GRID_SIZE)
+	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE, max_y * GRID_SIZE + GRID_SIZE)
 	
 	var pos = (vc_1 + vc_2)/2
 	

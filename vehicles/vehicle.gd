@@ -311,16 +311,10 @@ func get_rectangle_corners(grid_data):
 	var max_x = x_coords[x_coords.size() - 1]
 	var min_y = y_coords[0]
 	var max_y = y_coords[y_coords.size() - 1]
+
 	
-	var corners = {
-		"1": Vector2i(min_x, min_y),
-		"2": Vector2i(max_x, min_y),
-		"3": Vector2i(max_x, max_y),
-		"4": Vector2i(min_x, max_y)
-	}
-	
-	var vc_1 = Vector2(min_x * GRID_SIZE - GRID_SIZE/2, min_y * GRID_SIZE - GRID_SIZE/2)
-	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE/2, max_y * GRID_SIZE + GRID_SIZE/2)
+	var vc_1 = Vector2(min_x * GRID_SIZE, min_y * GRID_SIZE)
+	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE, max_y * GRID_SIZE + GRID_SIZE)
 	
 	var pos = (vc_1 + vc_2)/2
 	
@@ -354,6 +348,13 @@ func get_blueprint_path() -> String:
 
 ########################## VEHICLE PHYSICS PROCESSING #######################
 
+func get_block_grid(block:Block) -> Array:
+	var getpositions:Array
+	for pos in grid.keys():
+		if grid[pos] == block and not getpositions.has(pos):
+			getpositions.append(pos)
+	return getpositions
+
 func calculate_center_of_mass() -> Vector2:
 	var total_mass := 0.0
 	var weighted_sum := Vector2.ZERO
@@ -364,9 +365,8 @@ func calculate_center_of_mass() -> Vector2:
 			if blocks.has(body):
 				if has_calculated.get(body.get_instance_id(), false):
 					continue
-				var rid = body.get_rid()
-				var local_com = PhysicsServer2D.body_get_param(rid, PhysicsServer2D.BODY_PARAM_CENTER_OF_MASS)
-				var global_com:Vector2 = body.to_global(local_com)
+				var rid = get_block_grid(body)
+				var global_com:Vector2 = get_rectangle_corners(rid)
 				weighted_sum += global_com * body.mass
 				total_mass += body.mass
 				has_calculated[body.get_instance_id()] = true
@@ -380,23 +380,22 @@ func calculate_balanced_forces():
 	# 准备推力点数据
 	var thrust_points = []
 	for track:Track in active_tracks:
-		#var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree - 90.0)).normalized()
-		var dir = Vector2.UP.rotated(track.global_rotation)
-		direction = (Vector2.UP.rotated(track.global_rotation - deg_to_rad(track.base_rotation_degree))).normalized()
-		thrust_points.append({
-			"position": track.global_position - global_position, # 相对位置
-			"direction": dir,
-			"track": track
-		})
-	
+		if track.functioning == true:
+			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
+			var positions_grid = get_block_grid(track)
+			thrust_points.append({
+				"position": get_rectangle_corners(positions_grid), # 相对位置
+				"direction": dir,
+				"track": track
+			})
 	# 计算各点出力
 	var thrusts = calculate_thrust_distribution(
 		thrust_points,
-		com - global_position, # 相对质心
+		com, 
 		1,
 		direction # 目标方向
 	)
-	
+	balanced_forces = {}
 	# 分配结果
 	for point in thrust_points:
 		balanced_forces[point.track] = thrusts[point.track]
@@ -464,19 +463,20 @@ func calculate_rotation_forces():
 	
 	# 准备推力点数据
 	var thrust_points = []
-	for track in active_tracks:
-		var dir = Vector2.UP.rotated(track.rotation) # 履带前进方向
-		direction = (Vector2.UP.rotated(track.global_rotation - deg_to_rad(track.base_rotation_degree))).normalized()
-		thrust_points.append({
-			"position": track.global_position - global_position, # 相对位置
-			"direction": dir,
-			"track": track
-		})
+	for track:Track in active_tracks:
+		if track.functioning == true:
+			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
+			var positions_grid = get_block_grid(track)
+			thrust_points.append({
+				"position": get_rectangle_corners(positions_grid),
+				"direction": dir,
+				"track": track
+			})
 	
 	# 计算各点出力 - 纯旋转
 	var thrusts = calculate_rotation_thrust_distribution(
 		thrust_points,
-		com - global_position, # 相对质心
+		com, # 相对质心
 		1 # 总功率
 	)
 	
@@ -545,9 +545,15 @@ func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, 
 
 # 辅助函数：最小二乘求解
 func least_squares_solve(A: Array, b: Array) -> Array:
-	# 这里简化实现，实际项目建议使用性能更好的库
 	var At = transpose(A)
 	var AtA = multiply(At, A)
+	
+	# 添加正则化项 (Tikhonov 正则化)
+	var lambda = 0.01  # 正则化参数
+	var n = AtA.size()
+	for i in range(n):
+		AtA[i][i] += lambda
+	
 	var Atb = multiply_vector(At, b)
 	return solve(AtA, Atb)
 
@@ -583,40 +589,59 @@ func multiply_vector(m: Array, v: Array) -> Array:
 	return result
 
 func solve(A: Array, b: Array) -> Array:
-	# 这里应该使用更稳健的线性求解器
-	# 简化版仅用于演示
 	var n = A.size()
+	if n == 0:
+		return []
+	
+	# 复制矩阵，避免修改原数据
+	var A_copy = []
+	var b_copy = []
+	for i in range(n):
+		A_copy.append(A[i].duplicate())
+		b_copy.append(b[i])
+	
+	# 高斯消元
 	for i in range(n):
 		# 部分主元选择
 		var max_row = i
+		var max_val = abs(A_copy[i][i])
 		for k in range(i+1, n):
-			if abs(A[k][i]) > abs(A[max_row][i]):
+			if abs(A_copy[k][i]) > max_val:
+				max_val = abs(A_copy[k][i])
 				max_row = k
 		
-		# 交换 A[i] 和 A[max_row]
-		var tmp_row = A[i] # 临时保存 A[i]
-		A[i] = A[max_row]
-		A[max_row] = tmp_row
+		# 如果主元接近0，说明矩阵奇异
+		if abs(A_copy[max_row][i]) < 1e-10:
+			print("警告: 矩阵接近奇异，主元值: ", A_copy[max_row][i])
+			# 返回零解
+			return array_zero(n)
 		
-		# 交换 b[i] 和 b[max_row]
-		var tmp_b = b[i]  # 临时保存 b[i]
-		b[i] = b[max_row]
-		b[max_row] = tmp_b
+		# 交换行
+		if max_row != i:
+			var tmp_row = A_copy[i]
+			A_copy[i] = A_copy[max_row]
+			A_copy[max_row] = tmp_row
+			
+			var tmp_b = b_copy[i]
+			b_copy[i] = b_copy[max_row]
+			b_copy[max_row] = tmp_b
 		
 		# 消元
+		var pivot = A_copy[i][i]
 		for k in range(i+1, n):
-			var factor = A[k][i] / A[i][i]
+			var factor = A_copy[k][i] / pivot
 			for j in range(i, n):
-				A[k][j] -= factor * A[i][j]
-			b[k] -= factor * b[i]
+				A_copy[k][j] -= factor * A_copy[i][j]
+			b_copy[k] -= factor * b_copy[i]
 	
 	# 回代
 	var x = array_zero(n)
 	for i in range(n-1, -1, -1):
-		x[i] = b[i]
+		x[i] = b_copy[i]
 		for j in range(i+1, n):
-			x[i] -= A[i][j] * x[j]
-		x[i] /= A[i][i]
+			x[i] -= A_copy[i][j] * x[j]
+		x[i] /= A_copy[i][i]
+	
 	return x
 
 func array_zero(size: int) -> Array:
@@ -704,7 +729,7 @@ func update_vehicle_size():
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
 
 # 获取距离某个位置一定范围内的可用连接点
-func get_available_points_near_position(position: Vector2, max_distance: float = 30.0) -> Array[ConnectionPoint]:
+func get_available_points_near_position(_position: Vector2, max_distance: float = 30.0) -> Array[ConnectionPoint]:
 	var temp_points = []
 	var max_distance_squared = max_distance * max_distance
 	
@@ -712,7 +737,7 @@ func get_available_points_near_position(position: Vector2, max_distance: float =
 		if is_instance_valid(block):
 			for point in block.get_available_connection_points():
 				var point_global_pos = block.global_position + point.position.rotated(block.global_rotation)
-				var distance_squared = point_global_pos.distance_squared_to(position)
+				var distance_squared = point_global_pos.distance_squared_to(_position)
 				
 				if distance_squared <= max_distance_squared:
 					temp_points.append(point)
