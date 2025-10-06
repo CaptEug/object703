@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://ca320w2cj51gd"]
+[gd_scene load_steps=8 format=3 uid="uid://ca320w2cj51gd"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ils3j"]
 [ext_resource type="Script" uid="uid://ifelvwg72870" path="res://ui/editormode.gd" id="2_8aq6r"]
+[ext_resource type="Texture2D" uid="uid://cedxb1cyh1chq" path="res://assets/icons/tank.png" id="3_7lnpe"]
 [ext_resource type="Texture2D" uid="uid://cgm2m5vm4kkmi" path="res://assets/icons/save.png" id="3_8aq6r"]
 [ext_resource type="Texture2D" uid="uid://caat8hifeusxt" path="res://assets/icons/file.png" id="4_bwild"]
 [ext_resource type="Texture2D" uid="uid://bg1vodjxg6bmh" path="res://assets/icons/dismantle.png" id="5_3clpp"]
+[ext_resource type="Texture2D" uid="uid://kadifao8fkvm" path="res://assets/icons/wench.png" id="6_v1y0q"]
 
 [node name="Tankbuilderui" type="Control"]
 layout_mode = 3
@@ -32,35 +34,56 @@ offset_top = 54.0
 offset_right = 222.0
 offset_bottom = 252.0
 
+[node name="BuildButton" type="TextureButton" parent="Panel"]
+layout_mode = 0
+offset_left = 221.0
+offset_top = 12.0
+offset_right = 253.0
+offset_bottom = 44.0
+tooltip_text = "new tank"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("3_7lnpe")
+
 [node name="SaveButton" type="TextureButton" parent="Panel"]
+visible = false
 layout_mode = 0
 offset_left = 222.0
-offset_top = 12.0
+offset_top = 2.0
 offset_right = 254.0
-offset_bottom = 44.0
+offset_bottom = 34.0
 tooltip_text = "save blueprint"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("3_8aq6r")
 
 [node name="LoadButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 222.0
-offset_top = 53.0
-offset_right = 254.0
-offset_bottom = 85.0
+offset_left = 221.0
+offset_top = 46.0
+offset_right = 253.0
+offset_bottom = 78.0
 tooltip_text = "load from blueprint"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("4_bwild")
 
 [node name="DismantleButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 222.0
-offset_top = 93.0
-offset_right = 254.0
-offset_bottom = 125.0
+offset_left = 221.0
+offset_top = 80.0
+offset_right = 253.0
+offset_bottom = 112.0
 tooltip_text = "Dismantle Part"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("5_3clpp")
+
+[node name="RepairButton" type="TextureButton" parent="Panel"]
+layout_mode = 0
+offset_left = 221.0
+offset_top = 114.0
+offset_right = 253.0
+offset_bottom = 146.0
+tooltip_text = "repair/build all"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("6_v1y0q")
 
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 0
