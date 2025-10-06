@@ -8,6 +8,7 @@ extends Control
 @onready var error_label = $SaveDialog/ErrorLabel
 @onready var recycle_button = $Panel/DismantleButton
 @onready var load_button = $Panel/LoadButton
+@onready var repair_buttom = $Panel/RepairButton
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 
@@ -71,7 +72,8 @@ func _ready():
 	save_dialog.close_requested.connect(_on_save_canceled)
 	name_input.text_changed.connect(_on_name_input_changed)
 	recycle_button.pressed.connect(_on_recycle_button_pressed)
-	load_button.pressed.connect(_on_load_button_pressed)
+	#load_button.pressed.connect(_on_load_button_pressed)
+	repair_buttom.pressed.connect(_on_repair_button_pressed)
 	create_tabs()
 	
 	save_dialog.hide()
@@ -95,7 +97,7 @@ func _ready():
 
 func _input(event):
 	# 全局TAB键检测
-	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
 			exit_editor_mode()
 		else:
@@ -107,10 +109,6 @@ func _input(event):
 				print("错误: 未找到可编辑的车辆")
 		return
 	
-	# 添加蓝图显示切换快捷键 (按B键)
-	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
-		if is_editing and selected_vehicle:
-			toggle_blueprint_display()
 	
 	if not is_editing:
 		return
@@ -133,9 +131,12 @@ func _input(event):
 			else:
 				try_place_block()
 
-func _process(delta):
+func _process(_delta):
 	if is_editing and selected_vehicle:
 		camera.sync_rotation_to_vehicle(selected_vehicle)
+	
+	if is_showing_blueprint and not blueprint_ghosts.is_empty():
+		update_ghosts_transform()	
 		
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
@@ -144,10 +145,95 @@ func _process(delta):
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_ghost_block_position(global_mouse_pos)
+
+# === 修复功能 ===
+func _on_repair_button_pressed():
+	if not is_editing or not selected_vehicle or not is_showing_blueprint:
+		print("修复条件不满足：需要处于编辑模式、选中车辆且显示蓝图")
+		return
 	
-	# 如果正在显示蓝图虚影，更新它们的位置
-	if is_showing_blueprint and not blueprint_ghosts.is_empty():
-		update_ghosts_transform()
+	print("开始修复蓝图缺失部分...")
+	repair_blueprint_missing_blocks()
+
+func repair_blueprint_missing_blocks():
+	for pos in selected_vehicle.grid.keys():
+		var block = selected_vehicle.grid[pos]
+		if block is Block:
+			if block.current_hp < block.max_hp:
+				block.current_hp = block.max_hp
+	if not blueprint_data or blueprint_ghosts.is_empty():
+		print("没有需要修复的蓝图虚影")
+		return
+	
+	var repaired_count = 0
+	var failed_count = 0
+	
+	# 获取当前车辆已占用的网格位置
+	var occupied_grid_positions = {}
+	for grid_pos in selected_vehicle.grid:
+		occupied_grid_positions[grid_pos] = true
+	
+	# 遍历所有蓝图虚影
+	for ghost in blueprint_ghosts:
+		if not is_instance_valid(ghost):
+			continue
+		
+		var ghost_data = get_ghost_data(ghost)
+		if not ghost_data:
+			continue
+		
+		# 检查这个虚影的位置是否被占用
+		var can_place = true
+		for grid_pos in ghost_data.grid_positions:
+			if occupied_grid_positions.has(grid_pos):
+				can_place = false
+				print("无法修复：网格位置 ", grid_pos, " 已被占用")
+				break
+		
+		if can_place:
+			# 尝试放置这个块
+			if try_place_ghost_block(ghost, ghost_data):
+				repaired_count += 1
+				# 更新已占用位置
+				for grid_pos in ghost_data.grid_positions:
+					occupied_grid_positions[grid_pos] = true
+			else:
+				failed_count += 1
+	
+	print("修复完成：成功修复 ", repaired_count, " 个块，失败 ", failed_count, " 个块")
+	
+	# 修复后更新蓝图显示（会重新计算缺失的块）
+	if repaired_count > 0:
+		update_blueprint_ghosts()
+
+func try_place_ghost_block(ghost: Node2D, ghost_data: GhostData) -> bool:
+	# 加载块场景
+	var scene_path = ghost.scene_file_path
+	if not scene_path or scene_path.is_empty():
+		print("错误：无法获取虚影的场景路径")
+		return false
+	
+	var scene = load(scene_path)
+	if not scene:
+		print("错误：无法加载场景 ", scene_path)
+		return false
+	
+	# 创建新块
+	var new_block: Block = scene.instantiate()
+	selected_vehicle.add_child(new_block)
+	
+	# 设置块的位置和旋转
+	new_block.global_position = ghost.global_position
+	new_block.global_rotation = ghost.global_rotation
+	new_block.base_rotation_degree = ghost_data.rotation_deg
+	
+	# 添加到车辆网格
+	var control = selected_vehicle.control
+	selected_vehicle._add_block(new_block, new_block.position, ghost_data.grid_positions)
+	selected_vehicle.control = control
+	
+	print("成功修复块: ", new_block.block_name, " 在位置 ", ghost_data.grid_positions)
+	return true
 
 # === UI 相关函数 ===
 func create_tabs():
@@ -335,7 +421,7 @@ func load_blueprint_vehicles():
 		
 		# 添加车辆到列表
 		for vehicle_name in vehicle_names:
-			var idx = item_list.add_item(vehicle_name)
+			var _idx = item_list.add_item(vehicle_name)
 
 func load_selected_vehicle(vehicle_name: String):
 	print("显示蓝图虚影: ", vehicle_name)
@@ -355,11 +441,11 @@ func load_selected_vehicle(vehicle_name: String):
 		var parse_result = json.parse(json_string)
 		
 		if parse_result == OK:
-			var blueprint_data = json.data
-			print("成功加载蓝图: ", blueprint_data["name"])
+			var blueprint_data_ghost = json.data
+			print("成功加载蓝图: ", blueprint_data_ghost["name"])
 			
 			# 显示蓝图虚影
-			show_blueprint_ghosts(blueprint_data)
+			show_blueprint_ghosts(blueprint_data_ghost)
 			
 		else:
 			print("错误: 无法解析JSON文件 ", blueprint_path)
@@ -387,9 +473,15 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 			for grid_pos in block_grid_positions:
 				current_block_positions[grid_pos] = block
 	
+	print("当前车辆块数量: ", selected_vehicle.blocks.size())
+	print("当前占用网格位置: ", current_block_positions.size())
+	
 	# 分析蓝图并创建缺失块的虚影
 	var created_ghosts = 0
+	var total_blueprint_blocks = 0
+	
 	for block_id in blueprint["blocks"]:
+		total_blueprint_blocks += 1
 		var block_data = blueprint["blocks"][block_id]
 		var scene_path = block_data["path"]
 		var base_pos = Vector2i(block_data["base_pos"][0], block_data["base_pos"][1])
@@ -407,20 +499,27 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 		
 		if is_missing:
 			# 创建缺失块的虚影
-			create_ghost_block_with_data(scene_path, base_pos, rotation_deg, ghost_grid_positions)
+			create_ghost_block_with_data(scene_path, rotation_deg, ghost_grid_positions)
 			created_ghosts += 1
 	
-	print("显示蓝图虚影，缺失块数量: ", created_ghosts)
+	print("蓝图总块数: ", total_blueprint_blocks, ", 缺失块数量: ", created_ghosts)
+	print("显示蓝图虚影完成")
 
 func calculate_ghost_grid_positions(base_pos: Vector2i, rotation_deg: float, scene_path: String) -> Array:
 	var scene = load(scene_path)
 	if not scene:
+		print("错误: 无法加载场景 ", scene_path)
 		return []
 	
 	var temp_block = scene.instantiate()
 	var block_size = Vector2i(1, 1)
 	if temp_block is Block:
 		block_size = temp_block.size
+	else:
+		print("警告: 场景 ", scene_path, " 不是Block类型")
+		temp_block.queue_free()
+		return []
+	
 	temp_block.queue_free()
 	
 	var grid_positions = []
@@ -474,21 +573,14 @@ func get_rectangle_corners_arry(grid_data):
 	var min_y = y_coords[0]
 	var max_y = y_coords[y_coords.size() - 1]
 	
-	var corners = {
-		"1": Vector2i(min_x, min_y),
-		"2": Vector2i(max_x, min_y),
-		"3": Vector2i(max_x, max_y),
-		"4": Vector2i(min_x, max_y)
-	}
-	
-	var vc_1 = Vector2(min_x * GRID_SIZE - GRID_SIZE/2, min_y * GRID_SIZE - GRID_SIZE/2)
-	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE/2, max_y * GRID_SIZE + GRID_SIZE/2)
+	var vc_1 = Vector2(min_x * GRID_SIZE - GRID_SIZE * 0.5, min_y * GRID_SIZE - GRID_SIZE * 0.5)
+	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE * 0.5, max_y * GRID_SIZE + GRID_SIZE * 0.5)
 	
 	var pos = (vc_1 + vc_2)/2
 	
 	return pos
 
-func create_ghost_block_with_data(scene_path: String, base_pos: Vector2i, rotation_deg: float, grid_positions: Array):
+func create_ghost_block_with_data(scene_path: String, rotation_deg: float, grid_positions: Array):
 	var scene = load(scene_path)
 	if not scene:
 		print("错误: 无法加载块场景: ", scene_path)
@@ -498,7 +590,7 @@ func create_ghost_block_with_data(scene_path: String, base_pos: Vector2i, rotati
 	get_tree().current_scene.add_child(ghost)
 	
 	# 设置虚影外观
-	ghost.modulate = Color(0.3, 0.6, 1.0, 0.2)
+	ghost.modulate = Color(0.3, 0.6, 1.0, 0.5)
 	ghost.z_index = 45
 	ghost.visible = true
 	
@@ -520,6 +612,8 @@ func create_ghost_block_with_data(scene_path: String, base_pos: Vector2i, rotati
 	ghost_data_map[ghost.get_instance_id()] = data
 	
 	blueprint_ghosts.append(ghost)
+	
+	print("创建虚影: ", ghost.block_name if ghost is Block else "未知", " 在网格位置 ", grid_positions)
 
 func calculate_ghost_world_position_precise(grid_positions: Array):
 	if grid_positions.is_empty():
@@ -613,8 +707,8 @@ func update_ghosts_transform():
 			var ghost_data = get_ghost_data(ghost)
 			if ghost_data:
 				var new_position = calculate_ghost_world_position_precise(ghost_data.grid_positions)
-				ghost.global_position = new_position
-				ghost.global_rotation = selected_vehicle.global_rotation + deg_to_rad(ghost_data.rotation_deg)
+				ghost.global_position = new_position[0]
+				ghost.global_rotation = new_position[1] + deg_to_rad(ghost_data.rotation_deg)
 
 func clear_blueprint_ghosts():
 	for ghost in blueprint_ghosts:
@@ -713,19 +807,7 @@ func reload_blocks():
 
 # === 编辑器模式功能 ===
 func initialize_editor():
-	print("Initializing editor...")
-	
-	var testground = get_tree().current_scene
-	if testground:
-		var canvas_layer = testground.find_child("CanvasLayer", false, false)
-		if canvas_layer:
-			var panels = canvas_layer.get_children()
-			for item in panels:
-				if item is FloatingPanel and item.selected_vehicle != null:
-					panel_instance = item
-					break
-	
-	print("Editor initialization completed")
+	pass
 
 func find_and_select_vehicle():
 	var testground = get_tree().current_scene
@@ -734,7 +816,7 @@ func find_and_select_vehicle():
 		if canvas_layer:
 			var panels = canvas_layer.get_children()
 			for item in range(panels.size() - 1, -1, -1):
-				if panels[item] is FloatingPanel and panels[item].selected_vehicle != null:
+				if panels[item] is FloatingPanel and panels[item].selected_vehicle != null and panels[item].visible == true:
 					panel_instance = panels[item]
 					break
 	if testground and panel_instance:
@@ -791,6 +873,7 @@ func exit_editor_mode():
 	
 	hide()
 	is_editing = false
+	panel_instance = null
 	selected_vehicle = null
 	print("=== 编辑模式已退出 ===")
 
@@ -811,7 +894,6 @@ func restore_original_connections():
 	enable_all_connection_points_for_editing(false)
 	await get_tree().process_frame
 	
-	var restored_count = 0
 
 func start_block_placement(scene_path: String):
 	if not is_editing or not selected_vehicle:
@@ -919,12 +1001,12 @@ func find_best_snap_config() -> Dictionary:
 		var vehicle_point_global = get_connection_point_global_position(vehicle_point, vehicle_block)
 		for ghost_point in available_ghost_points:
 			# 基于基础旋转计算最佳对齐角度
-			var target_rotation = calculate_aligned_rotation_from_base(vehicle_block, vehicle_point, ghost_point)
+			var target_rotation = calculate_aligned_rotation_from_base(vehicle_block)
 			# 检查连接点是否可以连接
 			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
 				continue
 				
-			var positions = calculate_rotated_grid_positions(vehicle_point, ghost_point, target_rotation)
+			var positions = calculate_rotated_grid_positions(vehicle_point, ghost_point)
 			if positions is bool:
 				continue
 			# 计算幽灵块的位置
@@ -950,7 +1032,7 @@ func find_best_snap_config() -> Dictionary:
 	
 	return best_config
 
-func calculate_aligned_rotation_from_base(vehicle_block: Block, vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint) -> float:
+func calculate_aligned_rotation_from_base(vehicle_block: Block) -> float:
 	var dir = vehicle_block.base_rotation_degree
 	return deg_to_rad(current_ghost_block.base_rotation_degree) + deg_to_rad(-dir) + vehicle_block.global_rotation
 
@@ -967,10 +1049,10 @@ func can_points_connect_with_rotation(point_a: ConnectionPoint, point_b: Connect
 		return false
 	# 计算幽灵块连接点在指定旋转下的全局方向
 	var ghost_point_direction = point_b.rotation + ghost_rotation
-	var angle_diff = are_rotations_opposite_best(ghost_point_direction, point_a.global_rotation, 0.5)
+	var angle_diff = are_rotations_opposite_best(ghost_point_direction, point_a.global_rotation)
 	return angle_diff   # 允许稍大的误差，因为是基于基础旋转的对齐
 
-func are_rotations_opposite_best(rot1: float, rot2: float, tolerance: float = 0.1) -> bool:
+func are_rotations_opposite_best(rot1: float, rot2: float) -> bool:
 	"""
 	最可靠的相对角度检测
 	"""
@@ -1043,8 +1125,6 @@ func try_place_block():
 	if not current_snap_config:
 		return
 	
-	var block_name = current_ghost_block.scene_file_path.get_file().get_basename()
-	
 	# 断开可能冲突的连接
 	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
 	disconnect_connections(connections_to_disconnect)
@@ -1063,12 +1143,12 @@ func try_place_block():
 	selected_vehicle.control = control
 	
 	# 继续放置同一类型的块（保持当前基础旋转）
-	start_block_placement_with_rotation(current_block_scene.resource_path, current_ghost_block.base_rotation_degree)
+	start_block_placement_with_rotation(current_block_scene.resource_path)
 	
 	# 放置块后更新蓝图显示
 	update_blueprint_ghosts()
 
-func start_block_placement_with_rotation(scene_path: String, rotation: float):
+func start_block_placement_with_rotation(scene_path: String):
 	if not is_editing or not selected_vehicle:
 		return
 	
@@ -1119,7 +1199,7 @@ func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghos
 	else:
 		print("警告: 无法建立连接")
 
-func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation):
+func calculate_rotated_grid_positions(vehiclepoint, ghostpoint):
 	var grid_positions = []
 	var grid_block = {}
 	
@@ -1127,8 +1207,7 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation)
 		return grid_positions
 	
 	var block_size = current_ghost_block.size
-	
-	var location_g = ghostpoint.location
+
 	var location_v = vehiclepoint.location
 	
 	var rotation_b = vehiclepoint.find_parent_block().base_rotation_degree
@@ -1156,7 +1235,7 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation)
 	grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().base_rotation_degree)
 	
 	if grid_connect_g != null and block_size != null and ghostpoint.location != null:
-		grid_block = to_grid(grid_connect_g, block_size, ghostpoint.location, target_rotation)
+		grid_block = to_grid(grid_connect_g, block_size, ghostpoint.location)
 	
 	for pos in grid_block:
 		if selected_vehicle.grid.has(pos):
@@ -1167,8 +1246,8 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, target_rotation)
 	return grid_positions
 
 # 提取的重复逻辑函数
-func get_connection_offset(connect_pos_v: Vector2i, rotation: float, direction: int) -> Vector2i:
-	var rounded_rotation_or = round(rad_to_deg(rotation))
+func get_connection_offset(connect_pos_v: Vector2i, _rotation: float, direction: int) -> Vector2i:
+	var rounded_rotation_or = round(rad_to_deg(_rotation))
 	var rounded_rotation = direction + rounded_rotation_or
 	rounded_rotation = wrapf(rounded_rotation, -180, 180)
 	
@@ -1211,7 +1290,7 @@ func get_rectangle_corners(grid_data: Dictionary) -> Dictionary:
 	
 	return corners
 
-func to_grid(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g: Vector2i, target_rotaion: float) -> Dictionary:
+func to_grid(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g: Vector2i) -> Dictionary:
 	var grid_block = {}
 	for i in block_size.x:
 		for j in block_size.y:
@@ -1384,18 +1463,18 @@ func save_vehicle(vehicle_name: String):
 	
 	print("Saving vehicle: ", vehicle_name)
 	
-	var blueprint_data = create_blueprint_data(vehicle_name)
+	var blueprint_data_save = create_blueprint_data(vehicle_name)
 	var blueprint_path = "res://vehicles/blueprint/%s.json" % vehicle_name
 	
-	if save_blueprint(blueprint_data, blueprint_path):
+	if save_blueprint(blueprint_data_save, blueprint_path):
 		selected_vehicle.vehicle_name = vehicle_name
-		selected_vehicle.blueprint = blueprint_data
+		selected_vehicle.blueprint = blueprint_data_save
 		print("Vehicle saved successfully: ", blueprint_path)
 	else:
 		show_error_dialog("Failed to save the vehicle")
 
 func create_blueprint_data(vehicle_name: String) -> Dictionary:
-	var blueprint_data = {
+	var blueprint_data_save = {
 		"name": vehicle_name,
 		"blocks": {},
 		"vehicle_size": [0, 0],
@@ -1422,7 +1501,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 			var relative_pos = Vector2i(grid_pos.x - min_x, grid_pos.y - min_y)
 			var rotation_str = block.base_rotation_degree
 			
-			blueprint_data["blocks"][str(block_counter)] = {
+			blueprint_data_save["blocks"][str(block_counter)] = {
 				"name": block.block_name,
 				"path": block.scene_file_path,
 				"base_pos": [relative_pos.x, relative_pos.y],
@@ -1431,7 +1510,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 			block_counter += 1
 			processed_blocks[block] = true
 	
-	blueprint_data["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
+	blueprint_data_save["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
 	return blueprint_data
 
 func get_rotation_direction(angle: float) -> String:
@@ -1445,14 +1524,14 @@ func get_rotation_direction(angle: float) -> String:
 	else:
 		return "left"
 
-func save_blueprint(blueprint_data: Dictionary, save_path: String) -> bool:
+func save_blueprint(blueprint_data_save: Dictionary, save_path: String) -> bool:
 	var dir = DirAccess.open("res://vehicles/blueprint/")
 	if not dir:
 		DirAccess.make_dir_absolute("res://vehicles/blueprint/")
 	
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
-		file.store_string(JSON.stringify(blueprint_data, "\t"))
+		file.store_string(JSON.stringify(blueprint_data_save, "\t"))
 		file.close()
 		print("Vehicle blueprint has been saved to:", save_path)
 		return true
