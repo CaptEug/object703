@@ -97,7 +97,7 @@ func _ready():
 
 func _input(event):
 	# 全局TAB键检测
-	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
 			exit_editor_mode()
 		else:
@@ -109,10 +109,6 @@ func _input(event):
 				print("错误: 未找到可编辑的车辆")
 		return
 	
-	# 添加蓝图显示切换快捷键 (按B键)
-	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
-		if is_editing and selected_vehicle:
-			toggle_blueprint_display()
 	
 	if not is_editing:
 		return
