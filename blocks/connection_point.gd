@@ -142,11 +142,12 @@ func set_connection_enabled(enabled: bool, keep_existing: bool = true, protect_i
 	keep_existing: 是否保留现有连接
 	protect_internal: 是否保护内部连接不断开
 	"""
-	if is_connection_enabled == enabled:
-		return
-	
-	is_connection_enabled = enabled
-	queue_redraw()
+	if keep_existing and protect_internal:
+		if is_connection_enabled == enabled:
+			return
+		
+		is_connection_enabled = enabled
+		queue_redraw()
 
 func is_internal_connection() -> bool:
 	"""检查当前连接是否是内部连接（同一个车辆）"""
