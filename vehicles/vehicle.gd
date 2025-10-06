@@ -382,7 +382,7 @@ func calculate_balanced_forces():
 	# 准备推力点数据
 	var thrust_points = []
 	for track:Track in active_tracks:
-		if track.functioning == true:
+		if track.functioning == true and track.parent_vehicle == self:
 			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
 			var positions_grid = get_block_grid(track)
 			thrust_points.append({
@@ -466,7 +466,7 @@ func calculate_rotation_forces():
 	# 准备推力点数据
 	var thrust_points = []
 	for track:Track in active_tracks:
-		if track.functioning == true:
+		if track.functioning == true and track.parent_vehicle == self:
 			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
 			var positions_grid = get_block_grid(track)
 			thrust_points.append({

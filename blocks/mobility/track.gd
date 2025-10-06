@@ -48,7 +48,6 @@ func broke():
 		if vehicle.tracks.has(self):
 			vehicle.tracks.erase(self)
 			vehicle.calculate_balanced_forces()
-			print(vehicle.balanced_forces)
 			var a = 0
 			for key in vehicle.balanced_forces.keys():
 				a += vehicle.balanced_forces[key]
