@@ -131,6 +131,7 @@ func damage(amount:int):
 func broke():
 	if parent_vehicle:
 		functioning = false
+		parent_vehicle.update_vehicle()
 		if broken_sprite:
 			sprite.visible = false
 			broken_sprite.visible = true
@@ -139,6 +140,7 @@ func broke():
 func destroy():
 	disconnect_all()
 	# Disconnect all joints before destroying
+	disconnect_all()
 	if parent_vehicle:
 		parent_vehicle.remove_block(self, false)
 	destroyed = true
