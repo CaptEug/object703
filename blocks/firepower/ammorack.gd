@@ -26,9 +26,10 @@ func deduct_ammo(amount:float) ->bool:
 		return true
 	return false
 
-func destroy():
-	super.destroy()
+func broke():
+	super.broke()
 	explode()
+	
 
 func explode():
 	if exploded:
