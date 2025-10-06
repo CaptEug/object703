@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://cy5y2mqj5bxgy"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_rbyyf"]
+[ext_resource type="Texture2D" uid="uid://cedxb1cyh1chq" path="res://assets/icons/tank.png" id="2_276te"]
+
+[node name="Hud" type="Control"]
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme = ExtResource("1_rbyyf")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = -4.0
+offset_top = -2.0
+offset_right = 2.0
+offset_bottom = 36.0
+grow_horizontal = 2
+
+[node name="BuildButton" type="TextureButton" parent="Panel"]
+offset_left = 343.0
+offset_top = 2.0
+offset_right = 375.0
+offset_bottom = 34.0
+tooltip_text = "new tank"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("2_276te")

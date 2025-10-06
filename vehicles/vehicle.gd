@@ -178,6 +178,8 @@ func find_pos(Dic: Dictionary, block:Block):
 ##################### VEHICLE PARAMETER MANAGEMENT #####################
 
 func check_control(control_name:String):
+	if control_name.is_empty():
+		return true
 	for block in commands:
 		if block.has_method(control_name) and block.functioning:
 			return Callable(block, control_name)
