@@ -1,4 +1,5 @@
 extends Node2D
+class_name fixjoint
 
 @export var body_a: RigidBody2D
 @export var body_b: RigidBody2D

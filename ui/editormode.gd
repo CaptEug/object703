@@ -7,6 +7,7 @@ extends Control
 @onready var name_input = $Panel/NameInput
 @onready var error_label = $SaveDialog/ErrorLabel
 @onready var recycle_button = $Panel/DismantleButton
+@onready var load_button = $Panel/LoadButton
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 
@@ -14,6 +15,7 @@ signal block_selected(scene_path: String)
 signal vehicle_saved(vehicle_name: String)
 signal recycle_mode_toggled(is_recycle_mode: bool)
 
+const GRID_SIZE = 16
 const BLOCK_PATHS = {
 	"Firepower": "res://blocks/firepower/",
 	"Mobility": "res://blocks/mobility/",
@@ -23,8 +25,20 @@ const BLOCK_PATHS = {
 	"Auxiliary": "res://blocks/auxiliary/"
 }
 
+const BLUEPRINT = {
+	"BLUEPRINT":"res://vehicles/blueprint/"
+}
+
 var item_lists = {}
 var is_recycle_mode := false
+var is_loading_mode := false  # 新增：标记是否处于加载模式
+var original_tab_names := []  # 新增：存储原始标签页名称
+
+# === 蓝图显示功能 ===
+var blueprint_ghosts := []  # 存储虚影块的数组
+var blueprint_data: Dictionary  # 当前蓝图数据
+var is_showing_blueprint := false  # 是否正在显示蓝图
+var ghost_data_map = {}  # ghost instance_id -> GhostData
 
 # === 编辑器模式变量 ===
 var is_editing := false
@@ -45,6 +59,11 @@ var snap_config
 # 存储原始连接状态
 var original_connections: Dictionary = {}
 
+# 虚影数据类
+class GhostData:
+	var grid_positions: Array
+	var rotation_deg: float
+
 func _ready():
 	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
@@ -52,6 +71,7 @@ func _ready():
 	save_dialog.close_requested.connect(_on_save_canceled)
 	name_input.text_changed.connect(_on_name_input_changed)
 	recycle_button.pressed.connect(_on_recycle_button_pressed)
+	load_button.pressed.connect(_on_load_button_pressed)
 	create_tabs()
 	
 	save_dialog.hide()
@@ -78,7 +98,6 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		if is_editing:
 			exit_editor_mode()
-			
 		else:
 			if selected_vehicle == null:
 				find_and_select_vehicle()
@@ -87,6 +106,11 @@ func _input(event):
 			else:
 				print("错误: 未找到可编辑的车辆")
 		return
+	
+	# 添加蓝图显示切换快捷键 (按B键)
+	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
+		if is_editing and selected_vehicle:
+			toggle_blueprint_display()
 	
 	if not is_editing:
 		return
@@ -109,7 +133,6 @@ func _input(event):
 			else:
 				try_place_block()
 
-
 func _process(delta):
 	if is_editing and selected_vehicle:
 		camera.sync_rotation_to_vehicle(selected_vehicle)
@@ -117,11 +140,14 @@ func _process(delta):
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
 	
-		
 	if Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_ghost_block_position(global_mouse_pos)
+	
+	# 如果正在显示蓝图虚影，更新它们的位置
+	if is_showing_blueprint and not blueprint_ghosts.is_empty():
+		update_ghosts_transform()
 
 # === UI 相关函数 ===
 func create_tabs():
@@ -135,6 +161,11 @@ func create_tabs():
 	
 	for tab_name in item_lists:
 		item_lists[tab_name].item_selected.connect(_on_item_selected.bind(tab_name))
+	
+	# 存储原始标签页名称
+	original_tab_names = []
+	for i in range(tab_container.get_tab_count()):
+		original_tab_names.append(tab_container.get_tab_title(i))
 
 func create_tab_with_itemlist(tab_name: String):
 	var item_list = ItemList.new()
@@ -186,19 +217,29 @@ func load_all_blocks():
 			populate_item_list(item_lists[category], categorized_blocks[category])
 
 func populate_item_list(item_list: ItemList, items: Array):
+	item_list.clear()
 	for item in items:
 		var idx = item_list.add_item(item.name)
 		item_list.set_item_icon(idx, item.icon)
 		item_list.set_item_metadata(idx, item.path)
 
 func _on_item_selected(index: int, tab_name: String):
-	var item_list = item_lists[tab_name]
-	var scene_path = item_list.get_item_metadata(index)
-	if scene_path:
-		emit_signal("block_selected", scene_path)
-		update_description(scene_path)
-		if is_editing:
-			start_block_placement(scene_path)
+	if is_loading_mode:
+		# 在加载模式下，处理车辆选择
+		var item_list = item_lists[tab_name]
+		var vehicle_name = item_list.get_item_text(index)
+		load_selected_vehicle(vehicle_name)
+	else:
+		# 正常模式下的方块选择
+		var item_list = item_lists[tab_name]
+		var scene_path = item_list.get_item_metadata(index)
+		if scene_path:
+			emit_signal("block_selected", scene_path)
+			update_description(scene_path)
+			if is_editing:
+				start_block_placement(scene_path)
+				# 放置新块后更新蓝图显示
+				update_blueprint_ghosts()
 
 func update_description(scene_path: String):
 	var scene = load(scene_path)
@@ -219,6 +260,400 @@ func _on_build_vehicle_pressed():
 	
 	# 直接尝试保存，不显示确认弹窗
 	try_save_vehicle()
+
+func _on_load_button_pressed():
+	if is_loading_mode:
+		# 如果已经在加载模式，切换回正常模式
+		switch_to_normal_mode()
+	else:
+		# 切换到加载模式
+		switch_to_loading_mode()
+
+func switch_to_loading_mode():
+	is_loading_mode = true
+	load_button.add_theme_color_override("font_color", Color.CYAN)
+	
+	# 清空所有标签页
+	for tab_name in item_lists:
+		item_lists[tab_name].clear()
+	
+	# 加载蓝图文件夹中的车辆
+	load_blueprint_vehicles()
+
+func switch_to_normal_mode():
+	is_loading_mode = false
+	load_button.remove_theme_color_override("font_color")
+	
+	# 恢复原始方块列表
+	load_all_blocks()
+	
+	# 恢复原始标签页标题
+	for i in range(tab_container.get_tab_count()):
+		if i < original_tab_names.size():
+			tab_container.set_tab_title(i, original_tab_names[i])
+	
+	# 清除蓝图显示
+	clear_blueprint_ghosts()
+
+func load_blueprint_vehicles():
+	var blueprint_dir = DirAccess.open(BLUEPRINT["BLUEPRINT"])
+	if not blueprint_dir:
+		print("错误: 无法打开蓝图目录 ", BLUEPRINT["BLUEPRINT"])
+		return
+	
+	blueprint_dir.list_dir_begin()
+	var file_name = blueprint_dir.get_next()
+	var vehicle_names = []
+	
+	while file_name != "":
+		if file_name.ends_with(".json"):
+			var vehicle_name = file_name.get_basename()
+			vehicle_names.append(vehicle_name)
+		file_name = blueprint_dir.get_next()
+	
+	blueprint_dir.list_dir_end()
+	
+	# 按字母顺序排序
+	vehicle_names.sort()
+	
+	# 在所有标签页中显示车辆名称
+	for tab_name in item_lists:
+		var item_list = item_lists[tab_name]
+		item_list.clear()
+		
+		# 设置标签页标题
+		var tab_index = tab_container.get_tab_count() - 1
+		for i in range(tab_container.get_tab_count()):
+			if tab_container.get_tab_control(i) == item_list:
+				tab_index = i
+				break
+		
+		if tab_name == "All":
+			tab_container.set_tab_title(tab_index, "Vehicles")
+		else:
+			tab_container.set_tab_title(tab_index, "")
+		
+		# 添加车辆到列表
+		for vehicle_name in vehicle_names:
+			var idx = item_list.add_item(vehicle_name)
+
+func load_selected_vehicle(vehicle_name: String):
+	print("显示蓝图虚影: ", vehicle_name)
+	
+	# 首先切换回正常模式
+	switch_to_normal_mode()
+	
+	# 然后显示选定蓝图的虚影
+	var blueprint_path = BLUEPRINT["BLUEPRINT"] + vehicle_name + ".json"
+	var file = FileAccess.open(blueprint_path, FileAccess.READ)
+	
+	if file:
+		var json_string = file.get_as_text()
+		file.close()
+		
+		var json = JSON.new()
+		var parse_result = json.parse(json_string)
+		
+		if parse_result == OK:
+			var blueprint_data = json.data
+			print("成功加载蓝图: ", blueprint_data["name"])
+			
+			# 显示蓝图虚影
+			show_blueprint_ghosts(blueprint_data)
+			
+		else:
+			print("错误: 无法解析JSON文件 ", blueprint_path)
+	else:
+		print("错误: 无法打开文件 ", blueprint_path)
+
+func show_blueprint_ghosts(blueprint: Dictionary):
+	if not selected_vehicle:
+		print("错误: 没有选中的车辆")
+		return
+	
+	# 清除之前的虚影
+	clear_blueprint_ghosts()
+	
+	# 存储蓝图数据
+	blueprint_data = blueprint
+	is_showing_blueprint = true
+	
+	# 获取当前车辆已有的块位置（用于检测哪些块缺失）
+	var current_block_positions = {}
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			# 获取块在车辆网格中的位置
+			var block_grid_positions = get_block_grid_positions(block)
+			for grid_pos in block_grid_positions:
+				current_block_positions[grid_pos] = block
+	
+	# 分析蓝图并创建缺失块的虚影
+	var created_ghosts = 0
+	for block_id in blueprint["blocks"]:
+		var block_data = blueprint["blocks"][block_id]
+		var scene_path = block_data["path"]
+		var base_pos = Vector2i(block_data["base_pos"][0], block_data["base_pos"][1])
+		var rotation_deg = block_data["rotation"][0]
+		
+		# 计算这个块在蓝图中的网格位置
+		var ghost_grid_positions = calculate_ghost_grid_positions(base_pos, rotation_deg, scene_path)
+		
+		# 检查这个块是否在当前车辆中缺失
+		var is_missing = false
+		for grid_pos in ghost_grid_positions:
+			if not current_block_positions.has(grid_pos):
+				is_missing = true
+				break
+		
+		if is_missing:
+			# 创建缺失块的虚影
+			create_ghost_block_with_data(scene_path, base_pos, rotation_deg, ghost_grid_positions)
+			created_ghosts += 1
+	
+	print("显示蓝图虚影，缺失块数量: ", created_ghosts)
+
+func calculate_ghost_grid_positions(base_pos: Vector2i, rotation_deg: float, scene_path: String) -> Array:
+	var scene = load(scene_path)
+	if not scene:
+		return []
+	
+	var temp_block = scene.instantiate()
+	var block_size = Vector2i(1, 1)
+	if temp_block is Block:
+		block_size = temp_block.size
+	temp_block.queue_free()
+	
+	var grid_positions = []
+	
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			var grid_pos: Vector2i
+			
+			match int(rotation_deg):
+				0:
+					grid_pos = base_pos + Vector2i(x, y)
+				90:
+					grid_pos = base_pos + Vector2i(-y, x)
+				-90:
+					grid_pos = base_pos + Vector2i(y, -x)
+				180, -180:
+					grid_pos = base_pos + Vector2i(-x, -y)
+				_:
+					grid_pos = base_pos + Vector2i(x, y)  # 默认情况
+			
+			grid_positions.append(grid_pos)
+	
+	return grid_positions
+
+func get_block_grid_positions(block: Block) -> Array:
+	var grid_positions = []
+	
+	# 在车辆网格中查找这个块的所有位置
+	for grid_pos in selected_vehicle.grid:
+		if selected_vehicle.grid[grid_pos] == block:
+			grid_positions.append(grid_pos)
+	
+	return grid_positions
+
+func get_rectangle_corners_arry(grid_data):
+	if grid_data.is_empty():
+		return []
+	
+	var x_coords = []
+	var y_coords = []
+	
+	for coord in grid_data:
+		x_coords.append(coord[0])
+		y_coords.append(coord[1])
+	
+	x_coords.sort()
+	y_coords.sort()
+	
+	var min_x = x_coords[0]
+	var max_x = x_coords[x_coords.size() - 1]
+	var min_y = y_coords[0]
+	var max_y = y_coords[y_coords.size() - 1]
+	
+	var corners = {
+		"1": Vector2i(min_x, min_y),
+		"2": Vector2i(max_x, min_y),
+		"3": Vector2i(max_x, max_y),
+		"4": Vector2i(min_x, max_y)
+	}
+	
+	var vc_1 = Vector2(min_x * GRID_SIZE - GRID_SIZE/2, min_y * GRID_SIZE - GRID_SIZE/2)
+	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE/2, max_y * GRID_SIZE + GRID_SIZE/2)
+	
+	var pos = (vc_1 + vc_2)/2
+	
+	return pos
+
+func create_ghost_block_with_data(scene_path: String, base_pos: Vector2i, rotation_deg: float, grid_positions: Array):
+	var scene = load(scene_path)
+	if not scene:
+		print("错误: 无法加载块场景: ", scene_path)
+		return
+	
+	var ghost = scene.instantiate()
+	get_tree().current_scene.add_child(ghost)
+	
+	# 设置虚影外观
+	ghost.modulate = Color(0.3, 0.6, 1.0, 0.2)
+	ghost.z_index = 45
+	ghost.visible = true
+	
+	# 使用精确的位置计算方法
+	var ghost_world_position = calculate_ghost_world_position_precise(grid_positions)
+	ghost.global_position = ghost_world_position[0]
+	ghost.global_rotation = ghost_world_position[1] + deg_to_rad(rotation_deg)
+	
+	if ghost.has_method("set_base_rotation_degree"):
+		ghost.base_rotation_degree = rotation_deg
+	
+	# 禁用碰撞
+	setup_blueprint_ghost_collision(ghost)
+	
+	# 存储虚影数据
+	var data = GhostData.new()
+	data.grid_positions = grid_positions
+	data.rotation_deg = rotation_deg
+	ghost_data_map[ghost.get_instance_id()] = data
+	
+	blueprint_ghosts.append(ghost)
+
+func calculate_ghost_world_position_precise(grid_positions: Array):
+	if grid_positions.is_empty():
+		return Vector2.ZERO
+	
+	var local_position = get_rectangle_corners_arry(grid_positions)
+	
+	# 方法1：使用车辆的第一个网格位置作为参考
+	if not selected_vehicle.grid.is_empty():
+		var first_grid_pos = selected_vehicle.grid.keys()[0]
+		var first_block = selected_vehicle.grid[first_grid_pos]
+		var first_gird = []
+		for key in selected_vehicle.grid.keys():
+			if selected_vehicle.grid[key] == first_block:
+				if not first_gird.has(key):
+					first_gird.append(key)
+		if first_block is Block:
+			var first_rotation = deg_to_rad(rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree)
+			
+			var first_position = get_rectangle_corners_arry(first_gird)
+			
+			if first_block:
+				
+				var local_offset = local_position - first_position
+				
+				# 将局部偏移旋转到车辆的方向
+				var rotated_offset = local_offset.rotated(first_rotation)
+				
+				# 返回世界坐标
+				return [first_block.global_position + rotated_offset, first_rotation]
+		
+	# 方法2：使用车辆中心点
+	return calculate_ghost_world_position_simple(grid_positions)
+
+func calculate_ghost_world_position_simple(grid_positions: Array) -> Vector2:
+	# 简单方法：基于车辆中心点计算
+	if grid_positions.is_empty():
+		return Vector2.ZERO
+	
+	# 计算网格中心
+	var sum_x = 0
+	var sum_y = 0
+	for pos in grid_positions:
+		sum_x += pos.x
+		sum_y += pos.y
+	
+	var center_grid = Vector2(sum_x / float(grid_positions.size()), sum_y / float(grid_positions.size()))
+	
+	# 转换为世界坐标
+	var grid_size = 16
+	var local_center = Vector2(center_grid.x * grid_size, center_grid.y * grid_size)
+	
+	# 考虑车辆的全局变换
+	return selected_vehicle.to_global(local_center)
+
+func setup_blueprint_ghost_collision(ghost: Node2D):
+	# 禁用所有碰撞形状
+	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
+	for shape in collision_shapes:
+		shape.disabled = true
+	
+	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
+	for poly in collision_polygons:
+		poly.disabled = true
+	
+	# 如果是RigidBody2D，冻结它
+	if ghost is RigidBody2D:
+		ghost.freeze = true
+		ghost.collision_layer = 0
+		ghost.collision_mask = 0
+	
+	if ghost is Block:
+		ghost.do_connect = false
+	# 禁用所有连接点
+	var connection_points = ghost.find_children("*", "ConnectionPoint", true)
+	for point in connection_points:
+		if point.has_method("set_connection_enabled"):
+			point.set_connection_enabled(false)
+			
+func get_ghost_data(ghost: Node2D) -> GhostData:
+	return ghost_data_map.get(ghost.get_instance_id())
+
+func update_ghosts_transform():
+	if not is_showing_blueprint or blueprint_ghosts.is_empty():
+		return
+	
+	# 重新计算所有虚影的位置和旋转
+	for ghost in blueprint_ghosts:
+		if is_instance_valid(ghost):
+			# 获取虚影对应的网格位置
+			var ghost_data = get_ghost_data(ghost)
+			if ghost_data:
+				var new_position = calculate_ghost_world_position_precise(ghost_data.grid_positions)
+				ghost.global_position = new_position
+				ghost.global_rotation = selected_vehicle.global_rotation + deg_to_rad(ghost_data.rotation_deg)
+
+func clear_blueprint_ghosts():
+	for ghost in blueprint_ghosts:
+		if is_instance_valid(ghost):
+			ghost.queue_free()
+	blueprint_ghosts.clear()
+	ghost_data_map.clear()
+	is_showing_blueprint = false
+
+func update_blueprint_ghosts():
+	if is_showing_blueprint and selected_vehicle and blueprint_data:
+		# 重新显示蓝图虚影（会清除旧的并创建新的）
+		show_blueprint_ghosts(blueprint_data)
+
+func toggle_blueprint_display():
+	if is_editing and selected_vehicle:
+		if is_showing_blueprint:
+			clear_blueprint_ghosts()
+			print("隐藏蓝图虚影")
+		else:
+			# 尝试从车辆获取蓝图数据
+			if selected_vehicle.blueprint is Dictionary:
+				show_blueprint_ghosts(selected_vehicle.blueprint)
+				print("显示蓝图虚影")
+			elif selected_vehicle.blueprint is String:
+				# 从文件加载蓝图
+				var blueprint_path = BLUEPRINT["BLUEPRINT"] + selected_vehicle.blueprint + ".json"
+				var file = FileAccess.open(blueprint_path, FileAccess.READ)
+				if file:
+					var json_string = file.get_as_text()
+					file.close()
+					var json = JSON.new()
+					if json.parse(json_string) == OK:
+						show_blueprint_ghosts(json.data)
+						print("显示蓝图虚影")
+					else:
+						print("错误: 无法解析蓝图文件")
+				else:
+					print("错误: 无法打开蓝图文件")
 
 func try_save_vehicle():
 	var vehicle_name = name_input.text.strip_edges()
@@ -330,6 +765,8 @@ func enter_editor_mode(vehicle: Vehicle):
 	current_ghost_connection_index = 0
 	current_vehicle_connection_index = 0
 	
+	toggle_blueprint_display()
+	
 	print("=== Edit mode ready ===")
 
 func exit_editor_mode():
@@ -347,13 +784,15 @@ func exit_editor_mode():
 		current_ghost_block.queue_free()
 		current_ghost_block = null
 	
+	# 清除蓝图显示
+	clear_blueprint_ghosts()
+	
 	camera.target_rot = 0.0
 	
 	hide()
 	is_editing = false
 	selected_vehicle = null
 	print("=== 编辑模式已退出 ===")
-
 
 func enable_all_connection_points_for_editing(open: bool):
 	if not selected_vehicle:
@@ -373,7 +812,6 @@ func restore_original_connections():
 	await get_tree().process_frame
 	
 	var restored_count = 0
-
 
 func start_block_placement(scene_path: String):
 	if not is_editing or not selected_vehicle:
@@ -421,7 +859,7 @@ func setup_ghost_block_collision(ghost: Node2D):
 		ghost.collision_layer = 0
 		ghost.collision_mask = 0
 
-# === 新的连接点吸附系统 ===
+# === 连接点吸附系统 ===
 func update_ghost_block_position(mouse_position: Vector2):
 	# 获取附近的车辆连接点
 	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
@@ -626,6 +1064,9 @@ func try_place_block():
 	
 	# 继续放置同一类型的块（保持当前基础旋转）
 	start_block_placement_with_rotation(current_block_scene.resource_path, current_ghost_block.base_rotation_degree)
+	
+	# 放置块后更新蓝图显示
+	update_blueprint_ghosts()
 
 func start_block_placement_with_rotation(scene_path: String, rotation: float):
 	if not is_editing or not selected_vehicle:
@@ -849,6 +1290,9 @@ func try_remove_block():
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			call_deferred("check_vehicle_stability")
 			print("Remove block: ", block_name)
+			
+			# 移除块后更新蓝图显示
+			update_blueprint_ghosts()
 			break
 
 func find_connections_for_block(block: Block) -> Array:

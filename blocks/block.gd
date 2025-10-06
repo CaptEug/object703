@@ -21,6 +21,7 @@ var destroyed:bool
 var sprite:Sprite2D
 var broken_sprite:Sprite2D
 var do_connect = true
+var base_pos: Vector2i
 
 
 ## Connection System
@@ -82,7 +83,6 @@ func connect_aready():
 			if point1 is ConnectionPoint and is_movable_on_connection == true:
 				point1.try_connect(point_con[0])
 		for point_con in overlapping_points:
-			var point1 = point_con[1]
 			if point_con[0].find_parent_block() is Block:
 				if point_con[0].find_parent_block().freeze == true:
 					point_con[0].find_parent_block().freeze = false
@@ -315,10 +315,10 @@ func get_connected_points() -> Array[ConnectionPoint]:
 		func(point): return point.connected_to
 	) if connection_points else []
 
-func get_connection_point_by_name(name: String) -> ConnectionPoint:
+func get_connection_point_by_name(pointname: String) -> ConnectionPoint:
 	if connection_points:
 		for point in connection_points:
-			if point.name == name:
+			if point.name == pointname:
 				return point
 	return null
 
