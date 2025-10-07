@@ -1497,6 +1497,10 @@ func try_remove_block():
 			
 			# 移除块后更新蓝图显示
 			update_blueprint_ghosts()
+			var block_count_after = selected_vehicle.blocks.size()
+			if block_count_after == 0:
+				is_first_block = true
+				is_new_vehicle = true 
 			break
 
 func find_connections_for_block(block: Block) -> Array:
