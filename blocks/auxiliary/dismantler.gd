@@ -25,7 +25,7 @@ func _init():
 	type = TYPE
 
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	#apply_force(Vector2.UP*200)
 	#print("GLOBAL POS of saw:", global_position)
 	#print("position:", position)
@@ -54,7 +54,7 @@ func damage_contacted_blocks():
 			block.damage(damage_to_deal)
 
 func gain_scrap(block):
-	var amount = block.size.x * block.size.y
+	var _amount = block.size.x * block.size.y
 	
 
 func find_all_connected_cargo():

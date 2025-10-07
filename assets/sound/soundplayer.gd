@@ -6,7 +6,7 @@ func _ready():
 	cam = get_tree().current_scene.find_child("Camera2D") as Camera2D
 
 
-func _process(delta):
+func _process(_delta):
 	if cam:
 		var zoom_factor = cam.zoom.x
 		# map zoom to volume (closer zoom = louder, farther zoom = quieter)

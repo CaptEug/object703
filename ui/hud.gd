@@ -9,7 +9,7 @@ func _ready():
 	# 连接新建车辆按钮的信号
 	new_vehicle_build.pressed.connect(_on_new_vehicle_build_pressed)
 
-func _process(delta):
+func _process(_delta):
 	$Panel/Clock.text = time
 
 # 新建车辆按钮按下时的处理

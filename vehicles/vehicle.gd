@@ -145,7 +145,7 @@ func _add_block(block: Block,local_pos, grid_positions):
 		block.set_connection_enabled(true)
 	update_vehicle()
 
-func remove_block(block: Block, imd: bool, disconnected:bool = false):
+func remove_block(block: Block, imd: bool, _disconnected:bool = false):
 	# 正常移除逻辑
 	blocks.erase(block)
 	if imd:
