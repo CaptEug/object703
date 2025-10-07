@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="3_hie3q"]
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://bl2tikk55bsp1" path="res://vehicles/object2.tscn" id="7_hie3q"]
-[ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scenes/day&night.gd" id="7_iwiij"]
+[ext_resource type="Script" path="res://scenes/day&night.gd" id="7_iwiij"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3

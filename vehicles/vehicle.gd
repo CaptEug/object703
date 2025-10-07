@@ -45,6 +45,17 @@ var ready_connect = true
 func _ready():
 	if blueprint:
 		Get_ready_again()
+	else:
+		# 空车辆的初始化
+		vehicle_name = "Unnamed_Vehicle"
+		blocks = []
+		total_blocks = []
+		grid = {}
+		tracks = []
+		powerpacks = []
+		commands = []
+		ammoracks = []
+		fueltanks = []
 
 
 func Get_ready_again():
@@ -382,6 +393,8 @@ func calculate_center_of_mass() -> Vector2:
 func get_globle_mass_center() ->Vector2:
 	var com = calculate_center_of_mass()
 	var globle_center_of_mass = Vector2.ZERO
+	if grid.keys().size() == 0:
+		return globle_center_of_mass
 	var first_grid_pos = grid.keys()[0]
 	var first_block = grid[first_grid_pos]
 	var first_gird = []
