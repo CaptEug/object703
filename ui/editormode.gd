@@ -876,7 +876,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	vehicle.control = Callable()
 	
 	for block:Block in vehicle.blocks:
-		block.collision_layer = 2
+		block.collision_layer = 1
 	
 	show()
 	
@@ -1686,7 +1686,10 @@ func exit_recycle_mode():
 # 创建新车辆
 func create_new_vehicle():
 	print("开始创建新车辆...")
-	
+	if is_editing:
+		exit_editor_mode()
+		if is_editing:
+			return
 	# 创建新的 Vehicle 实例
 	var new_vehicle = Vehicle.new()
 	new_vehicle.vehicle_name = "NewVehicle_" + str(Time.get_unix_time_from_system())
