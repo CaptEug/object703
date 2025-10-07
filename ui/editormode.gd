@@ -56,6 +56,8 @@ var available_ghost_points: Array[ConnectionPoint] = []
 var available_vehicle_points: Array[ConnectionPoint] = []
 var current_snap_config: Dictionary = {}
 var snap_config
+var is_first_block := true  # 标记是否是第一个放置的块
+var is_new_vehicle := false
 
 # 存储原始连接状态
 var original_connections: Dictionary = {}
@@ -119,8 +121,6 @@ func _input(event):
 				cancel_placement()
 			KEY_R:
 				rotate_ghost_connection()  # 旋转幽灵块90度
-			KEY_T:
-				switch_vehicle_connection()  # 切换车辆连接点
 			KEY_F:
 				print_connection_points_info()
 	
@@ -130,6 +130,8 @@ func _input(event):
 				try_remove_block()
 			else:
 				try_place_block()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			cancel_placement()  # 右键取消放置
 
 func _process(_delta):
 	if is_editing and selected_vehicle:
@@ -137,6 +139,9 @@ func _process(_delta):
 	
 	if is_showing_blueprint and not blueprint_ghosts.is_empty():
 		update_ghosts_transform()	
+	
+	if is_editing and is_recycle_mode and selected_vehicle:
+		update_recycle_highlight()
 		
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
@@ -147,6 +152,13 @@ func _process(_delta):
 		update_ghost_block_position(global_mouse_pos)
 
 # === 修复功能 ===
+
+func clear_tab_container_selection():
+	for tab_name in item_lists:
+		var item_list = item_lists[tab_name]
+		item_list.deselect_all()
+		item_list.release_focus()
+
 func _on_repair_button_pressed():
 	if not is_editing or not selected_vehicle or not is_showing_blueprint:
 		print("修复条件不满足：需要处于编辑模式、选中车辆且显示蓝图")
@@ -320,6 +332,8 @@ func _on_item_selected(index: int, tab_name: String):
 		var item_list = item_lists[tab_name]
 		var scene_path = item_list.get_item_metadata(index)
 		if scene_path:
+			if is_recycle_mode:
+				exit_recycle_mode()
 			emit_signal("block_selected", scene_path)
 			update_description(scene_path)
 			if is_editing:
@@ -457,6 +471,9 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 		print("错误: 没有选中的车辆")
 		return
 	
+	if blueprint.size() == 0:
+		return
+	
 	# 清除之前的虚影
 	clear_blueprint_ghosts()
 	
@@ -466,7 +483,8 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 	
 	# 获取当前车辆已有的块位置（用于检测哪些块缺失）
 	var current_block_positions = {}
-	for block in selected_vehicle.blocks:
+	
+	for block in selected_vehicle.total_blocks:
 		if is_instance_valid(block):
 			# 获取块在车辆网格中的位置
 			var block_grid_positions = get_block_grid_positions(block)
@@ -781,15 +799,22 @@ func _on_name_input_changed(_new_text: String):
 	error_label.hide()
 
 func _on_recycle_button_pressed():
-	is_recycle_mode = !is_recycle_mode
 	if is_recycle_mode:
-		Input.set_custom_mouse_cursor(preload("res://assets/icons/saw_cursor.png"))
-		if current_ghost_block:
-			current_ghost_block.visible = false
+		exit_recycle_mode()
 	else:
-		Input.set_custom_mouse_cursor(null)
-		if current_ghost_block:
-			current_ghost_block.visible = true
+		enter_recycle_mode()
+
+func enter_recycle_mode():
+	is_recycle_mode = true
+	Input.set_custom_mouse_cursor(preload("res://assets/icons/saw_cursor.png"))
+	
+	# 取消当前块放置
+	if current_ghost_block:
+		current_ghost_block.visible = false
+	
+	# 清除 TabContainer 的选择
+	clear_tab_container_selection()
+	
 	update_recycle_button()
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
 
@@ -833,14 +858,26 @@ func enter_editor_mode(vehicle: Vehicle):
 
 	is_editing = true
 	
+	# 如果不是通过新建车辆进入的编辑模式，则不是新车辆
+	if not is_new_vehicle:
+		is_first_block = false  # 编辑现有车辆时所有块都要吸附
+	
 	camera.focus_on_vehicle(selected_vehicle)
 	camera.sync_rotation_to_vehicle(selected_vehicle)
 	
 	print("=== Enter edit mode ===")
+	if is_first_block:
+		print("新车辆 - 第一个块可以自由放置")
+	else:
+		print("编辑现有车辆 - 所有块都需要吸附连接")
 	
 	enable_all_connection_points_for_editing(true)
 	
 	vehicle.control = Callable()
+	
+	for block:Block in vehicle.blocks:
+		block.collision_layer = 1
+	
 	show()
 	
 	# 重置连接点索引
@@ -851,12 +888,38 @@ func enter_editor_mode(vehicle: Vehicle):
 	
 	print("=== Edit mode ready ===")
 
+
 func exit_editor_mode():
 	if not is_editing:
 		return
 	
-	print("=== Exit edit mode ===")
+	if selected_vehicle.check_and_regroup_disconnected_blocks() or selected_vehicle.commands.size() == 0:
+		error_label.show()
+		if selected_vehicle.check_and_regroup_disconnected_blocks():
+			if selected_vehicle.commands.size() == 0:
+				error_label.text = "Unconnected Block & No Command"
+			else:
+				error_label.text = "Unconnected Block"
+		else:
+			error_label.text = "No Command"
+		save_dialog.show()
+		save_dialog.title = "Error"
+		save_dialog.popup_centered()
+		return
 	
+	for block:Block in selected_vehicle.blocks:
+		block.collision_layer = 1
+		block.modulate = Color.WHITE  # 重置颜色
+	
+	is_new_vehicle = false
+	is_first_block = true
+	# 退出删除模式
+	if is_recycle_mode:
+		exit_recycle_mode()
+	
+	clear_tab_container_selection()
+	print("=== Exit edit mode ===")
+ 	
 	restore_original_connections()
 	if is_recycle_mode:
 		is_recycle_mode = false
@@ -943,15 +1006,23 @@ func setup_ghost_block_collision(ghost: Node2D):
 
 # === 连接点吸附系统 ===
 func update_ghost_block_position(mouse_position: Vector2):
-	# 获取附近的车辆连接点
+	# 只有新车辆的第一个块可以自由放置
+	if is_first_block and is_new_vehicle:
+		current_ghost_block.global_position = mouse_position
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+		current_ghost_block.modulate = Color(0.8, 0.8, 1.0, 0.5)  # 蓝色表示自由放置
+		current_snap_config = {}
+		return
+	
+	# 其他情况都需要吸附：编辑现有车辆，或新车辆的非第一个块
 	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
 	available_ghost_points = get_ghost_block_available_connection_points()
 	
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
 		# 没有可用连接点，自由移动
 		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot# 使用基础旋转
-		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)  # 红色表示无法连接
 		current_snap_config = {}
 		return
 	
@@ -959,18 +1030,18 @@ func update_ghost_block_position(mouse_position: Vector2):
 	snap_config = get_current_snap_config()
 	
 	if snap_config:
-		
 		# 应用吸附位置和自动对齐的旋转
 		current_ghost_block.global_position = snap_config.ghost_position
 		current_ghost_block.global_rotation = snap_config.ghost_rotation
-		current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.5)
+		current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.5)  # 绿色表示可以连接
 		current_snap_config = snap_config
 	else:
 		# 自由移动
 		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)  # 使用基础旋转
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
 		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
 		current_snap_config = {}
+
 
 func get_ghost_block_available_connection_points() -> Array[ConnectionPoint]:
 	var points: Array[ConnectionPoint] = []
@@ -1122,6 +1193,12 @@ func try_place_block():
 	if not current_ghost_block or not selected_vehicle:
 		return
 	
+	# 只有新车辆的第一个块可以自由放置
+	if is_first_block and is_new_vehicle:
+		place_first_block()
+		return
+	
+	# 其他情况都需要吸附连接
 	if not current_snap_config:
 		return
 	
@@ -1147,6 +1224,58 @@ func try_place_block():
 	
 	# 放置块后更新蓝图显示
 	update_blueprint_ghosts()
+
+func place_first_block():
+	# 创建新块
+	var new_block:Block = current_block_scene.instantiate()
+	selected_vehicle.add_child(new_block)
+	new_block.global_position = current_ghost_block.global_position
+	new_block.global_rotation = current_ghost_block.global_rotation
+	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
+	
+	# 计算网格位置（基于世界坐标）
+	var grid_positions = calculate_free_grid_positions(new_block)
+	
+	var control = selected_vehicle.control
+	# 计算网格位置并更新
+	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
+	selected_vehicle.control = control
+	
+	# 第一个块放置完成后，关闭自由放置模式
+	is_first_block = false
+	
+	print("第一个块放置完成: ", new_block.block_name)
+	print("现在开始所有块都需要吸附连接")
+	
+	# 继续放置同一类型的块
+	start_block_placement_with_rotation(current_block_scene.resource_path)
+
+func calculate_free_grid_positions(block: Block) -> Array:
+	var grid_positions = []
+	var world_pos = block.global_position
+	var grid_x = int(round(world_pos.x / GRID_SIZE))
+	var grid_y = int(round(world_pos.y / GRID_SIZE))
+	
+	# 根据块的大小和旋转计算所有网格位置
+	var block_size = block.size
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			var grid_pos: Vector2i
+			match int(block.base_rotation_degree):
+				0:
+					grid_pos = Vector2i(grid_x + x, grid_y + y)
+				90:
+					grid_pos = Vector2i(grid_x - y, grid_y + x)
+				-90:
+					grid_pos = Vector2i(grid_x + y, grid_y - x)
+				180, -180:
+					grid_pos = Vector2i(grid_x - x, grid_y - y)
+				_:
+					grid_pos = Vector2i(grid_x + x, grid_y + y)  # 默认情况
+			
+			grid_positions.append(grid_pos)
+	
+	return grid_positions
 
 func start_block_placement_with_rotation(scene_path: String):
 	if not is_editing or not selected_vehicle:
@@ -1355,11 +1484,7 @@ func try_remove_block():
 	var result = space_state.intersect_point(query)
 	for collision in result:
 		var block = collision.collider
-		if block is Block and block.get_parent() == selected_vehicle:
-			if block is Command:
-				print("Cannot remove command block")
-				continue
-			
+		if block is Block and block.get_parent() == selected_vehicle:			
 			var block_name = block.block_name
 			var connections_to_disconnect = find_connections_for_block(block)
 			disconnect_connections(connections_to_disconnect)
@@ -1372,6 +1497,10 @@ func try_remove_block():
 			
 			# 移除块后更新蓝图显示
 			update_blueprint_ghosts()
+			var block_count_after = selected_vehicle.blocks.size()
+			if block_count_after == 0:
+				is_first_block = true
+				is_new_vehicle = true 
 			break
 
 func find_connections_for_block(block: Block) -> Array:
@@ -1399,34 +1528,13 @@ func cancel_placement():
 		current_ghost_block = null
 	current_block_scene = null
 	current_snap_config = {}
+	clear_tab_container_selection()
 	print("放置已取消")
 
 func get_block_size(block: Block) -> Vector2i:
 	if block.has_method("get_size"):
 		return block.size
 	return Vector2i(1, 1)
-
-func check_vehicle_stability():
-	if not selected_vehicle:
-		return
-	
-	var checked_blocks = {}
-	var command_blocks = []
-	
-	for block in selected_vehicle.blocks:
-		if block is Command:
-			command_blocks.append(block)
-	
-	if command_blocks.is_empty():
-		print("警告: 车辆没有命令块！")
-		return
-	
-	for command_block in command_blocks:
-		check_connections_from_block(command_block, checked_blocks)
-	
-	for block in selected_vehicle.blocks:
-		if not checked_blocks.get(block, false) and not block is Command:
-			print("警告: 块 ", block.block_name, " 未连接到命令块！")
 
 func check_connections_from_block(block: Block, checked_blocks: Dictionary):
 	if checked_blocks.get(block, false):
@@ -1538,3 +1646,93 @@ func save_blueprint(blueprint_data_save: Dictionary, save_path: String) -> bool:
 	else:
 		push_error("Failed to save file:", FileAccess.get_open_error())
 		return false
+
+func update_recycle_highlight():
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	# 重置所有块的颜色
+	reset_all_blocks_color()
+	
+	# 检测鼠标下的块并高亮为红色
+	var space_state = get_tree().root.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = global_mouse_pos
+	query.collision_mask = 1  # 只检测块所在的碰撞层
+	
+	var result = space_state.intersect_point(query)
+	for collision in result:
+		var block = collision.collider
+		if block is Block and block.get_parent() == selected_vehicle:
+			# 将要删除的块变成红色
+			block.modulate = Color.RED
+			break
+
+# 重置所有块的颜色
+func reset_all_blocks_color():
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			block.modulate = Color.WHITE
+
+# 退出删除模式
+func exit_recycle_mode():
+	if is_recycle_mode:
+		is_recycle_mode = false
+		Input.set_custom_mouse_cursor(null)
+		update_recycle_button()
+		
+		# 重置所有块的颜色
+		if selected_vehicle:
+			reset_all_blocks_color()
+		
+		emit_signal("recycle_mode_toggled", false)
+
+# 创建新车辆
+func create_new_vehicle():
+	print("开始创建新车辆...")
+	if is_editing:
+		exit_editor_mode()
+		if is_editing:
+			return
+	# 创建新的 Vehicle 实例
+	var new_vehicle = Vehicle.new()
+	new_vehicle.vehicle_name = "NewVehicle_" + str(Time.get_unix_time_from_system())
+	new_vehicle.blueprint = {}  # 暂无蓝图
+	
+	# 设置车辆位置为摄像机中心
+	if camera:
+		new_vehicle.global_position = camera.global_position
+		print("新车辆位置: ", new_vehicle.global_position)
+	else:
+		print("警告: 未找到摄像机，使用默认位置")
+		new_vehicle.global_position = Vector2(500, 300)
+	
+	# 添加到当前场景
+	var current_scene = get_tree().current_scene
+	current_scene.add_child(new_vehicle)
+	
+	# 进入编辑模式，标记为新车辆
+	enter_editor_mode_with_new_vehicle(new_vehicle)
+	
+	print("新车辆创建完成: ", new_vehicle.vehicle_name)
+
+func enter_editor_mode_with_new_vehicle(vehicle: Vehicle):
+	# 设置选中的车辆
+	selected_vehicle = vehicle
+	
+	# 标记为新车辆
+	is_new_vehicle = true
+	is_first_block = true  # 新车辆的第一个块可以自由放置
+	
+	# 清空名称输入框
+	name_input.text = ""
+	
+	# 进入编辑模式
+	enter_editor_mode(vehicle)
+	
+	print("已进入新车辆的编辑模式 - 第一个块可以自由放置")
+
+
+# 清空名称输入框的方法
+func clear_name_input():
+	name_input.text = ""

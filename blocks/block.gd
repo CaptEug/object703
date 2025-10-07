@@ -160,7 +160,7 @@ func get_parent_vehicle():
 ## Neighbor and Connectivity System
 func get_neighbors():
 	neighbors.clear()
-	if get_parent_vehicle():
+	if get_parent_vehicle() != null:
 		var grid = get_parent_vehicle().grid
 		var grid_pos = parent_vehicle.find_pos(grid, self)
 		var s = size
@@ -196,7 +196,7 @@ func check_connectivity():
 		return
 	if not get_all_connected_blocks().any(func(item): return item is Command):
 		if get_parent_vehicle():
-			parent_vehicle.remove_block(self, false)
+			parent_vehicle.remove_block(self, false, true)
 
 ## Enhanced Connection Point System
 func collect_connection_points():
