@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dydy0lmcen5rb"
-path="res://.godot/imported/cupola_light.png-f83db325d97af6d77b418cab2294b881.ctex"
+uid="uid://crr3h1wldaocx"
+path="res://.godot/imported/ammorack_light.png-b02dd2fd7ce94a6911e50dd2067eb5e2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cupola_light.png"
-dest_files=["res://.godot/imported/cupola_light.png-f83db325d97af6d77b418cab2294b881.ctex"]
+source_file="res://assets/lights/ammorack_light.png"
+dest_files=["res://.godot/imported/ammorack_light.png-b02dd2fd7ce94a6911e50dd2067eb5e2.ctex"]
 
 [params]
 
