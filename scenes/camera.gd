@@ -36,7 +36,7 @@ func _process(delta):
 
 
 func focus_on_vehicle(vehicle:Vehicle):
-	target_pos = vehicle.center_of_mass
+	target_pos = vehicle.get_globle_mass_center()
 	
 	if vehicle.control.get_method() == "manual_control":
 		if Input.is_action_pressed("AIMING"):
@@ -48,9 +48,11 @@ func focus_on_vehicle(vehicle:Vehicle):
 	focused = true
 
 func sync_rotation_to_vehicle(vehicle:Vehicle):
-	var command_block = vehicle.commands[0]
-	var vehicle_rotation = command_block.global_rotation - deg_to_rad(command_block.base_rotation_degree)
-	target_rot = vehicle_rotation
+	for pos in vehicle.grid.keys():
+		var block = vehicle.grid[pos]
+		var vehicle_rotation = block.global_rotation - deg_to_rad(block.base_rotation_degree)
+		target_rot = vehicle_rotation
+		break
 
 
 func sync_rotation_with(delta, target_rotation: float) -> void:

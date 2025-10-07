@@ -119,8 +119,6 @@ func _input(event):
 				cancel_placement()
 			KEY_R:
 				rotate_ghost_connection()  # 旋转幽灵块90度
-			KEY_T:
-				switch_vehicle_connection()  # 切换车辆连接点
 			KEY_F:
 				print_connection_points_info()
 	
@@ -130,6 +128,8 @@ func _input(event):
 				try_remove_block()
 			else:
 				try_place_block()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			cancel_placement()  # 右键取消放置
 
 func _process(_delta):
 	if is_editing and selected_vehicle:
@@ -137,6 +137,9 @@ func _process(_delta):
 	
 	if is_showing_blueprint and not blueprint_ghosts.is_empty():
 		update_ghosts_transform()	
+	
+	if is_editing and is_recycle_mode and selected_vehicle:
+		update_recycle_highlight()
 		
 	if not is_editing or not current_ghost_block or not selected_vehicle:
 		return
@@ -147,6 +150,13 @@ func _process(_delta):
 		update_ghost_block_position(global_mouse_pos)
 
 # === 修复功能 ===
+
+func clear_tab_container_selection():
+	for tab_name in item_lists:
+		var item_list = item_lists[tab_name]
+		item_list.deselect_all()
+		item_list.release_focus()
+
 func _on_repair_button_pressed():
 	if not is_editing or not selected_vehicle or not is_showing_blueprint:
 		print("修复条件不满足：需要处于编辑模式、选中车辆且显示蓝图")
@@ -320,6 +330,8 @@ func _on_item_selected(index: int, tab_name: String):
 		var item_list = item_lists[tab_name]
 		var scene_path = item_list.get_item_metadata(index)
 		if scene_path:
+			if is_recycle_mode:
+				exit_recycle_mode()
 			emit_signal("block_selected", scene_path)
 			update_description(scene_path)
 			if is_editing:
@@ -466,7 +478,8 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 	
 	# 获取当前车辆已有的块位置（用于检测哪些块缺失）
 	var current_block_positions = {}
-	for block in selected_vehicle.blocks:
+	
+	for block in selected_vehicle.total_blocks:
 		if is_instance_valid(block):
 			# 获取块在车辆网格中的位置
 			var block_grid_positions = get_block_grid_positions(block)
@@ -781,15 +794,22 @@ func _on_name_input_changed(_new_text: String):
 	error_label.hide()
 
 func _on_recycle_button_pressed():
-	is_recycle_mode = !is_recycle_mode
 	if is_recycle_mode:
-		Input.set_custom_mouse_cursor(preload("res://assets/icons/saw_cursor.png"))
-		if current_ghost_block:
-			current_ghost_block.visible = false
+		exit_recycle_mode()
 	else:
-		Input.set_custom_mouse_cursor(null)
-		if current_ghost_block:
-			current_ghost_block.visible = true
+		enter_recycle_mode()
+
+func enter_recycle_mode():
+	is_recycle_mode = true
+	Input.set_custom_mouse_cursor(preload("res://assets/icons/saw_cursor.png"))
+	
+	# 取消当前块放置
+	if current_ghost_block:
+		current_ghost_block.visible = false
+	
+	# 清除 TabContainer 的选择
+	clear_tab_container_selection()
+	
 	update_recycle_button()
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
 
@@ -841,6 +861,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	enable_all_connection_points_for_editing(true)
 	
 	vehicle.control = Callable()
+	
 	show()
 	
 	# 重置连接点索引
@@ -855,8 +876,31 @@ func exit_editor_mode():
 	if not is_editing:
 		return
 	
-	print("=== Exit edit mode ===")
+	if selected_vehicle.check_and_regroup_disconnected_blocks() or selected_vehicle.commands.size() == 0:
+		error_label.show()
+		if selected_vehicle.check_and_regroup_disconnected_blocks():
+			if selected_vehicle.commands.size() == 0:
+				error_label.text = "Unconnected Block & No Command"
+			else:
+				error_label.text = "Unconnected Block"
+		else:
+			error_label.text = "No Command"
+		save_dialog.show()
+		save_dialog.title = "Error"
+		save_dialog.popup_centered()
+		return
 	
+	for block:Block in selected_vehicle.blocks:
+		block.collision_layer = 1
+		block.modulate = Color.WHITE  # 重置颜色
+	
+	# 退出删除模式
+	if is_recycle_mode:
+		exit_recycle_mode()
+	
+	clear_tab_container_selection()
+	print("=== Exit edit mode ===")
+ 	
 	restore_original_connections()
 	if is_recycle_mode:
 		is_recycle_mode = false
@@ -1132,6 +1176,7 @@ func try_place_block():
 	var grid_positions = snap_config.positions
 	# 创建新块
 	var new_block:Block = current_block_scene.instantiate()
+	#new_block.collision_layer = 0
 	selected_vehicle.add_child(new_block)
 	new_block.global_position = current_snap_config.ghost_position
 	new_block.global_rotation = current_ghost_block.global_rotation
@@ -1355,11 +1400,7 @@ func try_remove_block():
 	var result = space_state.intersect_point(query)
 	for collision in result:
 		var block = collision.collider
-		if block is Block and block.get_parent() == selected_vehicle:
-			if block is Command:
-				print("Cannot remove command block")
-				continue
-			
+		if block is Block and block.get_parent() == selected_vehicle:			
 			var block_name = block.block_name
 			var connections_to_disconnect = find_connections_for_block(block)
 			disconnect_connections(connections_to_disconnect)
@@ -1399,34 +1440,13 @@ func cancel_placement():
 		current_ghost_block = null
 	current_block_scene = null
 	current_snap_config = {}
+	clear_tab_container_selection()
 	print("放置已取消")
 
 func get_block_size(block: Block) -> Vector2i:
 	if block.has_method("get_size"):
 		return block.size
 	return Vector2i(1, 1)
-
-func check_vehicle_stability():
-	if not selected_vehicle:
-		return
-	
-	var checked_blocks = {}
-	var command_blocks = []
-	
-	for block in selected_vehicle.blocks:
-		if block is Command:
-			command_blocks.append(block)
-	
-	if command_blocks.is_empty():
-		print("警告: 车辆没有命令块！")
-		return
-	
-	for command_block in command_blocks:
-		check_connections_from_block(command_block, checked_blocks)
-	
-	for block in selected_vehicle.blocks:
-		if not checked_blocks.get(block, false) and not block is Command:
-			print("警告: 块 ", block.block_name, " 未连接到命令块！")
 
 func check_connections_from_block(block: Block, checked_blocks: Dictionary):
 	if checked_blocks.get(block, false):
@@ -1538,3 +1558,43 @@ func save_blueprint(blueprint_data_save: Dictionary, save_path: String) -> bool:
 	else:
 		push_error("Failed to save file:", FileAccess.get_open_error())
 		return false
+
+func update_recycle_highlight():
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	# 重置所有块的颜色
+	reset_all_blocks_color()
+	
+	# 检测鼠标下的块并高亮为红色
+	var space_state = get_tree().root.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = global_mouse_pos
+	query.collision_mask = 1  # 只检测块所在的碰撞层
+	
+	var result = space_state.intersect_point(query)
+	for collision in result:
+		var block = collision.collider
+		if block is Block and block.get_parent() == selected_vehicle:
+			# 将要删除的块变成红色
+			block.modulate = Color.RED
+			break
+
+# 重置所有块的颜色
+func reset_all_blocks_color():
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			block.modulate = Color.WHITE
+
+# 退出删除模式
+func exit_recycle_mode():
+	if is_recycle_mode:
+		is_recycle_mode = false
+		Input.set_custom_mouse_cursor(null)
+		update_recycle_button()
+		
+		# 重置所有块的颜色
+		if selected_vehicle:
+			reset_all_blocks_color()
+		
+		emit_signal("recycle_mode_toggled", false)

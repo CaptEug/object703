@@ -82,6 +82,12 @@ func draw_grid():
 	var grid_size = 16
 	var draw_pos = $Marker2D.position - Vector2(vehicle_size/2) * grid_size
 	var blocks = []
+	var check_blocks = []
+	for pos in selected_vehicle.grid.keys():
+		if not check_blocks.has(selected_vehicle.grid[pos]):
+			check_blocks.append(selected_vehicle.grid[pos])
+	if not has_commend_class_exact(check_blocks):
+		return
 	for x in max_x+1:
 		for y in max_y+1:
 			var pos = Vector2i(x, y)
@@ -124,7 +130,11 @@ func draw_grid():
 				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 
 
-
+func has_commend_class_exact(check_blocks):
+	for block in check_blocks:
+		if block is Command:
+			return true
+	return false
 
 
 func _on_controlbutton_pressed():

@@ -18,6 +18,7 @@ var blueprint:Variant
 var blueprint_grid:= {}
 var grid:= {}
 var blocks:= []
+var total_blocks:= []
 var powerpacks:= []
 var tracks:= []
 var ammoracks:= []
@@ -112,6 +113,7 @@ func _add_block(block: Block,local_pos, grid_positions):
 		# 添加方块到车辆
 		add_child(block)
 		blocks.append(block)
+		total_blocks.append(block)
 		block.position = local_pos
 		block.global_grid_pos = get_rectangle_corners(grid_positions)
 		
@@ -132,11 +134,13 @@ func _add_block(block: Block,local_pos, grid_positions):
 		block.set_connection_enabled(true)
 	update_vehicle()
 
-func remove_block(block: Block, imd: bool):
+func remove_block(block: Block, imd: bool, disconnected:bool = false):
+	# 正常移除逻辑
 	blocks.erase(block)
 	if imd:
+		total_blocks.erase(block)
 		block.queue_free()
-
+	
 	var keys_to_erase = []
 	for pos in grid:
 		if grid[pos] == block:
@@ -154,9 +158,10 @@ func remove_block(block: Block, imd: bool):
 		ammoracks.erase(block)
 	if block in fueltanks:
 		fueltanks.erase(block)
+	
 	update_vehicle()
-	for blk:Block in blocks:
-		blk.check_connectivity()
+	#for blk:Block in blocks:
+		#blk.check_connectivity()
 
 func has_block(block_name:String):
 	for block in blocks:
@@ -374,6 +379,33 @@ func calculate_center_of_mass() -> Vector2:
 				has_calculated[body.get_instance_id()] = true
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
+func get_globle_mass_center() ->Vector2:
+	var com = calculate_center_of_mass()
+	var globle_center_of_mass = Vector2.ZERO
+	var first_grid_pos = grid.keys()[0]
+	var first_block = grid[first_grid_pos]
+	var first_gird = []
+	for key in grid.keys():
+		if grid[key] == first_block:
+			if not first_gird.has(key):
+				first_gird.append(key)
+	if first_block is Block:
+		var first_rotation = deg_to_rad(rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree)
+			
+		var first_position = get_rectangle_corners(first_gird)
+	
+		if first_block:
+				
+			var local_offset = com - first_position
+				
+				# 将局部偏移旋转到车辆的方向
+			var rotated_offset = local_offset.rotated(first_rotation)
+				
+				# 返回世界坐标
+			return first_block.global_position + rotated_offset
+	
+	return globle_center_of_mass
+	
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
@@ -765,4 +797,50 @@ func open_vehicle_panel():
 		HUD.add_child(panel)
 		while panel.any_overlap():
 			panel.position += Vector2(32, 32)
+
+func check_and_regroup_disconnected_blocks():
+	var valid_blocks = []
+	for block in total_blocks:
+		if is_instance_valid(block) and block.get_parent() == self:
+			valid_blocks.append(block)
+	if valid_blocks.is_empty():
+		return false
+	var components = find_connected_components_dfs(valid_blocks)
+	if components.size() <= 1:
+		return false
+	else:
+		return true
+
+func find_connected_components_dfs(all_blocks: Array) -> Array:
+	var visited = {}
+	var components = []
 	
+	for block in all_blocks:
+		var block_id = block.get_instance_id()
+		if not visited.get(block_id, false):
+			var component = []
+			dfs_traverse(block, visited, component, all_blocks)
+			components.append(component)
+	
+	return components
+
+func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Array):
+	var block_id = block.get_instance_id()
+	visited[block_id] = true
+	component.append(block)
+	
+	# 遍历所有连接的块
+	for connected_block in block.joint_connected_blocks:
+		if is_instance_valid(connected_block) and connected_block.get_parent() == self:
+			var connected_id = connected_block.get_instance_id()
+			if not visited.get(connected_id, false):
+				dfs_traverse(connected_block, visited, component, all_blocks)
+	
+	# 同时检查物理连接（通过连接点）
+	for connection_point in block.connection_points:
+		if connection_point.connected_to and is_instance_valid(connection_point.connected_to):
+			var connected_block = connection_point.connected_to.find_parent_block()
+			if connected_block and connected_block.get_parent() == self:
+				var connected_id = connected_block.get_instance_id()
+				if not visited.get(connected_id, false):
+					dfs_traverse(connected_block, visited, component, all_blocks)

@@ -21,6 +21,7 @@ offset_bottom = 36.0
 grow_horizontal = 2
 
 [node name="BuildButton" type="TextureButton" parent="Panel"]
+layout_mode = 0
 offset_left = 343.0
 offset_top = 2.0
 offset_right = 375.0
