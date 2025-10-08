@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://b7rtb38fi8atj"]
+[gd_scene load_steps=6 format=3 uid="uid://b7rtb38fi8atj"]
 
 [ext_resource type="Script" uid="uid://dt0mcqok8yflc" path="res://blocks/auxiliary/large_cargo.gd" id="1_1f020"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_r812u"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_r812u"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iayvv"]
 size = Vector2(32, 32)
@@ -19,3 +20,39 @@ shape = SubResource("RectangleShape2D_iayvv")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_hihmu")
+
+[node name="ConnectionPoint" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(-8, -16)
+rotation = -1.5708
+
+[node name="ConnectionPoint2" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(8, -16)
+rotation = -1.5708
+location = Vector2i(1, 0)
+
+[node name="ConnectionPoint3" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(16, -8)
+location = Vector2i(1, 0)
+
+[node name="ConnectionPoint4" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(16, 8)
+location = Vector2i(1, 1)
+
+[node name="ConnectionPoint5" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(8, 16)
+rotation = 1.5708
+location = Vector2i(1, 1)
+
+[node name="ConnectionPoint6" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(-8, 16)
+rotation = 1.5708
+location = Vector2i(0, 1)
+
+[node name="ConnectionPoint7" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(-16, 8)
+rotation = -3.14159
+location = Vector2i(0, 1)
+
+[node name="ConnectionPoint8" parent="." instance=ExtResource("3_r812u")]
+position = Vector2(-16, -8)
+rotation = 3.14159

@@ -7,6 +7,7 @@ var accept:Array = []
 
 
 func _ready():
+	super._ready()
 	# Initialize empty slots
 	inventory.resize(slot_count)
 	for i in range(slot_count):
@@ -14,7 +15,7 @@ func _ready():
 
 
 func _process(_delta):
-	pass
+	super._process(_delta)
 
 
 func set_item(slot_index: int, item_data: Dictionary) -> bool:
