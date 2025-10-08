@@ -240,14 +240,18 @@ func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_
 		if not target_block:
 			return null
 		# 使用焊接关节保证严格对齐
-		var joint = GrooveJoint2D.new()
-		joint.initial_offset = 0
-		joint.length = 0.0001
+		var joint = PinJoint2D.new()
+		#joint.initial_offset = 0
+		#joint.length = 0.1
 		joint.node_a = get_path()
 		joint.node_b = target_block.get_path()
 		joint.position = source.position
 		joint.disable_collision = false
-		joint.bias = 0.3 
+		joint.bias = 0.3
+		joint.softness = 0.05
+		joint.angular_limit_enabled = true
+		joint.angular_limit_lower = -10
+		joint.angular_limit_upper = 10
 		add_child(joint)
 		joint_connected_blocks[joint] = target_block
 		if not target_block.joint_connected_blocks.has(joint):
