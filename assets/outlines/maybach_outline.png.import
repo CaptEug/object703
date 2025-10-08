@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0gcvtsw8khpp"
-path="res://.godot/imported/dismantler_outline.png-38bca4d66cfaf1737d8862c2b82a3c05.ctex"
+uid="uid://di1wg1o46st7k"
+path="res://.godot/imported/maybach_outline.png-59442952d4f9ce10ca09521867ba708a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/dismantler_outline.png"
-dest_files=["res://.godot/imported/dismantler_outline.png-38bca4d66cfaf1737d8862c2b82a3c05.ctex"]
+source_file="res://assets/outlines/maybach_outline.png"
+dest_files=["res://.godot/imported/maybach_outline.png-59442952d4f9ce10ca09521867ba708a.ctex"]
 
 [params]
 

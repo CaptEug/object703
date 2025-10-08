@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3 uid="uid://busyvtgukolkx"]
+
+[ext_resource type="Texture2D" uid="uid://dfue43xmkfec2" path="res://assets/particles/exhaust_gas.png" id="1_q6ywk"]
+
+[sub_resource type="Gradient" id="Gradient_q6ywk"]
+colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_op317"]
+gradient = SubResource("Gradient_q6ywk")
+
+[sub_resource type="Curve" id="Curve_q6ywk"]
+_data = [Vector2(0, 0.5), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_op317"]
+curve = SubResource("Curve_q6ywk")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_op317"]
+particle_flag_disable_z = true
+spread = 30.0
+initial_velocity_min = 60.0
+initial_velocity_max = 60.0
+gravity = Vector3(0, 0, 0)
+damping_min = 0.1
+damping_max = 0.1
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_op317")
+color_ramp = SubResource("GradientTexture1D_op317")
+turbulence_enabled = true
+turbulence_noise_scale = 6.0
+
+[node name="ExhaustGas" type="GPUParticles2D"]
+amount = 20
+texture = ExtResource("1_q6ywk")
+process_material = SubResource("ParticleProcessMaterial_op317")

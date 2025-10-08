@@ -1,37 +1,57 @@
-[gd_scene load_steps=6 format=3 uid="uid://mkhgj12b5dr8"]
+[gd_scene load_steps=8 format=3 uid="uid://mkhgj12b5dr8"]
 
 [ext_resource type="Script" uid="uid://wuc6eml41m1l" path="res://blocks/mobility/maybach_hl_250.gd" id="1_yv36m"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ymh6m"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_3jhp6"]
+[ext_resource type="PackedScene" uid="uid://busyvtgukolkx" path="res://assets/particles/exhaust_gas.tscn" id="4_8y2v4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kkwhi"]
-size = Vector2(16, 16)
+size = Vector2(16, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_itil1"]
 atlas = ExtResource("2_ymh6m")
-region = Rect2(0, 16, 16, 16)
+region = Rect2(32, 0, 16, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3jhp6"]
+atlas = ExtResource("2_ymh6m")
+region = Rect2(48, 0, 16, 48)
 
 [node name="Engine" type="RigidBody2D"]
+center_of_mass_mode = 1
 script = ExtResource("1_yv36m")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -8)
 shape = SubResource("RectangleShape2D_kkwhi")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_itil1")
 
+[node name="Broken" type="Sprite2D" parent="."]
+visible = false
+texture = SubResource("AtlasTexture_3jhp6")
+
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_3jhp6")]
-position = Vector2(0, 8)
-rotation = 1.57079
+position = Vector2(0, -24)
+rotation = -1.57079
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("3_3jhp6")]
-position = Vector2(-8, 0)
+position = Vector2(-8, -16)
 rotation = 3.14159
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("3_3jhp6")]
-position = Vector2(8, 0)
+position = Vector2(8, -16)
 
 [node name="ConnectionPoint4" parent="." instance=ExtResource("3_3jhp6")]
-position = Vector2(0, -8)
-rotation = -1.57079
+position = Vector2(-8, 0)
+rotation = -3.14159
+location = Vector2i(0, 1)
+
+[node name="ConnectionPoint5" parent="." instance=ExtResource("3_3jhp6")]
+position = Vector2(8, 0)
+location = Vector2i(0, 1)
+
+[node name="ExhaustGas" parent="." instance=ExtResource("4_8y2v4")]
+position = Vector2(0, 18)
+rotation = 1.57079

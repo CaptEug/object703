@@ -1,9 +1,9 @@
 extends CanvasModulate
 
-@export var cycle_duration := 20.0
+@export var cycle_duration := 600.0
 @export var day_color := Color(1, 1, 1)
 @export var night_color := Color(0.3, 0.3, 0.3)
-var time := 0.0
+var time := 200.0
 @onready var HUD := get_tree().current_scene.find_child("CanvasLayer").find_child("Hud")
 
 func _process(delta):

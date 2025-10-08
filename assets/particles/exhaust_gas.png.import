@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tokrvy83fsfk"
-path="res://.godot/imported/track_outline.png-25eea7ed2b5197cecaf2a87d03685250.ctex"
+uid="uid://dfue43xmkfec2"
+path="res://.godot/imported/exhaust_gas.png-1a2544695e511799f2d7b816b8d805e3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/track_outline.png"
-dest_files=["res://.godot/imported/track_outline.png-25eea7ed2b5197cecaf2a87d03685250.ctex"]
+source_file="res://assets/particles/exhaust_gas.png"
+dest_files=["res://.godot/imported/exhaust_gas.png-1a2544695e511799f2d7b816b8d805e3.ctex"]
 
 [params]
 
