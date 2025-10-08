@@ -13,7 +13,7 @@ func _ready():
 		inventory[i] = null  # null means empty slot
 
 
-func _process(delta):
+func _process(_delta):
 	pass
 
 

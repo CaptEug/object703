@@ -11,7 +11,7 @@ func _ready():
 	super._ready()
 	turret = find_child("Turret") as RigidBody2D
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	aim(get_global_mouse_position())
 
 func aim(target_pos):
