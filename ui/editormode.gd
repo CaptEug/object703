@@ -61,6 +61,7 @@ var is_new_vehicle := false
 
 # 存储原始连接状态
 var original_connections: Dictionary = {}
+var is_ui_interaction: bool = false
 
 # 虚影数据类
 class GhostData:
@@ -68,6 +69,7 @@ class GhostData:
 	var rotation_deg: float
 
 func _ready():
+	_connect_block_buttons()
 	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
 	save_dialog.get_ok_button().pressed.connect(_on_save_confirmed)
@@ -97,6 +99,26 @@ func _ready():
 	
 	call_deferred("initialize_editor")
 
+func _connect_block_buttons():
+	# 找到所有方块选择按钮并连接信号
+	var block_buttons = get_tree().get_nodes_in_group("block_buttons")
+	for button in block_buttons:
+		if button is BaseButton:
+			button.pressed.connect(_on_block_button_pressed)
+
+func _on_block_button_pressed():
+	# 设置UI交互状态，防止意外建造
+	is_ui_interaction = true
+	# 0.2秒后自动重置状态（确保覆盖整个点击过程）
+	await get_tree().create_timer(0.2).timeout
+	is_ui_interaction = false
+
+# 修改放置方块的方法，添加状态检查
+func place_block(grid_position: Vector2):
+	if is_ui_interaction:
+		print("UI交互中，阻止放置方块")
+		return
+
 func _input(event):
 	# 全局TAB键检测
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
@@ -123,6 +145,11 @@ func _input(event):
 				rotate_ghost_connection()  # 旋转幽灵块90度
 			KEY_F:
 				print_connection_points_info()
+			KEY_X:
+				if is_recycle_mode:
+					exit_recycle_mode()
+				else:
+					enter_recycle_mode()
 	
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
