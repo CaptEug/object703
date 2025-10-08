@@ -1619,7 +1619,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 			processed_blocks[block] = true
 	
 	blueprint_data_save["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
-	return blueprint_data
+	return blueprint_data_save
 
 func get_rotation_direction(angle: float) -> String:
 	var normalized = fmod(angle, TAU)
