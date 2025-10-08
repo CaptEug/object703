@@ -7,7 +7,7 @@ const SIZE:= Vector2(2, 2)
 const TYPE:= 'Auxiliary'
 
 var description := ""
-var outline_tex := preload("res://assets/icons/dismantler_outline.png")
+var outline_tex := preload("res://assets/outlines/dismantler_outline.png")
 
 var inventory:Array = []
 var on:bool
@@ -31,6 +31,7 @@ func _physics_process(_delta):
 	#print("position:", position)
 	#print("LINERA velocity:", linear_velocity)
 	if not functioning:
+		on = false
 		return
 	if on:
 		saw.apply_torque(1000)
@@ -38,7 +39,7 @@ func _physics_process(_delta):
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if get_parent_vehicle():
+	if get_parent_vehicle() and functioning:
 		var control_method = get_parent_vehicle().control.get_method()
 		if control_method == "manual_control":
 			if event.is_action("FIRE_MAIN"):  # only respond to FIRE_MAIN events

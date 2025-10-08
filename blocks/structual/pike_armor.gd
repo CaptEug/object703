@@ -10,7 +10,7 @@ const COST:= [
 	]
 
 var description := ""
-var outline_tex := preload("res://assets/icons/pike_outline.png")
+var outline_tex := preload("res://assets/outlines/pike_outline.png")
 
 func _init():
 	max_hp = HITPOINT
