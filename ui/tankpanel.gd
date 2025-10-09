@@ -2,6 +2,7 @@ extends FloatingPanel
 
 @onready var fuel_progressbar = $Fuel
 @onready var ammo_progressbar = $Ammo
+@onready var inventory_panel = $InventoryPanel
 @export var health_gradient: Gradient  # Set this from the Inspector
 var time:float = 0
 var selected_vehicle:Vehicle
@@ -56,6 +57,9 @@ func retrieve_vehicle_data():
 	fuel_progressbar.value = selected_vehicle.get_current_fuel()
 	ammo_progressbar.max_value = selected_vehicle.get_ammo_cap()
 	ammo_progressbar.value = selected_vehicle.get_current_ammo()
+	if inventory_panel and selected_vehicle:
+		#inventory_panel.set_tank(selected_vehicle)
+		pass
 	#check vehicle control
 	var available_modes := [Callable()]
 	var button_icons := [idle_icon]
@@ -71,7 +75,8 @@ func retrieve_vehicle_data():
 	control_modes = available_modes
 	current_mode = control_modes.find(selected_vehicle.control)
 	$Controlbutton.texture_normal = button_icons[current_mode]
-
+		
+		
 func draw_grid():
 	var line_width: float = 2.0
 	var result = normalize_grid(selected_vehicle.grid)
@@ -129,13 +134,18 @@ func draw_grid():
 				# Reset rotaion
 				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 
+func _input(event: InputEvent) -> void:
+	if Input.is_action_just_pressed("Cargo") and visible:
+		toggle_inventory()
 
 func has_commend_class_exact(check_blocks):
 	for block in check_blocks:
 		if block is Command:
 			return true
 	return false
-
+func toggle_inventory():
+	print(selected_vehicle)
+	inventory_panel.toggle_inventory(selected_vehicle)
 
 func _on_controlbutton_pressed():
 	current_mode = (current_mode + 1) % control_modes.size()
@@ -184,6 +194,7 @@ func normalize_grid(grid: Dictionary) -> Array:
 
 func _on_close_button_pressed():
 	visible = false
+	inventory_panel.close_inventory()
 
 func is_frontmost() -> bool:
 	var parent = get_parent()
