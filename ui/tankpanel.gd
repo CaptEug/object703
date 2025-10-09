@@ -75,8 +75,8 @@ func retrieve_vehicle_data():
 	control_modes = available_modes
 	current_mode = control_modes.find(selected_vehicle.control)
 	$Controlbutton.texture_normal = button_icons[current_mode]
-		
-		
+
+
 func draw_grid():
 	var line_width: float = 2.0
 	var result = normalize_grid(selected_vehicle.grid)
@@ -143,6 +143,7 @@ func has_commend_class_exact(check_blocks):
 		if block is Command:
 			return true
 	return false
+
 func toggle_inventory():
 	print(selected_vehicle)
 	inventory_panel.toggle_inventory(selected_vehicle)
