@@ -36,11 +36,12 @@ func _gui_input(event):
 
 func _on_left_click():
 	# 拖动物品
+	var picked_item_data: Dictionary = {}
 	if item_data:
 		print("Picked up item:", item_data)
-		storage_ref.pick_item(slot_index)
+		picked_item_data = storage_ref.pick_item(slot_index)
 	else:
-		#storage_ref.place_item(slot_index)
+		#storage_ref.place_item(slot_index, picked_item_data)
 		pass
 
 func _on_right_click():

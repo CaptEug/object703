@@ -21,6 +21,7 @@ func initialize_inventory():
 	inventory.resize(slot_count)
 	for i in range(slot_count):
 		inventory[i] = {}
+	set_item(0, test_generate_scrap())
 
 func get_item(slot_index: int) -> Dictionary:
 	if slot_index < 0 or slot_index >= slot_count:
@@ -99,3 +100,7 @@ func calculate_total_weight() -> float:
 	for i in inventory:
 		total_weight += i.count * i.weight
 	return total_weight
+	
+func test_generate_scrap() -> Dictionary:
+	var texture: Texture2D = load("res://assets/icons/scrap.png")
+	return {"id": "scrap", "count": 10, "weight": 1, "icon": texture}
