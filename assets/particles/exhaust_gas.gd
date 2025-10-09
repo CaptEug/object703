@@ -9,15 +9,13 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if get_parent() as Powerpack:
-		update_color()
-		update_number()
+	emitting = get_parent().functioning
+	update_color()
+	update_number()
 
 
 func get_engine_power_rate() -> float:
 	var engine = get_parent() as Powerpack
-	if not engine.functioning:
-		return 0.0
 	
 	var engine_power_rate = engine.power/engine.max_power
 	
@@ -32,4 +30,4 @@ func update_color():
 
 func update_number():
 	var ratio = get_engine_power_rate()
-	amount_ratio = clamp(ratio, 0.2, 1.0)
+	amount_ratio = clamp(ratio, 0.1, 1.0)

@@ -31,7 +31,7 @@ turbulence_enabled = true
 turbulence_noise_scale = 6.0
 
 [sub_resource type="Gradient" id="Gradient_op317"]
-colors = PackedColorArray(0.775063, 0.775063, 0.775063, 1, 0.162066, 0.162066, 0.162066, 1)
+colors = PackedColorArray(0.720467, 0.720468, 0.720467, 1, 0.223103, 0.223103, 0.223103, 1)
 
 [node name="ExhaustGas" type="GPUParticles2D"]
 amount = 100
