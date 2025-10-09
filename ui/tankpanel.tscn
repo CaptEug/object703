@@ -152,10 +152,10 @@ texture = SubResource("AtlasTexture_sh8cn")
 [node name="InventoryPanel" parent="." instance=ExtResource("9_kkd3v")]
 visible = false
 layout_mode = 1
-offset_left = 1.0
-offset_top = 320.0
-offset_right = 156.16
-offset_bottom = 326.68
+offset_left = 320.0
+offset_top = 49.0
+offset_right = 386.16
+offset_bottom = 23.68
 grow_horizontal = 1
 grow_vertical = 1
 

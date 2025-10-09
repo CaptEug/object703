@@ -67,3 +67,7 @@ func add_storage_section(block) -> void:
 		grid.add_child(s)
 
 	section_container.add_child(section)
+
+
+func _on_close_button_pressed() -> void:
+	close_inventory()
