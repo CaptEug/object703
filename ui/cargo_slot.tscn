@@ -4,12 +4,12 @@
 [ext_resource type="Script" uid="uid://bxf3fqjbfiuls" path="res://ui/cargo_slot.gd" id="2_84368"]
 
 [node name="CargoSlot" type="TextureRect"]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(32, 32)
 anchors_preset = -1
-anchor_right = 0.056
-anchor_bottom = 0.099
-offset_right = -0.512001
-offset_bottom = -0.152008
+anchor_right = 0.028
+anchor_bottom = 0.049
+offset_right = -0.256001
+offset_bottom = 0.247995
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("1_oauvc")

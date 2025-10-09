@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cqye7fhmmkft8"]
+[gd_scene load_steps=15 format=3 uid="uid://cqye7fhmmkft8"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_sh8cn"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_6e8cr"]
@@ -7,7 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://d3l7auv8n1vja" path="res://assets/icons/crossI.png" id="4_3deui"]
 [ext_resource type="Texture2D" uid="uid://dnn2g7ksth8o" path="res://assets/icons/idle.png" id="4_bu53t"]
 [ext_resource type="Texture2D" uid="uid://e0sne2h1x0sa" path="res://assets/icons/I.png" id="5_6e8cr"]
-[ext_resource type="Texture2D" uid="uid://bgqcxa847i8fu" path="res://assets/icons/b.png" id="7_3deui"]
+[ext_resource type="Texture2D" uid="uid://80i1wkvsngsa" path="res://assets/icons/tab.png" id="5_i2tau"]
+[ext_resource type="PackedScene" uid="uid://cil4c3i7uegwf" path="res://ui/inventory_panel.tscn" id="9_kkd3v"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
 atlas = ExtResource("2_6e8cr")
@@ -148,12 +149,15 @@ show_percentage = false
 position = Vector2(4, 104)
 texture = SubResource("AtlasTexture_sh8cn")
 
-[node name="IventoryPanel" type="Panel" parent="."]
+[node name="InventoryPanel" parent="." instance=ExtResource("9_kkd3v")]
 visible = false
-layout_mode = 0
-offset_top = 316.0
-offset_right = 320.0
-offset_bottom = 602.0
+layout_mode = 1
+offset_left = 1.0
+offset_top = 320.0
+offset_right = 156.16
+offset_bottom = 326.68
+grow_horizontal = 1
+grow_vertical = 1
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="Controlbutton" to="." method="_on_controlbutton_pressed"]

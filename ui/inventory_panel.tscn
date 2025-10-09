@@ -1,0 +1,39 @@
+[gd_scene load_steps=3 format=3 uid="uid://cil4c3i7uegwf"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ang1s"]
+[ext_resource type="Script" uid="uid://dl6vu7vh0mtcm" path="res://ui/inventory_panel.gd" id="2_hc366"]
+
+[node name="InventoryPanel" type="Panel"]
+anchors_preset = -1
+anchor_right = 0.512
+anchor_bottom = 0.926
+offset_right = 223.176
+offset_bottom = -123.048
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_ang1s")
+script = ExtResource("2_hc366")
+
+[node name="SortButton" type="Button" parent="."]
+layout_mode = 2
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 40.0
+offset_bottom = 39.0
+
+[node name="CloseButton" type="Button" parent="."]
+layout_mode = 2
+offset_left = 45.0
+offset_top = 7.0
+offset_right = 77.0
+offset_bottom = 39.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 46.0
+offset_right = 807.0
+offset_bottom = 468.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
