@@ -3,9 +3,12 @@ extends Block
 
 signal inventory_changed(cargo: Cargo)
 
+
 @export var slot_count: int = 24
-var inventory: Array = []
+@export var is_full: bool = false
+var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10, "weight": 1, "icon": Texture2D}
 var accept: Array = []  # 可以存放的物品类型约束（暂留）
+var max_load: float = false
 
 func _ready():
 	super._ready()
@@ -28,7 +31,7 @@ func get_item(slot_index: int) -> Dictionary:
 	return item
 
 func set_item(slot_index: int, item_data: Dictionary) -> bool:
-	if slot_index < 0 or slot_index >= slot_count:
+	if slot_index < 0 or slot_index >= slot_count and check_overload():
 		return false
 	inventory[slot_index] = item_data
 	print("📦 Set item at", slot_index, ":", item_data)
@@ -83,3 +86,16 @@ func can_accept_item(item: Dictionary) -> bool:
 	if accept.is_empty():
 		return true
 	return item.get("type", "") in accept
+	
+func check_overload() -> bool:
+	var is_overload = calculate_total_weight() >= max_load
+	is_full = is_overload
+	return is_overload
+# ============================================================
+# 工具
+# ============================================================
+func calculate_total_weight() -> float:
+	var total_weight = 0
+	for i in inventory:
+		total_weight += i.count * i.weight
+	return total_weight
