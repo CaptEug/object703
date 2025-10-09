@@ -20,5 +20,5 @@ func _init():
 	type = TYPE
 	size = SIZE
 	max_power = MAX_POWER
-	rotating_power = ROTATING_POWER
+	rotate_power_ratio = ROTATING_POWER
 	power_change_rate = POWER_CHANGE_RATE

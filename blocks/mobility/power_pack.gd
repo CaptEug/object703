@@ -1,19 +1,22 @@
 class_name Powerpack
 extends Block
 
-# 抽象属性 - 需要在子类中定义
+# 发动机属性
 var power: float = 0
 var max_power: float
-var rotating_power: float
 var power_change_rate: float
 var target_power: float
 var state = {"move": false, "rotate": false}
+
+# 动力分配比例
+var move_power_ratio: float = 1.0  # 移动动力比例
+var rotate_power_ratio: float = 0.2  # 旋转动力比例 (30%)
+
 var track_power_target = {}
 var fuel_enough = false
 
 func _ready():
 	super._ready()
-	# 连接到载具动力系统
 	if parent_vehicle:
 		parent_vehicle.powerpacks.append(self)
 
@@ -21,69 +24,81 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if not functioning:
 		return
-	if parent_vehicle != null:
-		if parent_vehicle.get_current_fuel() > 0:
-				fuel_enough = true
+	
+	# 检查燃料状态
+	if parent_vehicle and parent_vehicle.get_current_fuel() > 0:
+		fuel_enough = true
+	else:
+		fuel_enough = false
+	
 	if fuel_enough:
-		speed(delta)
+		update_power(delta)
 		fuel_reduction(delta)
 	else:
-		Power_reduction(delta)
-	pass
+		power_reduction(delta)
 
-func Power_increases(delta):
+func update_power(delta):
+	# 根据状态确定目标功率
+	if state["move"] or state["rotate"]:
+		target_power = max_power  # 只要有需求就满功率
+	else:
+		target_power = 0
+	
+	# 平滑调整到目标功率
 	if power < target_power:
-		power = power + power_change_rate * delta 
-	
-	
-	
+		power = min(power + power_change_rate * delta, target_power)
+	elif power > target_power:
+		power = max(power - power_change_rate * delta, target_power)
 
-func Power_reduction(delta):
+func power_reduction(delta):
 	if power > 0:
-		power = power - power_change_rate * delta
-	if abs(power) < power_change_rate * 0.01:
-		power = 0
+		power = max(power - power_change_rate * delta, 0)
 
-func Target_power():
-	if state["move"] == true:
-		target_power = max_power
-	else:
-		if state["rotate"] == true:
-			target_power = max_power * rotating_power
-			if power > max_power * rotating_power:
-				power  = max_power * rotating_power
-		else:
-			target_power = 0
+func calculate_power_distribution(forward_input, turn_input):
+	if not parent_vehicle:
+		return
 	
-func speed(delta):
-	Target_power()
-	if power < target_power:
-		Power_increases(delta)
-	else:
-		Power_reduction(delta)
-
-func caculate_most_move_power(forward_input, turn_input):
-	if parent_vehicle != null:
-		var track_power_move
-		var track_power_rotat
-		track_power_move = parent_vehicle.balanced_forces
-		track_power_rotat = parent_vehicle.rotation_forces
-		for track in track_power_move:
-			if state["move"] != false:
-				if state["rotate"] == false:
-					track_power_target[track] = track_power_move[track] * power * forward_input
-				else:
-					track_power_target[track] = track_power_move[track] * power * (1 - rotating_power) * forward_input + track_power_rotat[track] * power * rotating_power * turn_input					
-			else:
-				if state["rotate"] != false:
-					track_power_target[track] = track_power_rotat[track] * power * turn_input
-				else:
-					track_power_target[track] = 0
+	var track_power_move = parent_vehicle.balanced_forces
+	var track_power_rotat = parent_vehicle.rotation_forces
+	
+	# 计算总可用功率
+	var available_power = power
+	
+	# 根据输入和状态分配功率
+	for track in track_power_move:
+		var move_component = 0.0
+		var rotate_component = 0.0
 		
+		# 移动功率分量
+		if state["move"]:
+			move_component = track_power_move[track] * available_power * move_power_ratio * forward_input
+		
+		# 旋转功率分量  
+		if state["rotate"]:
+			rotate_component = track_power_rotat[track] * available_power * rotate_power_ratio * turn_input
+		
+		# 总功率 = 移动功率 + 旋转功率
+		track_power_target[track] = move_component + rotate_component
+		
+		# 限制单条履带最大功率（防止过载）
+		track_power_target[track] = clamp(track_power_target[track], -available_power, available_power)
+
 func fuel_reduction(delta):
-	if parent_vehicle:
-		var each_power = power/parent_vehicle.fueltanks.size()
-		for tank:Fueltank in parent_vehicle.fueltanks:
-			tank.use_fuel(each_power, delta)
-		if parent_vehicle.get_current_fuel() == 0:
+	if parent_vehicle and parent_vehicle.fueltanks.size() > 0:
+		var fuel_consumption = power / parent_vehicle.fueltanks.size() * delta
+		for tank in parent_vehicle.fueltanks:
+			if tank is Fueltank:
+				tank.use_fuel(fuel_consumption, delta)
+		
+		if parent_vehicle.get_current_fuel() <= 0:
 			fuel_enough = false
+
+# 外部接口 - 设置状态
+func set_movement_state(moving: bool, rotating: bool):
+	state["move"] = moving
+	state["rotate"] = rotating
+
+# 外部接口 - 调整分配比例（可用于不同驾驶模式）
+func set_power_ratios(move_ratio: float, rotate_ratio: float):
+	move_power_ratio = clamp(move_ratio, 0.0, 1.0)
+	rotate_power_ratio = clamp(rotate_ratio, 0.0, 1.0)

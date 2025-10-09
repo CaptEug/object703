@@ -705,7 +705,7 @@ func update_tracks_state(control_input:Array, delta):
 	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
 		for engine:Powerpack in powerpacks:
-			engine.Power_reduction(delta)
+			engine.power_reduction(delta)
 			engine.state["move"] = false
 			engine.state["rotate"] = false
 	else:
@@ -730,7 +730,7 @@ func update_tracks_state(control_input:Array, delta):
 func get_track_forces(forward_input, turn_input):
 	var most_power = null
 	for engine:Powerpack in powerpacks:
-		engine.caculate_most_move_power(forward_input, turn_input)
+		engine.calculate_power_distribution(forward_input, turn_input)
 		if most_power == null:
 			most_power = engine.track_power_target
 		else:
