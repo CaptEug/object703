@@ -106,7 +106,7 @@ func aim(delta, target_pos):
 		angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 		turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 		return abs(angle_diff) < deg_to_rad(1)
-	# return true if aimed
+	# return true if aimeda
 	return abs(angle_diff) < deg_to_rad(2)
 
 

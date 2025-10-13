@@ -16,6 +16,8 @@ var ai_icon:Texture = preload("res://assets/icons/ai.png")
 var crosshair:Texture = preload("res://assets/icons/crosshair.png")
 var exit_focus = true
 
+var command_sign:Texture = preload("res://assets/icons/command.png")
+
 func _ready():
 	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 
@@ -130,7 +132,9 @@ func draw_grid():
 					var rect = Rect2(Vector2(line_width,line_width)/2, extents * 2)
 					draw_set_transform(draw_pos + topleft, 0, Vector2.ONE)
 					draw_rect(rect, line_color, false, line_width)
-					
+				
+				if grid[pos] is Command:
+					draw_texture(command_sign, Vector2.ZERO, line_color)
 				# Reset rotaion
 				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 

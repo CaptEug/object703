@@ -2,15 +2,14 @@ extends Powerpack
 
 const HITPOINT:float = 600
 const WEIGHT:float = 2000
-const BLOCK_NAME:String = 'maybach HL 250'
+const BLOCK_NAME:String = 'V-7'
 const TYPE:= "Mobility"
-const SIZE:= Vector2(1, 3)
-const MAX_POWER:float = 250.0
-const ROTATING_POWER: float = 0.3
+const SIZE:= Vector2(1, 2)
+const MAX_POWER:float = 140.0
+const ROTATING_POWER: float = 0.5
 const POWER_CHANGE_RATE: float = 80
 
 var description := ""
-var outline_tex := preload("res://assets/outlines/maybach_outline.png")
 
 func _init():
 	max_hp = HITPOINT

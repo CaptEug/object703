@@ -23,6 +23,7 @@ var broken_sprite:Sprite2D
 var do_connect = true
 var base_pos: Vector2i
 
+var shard_particle_path = "res://assets/particles/metal_shard.tscn"
 
 ## Connection System
 @export var connection_point_script: Script
@@ -127,6 +128,9 @@ func damage(amount:int):
 	# phase 3
 	if current_hp <= 0:
 		queue_free()
+		var shard_particle = load(shard_particle_path).instantiate()
+		shard_particle.position = global_position
+		get_tree().current_scene.add_child(shard_particle)
 
 func broke():
 	if parent_vehicle:

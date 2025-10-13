@@ -31,10 +31,11 @@ turbulence_enabled = true
 turbulence_noise_scale = 6.0
 
 [sub_resource type="Gradient" id="Gradient_op317"]
-colors = PackedColorArray(0.720467, 0.720468, 0.720467, 1, 0.223103, 0.223103, 0.223103, 1)
+colors = PackedColorArray(0.720467, 0.720468, 0.720467, 1, 0.273873, 0.273873, 0.273873, 1)
 
 [node name="ExhaustGas" type="GPUParticles2D"]
-amount = 100
+z_index = 3
+amount = 80
 texture = ExtResource("1_q6ywk")
 process_material = SubResource("ParticleProcessMaterial_op317")
 script = ExtResource("2_op317")
