@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://saiofmomjqe0"]
+[gd_scene load_steps=9 format=3 uid="uid://saiofmomjqe0"]
 
 [ext_resource type="Script" uid="uid://v4op8dl1ftml" path="res://blocks/structual/turret_ring_1800_mm.gd" id="1_pmo8s"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_mo4t2"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_txfcf"]
+[ext_resource type="PackedScene" uid="uid://cn6p02q1ry3yx" path="res://blocks/structual/armor.tscn" id="4_mo4t2"]
+[ext_resource type="PackedScene" uid="uid://nc7ainhwvcnd" path="res://rigidBodyConnector.tscn" id="4_txfcf"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2l62y"]
 size = Vector2(48, 48)
@@ -15,6 +17,7 @@ region = Rect2(208, 208, 48, 48)
 size = Vector2(48, 48)
 
 [node name="TurretRing1800mm" type="RigidBody2D"]
+center_of_mass_mode = 1
 script = ExtResource("1_pmo8s")
 metadata/_custom_type_script = "uid://03cisq73wcw4"
 
@@ -27,19 +30,26 @@ texture = SubResource("AtlasTexture_wsjul")
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 node_a = NodePath("..")
 node_b = NodePath("../Turret")
-angular_limit_enabled = true
 angular_limit_lower = -0.0506145
 angular_limit_upper = 0.0994838
 motor_enabled = true
 motor_target_velocity = 0.66497
 
 [node name="Turret" type="RigidBody2D" parent="."]
-collision_layer = 0
-collision_mask = 0
+collision_layer = 4
+collision_mask = 4
 angular_damp = 1.0
+
+[node name="Armor" parent="Turret" instance=ExtResource("4_mo4t2")]
+position = Vector2(-16, -16)
+collision_layer = 2
+collision_mask = 2
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="Turret"]
 shape = SubResource("RectangleShape2D_wsjul")
+
+[node name="RigidBodyConnector" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(-16, -16)
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_txfcf")]
 position = Vector2(-16, -24)
@@ -91,7 +101,3 @@ location = Vector2i(0, 2)
 position = Vector2(-24, 0)
 rotation = 3.14159
 location = Vector2i(0, 1)
-
-[node name="ConnectionPoint12" parent="." instance=ExtResource("3_txfcf")]
-position = Vector2(-24, -16)
-rotation = -3.14159

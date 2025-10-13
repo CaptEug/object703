@@ -23,6 +23,7 @@ func _ready():
 func _process(delta: float) -> void:
 	super._process(delta)
 	if not functioning:
+		power = 0
 		return
 	
 	# 检查燃料状态

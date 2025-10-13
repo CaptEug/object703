@@ -46,7 +46,7 @@ func _ready():
 	mass = weight/1000
 	linear_damp = 5
 	angular_damp = 5
-	collision_layer = 0
+	#collision_layer = 0
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
 	broken_sprite = find_child("Broken") as Sprite2D
@@ -87,7 +87,7 @@ func connect_aready():
 				if point_con[0].find_parent_block().freeze == true:
 					point_con[0].find_parent_block().freeze = false
 	is_movable_on_connection = false
-	collision_layer = 1
+	#collision_layer = 1
 	for joint in joint_connected_blocks:
 		if is_instance_valid(joint):
 			var other_block = joint_connected_blocks[joint]
@@ -373,3 +373,44 @@ func get_connection_point_by_index(index: int) -> ConnectionPoint:
 	if index >= 0 and index < available_points.size():
 		return available_points[index]
 	return null
+
+func attach_to_rigidbody(rigidbody: RigidBody2D, connector: RigidBodyConnector = null, maintain_rotation: bool = true) -> BlockPinJoint2D:
+	var connect_pos = connector.position if connector else Vector2.ZERO
+	return BlockPinJoint2D.connect_to_rigidbody(self, rigidbody, connect_pos, maintain_rotation)
+
+# 断开所有与RigidBody的连接
+func detach_from_rigidbodies():
+	var joints_to_remove = []
+	for joint in joint_connected_blocks:
+		if joint is BlockPinJoint2D:
+			joints_to_remove.append(joint)
+	
+	for joint in joints_to_remove:
+		if joint is BlockPinJoint2D:
+			joint.break_connection()
+
+# 检查是否连接到某个RigidBody
+func is_attached_to_rigidbody(rigidbody: RigidBody2D = null) -> bool:
+	if rigidbody:
+		return joint_connected_blocks.values().has(rigidbody)
+	else:
+		for connected in joint_connected_blocks.values():
+			if connected is RigidBody2D:
+				return true
+	return false
+
+# 获取所有连接的RigidBody
+func get_attached_rigidbodies() -> Array[RigidBody2D]:
+	var rigidbodies: Array[RigidBody2D] = []
+	for connected in joint_connected_blocks.values():
+		if connected is RigidBody2D:
+			rigidbodies.append(connected)
+	return rigidbodies
+
+# 获取所有RigidBodyConnector
+func get_rigidbody_connectors() -> Array[RigidBodyConnector]:
+	var connectors: Array[RigidBodyConnector] = []
+	var nodes = find_children("*", "RigidBodyConnector", true, false)
+	for node in nodes:
+		connectors.append(node as RigidBodyConnector)
+	return connectors
