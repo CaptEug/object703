@@ -87,7 +87,6 @@ func _process(delta):
 func update_vehicle():
 	#Check block connectivity
 	for block:Block in blocks:
-		block.get_neighbors()
 		block.get_all_connected_blocks()
 	
 	#Get all total parameters
