@@ -119,9 +119,11 @@ func update_vehicle():
 ###################### BLOCK MANAGEMENT ######################
 
 func _add_block(block: Block,local_pos, grid_positions):
+	if block.parent_vehicle == null:
+		add_child(block)
+		block.parent_vehicle = self
 	if block not in blocks:
 		# 添加方块到车辆
-		add_child(block)
 		blocks.append(block)
 		total_blocks.append(block)
 		block.position = local_pos
@@ -308,8 +310,8 @@ func load_from_blueprint(bp: Dictionary):
 						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
 					target_grid.append(grid_pos)
 			var local_pos = get_rectangle_corners(target_grid)
-			await _process_block_connections_first(block, local_pos, target_grid)
-	update_vehicle()
+			_add_block(block, local_pos, target_grid)
+
 
 func get_rectangle_corners(grid_data):
 	if grid_data.is_empty():

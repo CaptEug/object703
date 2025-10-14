@@ -117,7 +117,7 @@ func find_all_connected_fueltank():
 func has_fuel() -> bool:
 	connected_fueltank.clear()
 	find_all_connected_fueltank()
-	var total_ammo = 0
+	total_fuel = 0
 	for fueltank:Fueltank in connected_fueltank:
 		total_fuel += fueltank.fuel_storage
 	return false

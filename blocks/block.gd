@@ -94,7 +94,8 @@ func connect_aready():
 			var other_block = joint_connected_blocks[joint]
 			if is_instance_valid(other_block):
 				pass
-	connections_processed.emit(self)
+	if parent_vehicle:
+		parent_vehicle.update_vehicle()
 
 
 ## Physics and Drawing
@@ -170,9 +171,12 @@ func get_all_connected_blocks() -> Array:
 	return connected_blocks
 
 func get_connected_blocks(block: Block):
+	if not is_instance_valid(block):
+		return
+	
 	var jcb = block.joint_connected_blocks
 	for blk in jcb.values():
-		if not connected_blocks.has(blk) and blk != self:
+		if is_instance_valid(blk) and not connected_blocks.has(blk) and blk != self:
 			connected_blocks.append(blk)
 			get_connected_blocks(blk)
 
