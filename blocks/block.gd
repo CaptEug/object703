@@ -9,7 +9,6 @@ var block_name:String
 var type:String
 var size:Vector2i
 var parent_vehicle: Vehicle = null  
-var neighbors := {}
 var connected_blocks := []
 var global_grid_pos
 var mouse_inside:bool
@@ -23,6 +22,7 @@ var broken_sprite:Sprite2D
 var do_connect = true
 var base_pos: Vector2i
 
+var shard_particle_path = "res://assets/particles/metal_shard.tscn"
 
 ## Connection System
 @export var connection_point_script: Script
@@ -127,6 +127,9 @@ func damage(amount:int):
 	# phase 3
 	if current_hp <= 0:
 		queue_free()
+		var shard_particle = load(shard_particle_path).instantiate()
+		shard_particle.position = global_position
+		get_tree().current_scene.add_child(shard_particle)
 
 func broke():
 	if parent_vehicle:
@@ -158,38 +161,19 @@ func get_parent_vehicle():
 	return null
 
 ## Neighbor and Connectivity System
-func get_neighbors():
-	neighbors.clear()
-	if get_parent_vehicle() != null:
-		var grid = get_parent_vehicle().grid
-		var grid_pos = parent_vehicle.find_pos(grid, self)
-		var s = size
-		if base_rotation_degree == 90 or base_rotation_degree == -90:
-			s = Vector2i(s.y, s.x)
-		for x in s.x:
-			for y in s.y:
-				var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
-				for dir in directions:
-					var neighbor_pos = grid_pos + Vector2i(x, y) + dir
-					if grid.has(neighbor_pos) and grid[neighbor_pos] != self:
-						if is_instance_valid(grid[neighbor_pos]):
-							var neighbor = grid[neighbor_pos]
-							var neighbor_real_pos = parent_vehicle.find_pos(grid, neighbor)
-							neighbors[neighbor_real_pos - grid_pos] = neighbor
-	return neighbors
 
 func get_all_connected_blocks() -> Array:
-	get_neighbors()
 	connected_blocks.clear()
 	get_connected_blocks(self)
 	return connected_blocks
 
 func get_connected_blocks(block: Block):
-	var nbrs = block.neighbors
-	for neighbor in nbrs.values():
-		if not connected_blocks.has(neighbor) and neighbor != self:
-			connected_blocks.append(neighbor)
-			get_connected_blocks(neighbor)
+	var jcb = block.joint_connected_blocks
+	print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",jcb)
+	for blk in jcb.values():
+		if not connected_blocks.has(blk) and blk != self:
+			connected_blocks.append(blk)
+			get_connected_blocks(blk)
 
 func check_connectivity():
 	if self is Command:

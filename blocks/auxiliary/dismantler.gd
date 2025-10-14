@@ -26,10 +26,10 @@ func _init():
 
 
 func _physics_process(_delta):
-	#apply_force(Vector2.UP*200)
-	#print("GLOBAL POS of saw:", global_position)
-	#print("position:", position)
-	#print("LINERA velocity:", linear_velocity)
+
+	print("CONNECTED BLOCKS:", connected_blocks)
+	print("JOINTED CONNECTED BLOCKS:", joint_connected_blocks.values())
+
 	if not functioning:
 		on = false
 		return
