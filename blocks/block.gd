@@ -38,6 +38,7 @@ var joint_connected_blocks := {}  # Tracks which blocks are connected through wh
 signal frame_post_drawn
 signal connection_established(from: ConnectionPoint, to: ConnectionPoint, joint: Joint2D)
 signal connection_broken(joint: Joint2D)
+signal connections_processed(block: Block)
 
 func _ready():
 	GlobalTimeManager.time_scale = 1
@@ -93,6 +94,7 @@ func connect_aready():
 			var other_block = joint_connected_blocks[joint]
 			if is_instance_valid(other_block):
 				pass
+	connections_processed.emit(self)
 
 
 ## Physics and Drawing
@@ -169,7 +171,6 @@ func get_all_connected_blocks() -> Array:
 
 func get_connected_blocks(block: Block):
 	var jcb = block.joint_connected_blocks
-	print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",jcb)
 	for blk in jcb.values():
 		if not connected_blocks.has(blk) and blk != self:
 			connected_blocks.append(blk)

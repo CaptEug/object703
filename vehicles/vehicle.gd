@@ -308,7 +308,8 @@ func load_from_blueprint(bp: Dictionary):
 						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
 					target_grid.append(grid_pos)
 			var local_pos = get_rectangle_corners(target_grid)
-			_add_block(block, local_pos, target_grid)
+			await _process_block_connections_first(block, local_pos, target_grid)
+	update_vehicle()
 
 func get_rectangle_corners(grid_data):
 	if grid_data.is_empty():
@@ -856,3 +857,38 @@ func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Arra
 				var connected_id = connected_block.get_instance_id()
 				if not visited.get(connected_id, false):
 					dfs_traverse(connected_block, visited, component, all_blocks)
+
+func _process_block_connections_first(block: Block, local_pos, target_grid):
+	# 先将block添加到场景（但不添加到vehicle的blocks数组）
+	add_child(block)
+	block.position = local_pos
+	block.global_grid_pos = get_rectangle_corners(target_grid)
+	
+	# 等待连接处理完成
+	await block.connections_processed
+	
+	# 连接处理完成后，正式添加到vehicle
+	_finalize_block_addition(block, target_grid)
+
+func _finalize_block_addition(block: Block, target_grid):
+	# 现在将block正式添加到vehicle的各种数组中
+	blocks.append(block)
+	total_blocks.append(block)
+	
+	if block is Track:
+		tracks.append(block)
+		track_target_forces[block] = 0.0
+		track_current_forces[block] = 0.0
+	elif block is Powerpack:
+		powerpacks.append(block)
+	elif block is Command:
+		commands.append(block)
+	elif block is Ammorack:
+		ammoracks.append(block)
+	elif block is Fueltank:
+		fueltanks.append(block)
+	
+	for pos in target_grid:
+		grid[pos] = block
+	
+	block.set_connection_enabled(true)
