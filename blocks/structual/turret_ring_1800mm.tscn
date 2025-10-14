@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://saiofmomjqe0"]
+[gd_scene load_steps=10 format=3 uid="uid://saiofmomjqe0"]
 
 [ext_resource type="Script" uid="uid://v4op8dl1ftml" path="res://blocks/structual/turret_ring_1800_mm.gd" id="1_pmo8s"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_mo4t2"]
+[ext_resource type="PackedScene" uid="uid://bemq1c5f0brs7" path="res://blocks/firepower/d_52t.tscn" id="3_4dn0s"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_txfcf"]
 [ext_resource type="PackedScene" uid="uid://cn6p02q1ry3yx" path="res://blocks/structual/armor.tscn" id="4_mo4t2"]
-[ext_resource type="PackedScene" uid="uid://nc7ainhwvcnd" path="res://rigidBodyConnector.tscn" id="4_txfcf"]
+[ext_resource type="PackedScene" uid="uid://cqp2x0iv8nyqp" path="res://rig.tscn" id="4_txfcf"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2l62y"]
 size = Vector2(48, 48)
@@ -40,8 +41,13 @@ collision_layer = 4
 collision_mask = 4
 angular_damp = 1.0
 
+[node name="D52t" parent="Turret" instance=ExtResource("3_4dn0s")]
+position = Vector2(16, -8)
+collision_layer = 4
+collision_mask = 4
+
 [node name="Armor" parent="Turret" instance=ExtResource("4_mo4t2")]
-position = Vector2(-16, -16)
+position = Vector2(0, -16)
 collision_layer = 2
 collision_mask = 2
 
@@ -49,7 +55,13 @@ collision_mask = 2
 shape = SubResource("RectangleShape2D_wsjul")
 
 [node name="RigidBodyConnector" parent="Turret" instance=ExtResource("4_txfcf")]
-position = Vector2(-16, -16)
+position = Vector2(0, -16)
+
+[node name="Rig" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(16, -16)
+
+[node name="Rig2" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(16, 0)
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_txfcf")]
 position = Vector2(-16, -24)

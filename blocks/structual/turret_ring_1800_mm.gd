@@ -22,8 +22,7 @@ func _ready():
 	super._ready()
 	await get_tree().process_frame
 	setup_connectors()
-	armor_block.freeze_mode = RigidBody2D.FREEZE_MODE_STATIC
-	armor_block.freeze = true
+	print(turret_grid)
 
 func setup_connectors():
 	# 设置碰撞层
@@ -31,18 +30,17 @@ func setup_connectors():
 	if armor_block:
 		armor_block.collision_layer = 2  # Block在层2
 		# 自动连接所有重叠的连接器
-		#connect_all_connectors()
+		connect_all_connectors()
 
 func connect_all_connectors():
-	#if armor_block and turret_rigidbody:
-		#var armor_connectors = armor_block.get_rigidbody_connectors()
-		#var turret_connectors = get_rigidbody_connectors_on_node(turret_rigidbody)
-		#
-		#for armor_connector in armor_connectors:
-			#for turret_connector in turret_connectors:
-				#if armor_connector.global_position.distance_to(turret_connector.global_position) <= armor_connector.connection_range:
-					#armor_connector.try_connect(turret_connector)
-	pass
+	if armor_block and turret_rigidbody:
+		var armor_connectors = armor_block.get_rigidbody_connectors()
+		var turret_connectors = get_rigidbody_connectors_on_node(turret_rigidbody)
+		
+		for armor_connector in armor_connectors:
+			for turret_connector in turret_connectors:
+				if armor_connector.global_position.distance_to(turret_connector.global_position) <= armor_connector.connection_range:
+					armor_connector.try_connect(turret_connector)
 
 func get_rigidbody_connectors_on_node(node: Node) -> Array[RigidBodyConnector]:
 	var connectors: Array[RigidBodyConnector] = []
@@ -51,5 +49,7 @@ func get_rigidbody_connectors_on_node(node: Node) -> Array[RigidBodyConnector]:
 		connectors.append(child as RigidBodyConnector)
 	return connectors
 
-func _process(delta: float) -> void:
-	pass
+#func _process(delta: float) -> void:
+	## 调试信息
+	#if armor_block:
+		#print("Armor connected to RigidBody: ", armor_block.is_attached_to_rigidbody())

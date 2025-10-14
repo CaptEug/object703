@@ -4,7 +4,7 @@ extends Block
 var load:float
 var turret:RigidBody2D
 var traverse:Array
-var max_torque:float = 1000
+var max_torque:float = 10000
 var damping:float = 100
 
 # 炮塔专用的grid系统
@@ -72,7 +72,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 		# 更新炮塔大小
 		update_turret_size()
 		
-		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions)
+		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions,"size", turret_size)
 
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
@@ -95,8 +95,8 @@ func remove_block_from_turret(block: Block):
 func calculate_block_grid_positions(block: Block) -> Array:
 	"""计算block在炮塔grid中的位置"""
 	var positions = []
-	var base_pos = Vector2i(0, 0)  # 以炮塔中心为原点
-	
+	var block_position = block.position
+	var base_pos = Vector2i(round((block_position/16).x), round((block_position/16).y)) 
 	# 根据block的大小和旋转计算所有网格位置
 	for x in block.size.x:
 		for y in block.size.y:

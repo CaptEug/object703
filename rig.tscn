@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqp2x0iv8nyqp"]
+
+[ext_resource type="Script" uid="uid://d2mmxd2l5g7c2" path="res://rig.gd" id="1_dqaan"]
+
+[node name="Rig" type="Marker2D"]
+script = ExtResource("1_dqaan")
+metadata/_custom_type_script = "uid://d2mmxd2l5g7c2"
