@@ -94,10 +94,7 @@ func connect_aready():
 			var other_block = joint_connected_blocks[joint]
 			if is_instance_valid(other_block):
 				pass
-	if parent_vehicle:
-		parent_vehicle.update_vehicle()
-
-
+	
 ## Physics and Drawing
 func _emit_relay_signal():
 	frame_post_drawn.emit()

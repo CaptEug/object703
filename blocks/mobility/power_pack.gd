@@ -30,6 +30,7 @@ func _process(delta: float) -> void:
 	
 	# 检查燃料状态
 	has_fuel()
+	print(block_name, " ", total_fuel)
 	if parent_vehicle and total_fuel > 0:
 		fuel_enough = true
 	else:
@@ -88,9 +89,9 @@ func calculate_power_distribution(forward_input, turn_input):
 		track_power_target[track] = clamp(track_power_target[track], -available_power, available_power)
 
 func fuel_reduction(delta):
-	if parent_vehicle and parent_vehicle.fueltanks.size() > 0:
+	if parent_vehicle and connected_fueltank.size() > 0:
 		var fuel_consumption = power / parent_vehicle.fueltanks.size() * delta
-		for tank in parent_vehicle.fueltanks:
+		for tank in connected_fueltank:
 			if tank is Fueltank:
 				tank.use_fuel(fuel_consumption, delta)
 		
