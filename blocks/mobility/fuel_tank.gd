@@ -5,7 +5,7 @@ const WEIGHT:float = 200
 const BLOCK_NAME:String = 'fuel tank'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)
-const FUEL_CAPACITY:= 100000000
+const FUEL_CAPACITY:= 100
 
 var description := ""
 

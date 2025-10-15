@@ -119,12 +119,15 @@ func update_vehicle():
 ###################### BLOCK MANAGEMENT ######################
 
 func _add_block(block: Block,local_pos, grid_positions):
+	if block.parent_vehicle == null:
+		add_child(block)
+		block.parent_vehicle = self
+	block.position = local_pos
+	await block.connect_aready()
 	if block not in blocks:
 		# 添加方块到车辆
-		add_child(block)
 		blocks.append(block)
 		total_blocks.append(block)
-		block.position = local_pos
 		block.global_grid_pos = get_rectangle_corners(grid_positions)
 		
 		if block is Track:
@@ -281,9 +284,14 @@ func load_from_blueprint(bp: Dictionary):
 	var block_ids = bp["blocks"].keys()
 	var _name = bp["name"]
 	vehicle_name = _name
-	block_ids.sort()
 	vehicle_size = Vector2i(bp["vehicle_size"][0], bp["vehicle_size"][1])
-	
+	block_ids.sort_custom(func(a, b):
+		var pos_a = Vector2i(bp["blocks"][a]["base_pos"][0], bp["blocks"][a]["base_pos"][1])
+		var pos_b = Vector2i(bp["blocks"][b]["base_pos"][0], bp["blocks"][b]["base_pos"][1])
+		if pos_a.x != pos_b.x:
+			return pos_a.x < pos_b.x
+		return pos_a.y < pos_b.y
+	)
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
 		var block_scene = load(block_data["path"])  # 使用完整路径加载
@@ -308,7 +316,8 @@ func load_from_blueprint(bp: Dictionary):
 						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
 					target_grid.append(grid_pos)
 			var local_pos = get_rectangle_corners(target_grid)
-			_add_block(block, local_pos, target_grid)
+			await _add_block(block, local_pos, target_grid)
+
 
 func get_rectangle_corners(grid_data):
 	if grid_data.is_empty():
@@ -856,3 +865,38 @@ func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Arra
 				var connected_id = connected_block.get_instance_id()
 				if not visited.get(connected_id, false):
 					dfs_traverse(connected_block, visited, component, all_blocks)
+
+func _process_block_connections_first(block: Block, local_pos, target_grid):
+	# 先将block添加到场景（但不添加到vehicle的blocks数组）
+	add_child(block)
+	block.position = local_pos
+	block.global_grid_pos = get_rectangle_corners(target_grid)
+	
+	# 等待连接处理完成
+	await block.connections_processed
+	
+	# 连接处理完成后，正式添加到vehicle
+	_finalize_block_addition(block, target_grid)
+
+func _finalize_block_addition(block: Block, target_grid):
+	# 现在将block正式添加到vehicle的各种数组中
+	blocks.append(block)
+	total_blocks.append(block)
+	
+	if block is Track:
+		tracks.append(block)
+		track_target_forces[block] = 0.0
+		track_current_forces[block] = 0.0
+	elif block is Powerpack:
+		powerpacks.append(block)
+	elif block is Command:
+		commands.append(block)
+	elif block is Ammorack:
+		ammoracks.append(block)
+	elif block is Fueltank:
+		fueltanks.append(block)
+	
+	for pos in target_grid:
+		grid[pos] = block
+	
+	block.set_connection_enabled(true)

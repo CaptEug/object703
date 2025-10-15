@@ -38,6 +38,7 @@ var joint_connected_blocks := {}  # Tracks which blocks are connected through wh
 signal frame_post_drawn
 signal connection_established(from: ConnectionPoint, to: ConnectionPoint, joint: Joint2D)
 signal connection_broken(joint: Joint2D)
+signal connections_processed(block: Block)
 
 func _ready():
 	GlobalTimeManager.time_scale = 1
@@ -46,7 +47,7 @@ func _ready():
 	mass = weight/1000
 	linear_damp = 5
 	angular_damp = 5
-	collision_layer = 0
+	#collision_layer = 0
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
 	broken_sprite = find_child("Broken") as Sprite2D
@@ -87,14 +88,13 @@ func connect_aready():
 				if point_con[0].find_parent_block().freeze == true:
 					point_con[0].find_parent_block().freeze = false
 	is_movable_on_connection = false
-	collision_layer = 1
+	#collision_layer = 1
 	for joint in joint_connected_blocks:
 		if is_instance_valid(joint):
 			var other_block = joint_connected_blocks[joint]
 			if is_instance_valid(other_block):
 				pass
-
-
+	
 ## Physics and Drawing
 func _emit_relay_signal():
 	frame_post_drawn.emit()
@@ -168,10 +168,12 @@ func get_all_connected_blocks() -> Array:
 	return connected_blocks
 
 func get_connected_blocks(block: Block):
+	if not is_instance_valid(block):
+		return
+	
 	var jcb = block.joint_connected_blocks
-	print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",jcb)
 	for blk in jcb.values():
-		if not connected_blocks.has(blk) and blk != self:
+		if is_instance_valid(blk) and not connected_blocks.has(blk) and blk != self:
 			connected_blocks.append(blk)
 			get_connected_blocks(blk)
 
@@ -357,3 +359,44 @@ func get_connection_point_by_index(index: int) -> ConnectionPoint:
 	if index >= 0 and index < available_points.size():
 		return available_points[index]
 	return null
+
+func attach_to_rigidbody(rigidbody: RigidBody2D, connector: RigidBodyConnector = null, maintain_rotation: bool = true) -> BlockPinJoint2D:
+	var connect_pos = connector.position if connector else Vector2.ZERO
+	return BlockPinJoint2D.connect_to_rigidbody(self, rigidbody, connect_pos, maintain_rotation)
+
+# 断开所有与RigidBody的连接
+func detach_from_rigidbodies():
+	var joints_to_remove = []
+	for joint in joint_connected_blocks:
+		if joint is BlockPinJoint2D:
+			joints_to_remove.append(joint)
+	
+	for joint in joints_to_remove:
+		if joint is BlockPinJoint2D:
+			joint.break_connection()
+
+# 检查是否连接到某个RigidBody
+func is_attached_to_rigidbody(rigidbody: RigidBody2D = null) -> bool:
+	if rigidbody:
+		return joint_connected_blocks.values().has(rigidbody)
+	else:
+		for connected in joint_connected_blocks.values():
+			if connected is RigidBody2D:
+				return true
+	return false
+
+# 获取所有连接的RigidBody
+func get_attached_rigidbodies() -> Array[RigidBody2D]:
+	var rigidbodies: Array[RigidBody2D] = []
+	for connected in joint_connected_blocks.values():
+		if connected is RigidBody2D:
+			rigidbodies.append(connected)
+	return rigidbodies
+
+# 获取所有RigidBodyConnector
+func get_rigidbody_connectors() -> Array[RigidBodyConnector]:
+	var connectors: Array[RigidBodyConnector] = []
+	var nodes = find_children("*", "RigidBodyConnector", true, false)
+	for node in nodes:
+		connectors.append(node as RigidBodyConnector)
+	return connectors

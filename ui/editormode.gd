@@ -49,23 +49,28 @@ var current_block_scene: PackedScene = null
 var panel_instance: Control = null
 var camera:Camera2D
 
+# === 方块移动功能变量 ===
+var is_moving_block := false  # 是否正在移动方块
+var moving_block: Block = null  # 正在移动的方块
+var moving_block_original_position: Vector2  # 方块的原始位置
+var moving_block_original_rotation: float  # 方块的原始旋转
+var moving_block_original_grid_positions: Array  # 方块的原始网格位置
+var moving_block_ghost: Node2D = null  # 移动时的虚影
+var moving_snap_config: Dictionary = {}  # 移动吸附配置
+var is_mouse_pressed := false  # 鼠标按下状态
+var drag_timer: float = 0.0  # 拖拽计时器
+var is_dragging := false  # 是否正在拖拽
+var DRAG_DELAY: float = 0.2  # 长按触发拖拽的延迟时间（秒）
+
 # 连接点吸附系统
 var current_ghost_connection_index := 0
-var current_vehicle_connection_index := 0
+var current_vehicle_connection_index = 0
 var available_ghost_points: Array[ConnectionPoint] = []
 var available_vehicle_points: Array[ConnectionPoint] = []
 var current_snap_config: Dictionary = {}
 var snap_config
 var is_first_block := true  # 标记是否是第一个放置的块
 var is_new_vehicle := false
-
-# === 方块移动功能 ===
-var is_moving_block := false  # 是否正在移动方块
-var moving_block: Block = null  # 正在移动的方块
-var original_block_position: Vector2  # 方块的原始位置
-var original_block_rotation: float  # 方块的原始旋转
-var original_block_grid_positions: Array  # 方块的原始网格位置
-var moving_block_ghost: Node2D = null  # 移动时的虚影
 
 # 存储原始连接状态
 var original_connections: Dictionary = {}
@@ -121,12 +126,6 @@ func _on_block_button_pressed():
 	await get_tree().create_timer(0.2).timeout
 	is_ui_interaction = false
 
-# 修改放置方块的方法，添加状态检查
-func place_block(grid_position: Vector2):
-	if is_ui_interaction:
-		print("UI交互中，阻止放置方块")
-		return
-
 func _input(event):
 	# 全局TAB键检测
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
@@ -141,16 +140,56 @@ func _input(event):
 				print("错误: 未找到可编辑的车辆")
 		return
 	
-	
 	if not is_editing:
 		return
+	
+	# 鼠标按下事件
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				# 鼠标按下
+				is_mouse_pressed = true
+				drag_timer = 0.0
+				is_dragging = false
+				
+				# 如果已经在移动模式，立即放置
+				if is_recycle_mode:
+					try_remove_block()
+				
+				if is_moving_block:
+					place_moving_block()
+					return
+					
+				# 检查是否点击了现有方块（准备开始拖拽）
+				if not is_recycle_mode and not current_ghost_block:
+					var mouse_pos = get_viewport().get_mouse_position()
+					var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+					var block = get_block_at_position(global_mouse_pos)
+					if block:
+						print("检测到方块，开始拖拽计时")
+			else:
+				# 鼠标释放
+				is_mouse_pressed = false
+				
+				# 如果正在拖拽，放置方块
+				if is_dragging and is_moving_block:
+					place_moving_block()
+				# 如果不是拖拽且不在移动模式，正常放置方块
+				elif not is_dragging and not is_moving_block and not is_recycle_mode:
+					try_place_block()
 	
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
 			KEY_ESCAPE:
-				cancel_placement()
+				if is_moving_block:
+					cancel_block_move()
+				else:
+					cancel_placement()
 			KEY_R:
-				rotate_ghost_connection()  # 旋转幽灵块90度
+				if is_moving_block and moving_block_ghost:
+					rotate_moving_ghost()
+				elif current_ghost_block:
+					rotate_ghost_connection()
 			KEY_F:
 				print_connection_points_info()
 			KEY_X:
@@ -158,30 +197,8 @@ func _input(event):
 					exit_recycle_mode()
 				else:
 					enter_recycle_mode()
-	
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if is_recycle_mode:
-				try_remove_block()
-			elif is_moving_block:
-				# 正在移动方块时点击，放置方块
-				try_place_moving_block()
-			else:
-				# 检查是否点击了现有方块
-				if try_start_moving_block():
-					# 成功开始移动方块，不进行放置
-					pass
-				else:
-					# 没有点击到方块，正常放置
-					try_place_block()
-		elif event.button_index == MOUSE_BUTTON_RIGHT:
-			if is_moving_block:
-				# 右键取消移动
-				cancel_moving_block()
-			else:
-				cancel_placement()  # 右键取消放置
 
-func _process(_delta):
+func _process(delta):
 	if is_editing and selected_vehicle:
 		camera.sync_rotation_to_vehicle(selected_vehicle)
 	
@@ -194,127 +211,101 @@ func _process(_delta):
 	if not is_editing or not selected_vehicle:
 		return
 	
-	# 更新幽灵块或移动块的位置
+	# 处理长按拖拽
+	if is_mouse_pressed and not is_dragging and not is_moving_block and not is_recycle_mode and not current_ghost_block:
+		drag_timer += delta
+		if drag_timer >= DRAG_DELAY:
+			# 长按时间到达，开始拖拽
+			start_drag_block()
+	
+	# 更新移动中的虚影位置
 	if is_moving_block and moving_block_ghost:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		update_moving_block_position(global_mouse_pos)
-	elif current_ghost_block:
+		update_moving_ghost_position(global_mouse_pos)
+	elif current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_ghost_block_position(global_mouse_pos)
 
-# === 方块移动功能 ===
-func try_start_moving_block() -> bool:
-	if not selected_vehicle or is_moving_block:
-		return false
-	
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	
-	# 检测鼠标下的块
+# === 长按拖拽功能 ===
+
+func get_block_at_position(position: Vector2) -> Block:
+	"""获取指定位置的方块"""
 	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = global_mouse_pos
-	query.collision_mask = 1  # 只检测块所在的碰撞层
+	query.position = position
+	query.collision_mask = 1
 	
 	var result = space_state.intersect_point(query)
 	for collision in result:
 		var block = collision.collider
 		if block is Block and block.get_parent() == selected_vehicle:
-			# 开始移动这个块
-			start_moving_block(block)
-			return true
-	
-	return false
+			return block
+	return null
 
-func start_moving_block(block: Block):
-	print("开始移动方块: ", block.block_name)
+func start_drag_block():
+	"""开始拖拽方块"""
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	var block = get_block_at_position(global_mouse_pos)
 	
-	# 取消当前幽灵块放置
-	if current_ghost_block:
-		current_ghost_block.queue_free()
-		current_ghost_block = null
-	
-	# 保存原始信息
-	moving_block = block
-	original_block_position = block.global_position
-	original_block_rotation = block.global_rotation
-	original_block_grid_positions = get_block_grid_positions(block)
-	
-	# 断开这个块的所有连接
-	block.disconnect_all()
-	
-	# 从车辆网格中移除这个块（临时）
-	var control = selected_vehicle.control
-	selected_vehicle.remove_block(block, false)  # 不立即删除，只是从网格中移除
-	selected_vehicle.control = control
-	
-	# 创建移动虚影
-	create_moving_ghost(block)
-	
-	is_moving_block = true
-	
-	# 更新蓝图显示
-	update_blueprint_ghosts()
+	if block:
+		print("开始拖拽方块: ", block.block_name)
+		is_dragging = true
+		start_block_move(block)
 
-func create_moving_ghost(block: Block):
-	# 使用块的场景创建虚影
-	var scene_path = block.scene_file_path
-	var scene = load(scene_path)
-	if scene:
-		moving_block_ghost = scene.instantiate()
-		get_tree().current_scene.add_child(moving_block_ghost)
-		
-		# 设置虚影外观
-		moving_block_ghost.modulate = Color(1, 0.8, 0.3, 0.7)  # 橙色表示移动中
-		moving_block_ghost.z_index = 100
-		
-		# 复制块的属性
-		moving_block_ghost.global_position = block.global_position
-		moving_block_ghost.global_rotation = block.global_rotation
-		if moving_block_ghost.has_method("set_base_rotation_degree"):
-			moving_block_ghost.base_rotation_degree = block.base_rotation_degree
-		
-		# 禁用碰撞
-		setup_ghost_block_collision(moving_block_ghost)
-		
-		# 隐藏原始块
-		block.visible = false
-
-func update_moving_block_position(mouse_position: Vector2):
+func update_moving_ghost_position(mouse_position: Vector2):
+	"""更新移动虚影的位置"""
 	if not moving_block_ghost:
 		return
 	
-	# 寻找可吸附的连接点
-	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
-	available_ghost_points = get_moving_block_available_connection_points()
+	# 使用和普通幽灵块相同的吸附系统
+	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 50.0)
+	available_ghost_points = get_moving_ghost_available_connection_points()
 	
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
 		# 没有可用连接点，自由移动
 		moving_block_ghost.global_position = mouse_position
 		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
-		moving_block_ghost.modulate = Color(1, 0.3, 0.3, 0.7)  # 红色表示无法连接
-		current_snap_config = {}
+		moving_block_ghost.modulate = Color(1, 1, 0.3, 0.7)  # 黄色表示自由移动
+		moving_snap_config = {}
 		return
 	
-	# 获取当前连接配置
-	snap_config = get_current_moving_snap_config()
+	# 获取吸附配置
+	var snap_config = get_current_snap_config_for_moving()
 	
 	if snap_config:
 		# 应用吸附位置和自动对齐的旋转
 		moving_block_ghost.global_position = snap_config.ghost_position
 		moving_block_ghost.global_rotation = snap_config.ghost_rotation
 		moving_block_ghost.modulate = Color(0.5, 1, 0.5, 0.7)  # 绿色表示可以连接
-		current_snap_config = snap_config
+		moving_snap_config = snap_config
 	else:
 		# 自由移动
 		moving_block_ghost.global_position = mouse_position
 		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
-		moving_block_ghost.modulate = Color(1, 0.3, 0.3, 0.7)
-		current_snap_config = {}
+		moving_block_ghost.modulate = Color(1, 1, 0.3, 0.7)
+		moving_snap_config = {}
 
-func get_moving_block_available_connection_points() -> Array[ConnectionPoint]:
+func get_current_snap_config_for_moving() -> Dictionary:
+	"""为移动虚影获取吸附配置 - 重用普通吸附逻辑"""
+	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
+		return {}
+	
+	# 临时替换 current_ghost_block 以便重用现有的吸附逻辑
+	var original_ghost = current_ghost_block
+	current_ghost_block = moving_block_ghost
+	
+	var best_config = find_best_snap_config()
+	
+	# 恢复原始幽灵块
+	current_ghost_block = original_ghost
+	
+	return best_config
+
+func get_moving_ghost_available_connection_points() -> Array[ConnectionPoint]:
+	"""获取移动虚影的可用连接点"""
 	var points: Array[ConnectionPoint] = []
 	if moving_block_ghost:
 		var connection_points = moving_block_ghost.get_available_connection_points()
@@ -324,138 +315,212 @@ func get_moving_block_available_connection_points() -> Array[ConnectionPoint]:
 				points.append(point)
 	return points
 
-func get_current_moving_snap_config() -> Dictionary:
-	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
-		return {}
+func start_block_move(block: Block):
+	"""开始移动指定的方块"""
+	if is_moving_block:
+		cancel_block_move()
 	
-	# 寻找最佳匹配的连接点
-	var best_config = find_best_moving_snap_config()
-	return best_config
+	print("开始移动方块: ", block.block_name)
+	
+	# 存储原始信息
+	moving_block = block
+	moving_block_original_position = block.global_position
+	moving_block_original_rotation = block.global_rotation
+	moving_block_original_grid_positions = get_block_grid_positions(block)
+	
+	# 创建移动虚影
+	create_moving_ghost(block)
+	
+	# 从车辆中临时移除方块（不断开连接）
+	var control = selected_vehicle.control
+	selected_vehicle.remove_block(block, false)  # false表示不断开连接
+	selected_vehicle.control = control
+	
+	# 设置移动状态
+	is_moving_block = true
+	
+	# 重置吸附配置
+	moving_snap_config = {}
+	
+	# 隐藏原始方块
+	block.visible = false
+	
+	# 取消当前幽灵块放置
+	if current_ghost_block:
+		current_ghost_block.visible = false
 
-func find_best_moving_snap_config() -> Dictionary:
-	var best_config = {}
-	var min_distance = INF
+func create_moving_ghost(block: Block):
+	"""为移动的方块创建虚影"""
+	var scene_path = block.scene_file_path
+	if not scene_path or scene_path.is_empty():
+		print("错误：无法获取方块场景路径")
+		return
 	
-	for vehicle_point in available_vehicle_points:
-		var vehicle_block = vehicle_point.find_parent_block()
-		if not vehicle_block:
-			continue
-		var vehicle_point_global = get_connection_point_global_position(vehicle_point, vehicle_block)
-		
-		for ghost_point in available_ghost_points:
-			# 基于基础旋转计算最佳对齐角度
-			var target_rotation = calculate_aligned_rotation_from_base(vehicle_block)
-			# 检查连接点是否可以连接
-			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
-				continue
-			
-			var positions
-			if current_ghost_block:
-				positions = calculate_rotated_grid_positions(vehicle_point, ghost_point, current_ghost_block)
-				if positions is bool:
-					continue
-				
-			# 计算幽灵块的位置
-			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
-			var ghost_position = vehicle_point_global - ghost_local_offset
-			
-			# 计算鼠标位置与连接点的距离
-			var mouse_pos = get_viewport().get_mouse_position()
-			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-			var distance = global_mouse_pos.distance_to(ghost_position)
-			
-			# 选择距离鼠标最近的点
-			if distance < min_distance:
-				min_distance = distance
-				best_config = {
-					"vehicle_point": vehicle_point,
-					"ghost_point": ghost_point,
-					"ghost_position": ghost_position,
-					"ghost_rotation": target_rotation,
-					"vehicle_block": vehicle_block,
-					"positions": positions
-				}
+	var scene = load(scene_path)
+	if not scene:
+		print("错误：无法加载场景 ", scene_path)
+		return
 	
-	return best_config
+	moving_block_ghost = scene.instantiate()
+	get_tree().current_scene.add_child(moving_block_ghost)
+	
+	# 设置虚影外观
+	moving_block_ghost.modulate = Color(1, 1, 0.5, 0.7)  # 黄色半透明
+	moving_block_ghost.z_index = 100
+	moving_block_ghost.global_position = moving_block_original_position
+	moving_block_ghost.global_rotation = moving_block_original_rotation
+	moving_block_ghost.base_rotation_degree = moving_block.base_rotation_degree
+	
+	# 设置碰撞
+	setup_moving_ghost_collision(moving_block_ghost)
+	
+	print("创建移动虚影: ", moving_block_ghost.block_name)
 
-func try_place_moving_block():
+func setup_moving_ghost_collision(ghost: Node2D):
+	"""设置移动虚影的碰撞"""
+	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
+	for shape in collision_shapes:
+		shape.disabled = true
+	
+	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
+	for poly in collision_polygons:
+		poly.disabled = true
+	
+	if ghost is RigidBody2D:
+		ghost.freeze = true
+		ghost.collision_layer = 0
+		ghost.collision_mask = 0
+	
+	ghost.do_connect = false
+
+func place_moving_block():
+	"""放置移动的方块"""
 	if not is_moving_block or not moving_block or not moving_block_ghost:
 		return
 	
-	print("尝试放置移动的方块: ", moving_block.block_name)
+	print("放置移动的方块: ", moving_block.block_name)
 	
-	if current_snap_config:
-		# 有吸附配置，在新位置放置
-		place_moving_block_at_snap_position()
+	# 如果有吸附配置，使用吸附位置
+	if moving_snap_config and not moving_snap_config.is_empty():
+		print("使用吸附配置放置")
+		
+		# 断开可能冲突的连接
+		var connections_to_disconnect = find_connections_to_disconnect_for_moving()
+		disconnect_connections(connections_to_disconnect)
+		
+		var grid_positions = moving_snap_config.positions
+		
+		# 检查网格位置是否可用
+		if not are_grid_positions_available(grid_positions):
+			print("网格位置被占用，放回原位置")
+			cancel_block_move()
+			return
+		
+		# 设置方块的新位置和旋转
+		moving_block.global_position = moving_snap_config.ghost_position
+		moving_block.global_rotation = moving_snap_config.ghost_rotation
+		
+		# 计算正确的基础旋转角度
+		var world_rotation_deg = rad_to_deg(moving_snap_config.ghost_rotation)
+		var camera_rotation_deg = rad_to_deg(camera.target_rot)
+		moving_block.base_rotation_degree = wrapf(world_rotation_deg - camera_rotation_deg, -180, 180)
+		
+		# 重新添加到车辆
+		var control = selected_vehicle.control
+		selected_vehicle._add_block(moving_block, moving_block.position, grid_positions)
+		selected_vehicle.control = control
+		
+		print("方块已成功移动到新位置")
 	else:
 		# 没有吸附，放回原位置
-		place_moving_block_at_original_position()
+		print("没有吸附配置，放回原位置")
+		cancel_block_move()
+		return
 	
-	# 结束移动
-	finish_moving_block()
+	# 完成移动
+	finish_block_move()
+	
+	# 放置块后更新蓝图显示
+	update_blueprint_ghosts()
 
-func place_moving_block_at_snap_position():
-	var grid_positions = snap_config.positions
-	
-	# 更新块的位置和旋转
-	moving_block.global_position = current_snap_config.ghost_position
-	moving_block.global_rotation = moving_block_ghost.global_rotation
-	moving_block.base_rotation_degree = moving_block_ghost.base_rotation_degree
-	
-	# 重新添加到车辆网格
-	var control = selected_vehicle.control
-	selected_vehicle._add_block(moving_block, moving_block.position, grid_positions)
-	selected_vehicle.control = control
-	
-	print("移动方块已放置在新位置: ", moving_block.block_name)
+func are_grid_positions_available(grid_positions: Array) -> bool:
+	"""检查网格位置是否可用"""
+	for pos in grid_positions:
+		if selected_vehicle.grid.has(pos):
+			print("位置 ", pos, " 已被占用")
+			return false
+	return true
 
-func place_moving_block_at_original_position():
-	# 放回原始位置
-	moving_block.global_position = original_block_position
-	moving_block.global_rotation = original_block_rotation
+func find_connections_to_disconnect_for_moving() -> Array:
+	"""为移动方块查找需要断开的连接"""
+	var connections_to_disconnect = []
 	
-	# 重新添加到原始网格位置
-	var control = selected_vehicle.control
-	selected_vehicle._add_block(moving_block, moving_block.position, original_block_grid_positions)
-	selected_vehicle.control = control
+	if moving_snap_config and moving_snap_config.has("vehicle_point"):
+		var vehicle_point = moving_snap_config.vehicle_point
+		if vehicle_point and vehicle_point.connected_to:
+			connections_to_disconnect.append({
+				"from": vehicle_point,
+				"to": vehicle_point.connected_to
+			})
 	
-	print("移动方块已放回原位置: ", moving_block.block_name)
+	return connections_to_disconnect
 
-func cancel_moving_block():
-	if not is_moving_block:
+func cancel_block_move():
+	"""取消方块移动，将方块放回原位置"""
+	if not is_moving_block or not moving_block:
 		return
 	
 	print("取消移动方块: ", moving_block.block_name)
 	
-	# 放回原始位置
-	place_moving_block_at_original_position()
+	# 恢复方块的原始位置和旋转
+	moving_block.global_position = moving_block_original_position
+	moving_block.global_rotation = moving_block_original_rotation
+	moving_block.base_rotation_degree = rad_to_deg(moving_block_original_rotation - camera.target_rot)
 	
-	# 结束移动
-	finish_moving_block()
+	# 重新添加到车辆的原始位置
+	var control = selected_vehicle.control
+	selected_vehicle._add_block(moving_block, moving_block.position, moving_block_original_grid_positions)
+	selected_vehicle.control = control
+	
+	# 完成移动（恢复状态）
+	finish_block_move()
 
-func finish_moving_block():
-	# 清理移动相关的资源
+func finish_block_move():
+	"""完成方块移动，清理资源"""
+	if moving_block:
+		moving_block.visible = true
+		moving_block = null
+	
 	if moving_block_ghost:
 		moving_block_ghost.queue_free()
 		moving_block_ghost = null
 	
-	# 显示原始块
-	if moving_block:
-		moving_block.visible = true
-	
-	# 重置状态
 	is_moving_block = false
-	moving_block = null
-	current_snap_config = {}
+	is_dragging = false
+	moving_snap_config = {}
 	
-	# 更新蓝图显示
-	update_blueprint_ghosts()
+	# 恢复幽灵块显示
+	if current_ghost_block:
+		current_ghost_block.visible = true
+	
+	print("方块移动完成")
 
-func disconnect_block_connections(block: Block):
-	# 断开这个块的所有连接
-	for point in block.connection_points:
-		if point.connected_to:
-			point.disconnect_joint()
+func rotate_moving_ghost():
+	"""旋转移动中的虚影"""
+	if not moving_block_ghost:
+		return
+	
+	# 旋转基础旋转90度
+	moving_block_ghost.base_rotation_degree += 90
+	moving_block_ghost.base_rotation_degree = fmod(moving_block_ghost.base_rotation_degree + 90, 360) - 90
+	
+	# 更新虚影显示
+	moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
+	
+	# 更新位置
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	update_moving_ghost_position(global_mouse_pos)
 
 # === 修复功能 ===
 
@@ -641,7 +706,7 @@ func _on_item_selected(index: int, tab_name: String):
 			if is_recycle_mode:
 				exit_recycle_mode()
 			if is_moving_block:
-				cancel_moving_block()
+				cancel_block_move()  # 选择新方块时取消移动
 			emit_signal("block_selected", scene_path)
 			update_description(scene_path)
 			if is_editing:
@@ -1120,9 +1185,9 @@ func enter_recycle_mode():
 	if current_ghost_block:
 		current_ghost_block.visible = false
 	
-	# 取消方块移动
+	# 如果正在移动方块，取消移动
 	if is_moving_block:
-		cancel_moving_block()
+		cancel_block_move()
 	
 	# 清除 TabContainer 的选择
 	clear_tab_container_selection()
@@ -1225,13 +1290,14 @@ func exit_editor_mode():
 	
 	is_new_vehicle = false
 	is_first_block = true
+	
 	# 退出删除模式
 	if is_recycle_mode:
 		exit_recycle_mode()
 	
 	# 取消方块移动
 	if is_moving_block:
-		cancel_moving_block()
+		cancel_block_move()
 	
 	clear_tab_container_selection()
 	print("=== Exit edit mode ===")
@@ -1392,12 +1458,10 @@ func find_best_snap_config() -> Dictionary:
 			# 检查连接点是否可以连接
 			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
 				continue
-			
-			var positions	
-			if current_ghost_block:
-				positions = calculate_rotated_grid_positions(vehicle_point, ghost_point, current_ghost_block)
-				if positions is bool:
-					continue
+				
+			var positions = calculate_rotated_grid_positions(vehicle_point, ghost_point)
+			if positions is bool:
+				continue
 			# 计算幽灵块的位置
 			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
 			var ghost_position = vehicle_point_global - ghost_local_offset
@@ -1423,9 +1487,7 @@ func find_best_snap_config() -> Dictionary:
 
 func calculate_aligned_rotation_from_base(vehicle_block: Block) -> float:
 	var dir = vehicle_block.base_rotation_degree
-	if current_ghost_block:
-		return deg_to_rad(current_ghost_block.base_rotation_degree) + deg_to_rad(-dir) + vehicle_block.global_rotation
-	return 0.0
+	return deg_to_rad(current_ghost_block.base_rotation_degree) + deg_to_rad(-dir) + vehicle_block.global_rotation
 
 func normalize_rotation_simple(angle: float) -> float:
 	var normalized = wrapf(angle, 0, PI/2)
@@ -1648,14 +1710,14 @@ func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghos
 	else:
 		print("警告: 无法建立连接")
 
-func calculate_rotated_grid_positions(vehiclepoint, ghostpoint, block):
+func calculate_rotated_grid_positions(vehiclepoint, ghostpoint):
 	var grid_positions = []
 	var grid_block = {}
 	
 	if not selected_vehicle:
 		return grid_positions
 	
-	var block_size = block.size
+	var block_size = current_ghost_block.size
 
 	var location_v = vehiclepoint.location
 	
@@ -1792,7 +1854,6 @@ func enable_connection_points_for_blocks(blocks: Array):
 func try_remove_block():
 	if not selected_vehicle:
 		return
-	
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	

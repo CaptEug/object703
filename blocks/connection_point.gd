@@ -8,16 +8,18 @@ extends Marker2D
 @export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
 @export var connection_type := "default"
 @export var location:= Vector2i()
+@export var layer = 1
 
 var connected_to: ConnectionPoint = null
 var joint: Joint2D = null
 var detection_area: Area2D
 var overlapping_points: Array[ConnectionPoint] = []
 var qeck = true
+var area:Area2D
 
 
 func _ready():
-	line.visible = false
+	#line.visible = false
 	setup_detection_area()
 	queue_redraw()
 	
@@ -28,6 +30,10 @@ func _process(_delta):
 			qeck = false
 		else:
 			qeck = true
+	
+	if area:
+		if area.collision_layer != get_parent().collision_layer:
+			change_layer(area, get_parent().collision_layer)
 	# 即使 is_connection_enabled 为 false，也继续处理已存在的连接
 	for other_point in overlapping_points:
 		# 只处理已经连接的节点，不尝试新连接
@@ -44,10 +50,15 @@ func setup_detection_area():
 	collider.shape = shape
 	detection_area.add_child(collider)
 	add_child(detection_area)
-	
+	change_layer(detection_area, get_parent().collision_layer)
 	# 连接信号
 	detection_area.connect("area_entered", Callable(self, "_on_area_entered"))
 	detection_area.connect("area_exited", Callable(self, "_on_area_exited"))
+	area = detection_area
+
+func change_layer(area2D: Area2D, ceng: int):
+	area2D.collision_layer = ceng
+	area2D.collision_mask = ceng 
 
 func _on_area_entered(area: Area2D):
 	var other_point = area.get_parent()

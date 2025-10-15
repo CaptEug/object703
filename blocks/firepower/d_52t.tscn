@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bemq1c5f0brs7"]
+[gd_scene load_steps=17 format=3 uid="uid://bemq1c5f0brs7"]
 
 [ext_resource type="Script" uid="uid://gwmvgjhiuk7g" path="res://blocks/firepower/d_52t.gd" id="1_yqdh3"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_c60hf"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="4_7qhwx"]
 [ext_resource type="AudioStream" uid="uid://cmad1oirqcjqc" path="res://assets/sound/war-thunder-d-25t-plink-made-with-Voicemod.mp3" id="4_tauxs"]
 [ext_resource type="Script" uid="uid://6pm62c2a6ltj" path="res://assets/sound/soundplayer.gd" id="6_7qhwx"]
+[ext_resource type="PackedScene" uid="uid://cqp2x0iv8nyqp" path="res://rig.tscn" id="7_ideco"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yqdh3"]
 size = Vector2(16, 32)
@@ -154,3 +155,9 @@ rotation = 3.14159
 position = Vector2(0, 16)
 rotation = 1.57079
 location = Vector2i(0, 1)
+
+[node name="Rig" parent="." instance=ExtResource("7_ideco")]
+position = Vector2(0, -8)
+
+[node name="Rig2" parent="." instance=ExtResource("7_ideco")]
+position = Vector2(0, 8)

@@ -27,9 +27,6 @@ func _init():
 
 func _physics_process(_delta):
 
-	print("CONNECTED BLOCKS:", connected_blocks)
-	print("JOINTED CONNECTED BLOCKS:", joint_connected_blocks.values())
-
 	if not functioning:
 		on = false
 		return
