@@ -53,3 +53,9 @@ func broke():
 				a += vehicle.balanced_forces[key]
 			if a < 0.5:
 				print()
+
+# Sprite Update
+func set_sprite_region():
+	var front_vec = Vector2.UP.rotated(global_rotation)
+	var dis_front = global_position.project(front_vec)
+	var new_y := int(clamp(dis_front, 0, 16 * size.y))
