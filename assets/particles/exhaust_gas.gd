@@ -30,4 +30,4 @@ func update_color():
 
 func update_number():
 	var ratio = get_engine_power_rate()
-	amount_ratio = clamp(ratio, 0.2, 1.0)
+	amount_ratio = clamp(ratio, 0.1, 1.0)
