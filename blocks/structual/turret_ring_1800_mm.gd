@@ -1,6 +1,7 @@
 extends TurretRing
 
 @onready var armor_block = $Turret/Armor
+@onready var d25 = $Turret/D52t
 @onready var turret_rigidbody = $Turret
 
 const HITPOINT:float = 1600
@@ -22,6 +23,8 @@ func _ready():
 	super._ready()
 	await get_tree().process_frame
 	setup_connectors()
+	await armor_block.connect_aready()
+	d25.connect_aready()
 	print(turret_grid)
 
 func setup_connectors():
