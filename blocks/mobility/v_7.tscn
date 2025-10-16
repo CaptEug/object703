@@ -43,14 +43,17 @@ position = Vector2(8, -8)
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("4_g1r7x")]
 position = Vector2(8, 8)
+location = Vector2i(0, 1)
 
 [node name="ConnectionPoint4" parent="." instance=ExtResource("4_g1r7x")]
 position = Vector2(0, 16)
 rotation = 1.5708
+location = Vector2i(0, 1)
 
 [node name="ConnectionPoint5" parent="." instance=ExtResource("4_g1r7x")]
 position = Vector2(-8, 8)
 rotation = -3.14159
+location = Vector2i(0, 1)
 
 [node name="ConnectionPoint6" parent="." instance=ExtResource("4_g1r7x")]
 position = Vector2(-8, -8)

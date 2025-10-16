@@ -5,14 +5,23 @@ extends Block
 var friction: float
 var max_force: float
 
+@onready var track_sprite:= find_child("Sprite2D")
+var sprite_origin:Vector2
+var track_scroll:float = 0.0
+var whole_track:Array[Track] = []
 
 # 运行时状态
-var state_force: Array = ["idle", 0.0]
-var force_direction := Vector2.ZERO
+var state_force:Array = ["idle", 0.0]
+var force_direction:= Vector2.ZERO
+var prev_position:Vector2
+
 
 func _ready():
 	super._ready()
 	set_state_force("idle", 0.0)
+	track_sprite.texture = track_sprite.texture.duplicate()
+	sprite_origin = track_sprite.texture.region.position
+	prev_position = global_position
 	
 
 func set_state_force(new_state: String, force_value: float):
@@ -33,6 +42,8 @@ func _physics_process(_delta):
 	if not functioning:
 		return
 	apply_track_force()
+	update_track_sprite(_delta)
+	prev_position = global_position
 
 func _on_received_state_force_signal(state_force_signal):
 	"""处理状态力信号"""
@@ -48,14 +59,35 @@ func broke():
 		if vehicle.tracks.has(self):
 			vehicle.tracks.erase(self)
 			vehicle.calculate_balanced_forces()
-			var a = 0
-			for key in vehicle.balanced_forces.keys():
-				a += vehicle.balanced_forces[key]
-			if a < 0.5:
-				print()
 
-# Sprite Update
-func set_sprite_region():
+
+func update_track_sprite(delta):
 	var front_vec = Vector2.UP.rotated(global_rotation)
-	var dis_front = global_position.project(front_vec)
-	var new_y := int(clamp(dis_front, 0, 16 * size.y))
+	var movement_vec = global_position - prev_position
+	var forward_movement = movement_vec.dot(front_vec)
+	
+	# Accumulate scroll based on forward/backward movement
+	track_scroll += forward_movement
+	var total_scroll = 0.0
+	for track in get_whole_track():
+		total_scroll += track.track_scroll
+	var synced_track_scroll = total_scroll / get_whole_track().size()
+	# Wrap around texture region vertically
+	var wrapped_y = wrapf(synced_track_scroll, 0, 16 * size.y)
+	# Update the region’s position
+	track_sprite.texture.region.position = sprite_origin + Vector2(0, wrapped_y)
+
+func get_whole_track():
+	whole_track = [self]
+	get_nearby_tracks(self)
+	return whole_track
+
+func get_nearby_tracks(track):
+	for point in track.connection_points:
+		if is_equal_approx(point.rotation, PI/2) or is_equal_approx(point.rotation, -PI/2):
+			if point.connected_to:
+				var blk = point.connected_to.parent_block as Block
+				if blk is Track:
+					if not whole_track.has(blk):
+						whole_track.append(blk)
+						get_nearby_tracks(blk)

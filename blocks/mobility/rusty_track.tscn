@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://ynw68d3flv12"]
+[gd_scene load_steps=7 format=3 uid="uid://ynw68d3flv12"]
 
 [ext_resource type="Script" uid="uid://bptpkf87ghxkg" path="res://blocks/mobility/rusty_track.gd" id="1_1jm28"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_1cqs3"]
@@ -9,49 +9,11 @@ size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_11o0d"]
 atlas = ExtResource("2_1cqs3")
-region = Rect2(0, 64, 16, 16)
+region = Rect2(0, 96, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uigyy"]
 atlas = ExtResource("2_1cqs3")
 region = Rect2(64, 64, 16, 16)
-
-[sub_resource type="Animation" id="Animation_mn7ro"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture:region")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Rect2(0, 64, 16, 16)]
-}
-
-[sub_resource type="Animation" id="Animation_uigyy"]
-resource_name = "rowing"
-length = 0.4
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:texture:region")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 1,
-"values": [Rect2(0, 64, 16, 16), Rect2(16, 64, 16, 16), Rect2(32, 64, 16, 16), Rect2(48, 64, 16, 16), Rect2(0, 64, 16, 16)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_qvesv"]
-_data = {
-&"RESET": SubResource("Animation_mn7ro"),
-&"rowing": SubResource("Animation_uigyy")
-}
 
 [node name="rusty_track" type="RigidBody2D"]
 script = ExtResource("1_1jm28")
@@ -81,8 +43,3 @@ position = Vector2(8, 0)
 [node name="ConnectionPoint4" parent="." instance=ExtResource("3_uigyy")]
 position = Vector2(0, -8)
 rotation = -1.57079
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_qvesv")
-}

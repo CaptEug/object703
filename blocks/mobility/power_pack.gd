@@ -30,7 +30,7 @@ func _process(delta: float) -> void:
 	
 	# 检查燃料状态
 	has_fuel()
-	print(block_name, " ", total_fuel)
+	#print(block_name, " ", total_fuel)
 	if parent_vehicle and total_fuel > 0:
 		fuel_enough = true
 	else:

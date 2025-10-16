@@ -17,6 +17,8 @@ var overlapping_points: Array[ConnectionPoint] = []
 var qeck = true
 var area:Area2D
 
+@onready var parent_block:Block = get_parent() as Block
+
 
 func _ready():
 	#line.visible = false
@@ -119,11 +121,11 @@ func can_connect_with(other_point: ConnectionPoint) -> bool:
 	)
 
 func find_parent_block() -> Node:
-	var parent = get_parent()
-	while parent:
-		if parent is Block:
-			return parent
-		parent = parent.get_parent()
+	parent_block = get_parent()
+	while parent_block:
+		if parent_block is Block:
+			return parent_block
+		parent_block = parent_block.get_parent()
 	return null
 
 func disconnect_joint():

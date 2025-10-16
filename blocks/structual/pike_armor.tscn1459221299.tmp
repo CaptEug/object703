@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://b3h2shwbm3oy8"]
+
+[ext_resource type="Script" uid="uid://db3ysuq63xj6o" path="res://blocks/structual/pike_armor.gd" id="1_plsjk"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_n162s"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_n162s"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iyqv6"]
+atlas = ExtResource("2_n162s")
+region = Rect2(0, 176, 16, 16)
+
+[node name="PikeArmor" type="RigidBody2D"]
+script = ExtResource("1_plsjk")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-8, -8, 8, 8, -8, 8)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_iyqv6")
+
+[node name="ConnectionPoint" parent="." instance=ExtResource("3_n162s")]
+position = Vector2(0, 8)
+rotation = 1.57079
+
+[node name="ConnectionPoint2" parent="." instance=ExtResource("3_n162s")]
+position = Vector2(-8, 0)
+rotation = -3.14159

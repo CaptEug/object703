@@ -5,9 +5,9 @@ const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'maybach HL 250'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 3)
-const MAX_POWER:float = 250.0
+const MAX_POWER:float = 180.0
 const ROTATING_POWER: float = 0.3
-const POWER_CHANGE_RATE: float = 80
+const POWER_CHANGE_RATE: float = 60
 
 var description := ""
 var outline_tex := preload("res://assets/outlines/maybach_outline.png")

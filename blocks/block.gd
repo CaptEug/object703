@@ -291,7 +291,7 @@ func disconnect_all():
 	# Create a copy of keys to avoid modification during iteration
 	var joints = joint_connected_blocks.keys()
 	for joint in joints:
-			disconnect_joint(joint)
+		disconnect_joint(joint)
 	
 	# Clear any remaining connections
 	joint_connected_blocks.clear()

@@ -5,9 +5,9 @@ const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'V-7'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 2)
-const MAX_POWER:float = 140.0
+const MAX_POWER:float = 120.0
 const ROTATING_POWER: float = 0.5
-const POWER_CHANGE_RATE: float = 80
+const POWER_CHANGE_RATE: float = 40
 
 var description := ""
 

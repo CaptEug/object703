@@ -113,25 +113,24 @@ func draw_grid():
 					var blink_strength = 0.75 + 0.25 * sin(time * 4.0)  # range from 0 to 1
 					line_color = line_color * blink_strength
 				
-				# Apply rotation
-				draw_set_transform(draw_pos + topleft + center, deg_to_rad(rot), Vector2.ONE)
-				
 				# draw outline if the block has one
 				if "outline_tex" in grid[pos]:
 					var mask_tex = grid[pos].outline_tex
-					draw_texture(mask_tex, -mask_tex.get_size() / 2, line_color)
-					continue
-				
-				# else only draw the shape
-				
-				var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
-				if collisionshape and collisionshape.shape is RectangleShape2D:
-					var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
+					var extents = -mask_tex.get_size() / 2
 					if rot == 90 or rot == -90:
-						extents = Vector2(extents.y, extents.x)
-					var rect = Rect2(Vector2(line_width,line_width)/2, extents * 2)
-					draw_set_transform(draw_pos + topleft, 0, Vector2.ONE)
-					draw_rect(rect, line_color, false, line_width)
+						center = Vector2(center.y, center.x)
+					draw_set_transform(draw_pos + topleft + center, deg_to_rad(rot), Vector2.ONE)
+					draw_texture(mask_tex, extents, line_color)
+				else:
+					# else only draw the shape
+					var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
+					if collisionshape and collisionshape.shape is RectangleShape2D:
+						var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
+						if rot == 90 or rot == -90:
+							extents = Vector2(extents.y, extents.x)
+						var rect = Rect2(Vector2(line_width,line_width)/2, extents * 2)
+						draw_set_transform(draw_pos + topleft, 0, Vector2.ONE)
+						draw_rect(rect, line_color, false, line_width)
 				
 				if grid[pos] is Command:
 					draw_texture(command_sign, Vector2.ZERO, line_color)
