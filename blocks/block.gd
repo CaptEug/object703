@@ -64,7 +64,7 @@ func _ready():
 	
 	# Collect connection points
 	collect_connection_points()
-	connect_aready()
+	#connect_aready()
 	# Validation
 	if connection_points.is_empty():
 		push_warning("Block '%s' has no connection points" % block_name)
@@ -172,10 +172,11 @@ func get_connected_blocks(block: Block):
 		return
 	
 	var jcb = block.joint_connected_blocks
-	for blk in jcb.values():
-		if is_instance_valid(blk) and not connected_blocks.has(blk) and blk != self:
-			connected_blocks.append(blk)
-			get_connected_blocks(blk)
+	if block.collision_layer != 2:
+		for blk in jcb.values():
+			if is_instance_valid(blk) and not connected_blocks.has(blk) and blk != self:
+				connected_blocks.append(blk)
+				get_connected_blocks(blk)
 
 func check_connectivity():
 	if self is Command:
