@@ -18,6 +18,7 @@ region = Rect2(208, 208, 48, 48)
 size = Vector2(48, 48)
 
 [node name="TurretRing1800mm" type="RigidBody2D"]
+position = Vector2(200, 164)
 center_of_mass_mode = 1
 script = ExtResource("1_pmo8s")
 metadata/_custom_type_script = "uid://03cisq73wcw4"
@@ -41,13 +42,13 @@ collision_layer = 4
 collision_mask = 4
 angular_damp = 1.0
 
-[node name="D52t" parent="Turret" instance=ExtResource("3_4dn0s")]
-position = Vector2(16, -8)
+[node name="Armor" parent="Turret" instance=ExtResource("4_mo4t2")]
+position = Vector2(0, -16)
 collision_layer = 2
 collision_mask = 2
 
-[node name="Armor" parent="Turret" instance=ExtResource("4_mo4t2")]
-position = Vector2(0, -16)
+[node name="D52t" parent="Turret" instance=ExtResource("3_4dn0s")]
+position = Vector2(16, -8)
 collision_layer = 2
 collision_mask = 2
 

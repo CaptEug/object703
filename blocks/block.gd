@@ -142,7 +142,7 @@ func broke():
 
 func destroy():
 	# Disconnect all joints before destroying
-	disconnect_all()
+	await disconnect_all()
 	if parent_vehicle:
 		parent_vehicle.remove_block(self, false)
 	destroyed = true
@@ -292,7 +292,7 @@ func disconnect_all():
 	# Create a copy of keys to avoid modification during iteration
 	var joints = joint_connected_blocks.keys()
 	for joint in joints:
-			disconnect_joint(joint)
+		disconnect_joint(joint)
 	
 	# Clear any remaining connections
 	joint_connected_blocks.clear()
