@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://cx6w5gfj35mgx"]
 
-[ext_resource type="Script" path="res://blocks/mobility/v_7.gd" id="1_g1r7x"]
+[ext_resource type="Script" uid="uid://c2vukvn27phh6" path="res://blocks/mobility/v_7.gd" id="1_g1r7x"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_q2ao8"]
 [ext_resource type="PackedScene" uid="uid://busyvtgukolkx" path="res://assets/particles/exhaust_gas.tscn" id="3_g1r7x"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="4_g1r7x"]
