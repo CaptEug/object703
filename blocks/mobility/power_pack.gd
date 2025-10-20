@@ -7,10 +7,12 @@ var max_power: float
 var power_change_rate: float
 var target_power: float
 var state = {"move": false, "rotate": false}
+var on:bool = false
+var starting:bool = false
 
 # 动力分配比例
 var move_power_ratio: float = 1.0  # 移动动力比例
-var rotate_power_ratio: float = 0.2  # 旋转动力比例 (30%)
+var rotate_power_ratio: float = 0.3  # 旋转动力比例 (30%)
 
 var track_power_target = {}
 var fuel_enough = false
@@ -22,6 +24,7 @@ func _ready():
 	if parent_vehicle:
 		parent_vehicle.powerpacks.append(self)
 
+
 func _process(delta: float) -> void:
 	super._process(delta)
 	if not functioning:
@@ -30,7 +33,7 @@ func _process(delta: float) -> void:
 	
 	# 检查燃料状态
 	has_fuel()
-
+	
 	if parent_vehicle and total_fuel > 0:
 		fuel_enough = true
 	else:
@@ -42,10 +45,19 @@ func _process(delta: float) -> void:
 	else:
 		power_reduction(delta)
 
+func start():
+	starting = true
+	await get_tree().create_timer(2.0).timeout
+	starting = false
+	on = true
+
 func update_power(delta):
 	# 根据状态确定目标功率
 	if state["move"] or state["rotate"]:
-		target_power = max_power  # 只要有需求就满功率
+		if not on:
+			start()
+		else:
+			target_power = max_power  # 只要有需求就满功率
 	else:
 		target_power = 0
 	
