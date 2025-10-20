@@ -31,15 +31,7 @@ func _process(delta: float) -> void:
 		power = 0
 		return
 	
-	# 检查燃料状态
-	has_fuel()
-	
-	if parent_vehicle and total_fuel > 0:
-		fuel_enough = true
-	else:
-		fuel_enough = false
-	
-	if fuel_enough:
+	if has_fuel():
 		update_power(delta)
 		fuel_reduction(delta)
 	else:
@@ -133,4 +125,7 @@ func has_fuel() -> bool:
 	total_fuel = 0
 	for fueltank:Fueltank in connected_fueltank:
 		total_fuel += fueltank.fuel_storage
-	return false
+	if total_fuel > 0:
+		return true
+	else:
+		return false
