@@ -5,69 +5,146 @@ extends Control
 @export var slot_scene: PackedScene = preload("res://ui/cargo_slot.tscn")
 
 var current_tank: Vehicle = null
+var block_to_section := {}  # 记录每个 block -> section 的映射
 
+# ============================================================
+# 面板控制
+# ============================================================
+func _input(event):
+	if event.is_action_pressed("add_test_item"):
+		if current_tank:
+			_add_test_item(current_tank)
+			
 func open_inventory(tank: Vehicle):
 	current_tank = tank
 	refresh_inventory()
-	
+	visible = true
+
 func toggle_inventory(tank: Vehicle):
-	visible = not visible
 	if visible:
+		close_inventory()
+	else:
 		open_inventory(tank)
 
 func close_inventory():
 	visible = false
+	current_tank = null
+	clear_container(section_container)
+	block_to_section.clear()
+
+# ============================================================
+# 主刷新逻辑
+# ============================================================
 
 func refresh_inventory():
-	clear_container(section_container)  # 清空旧的区块
+	clear_container(section_container)
+	block_to_section.clear()
 	if not current_tank:
 		return
-	# 遍历坦克上的 blocks（或专门筛选 storage blocks）
 	for block in current_tank.blocks:
-		# 判断这个 block 是否是存储方块
-		var slot_count = block.get("slot_count")
-		if slot_count != null:
+		if block is Cargo:
 			add_storage_section(block)
-			
-	# 如果你有 panel 尺寸更新函数，可以延迟调用以保证布局完成
-	call_deferred("update_panel_size")  # 可选：如果实现了 update_panel_size
-			
 
-# 清空容器子节点（推荐）
-func clear_container(container: Node) -> void:
-	var children = container.get_children() # 获取快照数组
-	for child in children:
-		child.queue_free()
+	call_deferred("update_panel_size")  # 可选
 
+# ============================================================
+# 区块构建
+# ============================================================
 
-func add_storage_section(block) -> void:
+func add_storage_section(block: Cargo) -> void:
 	var section = storage_section_scene.instantiate()
 	var title_label: Label = section.get_node("Label")
 	var grid: GridContainer = section.get_node("GridContainer")
+
 	title_label.text = "%s (%d slots)" % [block.block_name, int(block.slot_count)]
 
-	# 清空 grid（保险起见）
+	grid.columns = min(int(block.slot_count), 6)
 	clear_container(grid)
 
-	# 设置列数（示例：最多 6 列）
-	grid.columns = min(int(block.slot_count), 6)
-
 	for i in range(int(block.slot_count)):
-		var s = slot_scene.instantiate()
-		# 如果 slot 支持 set_index / set_item
-		if s.has_method("set_index"):
-			s.set_index(i)
-		var item = null
-		if block.has_method("get_item"):
-			item = block.get_item(i)
-		elif "inventory" in block:
-			item = block.inventory[i] if i < block.inventory.size() else null
-		if item != null and s.has_method("set_item"):
-			s.set_item(item)
-		grid.add_child(s)
+		var slot = slot_scene.instantiate()
+		slot.slot_index = i
+		slot.storage_ref = block
+
+		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
+
+		var item = block.get_item(i)
+		if slot.has_method("set_item"):
+			slot.call_deferred("set_item", item)  # ✅ 延迟调用
+		else:
+			slot.item_data = item
+			slot.call_deferred("update_slot_display")
 
 	section_container.add_child(section)
+	block_to_section[block] = section
 
+	# ✅ 监听 Cargo 的 inventory_changed 信号
+	if not block.is_connected("inventory_changed", Callable(self, "_on_inventory_changed")):
+		block.connect("inventory_changed", Callable(self, "_on_inventory_changed"))
+
+# ============================================================
+# 当某个 Cargo 更新库存时，仅刷新对应区块
+# ============================================================
+
+func _on_inventory_changed(block: Cargo) -> void:
+	if not block_to_section.has(block):
+		return
+	var section = block_to_section[block]
+	if not is_instance_valid(section):
+		print("❌ No section found for", block)
+		return
+
+	var grid: GridContainer = section.get_node("GridContainer")
+	clear_container(grid)
+
+	grid.columns = min(int(block.slot_count), 6)
+	for i in range(int(block.slot_count)):
+		var slot = slot_scene.instantiate()
+		slot.slot_index = i
+		slot.storage_ref = block
+
+		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
+
+		var item = block.get_item(i)
+		if slot.has_method("set_item"):
+			slot.call_deferred("set_item", item)  # ✅ 延迟调用
+		else:
+			slot.item_data = item
+			slot.call_deferred("update_slot_display")
+
+		grid.add_child(slot)
+
+	call_deferred("update_panel_size")
+
+# ============================================================
+# 工具函数
+# ============================================================
+
+func clear_container(container: Node) -> void:
+	for child in container.get_children():
+		child.queue_free()
 
 func _on_close_button_pressed() -> void:
 	close_inventory()
+
+func _add_test_item(tank: Vehicle) -> void:
+	print("current tank:")
+	print(tank.name)
+	if not tank:
+		print("❌ No tank provided.")
+		return
+
+	# ✅ 构造一个测试物品
+	var item_data := {"id": "scrap", "count": 10, "weight": 1, "icon": load("res://assets/icons/scrap.png")}
+
+	print("[InventoryPanel] Trying to add item:", item_data["id"])
+
+	# ✅ 遍历所有 block，找到 Cargo 类型并尝试添加
+	for block in tank.blocks:
+		if block is Cargo:
+			if block.add_item(item_data):
+				print("✅ Item added to cargo:", block.block_name)
+				return
+
+	# ⚠️ 如果没有任何可用 Cargo 或已满
+	print("⚠️ All cargo are full, cannot add item.")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://cqye7fhmmkft8"]
+[gd_scene load_steps=17 format=3 uid="uid://cqye7fhmmkft8"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_sh8cn"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_6e8cr"]
@@ -9,6 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://e0sne2h1x0sa" path="res://assets/icons/I.png" id="5_6e8cr"]
 [ext_resource type="Texture2D" uid="uid://bgqcxa847i8fu" path="res://assets/icons/b.png" id="7_3deui"]
 [ext_resource type="PackedScene" uid="uid://cil4c3i7uegwf" path="res://ui/inventory_panel.tscn" id="9_kkd3v"]
+[ext_resource type="PackedScene" uid="uid://cqixwd0vdlyat" path="res://ui/storage_section.tscn" id="10_syhaw"]
+[ext_resource type="PackedScene" uid="uid://dnwpcmifp3o6j" path="res://ui/cargo_slot.tscn" id="11_muuo3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
 atlas = ExtResource("2_6e8cr")
@@ -158,6 +160,8 @@ offset_right = 386.16
 offset_bottom = 23.68
 grow_horizontal = 1
 grow_vertical = 1
+storage_section_scene = ExtResource("10_syhaw")
+slot_scene = ExtResource("11_muuo3")
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="Controlbutton" to="." method="_on_controlbutton_pressed"]
