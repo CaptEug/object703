@@ -13,15 +13,14 @@ func _process(delta):
 	if get_parent().starting:
 		emitting = true
 		one -= delta/2
-		var smoke_color = smokecolor_gradient.sample(max(0.0, one))
-		modulate = smoke_color
+		modulate = smokecolor_gradient.sample(max(0.0, one))
 		amount_ratio = max(0.1, one)
 	else:
 		emitting = get_parent().functioning and get_parent().on
 		update_color()
 		update_number()
 	
-	if not get_parent().on:
+	if not get_parent().on and not get_parent().starting:
 		one = 1.0
 
 
