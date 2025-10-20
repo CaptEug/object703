@@ -15,7 +15,6 @@ var move_power_ratio: float = 1.0  # 移动动力比例
 var rotate_power_ratio: float = 0.3  # 旋转动力比例 (30%)
 
 var track_power_target = {}
-var fuel_enough = false
 var connected_fueltank = []
 var total_fuel = 0
 
@@ -31,15 +30,7 @@ func _process(delta: float) -> void:
 		power = 0
 		return
 	
-	# 检查燃料状态
-	has_fuel()
-	
-	if parent_vehicle and total_fuel > 0:
-		fuel_enough = true
-	else:
-		fuel_enough = false
-	
-	if fuel_enough:
+	if has_fuel():
 		update_power(delta)
 		fuel_reduction(delta)
 	else:
@@ -106,9 +97,6 @@ func fuel_reduction(delta):
 		for tank in connected_fueltank:
 			if tank is Fueltank:
 				tank.use_fuel(fuel_consumption, delta)
-		
-		if parent_vehicle.get_current_fuel() <= 0:
-			fuel_enough = false
 
 # 外部接口 - 设置状态
 func set_movement_state(moving: bool, rotating: bool):
@@ -133,4 +121,7 @@ func has_fuel() -> bool:
 	total_fuel = 0
 	for fueltank:Fueltank in connected_fueltank:
 		total_fuel += fueltank.fuel_storage
-	return false
+	if total_fuel > 0:
+		return true
+	else:
+		return false
