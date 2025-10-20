@@ -10,7 +10,11 @@ var block_to_section := {}  # 记录每个 block -> section 的映射
 # ============================================================
 # 面板控制
 # ============================================================
-
+func _input(event):
+	if event.is_action_pressed("add_test_item"):
+		if current_tank:
+			_add_test_item(current_tank)
+			
 func open_inventory(tank: Vehicle):
 	current_tank = tank
 	refresh_inventory()
@@ -59,15 +63,17 @@ func add_storage_section(block: Cargo) -> void:
 
 	for i in range(int(block.slot_count)):
 		var slot = slot_scene.instantiate()
-
 		slot.slot_index = i
-		slot.storage_ref = block  # 告诉格子它属于哪个 Cargo（重要）
-		
-		# ✅ 使用 set_item() 而不是直接修改 item_data
+		slot.storage_ref = block
+
+		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
+
 		var item = block.get_item(i)
-		grid.add_child(slot)
-		
-		slot.call_deferred("set_item", item)
+		if slot.has_method("set_item"):
+			slot.call_deferred("set_item", item)  # ✅ 延迟调用
+		else:
+			slot.item_data = item
+			slot.call_deferred("update_slot_display")
 
 	section_container.add_child(section)
 	block_to_section[block] = section
@@ -97,14 +103,14 @@ func _on_inventory_changed(block: Cargo) -> void:
 		slot.slot_index = i
 		slot.storage_ref = block
 
+		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
+
 		var item = block.get_item(i)
-		# ✅ 同样使用 set_item() 以匹配新 cargo_slot.gd
 		if slot.has_method("set_item"):
-			slot.set_item(item)
+			slot.call_deferred("set_item", item)  # ✅ 延迟调用
 		else:
 			slot.item_data = item
-			if slot.has_method("update_slot_display"):
-				slot.update_slot_display()
+			slot.call_deferred("update_slot_display")
 
 		grid.add_child(slot)
 
@@ -120,3 +126,25 @@ func clear_container(container: Node) -> void:
 
 func _on_close_button_pressed() -> void:
 	close_inventory()
+
+func _add_test_item(tank: Vehicle) -> void:
+	print("current tank:")
+	print(tank.name)
+	if not tank:
+		print("❌ No tank provided.")
+		return
+
+	# ✅ 构造一个测试物品
+	var item_data := {"id": "scrap", "count": 10, "weight": 1, "icon": load("res://assets/icons/scrap.png")}
+
+	print("[InventoryPanel] Trying to add item:", item_data["id"])
+
+	# ✅ 遍历所有 block，找到 Cargo 类型并尝试添加
+	for block in tank.blocks:
+		if block is Cargo:
+			if block.add_item(item_data):
+				print("✅ Item added to cargo:", block.block_name)
+				return
+
+	# ⚠️ 如果没有任何可用 Cargo 或已满
+	print("⚠️ All cargo are full, cannot add item.")

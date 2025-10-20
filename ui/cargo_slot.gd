@@ -17,7 +17,6 @@ var drag_origin_pos := Vector2.ZERO
 # 初始化
 # ============================================================
 func _ready():
-	print("✅ CargoSlot _ready():", self.name)
 	texture = preload("res://assets/icons/item_slot.png")
 	stretch_mode = STRETCH_KEEP_ASPECT_CENTERED
 	mouse_filter = MOUSE_FILTER_STOP
@@ -41,14 +40,13 @@ func _ready():
 # 显示逻辑
 # ============================================================
 func set_item(item: Dictionary) -> void:
-	print("⚡ set_item called on", self.name)
+	print("⚡ set_item called on", self)
 	item_data = item
 	update_slot_display()
 
 func update_slot_display() -> void:
 	if item_data.is_empty():
-		item_icon.visible = false
-		count_label.visible = false
+		hide_current_icon()
 	else:
 		item_icon.texture = item_data.get("icon", null)
 		item_icon.visible = true
@@ -70,6 +68,7 @@ func _gui_input(event: InputEvent) -> void:
 			elif is_dragging:
 				_end_drag()
 	elif event is InputEventMouseMotion and is_dragging:
+		print("updating")
 		_update_drag()
 
 
@@ -100,22 +99,26 @@ func _start_drag() -> void:
 	drag_preview.add_child(label)
 	
 	get_node("/root/Testground/CanvasLayer/Tankpanel").add_child(drag_preview)
+	#hide_current_icon()
 	#get_tree().root.add_child(drag_preview)
 	_update_drag()
 
 func _update_drag() -> void:
 	if drag_preview:
 		drag_preview.global_position = get_viewport().get_mouse_position() - drag_offset
+		print("preview position:  ")
+		print(drag_preview.global_position)
 
 func _end_drag() -> void:
 	is_dragging = false
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos =  get_viewport().get_mouse_position() - drag_offset
 	var target_slot = _get_slot_under_mouse(mouse_pos)
 
 	if target_slot and target_slot != self:
-		#_perform_drop(target_slot)
-		_return_item()
+		print("dropped")
+		_perform_drop(target_slot)
 	else:
+		print("returned")
 		_return_item()
 
 	if drag_preview:
@@ -137,17 +140,34 @@ func _get_slot_under_mouse(pos: Vector2) -> Node:
 
 
 func _perform_drop(target_slot: Node) -> void:
+	if not target_slot or target_slot == self:
+		return
+
 	var temp_item = target_slot.item_data
+	print("temp_item:")
+	print(temp_item)
 	target_slot.set_item(item_data)
 	set_item(temp_item)
 
-	# 同步到存储
+	# ✅ 同步底层数据
 	if storage_ref and target_slot.storage_ref:
 		storage_ref.set_item(slot_index, temp_item)
 		target_slot.storage_ref.set_item(target_slot.slot_index, item_data)
-		storage_ref.emit_signal("inventory_changed", storage_ref)
-		target_slot.storage_ref.emit_signal("inventory_changed", target_slot.storage_ref)
 
+	# ⚠️ 不立即发射信号，避免触发 Panel 重建
+	# storage_ref.emit_signal("inventory_changed", storage_ref)
+	# target_slot.storage_ref.emit_signal("inventory_changed", target_slot.storage_ref)
+
+	print("✅ Dropped item: ", item_data, " swapped with: ", temp_item)
+
+func hide_current_icon() -> void:
+	item_icon.visible = false
+	count_label.visible = false
+
+func show_current_icon() -> void:
+	item_icon.visible = true
+	count_label.visible = true
 
 func _return_item() -> void:
 	update_slot_display()
+	

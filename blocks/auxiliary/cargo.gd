@@ -36,8 +36,10 @@ func set_item(slot_index: int, item_data: Dictionary) -> bool:
 		return false
 	inventory[slot_index] = item_data
 	print("📦 Set item at", slot_index, ":", item_data)
-	emit_signal("inventory_changed", self)
 	return true
+	
+func finalize_changes():
+	emit_signal("inventory_changed", self)
 
 # ============================================================
 # 物品交互接口（供 UI 调用）
@@ -74,6 +76,15 @@ func split_item(slot_index: int) -> Dictionary:
 	new_item["count"] = half
 	emit_signal("inventory_changed", self)
 	return new_item
+	
+# ✅ 自动添加到第一个空位
+func add_item(item_data: Dictionary) -> bool:
+	for i in range(slot_count):
+		if inventory[i] == {}:
+			inventory[i] = item_data
+			emit_signal("inventory_changed", self)
+			return true
+	return false
 
 func clear_all():
 	for i in range(slot_count):
