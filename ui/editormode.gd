@@ -35,6 +35,10 @@ var is_recycle_mode := false
 var is_loading_mode := false  # 新增：标记是否处于加载模式
 var original_tab_names := []  # 新增：存储原始标签页名称
 
+# === 炮塔放置模式变量 ===
+var is_turret_mode := false  # 是否处于炮塔放置模式
+var turret_cursor:Texture = preload("res://assets/icons/file.png")  # 炮塔模式光标
+
 # === 蓝图显示功能 ===
 var blueprint_ghosts := []  # 存储虚影块的数组
 var blueprint_data: Dictionary  # 当前蓝图数据
@@ -140,11 +144,23 @@ func _input(event):
 				print("错误: 未找到可编辑的车辆")
 		return
 	
+	# 按5进入/退出炮塔放置模式
+	if event is InputEventKey and event.pressed and event.keycode == KEY_5:
+		if is_editing:
+			if is_turret_mode:
+				exit_turret_mode()
+			else:
+				enter_turret_mode()
+		return
+	
 	if not is_editing:
 		return
 	
 	# 鼠标按下事件
 	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			if is_moving_block:
+				cancel_block_move()
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				# 鼠标按下
@@ -155,13 +171,15 @@ func _input(event):
 				# 如果已经在移动模式，立即放置
 				if is_recycle_mode:
 					try_remove_block()
+				elif is_turret_mode:
+					try_place_turret_block()  # 炮塔模式放置
 				
 				if is_moving_block:
 					place_moving_block()
 					return
 					
 				# 检查是否点击了现有方块（准备开始拖拽）
-				if not is_recycle_mode and not current_ghost_block:
+				if not is_recycle_mode and not current_ghost_block and not is_turret_mode:
 					var mouse_pos = get_viewport().get_mouse_position()
 					var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 					var block = get_block_at_position(global_mouse_pos)
@@ -175,20 +193,22 @@ func _input(event):
 				if is_dragging and is_moving_block:
 					place_moving_block()
 				# 如果不是拖拽且不在移动模式，正常放置方块
-				elif not is_dragging and not is_moving_block and not is_recycle_mode:
+				elif not is_dragging and not is_moving_block and not is_recycle_mode and not is_turret_mode:
 					try_place_block()
 	
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
 			KEY_ESCAPE:
-				if is_moving_block:
+				if is_turret_mode:
+					exit_turret_mode()
+				elif is_moving_block:
 					cancel_block_move()
 				else:
 					cancel_placement()
 			KEY_R:
 				if is_moving_block and moving_block_ghost:
 					rotate_moving_ghost()
-				elif current_ghost_block:
+				elif current_ghost_block and not is_turret_mode:
 					rotate_ghost_connection()
 			KEY_F:
 				print_connection_points_info()
@@ -212,7 +232,7 @@ func _process(delta):
 		return
 	
 	# 处理长按拖拽
-	if is_mouse_pressed and not is_dragging and not is_moving_block and not is_recycle_mode and not current_ghost_block:
+	if is_mouse_pressed and not is_dragging and not is_moving_block and not is_recycle_mode and not current_ghost_block and not is_turret_mode:
 		drag_timer += delta
 		if drag_timer >= DRAG_DELAY:
 			# 长按时间到达，开始拖拽
@@ -227,6 +247,110 @@ func _process(delta):
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_ghost_block_position(global_mouse_pos)
+
+# === 炮塔放置模式功能 ===
+func enter_turret_mode():
+	"""进入炮塔放置模式"""
+	if is_turret_mode:
+		return
+	
+	print("进入炮塔放置模式")
+	is_turret_mode = true
+	
+	# 设置炮塔光标
+	Input.set_custom_mouse_cursor(turret_cursor)
+	
+	# 取消当前块放置
+	if current_ghost_block:
+		current_ghost_block.visible = false
+	
+	# 如果正在移动方块，取消移动
+	if is_moving_block:
+		cancel_block_move()
+	
+	# 退出删除模式
+	if is_recycle_mode:
+		exit_recycle_mode()
+	
+	# 清除 TabContainer 的选择
+	clear_tab_container_selection()
+	
+	print("炮塔模式：可以自由放置块，不进行吸附连接")
+
+func exit_turret_mode():
+	"""退出炮塔放置模式"""
+	if not is_turret_mode:
+		return
+	
+	print("退出炮塔放置模式")
+	is_turret_mode = false
+	
+	# 恢复默认光标
+	Input.set_custom_mouse_cursor(null)
+	
+	# 如果有幽灵块，恢复显示
+	if current_ghost_block:
+		current_ghost_block.visible = true
+	
+	print("返回正常放置模式")
+
+func try_place_turret_block():
+	"""在炮塔模式下放置块"""
+	if not is_turret_mode or not selected_vehicle:
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	# 检查是否有选中的块
+	if not current_block_scene:
+		print("炮塔模式：请先选择一个块")
+		return
+	
+	# 创建新块
+	var new_block:Block = current_block_scene.instantiate()
+	selected_vehicle.add_child(new_block)
+	
+	# 设置块的位置和旋转（自由放置）
+	new_block.global_position = global_mouse_pos
+	new_block.global_rotation = 0  # 炮塔模式使用默认旋转
+	new_block.base_rotation_degree = 0
+	
+	# 设置碰撞层为2（炮塔层）
+	if new_block is CollisionObject2D:
+		new_block.collision_layer = 2
+		new_block.collision_mask = 2
+	
+	# 计算网格位置（基于世界坐标）
+	var grid_positions = calculate_free_grid_positions_turret(new_block, global_mouse_pos)
+	
+	var control = selected_vehicle.control
+	# 计算网格位置并更新
+	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
+	selected_vehicle.control = control
+	
+	print("炮塔模式放置块: ", new_block.block_name, " 在层2")
+	
+	# 继续放置同一类型的块
+	start_block_placement_with_rotation(current_block_scene.resource_path)
+	
+	# 放置块后更新蓝图显示
+	update_blueprint_ghosts()
+
+func calculate_free_grid_positions_turret(block: Block, world_pos: Vector2) -> Array:
+	"""计算炮塔模式下块的网格位置"""
+	var grid_positions = []
+	var grid_x = int(round(world_pos.x / GRID_SIZE))
+	var grid_y = int(round(world_pos.y / GRID_SIZE))
+	
+	# 根据块的大小计算所有网格位置（炮塔模式不旋转）
+	var block_size = block.size
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			var grid_pos = Vector2i(grid_x + x, grid_y + y)
+			grid_positions.append(grid_pos)
+	
+	return grid_positions
 
 # === 长按拖拽功能 ===
 
@@ -705,6 +829,8 @@ func _on_item_selected(index: int, tab_name: String):
 		if scene_path:
 			if is_recycle_mode:
 				exit_recycle_mode()
+			if is_turret_mode:
+				exit_turret_mode()  # 选择新方块时退出炮塔模式
 			if is_moving_block:
 				cancel_block_move()  # 选择新方块时取消移动
 			emit_signal("block_selected", scene_path)
@@ -1189,6 +1315,10 @@ func enter_recycle_mode():
 	if is_moving_block:
 		cancel_block_move()
 	
+	# 退出炮塔模式
+	if is_turret_mode:
+		exit_turret_mode()
+	
 	# 清除 TabContainer 的选择
 	clear_tab_container_selection()
 	
@@ -1265,7 +1395,6 @@ func enter_editor_mode(vehicle: Vehicle):
 	
 	print("=== Edit mode ready ===")
 
-
 func exit_editor_mode():
 	if not is_editing:
 		return
@@ -1294,6 +1423,10 @@ func exit_editor_mode():
 	# 退出删除模式
 	if is_recycle_mode:
 		exit_recycle_mode()
+	
+	# 退出炮塔模式
+	if is_turret_mode:
+		exit_turret_mode()
 	
 	# 取消方块移动
 	if is_moving_block:
@@ -1423,7 +1556,6 @@ func update_ghost_block_position(mouse_position: Vector2):
 		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
 		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
 		current_snap_config = {}
-
 
 func get_ghost_block_available_connection_points() -> Array[ConnectionPoint]:
 	var points: Array[ConnectionPoint] = []

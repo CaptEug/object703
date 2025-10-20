@@ -21,7 +21,7 @@ var area:Area2D
 
 
 func _ready():
-	#line.visible = false
+	line.visible = false
 	setup_detection_area()
 	queue_redraw()
 	

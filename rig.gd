@@ -3,7 +3,7 @@ extends Marker2D
 
 # 连接参数
 @export var is_connection_enabled := true
-@export var connection_range := 10.0
+@export var connection_range := 5.0
 @export var connection_type := "rigidbody"
 @export var location := Vector2i()
 
@@ -82,20 +82,21 @@ func try_connect(other_connector: RigidBodyConnector) -> bool:
 	print("   自身: ", name, " (", get_connector_type(), ")")
 	print("   对方: ", other_connector.name, " (", other_connector.get_connector_type(), ")")
 	
+	# 新增：检查是否已经连接
+	if connected_to != null:
+		print("❌ 自身已连接到: ", connected_to.name, "，不再尝试新连接")
+		return false
+	
+	if other_connector.connected_to != null:
+		print("❌ 对方已连接到: ", other_connector.connected_to.name, "，不再尝试连接")
+		return false
+	
 	if not is_connection_enabled:
 		print("❌ 自身连接未启用")
 		return false
 	
-	if connected_to != null:
-		print("❌ 自身已连接到: ", connected_to.name)
-		return false
-	
 	if not other_connector.is_connection_enabled:
 		print("❌ 对方连接未启用")
-		return false
-	
-	if other_connector.connected_to != null:
-		print("❌ 对方已连接到: ", other_connector.connected_to.name)
 		return false
 	
 	if not can_connect_with(other_connector):
@@ -141,6 +142,11 @@ func try_connect(other_connector: RigidBodyConnector) -> bool:
 		# 在另一个连接器中也记录joint
 		other_connector.joint = joint
 		print("🎉 ✅ 点对点连接成功: ", block.name, " <-> ", rigidbody.name)
+		
+		# 连接成功后，从重叠列表中移除已连接的连接器
+		if other_connector in overlapping_connectors:
+			overlapping_connectors.erase(other_connector)
+		
 		queue_redraw()
 		other_connector.queue_redraw()
 		return true
@@ -153,12 +159,13 @@ func try_connect(other_connector: RigidBodyConnector) -> bool:
 func can_connect_with(other_connector: RigidBodyConnector) -> bool:
 	print("\n🔍 详细连接条件检查:")
 	
+	# 新增：优先检查连接状态
 	if connected_to != null:
-		print("❌ 自身已连接")
+		print("❌ 自身已连接到: ", connected_to.name)
 		return false
 	
 	if other_connector.connected_to != null:
-		print("❌ 对方已连接")
+		print("❌ 对方已连接到: ", other_connector.connected_to.name)
 		return false
 	
 	# 检查连接类型是否匹配
@@ -278,7 +285,6 @@ func get_parent_rigidbody() -> RigidBody2D:
 		return parent as RigidBody2D
 	return null
 
-# 其余函数保持不变...
 func disconnect_connection():
 	print("断开连接: ", name)
 	if connected_to:
