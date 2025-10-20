@@ -35,6 +35,10 @@ func _process(delta: float) -> void:
 		fuel_reduction(delta)
 	else:
 		power_reduction(delta)
+	
+	if parent_vehicle:
+		if parent_vehicle.control.get_method() == "":
+			on = false
 
 func start():
 	starting = true
@@ -124,4 +128,5 @@ func has_fuel() -> bool:
 	if total_fuel > 0:
 		return true
 	else:
+		on = false
 		return false
