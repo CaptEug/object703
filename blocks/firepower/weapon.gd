@@ -15,12 +15,13 @@ var crosshair:Sprite2D
 var animplayer:AnimationPlayer
 var gun_fire_sound:AudioStreamPlayer2D
 var spread:float
-var shell_scene:PackedScene
+var shells:Array
 var broken_turret:Sprite2D
 
 var reload_timer:Timer
 var loaded:bool = false
 var loading:bool = false
+var shell_chosen:PackedScene
 var connected_ammoracks := []
 var targeting:= Callable()
 
@@ -113,7 +114,7 @@ func aim(delta, target_pos):
 func fire():
 	if not loaded:
 		return
-	shoot(muzzles[current_muzzle], shell_scene)
+	shoot(muzzles[current_muzzle], shell_chosen)
 	if animplayer:
 		animplayer.play('recoil'+str(current_muzzle))
 	current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
@@ -140,32 +141,33 @@ func shoot(muz:Marker2D, shell_picked:PackedScene):
 
 func start_reload():
 	loading = true
-	cost_ammo(ammo_cost)
 	reload_timer.start()
+
+func find_ammo():
+	connected_ammoracks.clear()
+	find_all_connected_ammorack()
+	for ammorack in connected_ammoracks:
+		var inv = ammorack.inventory
+		for item in inv:
+			if item["id"] in shells:
+				var shell_chosen = ItemDB.get_item(item["id"])["shell_scene"]
+				return ammorack.take_item(item["id"], 1)
 
 func has_ammo() -> bool:
 	connected_ammoracks.clear()
 	find_all_connected_ammorack()
-	var total_ammo = 0
-	for ammorack in connected_ammoracks:
-		total_ammo += ammorack.ammo_storage
-	if total_ammo > ammo_cost:
-		return true
+	#var total_ammo = 0
+	#for ammorack in connected_ammoracks:
+		#total_ammo += ammorack.ammo_storage
+	#if total_ammo > ammo_cost:
+		#return true
 	return false
 
-func cost_ammo(amount:float):
-	var remaining = amount
-	for ammorack in connected_ammoracks:
-		if ammorack.ammo_storage >= remaining:
-			ammorack.ammo_storage -= remaining
-			return
-		else:
-			remaining -= ammorack.ammo_storage
-			ammorack.ammo_storage = 0
 
 func _on_timer_timeout():
 	loaded = true
 	loading = false
+
 
 func find_all_connected_ammorack():
 	connected_ammoracks.clear()
@@ -210,7 +212,6 @@ func auto_target(delta):
 
 func manual_target(delta):
 	aim(delta, get_global_mouse_position())
-
 	if Input.is_action_pressed("FIRE_MAIN"):
 	# Skip firing if mouse is over UI
 		if get_viewport().gui_get_hovered_control():

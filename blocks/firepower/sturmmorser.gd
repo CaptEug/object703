@@ -15,7 +15,7 @@ const SPREAD:float = 0.05
 
 var description := ""
 
-var rocket = preload("res://blocks/firepower/shells/rocket_380_mm.tscn")
+const SHELLS = ["380mmRocket"]
 
 func _init():
 	max_hp = HITPOINT
@@ -31,4 +31,4 @@ func _init():
 	traverse = TRAVERSE
 	muzzle_energy = MUZZLE_ENERGY
 	spread = SPREAD
-	shell_scene = rocket
+	shells = SHELLS

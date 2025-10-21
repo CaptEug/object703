@@ -15,7 +15,7 @@ const SPREAD:float = 0.05
 
 var description := ""
 
-var sap_shell = preload("res://blocks/firepower/shells/br_473.tscn")
+const SHELLS = ["122mmAPHE", "122mmHE"]
 
 func _init():
 	max_hp = HITPOINT
@@ -31,4 +31,4 @@ func _init():
 	traverse = TRAVERSE
 	muzzle_energy = MUZZLE_ENERGY
 	spread = SPREAD
-	shell_scene = sap_shell
+	shells = SHELLS

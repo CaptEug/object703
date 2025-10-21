@@ -11,7 +11,7 @@ const ACCEPT:= ["ALL"]
 
 func _init():
 	max_hp = HITPOINT
-	slot_count = 36
+	slot_count = 12
 	current_hp = HITPOINT
 	weight = WEIGHT
 	block_name = BLOCK_NAME
