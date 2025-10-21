@@ -54,6 +54,7 @@ func damage_contacted_blocks():
 func gain_scrap(block):
 	var _amount = block.size.x * block.size.y
 	
+	
 
 func find_all_connected_cargo():
 	connected_cargo.clear()
