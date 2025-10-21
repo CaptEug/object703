@@ -131,6 +131,8 @@ func _on_block_button_pressed():
 	is_ui_interaction = false
 
 func _input(event):
+	if get_viewport().gui_get_hovered_control():
+		return
 	# 全局TAB键检测
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:

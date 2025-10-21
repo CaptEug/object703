@@ -1,9 +1,9 @@
 class_name Fueltank
 extends Block
 
-var fuel_storage: int = 0  # 存储整数个油包
-var current_fuel_pack: float = 0.0  # 当前油包的剩余量
-var fuel_pack_capacity: float = 10.0  # 每个油包的容量
+var fuel_storage: int = 0 
+var current_fuel_pack: float = 0.0 
+var fuel_pack_capacity: float = 10.0 
 
 func use_fuel(power: float, delta: float) -> bool:
 	# 如果没有燃料了，返回false
