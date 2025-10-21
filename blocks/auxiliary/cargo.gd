@@ -4,7 +4,7 @@ extends Block
 signal inventory_changed(cargo: Cargo)
 
 
-@export var slot_count: int = 24
+@export var slot_count: int = 6
 @export var is_full: bool = false
 var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10, "weight": 1, "icon": Texture2D}
 var accept: Array = []  # 可以存放的物品类型约束（暂留）
