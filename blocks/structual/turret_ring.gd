@@ -62,18 +62,31 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 		for pos in grid_positions:
 			turret_grid[pos] = block
 		
-		# 设置block为炮塔的子节点（如果还不是的话）
+		# 设置block为炮塔的子节点
 		if block.get_parent() != turret:
 			var old_parent = block.get_parent()
-			if old_parent:
-				old_parent.remove_child(block)
+			if old_parent and old_parent.has_method("remove_block"):
+				old_parent.remove_block(block, false)
 			turret.add_child(block)
+			
+			# 设置block的本地位置
+			if not grid_positions.is_empty():
+				var center_pos = calculate_block_center(grid_positions)
+				block.position = center_pos
+		
+		# 确保块的碰撞层设置为2
+		if block is CollisionObject2D:
+			block.collision_layer = 2
+			block.collision_mask = 2
+		
+		# 更新炮塔物理属性
+		update_turret_physics()
 		
 		# 更新炮塔大小
 		update_turret_size()
 		
-		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions,"size", turret_size)
-
+		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions, " 碰撞层: ", block.collision_layer)
+		
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
 	if block in turret_blocks:
@@ -86,6 +99,13 @@ func remove_block_from_turret(block: Block):
 				keys_to_erase.append(pos)
 		for pos in keys_to_erase:
 			turret_grid.erase(pos)
+		
+		# 从场景中移除
+		if block.get_parent() == turret:
+			turret.remove_child(block)
+		
+		# 更新炮塔物理属性
+		update_turret_physics()
 		
 		# 更新炮塔大小
 		update_turret_size()
@@ -134,6 +154,25 @@ func update_turret_size():
 		max_y = max(max_y, grid_pos.y)
 	
 	turret_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
+
+func update_turret_physics():
+	"""更新炮塔的物理属性（质量、质心等）"""
+	var total_mass = 0.0
+	var center_of_mass = Vector2.ZERO
+	
+	for block in turret_blocks:
+		if is_instance_valid(block):
+			total_mass += block.mass
+			var block_positions = get_turret_block_grid(block)
+			if not block_positions.is_empty():
+				var block_center = calculate_block_center(block_positions)
+				center_of_mass += block_center * block.mass
+	
+	if total_mass > 0:
+		center_of_mass /= total_mass
+		# 更新炮塔的质量和质心
+		turret.mass = total_mass
+		# 这里可以根据需要调整炮塔的质心
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""
