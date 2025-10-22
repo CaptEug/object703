@@ -38,6 +38,7 @@ var original_tab_names := []  # 新增：存储原始标签页名称
 # === 炮塔放置模式变量 ===
 var is_turret_mode := false  # 是否处于炮塔放置模式
 var turret_cursor:Texture = preload("res://assets/icons/file.png")  # 炮塔模式光标
+var turret_grid_previews := []  # 存储炮塔网格预览
 
 # === 蓝图显示功能 ===
 var blueprint_ghosts := []  # 存储虚影块的数组
@@ -115,6 +116,11 @@ func _ready():
 	load_all_blocks()
 	
 	call_deferred("initialize_editor")
+	call_deferred("initialize_turret_system")
+
+func initialize_turret_system():
+	"""初始化炮塔系统"""
+	pass
 
 func _connect_block_buttons():
 	# 找到所有方块选择按钮并连接信号
@@ -262,6 +268,10 @@ func _process(delta):
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_ghost_block_position(global_mouse_pos)
+	
+	# 更新炮塔放置的视觉反馈
+	if is_turret_mode and current_ghost_block:
+		update_turret_placement_feedback()
 
 # === 炮塔检测功能 ===
 func has_turret_blocks() -> bool:
@@ -295,7 +305,7 @@ func get_turret_blocks() -> Array:
 				turrets.append(block)
 	
 	return turrets
-
+	
 func highlight_turret_blocks(highlight: bool):
 	"""高亮或取消高亮炮塔块"""
 	if not selected_vehicle:
@@ -387,7 +397,10 @@ func enter_turret_mode():
 	# 高亮显示所有炮塔块
 	highlight_turret_blocks(true)
 	
-	print("炮塔模式：可以自由放置块，不进行吸附连接")
+	# 显示炮塔网格预览
+	show_turret_grid_preview()
+	
+	print("炮塔模式：可以在炮塔上放置块")
 
 func exit_turret_mode():
 	"""退出炮塔放置模式"""
@@ -403,6 +416,9 @@ func exit_turret_mode():
 	# 取消炮塔块高亮
 	highlight_turret_blocks(false)
 	
+	# 隐藏炮塔网格预览
+	hide_turret_grid_preview()
+	
 	# 如果有幽灵块，恢复显示
 	if current_ghost_block:
 		current_ghost_block.visible = true
@@ -414,8 +430,9 @@ func try_place_turret_block():
 	if not is_turret_mode or not selected_vehicle:
 		return
 	
-	# 再次确认有炮塔块
-	if not has_turret_blocks():
+	# 检查是否有选中的炮塔块
+	var turret_blocks = get_turret_blocks()
+	if turret_blocks.is_empty():
 		print("错误：炮塔模式下没有找到炮塔块")
 		exit_turret_mode()
 		return
@@ -428,35 +445,147 @@ func try_place_turret_block():
 		print("炮塔模式：请先选择一个块")
 		return
 	
-	# 创建新块
-	var new_block:Block = current_block_scene.instantiate()
-	selected_vehicle.add_child(new_block)
+	# 找到鼠标位置下的炮塔
+	var target_turret = get_turret_at_position(global_mouse_pos)
+	if not target_turret:
+		print("炮塔模式：请在炮塔上方放置块")
+		return
 	
-	# 设置块的位置和旋转（自由放置）
-	new_block.global_position = global_mouse_pos
-	new_block.global_rotation = 0  # 炮塔模式使用默认旋转
-	new_block.base_rotation_degree = 0
+	# 计算在炮塔网格中的位置
+	var turret_local_pos = target_turret.turret.to_local(global_mouse_pos)
+	var grid_pos = Vector2i(
+		round(turret_local_pos.x / GRID_SIZE),
+		round(turret_local_pos.y / GRID_SIZE)
+	)
+	
+	# 检查位置是否可用
+	if not target_turret.is_position_available(grid_pos):
+		print("炮塔模式：该位置已被占用")
+		return
+	
+	# 创建新块并添加到炮塔
+	var new_block: Block = current_block_scene.instantiate()
 	
 	# 设置碰撞层为2（炮塔层）
 	if new_block is CollisionObject2D:
 		new_block.collision_layer = 2
 		new_block.collision_mask = 2
+		print("设置块碰撞层为2")
 	
-	# 计算网格位置（基于世界坐标）
-	var grid_positions = calculate_free_grid_positions_turret(new_block, global_mouse_pos)
+	target_turret.add_block_to_turret(new_block, [grid_pos])
 	
-	var control = selected_vehicle.control
-	# 计算网格位置并更新
-	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
-	selected_vehicle.control = control
-	
-	print("炮塔模式放置块: ", new_block.block_name, " 在层2")
+	print("炮塔模式放置块: ", new_block.block_name, " 在炮塔 ", target_turret.block_name, " 的位置 ", grid_pos, " 层: ", new_block.collision_layer)
 	
 	# 继续放置同一类型的块
 	start_block_placement_with_rotation(current_block_scene.resource_path)
+
+
+func get_turret_at_position(position: Vector2) -> TurretRing:
+	"""获取指定位置的炮塔块"""
+	var space_state = get_tree().root.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = position
+	query.collision_mask = 1  # 块所在的碰撞层
 	
-	# 放置块后更新蓝图显示
-	update_blueprint_ghosts()
+	var result = space_state.intersect_point(query)
+	for collision in result:
+		var block = collision.collider
+		if block is TurretRing and block.get_parent() == selected_vehicle:
+			return block
+	return null
+
+
+
+# === 炮塔网格预览功能 ===
+func show_turret_grid_preview():
+	"""显示所有炮塔的网格预览"""
+	hide_turret_grid_preview()
+	
+	var turrets = get_turret_blocks()
+	for turret in turrets:
+		if is_instance_valid(turret):
+			create_turret_grid_preview(turret)
+
+func hide_turret_grid_preview():
+	"""隐藏所有炮塔网格预览"""
+	for preview in turret_grid_previews:
+		if is_instance_valid(preview):
+			preview.queue_free()
+	turret_grid_previews.clear()
+
+func create_turret_grid_preview(turret: TurretRing):
+	"""为炮塔创建网格预览"""
+	# 创建网格线
+	var grid_lines = Line2D.new()
+	grid_lines.width = 1.0
+	grid_lines.default_color = Color(0, 1, 0, 0.3)  # 半透明绿色
+	
+	# 计算炮塔的边界
+	var min_x = 0
+	var min_y = 0
+	var max_x = turret.turret_size.x
+	var max_y = turret.turret_size.y
+	
+	# 添加网格线
+	var points = []
+	
+	# 垂直线
+	for x in range(min_x, max_x + 1):
+		points.append(Vector2(x * GRID_SIZE, min_y * GRID_SIZE))
+		points.append(Vector2(x * GRID_SIZE, max_y * GRID_SIZE))
+		points.append(Vector2(x * GRID_SIZE, min_y * GRID_SIZE))  # 回到起点
+	
+	# 水平线
+	for y in range(min_y, max_y + 1):
+		points.append(Vector2(min_x * GRID_SIZE, y * GRID_SIZE))
+		points.append(Vector2(max_x * GRID_SIZE, y * GRID_SIZE))
+		points.append(Vector2(min_x * GRID_SIZE, y * GRID_SIZE))  # 回到起点
+	
+	grid_lines.points = points
+	turret.turret.add_child(grid_lines)
+	turret_grid_previews.append(grid_lines)
+	
+	# 创建已占用位置的标记
+	for grid_pos in turret.turret_grid:
+		var occupied_marker = ColorRect.new()
+		occupied_marker.size = Vector2(GRID_SIZE, GRID_SIZE)
+		occupied_marker.position = Vector2(grid_pos.x * GRID_SIZE, grid_pos.y * GRID_SIZE)
+		occupied_marker.color = Color(1, 0, 0, 0.2)  # 半透明红色表示已占用
+		turret.turret.add_child(occupied_marker)
+		turret_grid_previews.append(occupied_marker)
+
+func update_turret_placement_feedback():
+	"""更新炮塔放置的视觉反馈"""
+	if not is_turret_mode or not current_ghost_block:
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	# 找到鼠标位置下的炮塔
+	var target_turret = get_turret_at_position(global_mouse_pos)
+	if target_turret:
+		# 计算在炮塔局部坐标中的位置
+		var turret_local_pos = target_turret.turret.to_local(global_mouse_pos)
+		var grid_pos = Vector2i(
+			round(turret_local_pos.x / GRID_SIZE),
+			round(turret_local_pos.y / GRID_SIZE)
+		)
+		
+		# 更新幽灵块位置
+		current_ghost_block.global_position = target_turret.turret.to_global(
+			Vector2(grid_pos.x * GRID_SIZE, grid_pos.y * GRID_SIZE) + Vector2(GRID_SIZE/2, GRID_SIZE/2)
+		)
+		current_ghost_block.rotation = target_turret.turret.global_rotation
+		
+		# 设置颜色反馈
+		if target_turret.is_position_available(grid_pos):
+			current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.7)  # 绿色表示可以放置
+		else:
+			current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.7)  # 红色表示位置被占用
+	else:
+		# 不在炮塔上方，隐藏幽灵块
+		current_ghost_block.modulate = Color(1, 1, 1, 0.3)  # 半透明表示不可放置
 
 func calculate_free_grid_positions_turret(block: Block, world_pos: Vector2) -> Array:
 	"""计算炮塔模式下块的网格位置"""
