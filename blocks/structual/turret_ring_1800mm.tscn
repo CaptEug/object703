@@ -35,7 +35,7 @@ motor_enabled = true
 motor_target_velocity = 0.66497
 
 [node name="Turret" type="RigidBody2D" parent="."]
-collision_layer = 4
+collision_layer = 0
 collision_mask = 4
 angular_damp = 1.0
 

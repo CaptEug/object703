@@ -12,15 +12,23 @@ var turret_grid := {}
 var turret_blocks := []
 var turret_size: Vector2i
 
+# 炮塔旋转控制
+var is_turret_rotation_enabled: bool = true
+
 func _ready():
 	super._ready()
 	turret = find_child("Turret") as RigidBody2D
 	initialize_turret_grid()
 
 func _physics_process(_delta):
-	aim(get_global_mouse_position())
+	# 只有在启用时才进行瞄准
+	if is_turret_rotation_enabled:
+		aim(get_global_mouse_position())
 
 func aim(target_pos):
+	if not is_turret_rotation_enabled:
+		return
+		
 	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 	
@@ -68,11 +76,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			if old_parent and old_parent.has_method("remove_block"):
 				old_parent.remove_block(block, false)
 			turret.add_child(block)
-			
-			# 设置block的本地位置
-			if not grid_positions.is_empty():
-				var center_pos = calculate_block_center(grid_positions)
-				block.position = center_pos
 		
 		# 确保块的碰撞层设置为2
 		if block is CollisionObject2D:
@@ -85,8 +88,8 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 		# 更新炮塔大小
 		update_turret_size()
 		
-		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions, " 碰撞层: ", block.collision_layer)
-		
+		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions)
+
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
 	if block in turret_blocks:
@@ -116,10 +119,16 @@ func calculate_block_grid_positions(block: Block) -> Array:
 	"""计算block在炮塔grid中的位置"""
 	var positions = []
 	var block_position = block.position
-	var base_pos = Vector2i(round((block_position/16).x), round((block_position/16).y)) 
-	# 根据block的大小和旋转计算所有网格位置
-	for x in block.size.x:
-		for y in block.size.y:
+	
+	# 从块的本地位置计算基础网格位置
+	var base_pos = Vector2i(
+		floor(block_position.x / 16),
+		floor(block_position.y / 16)
+	)
+	
+	# 根据block的大小计算所有网格位置
+	for x in range(block.size.x):
+		for y in range(block.size.y):
 			var grid_pos: Vector2i
 			
 			# 考虑block的旋转
@@ -172,7 +181,6 @@ func update_turret_physics():
 		center_of_mass /= total_mass
 		# 更新炮塔的质量和质心
 		turret.mass = total_mass
-		# 这里可以根据需要调整炮塔的质心
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""
@@ -186,34 +194,100 @@ func get_turret_block_grid(block: Block) -> Array:
 			positions.append(pos)
 	return positions
 
-func find_turret_block_position(block: Block) -> Vector2i:
-	"""查找block在炮塔grid中的主要位置"""
-	var positions = get_turret_block_grid(block)
-	if positions.is_empty():
-		return Vector2i.ZERO
-	
-	# 返回左上角的位置
-	var top_left = positions[0]
-	for pos in positions:
-		if pos.x < top_left.x or (pos.x == top_left.x and pos.y < top_left.y):
-			top_left = pos
-	return top_left
+func is_position_available(grid_pos: Vector2i) -> bool:
+	"""检查指定grid位置是否可用"""
+	return turret_grid.get(grid_pos) == null
 
-func get_turret_center_of_mass() -> Vector2:
-	"""计算炮塔上所有block的质心"""
-	var total_mass := 0.0
-	var weighted_sum := Vector2.ZERO
+func get_available_connection_points() -> Array[ConnectionPoint]:
+	"""获取炮塔上可用的连接点"""
+	var points: Array[ConnectionPoint] = []
 	
+	# 获取炮塔底座上的连接点
+	var base_points = find_children("*", "ConnectionPoint")
+	for point in base_points:
+		if point is ConnectionPoint and not point.connected_to:
+			points.append(point)
+	
+	# 获取炮塔上已有块的连接点
 	for block in turret_blocks:
 		if is_instance_valid(block):
-			var block_positions = get_turret_block_grid(block)
-			if not block_positions.is_empty():
-				# 计算block的中心位置（相对于炮塔局部坐标）
-				var block_center = calculate_block_center(block_positions)
-				weighted_sum += block_center * block.mass
-				total_mass += block.mass
+			var block_points = block.find_children("*", "ConnectionPoint")
+			for point in block_points:
+				if point is ConnectionPoint and not point.connected_to:
+					points.append(point)
 	
-	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
+	return points
+
+###################### 炮塔编辑模式相关方法 ######################
+
+func enable_turret_rotation():
+	"""启用炮塔旋转"""
+	is_turret_rotation_enabled = true
+	print("启用炮塔旋转: ", block_name)
+
+func disable_turret_rotation():
+	"""禁用炮塔旋转"""
+	is_turret_rotation_enabled = false
+	
+	# 停止所有旋转力
+	if turret:
+		turret.angular_velocity = 0
+	
+	print("禁用炮塔旋转: ", block_name)
+
+func reset_turret_rotation():
+	"""炮塔回正"""
+	if turret and is_instance_valid(turret):
+		# 确保炮塔回正到0度
+		if turret:
+			turret.rotation = 0
+		# 如果有基础旋转角度，也重置
+		if has_method("set_base_rotation_degree"):
+			turret.base_rotation_degree = 0
+		
+
+func lock_turret_rotation():
+	"""锁定炮塔旋转（完全停止）"""
+	disable_turret_rotation()
+	reset_turret_rotation()
+	
+	# 额外确保停止所有物理运动
+	if turret:
+		turret.freeze = true
+		turret.angular_velocity = 0
+		print("锁定炮塔旋转: ", block_name)
+
+func unlock_turret_rotation():
+	"""解锁炮塔旋转"""
+	if turret:
+		turret.freeze = false
+	enable_turret_rotation()
+	print("解锁炮塔旋转: ", block_name)
+
+func get_turret_grid_bounds() -> Dictionary:
+	"""获取炮塔网格的边界"""
+	if turret_grid.is_empty():
+		return {"min_x": 0, "min_y": 0, "max_x": 0, "max_y": 0}
+	
+	var min_x: int = turret_grid.keys()[0].x
+	var min_y: int = turret_grid.keys()[0].y
+	var max_x: int = turret_grid.keys()[0].x
+	var max_y: int = turret_grid.keys()[0].y
+	
+	for grid_pos in turret_grid:
+		min_x = min(min_x, grid_pos.x)
+		min_y = min(min_y, grid_pos.y)
+		max_x = max(max_x, grid_pos.x)
+		max_y = max(max_y, grid_pos.y)
+	
+	return {
+		"min_x": min_x,
+		"min_y": min_y,
+		"max_x": max_x,
+		"max_y": max_y,
+		"width": max_x - min_x + 1,
+		"height": max_y - min_y + 1
+	}
 
 func calculate_block_center(positions: Array) -> Vector2:
 	"""计算一组grid位置的中心点（转换为局部坐标）"""
@@ -235,45 +309,3 @@ func calculate_block_center(positions: Array) -> Vector2:
 	var center_x = (min_x + max_x + 1) * 8  # 16/2 = 8
 	var center_y = (min_y + max_y + 1) * 8
 	return Vector2(center_x, center_y)
-
-func get_turret_block_neighbors(block: Block) -> Dictionary:
-	"""获取block在炮塔grid中的邻居"""
-	var neighbors = {}
-	var block_positions = get_turret_block_grid(block)
-	
-	for pos in block_positions:
-		var directions = [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]
-		for dir in directions:
-			var neighbor_pos = pos + dir
-			var neighbor = turret_grid.get(neighbor_pos)
-			if neighbor and neighbor != block:
-				neighbors[neighbor_pos - pos] = neighbor
-	
-	return neighbors
-
-###################### 炮塔管理方法 ######################
-
-func get_all_turret_blocks() -> Array:
-	"""获取炮塔上所有block"""
-	return turret_blocks.duplicate()
-
-func clear_turret_blocks():
-	"""清空炮塔上所有block"""
-	for block in turret_blocks.duplicate():
-		remove_block_from_turret(block)
-
-func is_position_available(grid_pos: Vector2i) -> bool:
-	"""检查指定grid位置是否可用"""
-	return turret_grid.get(grid_pos) == null
-
-func get_available_positions_near(position: Vector2i, radius: int = 2) -> Array:
-	"""获取指定位置附近可用的grid位置"""
-	var available = []
-	
-	for x in range(position.x - radius, position.x + radius + 1):
-		for y in range(position.y - radius, position.y + radius + 1):
-			var check_pos = Vector2i(x, y)
-			if is_position_available(check_pos):
-				available.append(check_pos)
-	
-	return available
