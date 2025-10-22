@@ -21,7 +21,7 @@ var items = {
 	
 	"57mmAP": {
 		"weight": 4,
-		"icon": preload("res://assets/icons/metal.png"),
+		"icon": preload("res://assets/icons/57mmap.png"),
 		"max_stack": 999,
 		"shell_scene": preload("res://blocks/firepower/shells/ap_57_mm.tscn")
 	},
