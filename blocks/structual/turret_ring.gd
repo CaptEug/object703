@@ -75,8 +75,14 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			var old_parent = block.get_parent()
 			if old_parent and old_parent.has_method("remove_block"):
 				old_parent.remove_block(block, false)
+			
+			# 在添加到炮塔之前，需要将全局坐标转换为炮塔局部坐标
+			var global_pos = block.global_position
+			var global_rot = block.global_rotation
 			turret.add_child(block)
-		
+			block.global_position = global_pos  # 保持全局位置不变
+			block.global_rotation = global_rot  # 保持全局旋转不变
+			
 		# 确保块的碰撞层设置为2
 		if block is CollisionObject2D:
 			block.collision_layer = 2
@@ -116,8 +122,11 @@ func remove_block_from_turret(block: Block):
 		print("从炮塔移除block: ", block.block_name)
 
 func calculate_block_grid_positions(block: Block) -> Array:
-	"""计算block在炮塔grid中的位置"""
+	"""计算block在炮塔grid中的位置 - 使用连接点location"""
 	var positions = []
+	
+	# 这里需要获取块是通过哪个连接点连接的
+	# 暂时使用块的局部位置，但理想情况下应该从连接信息中获取
 	var block_position = block.position
 	
 	# 从块的本地位置计算基础网格位置
@@ -126,23 +135,33 @@ func calculate_block_grid_positions(block: Block) -> Array:
 		floor(block_position.y / 16)
 	)
 	
-	# 根据block的大小计算所有网格位置
+	print("炮塔网格计算:")
+	print("  块局部位置: ", block_position)
+	print("  基础网格位置: ", base_pos)
+	print("  块大小: ", block.size)
+	print("  块基础旋转: ", block.base_rotation_degree)
+	
+	# 根据block的大小和旋转计算所有网格位置
 	for x in range(block.size.x):
 		for y in range(block.size.y):
 			var grid_pos: Vector2i
 			
 			# 考虑block的旋转
-			if block.base_rotation_degree == 0:
-				grid_pos = base_pos + Vector2i(x, y)
-			elif block.base_rotation_degree == 90:
-				grid_pos = base_pos + Vector2i(-y, x)
-			elif block.base_rotation_degree == -90:
-				grid_pos = base_pos + Vector2i(y, -x)
-			else:  # 180度
-				grid_pos = base_pos + Vector2i(-x, -y)
+			match int(block.base_rotation_degree):
+				0:
+					grid_pos = base_pos + Vector2i(x, y)
+				90:
+					grid_pos = base_pos + Vector2i(-y, x)
+				-90:
+					grid_pos = base_pos + Vector2i(y, -x)
+				180, -180:
+					grid_pos = base_pos + Vector2i(-x, -y)
+				_:
+					grid_pos = base_pos + Vector2i(x, y)
 			
 			positions.append(grid_pos)
 	
+	print("  最终网格位置: ", positions)
 	return positions
 
 func update_turret_size():
