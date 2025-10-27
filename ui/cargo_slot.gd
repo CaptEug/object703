@@ -41,6 +41,7 @@ func _ready():
 # ============================================================
 func set_item(item: Dictionary) -> void:
 	print("⚡ set_item called on", self)
+	print("item:", item)
 	item_data = item
 	update_slot_display()
 
@@ -97,6 +98,7 @@ func _start_drag() -> void:
 	label.offset_bottom = -2
 	count_label.add_theme_font_size_override("font_size", 14)
 	drag_preview.add_child(label)
+	drag_preview.z_index = 999
 	
 	get_node("/root/Testground/CanvasLayer/Tankpanel").add_child(drag_preview)
 	#hide_current_icon()
@@ -106,12 +108,10 @@ func _start_drag() -> void:
 func _update_drag() -> void:
 	if drag_preview:
 		drag_preview.global_position = get_viewport().get_mouse_position() - drag_offset
-		print("preview position:  ")
-		print(drag_preview.global_position)
 
 func _end_drag() -> void:
 	is_dragging = false
-	var mouse_pos =  get_viewport().get_mouse_position() - drag_offset
+	var mouse_pos =  get_viewport().get_mouse_position()
 	var target_slot = _get_slot_under_mouse(mouse_pos)
 
 	if target_slot and target_slot != self:

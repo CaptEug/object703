@@ -80,10 +80,7 @@ func split_item(slot_index: int) -> Dictionary:
 # ✅ 自动添加到第一个空位
 func add_item(item_data: Dictionary) -> bool:
 	for i in range(slot_count):
-		if inventory[i] == {}:
-			inventory[i] = item_data
-			emit_signal("inventory_changed", self)
-			return true
+		return place_item(i, item_data)
 	return false
 
 func clear_all():
