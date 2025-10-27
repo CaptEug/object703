@@ -161,3 +161,4 @@ position = Vector2(0, -8)
 
 [node name="Rig2" parent="." instance=ExtResource("7_ideco")]
 position = Vector2(0, 8)
+location = Vector2i(0, 1)
