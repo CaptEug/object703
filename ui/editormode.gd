@@ -41,6 +41,10 @@ var current_editing_turret: TurretRing = null
 var turret_cursor:Texture = preload("res://assets/icons/file.png")
 var turret_grid_previews := []
 
+# === 炮塔放置模式变量 ===
+var is_turret_placement_mode := false
+var current_placement_turret: TurretRing = null
+
 # === 炮塔连接点吸附系统 ===
 var available_turret_connectors: Array[RigidBodyConnector] = []
 var available_block_connectors: Array[RigidBodyConnector] = []
@@ -144,8 +148,16 @@ func _input(event):
 				print("错误: 未找到可编辑的车辆")
 		return
 	
+	if event is InputEventKey and event.pressed and event.keycode == KEY_T:
+		if is_editing:
+			if is_turret_placement_mode:
+				exit_turret_placement_mode()
+			else:
+				enter_turret_placement_mode()
+		return
+	
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if is_editing and not is_turret_editing_mode and not is_recycle_mode and not is_moving_block:
+		if is_editing and not is_turret_placement_mode and not is_turret_editing_mode and not is_recycle_mode and not is_moving_block:
 			var mouse_pos = get_viewport().get_mouse_position()
 			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 			var clicked_turret = get_turret_at_position(global_mouse_pos)
@@ -170,9 +182,17 @@ func _input(event):
 				try_place_turret_block()
 				return
 	
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if is_turret_placement_mode:
+			try_place_turret_block_combined()
+			return
+	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		if is_turret_editing_mode:
 			exit_turret_editing_mode()
+			return
+		if is_turret_placement_mode:
+			exit_turret_placement_mode()
 			return
 	
 	if not is_editing:
@@ -182,6 +202,8 @@ func _input(event):
 		if event.button_index == MOUSE_BUTTON_RIGHT:
 			if is_turret_editing_mode:
 				exit_turret_editing_mode()
+			elif is_turret_placement_mode:
+				exit_turret_placement_mode()
 			elif is_moving_block:
 				cancel_block_move()
 			else:
@@ -199,7 +221,7 @@ func _input(event):
 					place_moving_block()
 					return
 					
-				if not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode:
+				if not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode and not is_turret_placement_mode:
 					var mouse_pos = get_viewport().get_mouse_position()
 					var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 					var block = get_block_at_position(global_mouse_pos)
@@ -210,7 +232,7 @@ func _input(event):
 				
 				if is_dragging and is_moving_block:
 					place_moving_block()
-				elif not is_dragging and not is_moving_block and not is_recycle_mode and not is_turret_editing_mode:
+				elif not is_dragging and not is_moving_block and not is_recycle_mode and not is_turret_editing_mode and not is_turret_placement_mode:
 					try_place_block()
 	
 	if event is InputEventKey and event.pressed:
@@ -218,6 +240,8 @@ func _input(event):
 			KEY_ESCAPE:
 				if is_turret_editing_mode:
 					exit_turret_editing_mode()
+				elif is_turret_placement_mode:
+					exit_turret_placement_mode()
 				elif is_moving_block:
 					cancel_block_move()
 				else:
@@ -225,7 +249,7 @@ func _input(event):
 			KEY_R:
 				if is_moving_block and moving_block_ghost:
 					rotate_moving_ghost()
-				elif current_ghost_block and not is_turret_editing_mode:
+				elif current_ghost_block and not is_turret_editing_mode and not is_turret_placement_mode:
 					rotate_ghost_connection()
 			KEY_X:
 				if is_recycle_mode:
@@ -248,7 +272,7 @@ func _process(delta):
 	if not is_editing or not selected_vehicle:
 		return
 	
-	if is_mouse_pressed and not is_dragging and not is_moving_block and not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode:
+	if is_mouse_pressed and not is_dragging and not is_moving_block and not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode and not is_turret_placement_mode:
 		drag_timer += delta
 		if drag_timer >= DRAG_DELAY:
 			start_drag_block()
@@ -260,10 +284,313 @@ func _process(delta):
 	elif current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		update_ghost_block_position(global_mouse_pos)
+		if is_turret_placement_mode:
+			update_turret_placement_mode_ghost_combined()
+		elif is_turret_editing_mode:
+			update_turret_placement_feedback()
+		else:
+			update_ghost_block_position(global_mouse_pos)
 	
 	if is_turret_editing_mode and current_ghost_block:
 		update_turret_placement_feedback()
+
+# === 炮塔放置模式功能 ===
+func _on_turret_placement_button_pressed():
+	if is_turret_placement_mode:
+		exit_turret_placement_mode()
+	else:
+		enter_turret_placement_mode()
+
+func enter_turret_placement_mode():
+	if is_turret_placement_mode:
+		return
+	
+	if is_recycle_mode:
+		exit_recycle_mode()
+	
+	if is_turret_editing_mode:
+		exit_turret_editing_mode()
+	
+	if is_moving_block:
+		cancel_block_move()
+	
+	is_turret_placement_mode = true
+	
+	if current_ghost_block:
+		current_ghost_block.visible = false
+	
+	clear_tab_container_selection()
+	
+	# 尝试找到可用的炮塔
+	current_placement_turret = find_available_turret_for_placement()
+	if current_placement_turret:
+		highlight_current_placement_turret(true)
+		print("进入炮塔放置模式 - 目标炮塔: ", current_placement_turret.name)
+	else:
+		print("进入炮塔放置模式 - 无可用炮塔，使用普通连接点")
+	
+	# 高亮所有可用的连接点
+	highlight_available_connection_points(true)
+
+func exit_turret_placement_mode():
+	if not is_turret_placement_mode:
+		return
+	
+	is_turret_placement_mode = false
+	Input.set_custom_mouse_cursor(null)
+	
+	# 取消高亮
+	highlight_current_placement_turret(false)
+	highlight_available_connection_points(false)
+	
+	if current_ghost_block:
+		current_ghost_block.visible = true
+	
+	current_placement_turret = null
+	
+	print("退出炮塔放置模式")
+
+func find_available_turret_for_placement() -> TurretRing:
+	var available_turrets = get_turret_blocks()
+	if available_turrets.is_empty():
+		return null
+	
+	# 返回第一个有可用连接点的炮塔
+	for turret in available_turrets:
+		if is_instance_valid(turret):
+			var connectors = turret.find_children("*", "RigidBodyConnector", true)
+			for connector in connectors:
+				if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+					return turret
+	
+	return null
+
+func highlight_current_placement_turret(highlight: bool):
+	if not current_placement_turret or not is_instance_valid(current_placement_turret):
+		return
+	
+	if highlight:
+		current_placement_turret.modulate = Color(0.8, 1, 0.8, 1.0)
+	else:
+		current_placement_turret.modulate = Color.WHITE
+
+func highlight_available_connection_points(highlight: bool):
+	if not selected_vehicle:
+		return
+	
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			# 如果是炮塔，高亮RigidBodyConnector
+			if block is TurretRing:
+				var connectors = block.find_children("*", "RigidBodyConnector", true)
+				for connector in connectors:
+					if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+						if highlight:
+							connector.modulate = Color(1, 0.8, 0.3, 1.0)
+						else:
+							connector.modulate = Color.WHITE
+			# 如果是普通方块，高亮ConnectionPoint
+			else:
+				for point in block.connection_points:
+					if is_instance_valid(point) and point.is_connection_enabled and point.connected_to == null:
+						if highlight:
+							point.modulate = Color(0.8, 0.8, 1.0, 1.0)
+						else:
+							point.modulate = Color.WHITE
+
+func update_turret_placement_mode_ghost_combined():
+	if not is_turret_placement_mode or not current_ghost_block:
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	# 首先尝试炮塔连接
+	var turret_snap_found = false
+	
+	if current_placement_turret:
+		var available_turret_connectors = get_current_turret_available_connectors()
+		available_block_connectors = get_ghost_block_available_rigidbody_connectors()
+		
+		if not available_turret_connectors.is_empty() and not available_block_connectors.is_empty():
+			var snap_config = get_turret_placement_snap_config(global_mouse_pos, available_turret_connectors)
+			
+			if snap_config and not snap_config.is_empty():
+				var ghost_position = calculate_turret_ghost_position_with_location(snap_config.turret_connector, snap_config.block_connector)
+				var ghost_rotation = calculate_proper_turret_rotation(snap_config.turret_connector, snap_config.block_connector)
+				
+				current_ghost_block.global_position = ghost_position
+				current_ghost_block.global_rotation = ghost_rotation + camera.target_rot
+				current_ghost_block.base_rotation_degree = rad_to_deg(ghost_rotation)
+				current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.7)
+				turret_snap_config = snap_config
+				turret_snap_found = true
+	
+	# 如果没有找到炮塔连接，尝试普通连接点
+	if not turret_snap_found:
+		# 使用普通连接点吸附系统
+		available_vehicle_points = selected_vehicle.get_available_points_near_position(global_mouse_pos, 50.0)
+		available_ghost_points = get_ghost_block_available_connection_points()
+		
+		if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
+			current_ghost_block.global_position = global_mouse_pos
+			current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+			current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.7)
+			current_snap_config = {}
+			turret_snap_config = {}
+		else:
+			var snap_config = get_current_snap_config()
+			
+			if snap_config:
+				current_ghost_block.global_position = snap_config.ghost_position
+				current_ghost_block.global_rotation = snap_config.ghost_rotation
+				current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.7)
+				current_snap_config = snap_config
+				turret_snap_config = {}
+			else:
+				current_ghost_block.global_position = global_mouse_pos
+				current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+				current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.7)
+				current_snap_config = {}
+				turret_snap_config = {}
+
+func get_current_turret_available_connectors() -> Array[RigidBodyConnector]:
+	var connectors: Array[RigidBodyConnector] = []
+	
+	if not current_placement_turret or not is_instance_valid(current_placement_turret):
+		return connectors
+	
+	var block_connectors = current_placement_turret.find_children("*", "RigidBodyConnector", true)
+	for connector in block_connectors:
+		if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+			connectors.append(connector)
+	
+	return connectors
+
+func get_turret_placement_snap_config(mouse_position: Vector2, available_turret_connectors: Array[RigidBodyConnector]) -> Dictionary:
+	if available_turret_connectors.is_empty() or available_block_connectors.is_empty():
+		return {}
+	
+	var best_config = {}
+	var min_distance = INF
+	
+	for turret_connector in available_turret_connectors:
+		for block_connector in available_block_connectors:
+			if not can_connectors_connect(turret_connector, block_connector):
+				continue
+			
+			var distance = mouse_position.distance_to(turret_connector.global_position)
+			
+			if distance < turret_connector.snap_distance_threshold:
+				var ghost_position = calculate_turret_ghost_position_with_location(turret_connector, block_connector)
+				var ghost_rotation = calculate_proper_turret_rotation(turret_connector, block_connector)
+				
+				if distance < min_distance:
+					min_distance = distance
+					best_config = {
+						"turret_connector": turret_connector,
+						"block_connector": block_connector,
+						"ghost_position": ghost_position,
+						"ghost_rotation": ghost_rotation,
+						"turret_block": current_placement_turret
+					}
+	
+	return best_config
+
+func try_place_turret_block_combined():
+	if not is_turret_placement_mode:
+		return
+	
+	if not current_block_scene:
+		return
+	
+	# 优先尝试炮塔连接
+	if turret_snap_config and not turret_snap_config.is_empty():
+		place_turret_block_via_turret_connection()
+	# 其次尝试普通连接点
+	elif current_snap_config and not current_snap_config.is_empty():
+		place_turret_block_via_regular_connection()
+	else:
+		print("❌ 没有有效的吸附配置")
+
+func place_turret_block_via_turret_connection():
+	print("=== 炮塔连接点放置调试 ===")
+	
+	var new_block: Block = current_block_scene.instantiate()
+	
+	if new_block is CollisionObject2D:
+		new_block.collision_layer = 2
+		new_block.collision_mask = 2
+	
+	# 使用与虚影完全相同的位置和旋转计算方法
+	var final_position = calculate_turret_ghost_position_with_location(
+		turret_snap_config.turret_connector, 
+		turret_snap_config.block_connector
+	)
+	var final_rotation = calculate_proper_turret_rotation(
+		turret_snap_config.turret_connector,
+		turret_snap_config.block_connector
+	)
+	new_block.global_position = final_position
+	new_block.global_rotation = final_rotation
+	new_block.base_rotation_degree = rad_to_deg(final_rotation)
+	
+	# 计算网格位置
+	var grid_positions = calculate_turret_block_grid_positions_from_placement(new_block)
+	
+	# 检查位置是否可用
+	var position_available = true
+	for pos in grid_positions:
+		if not turret_snap_config.turret_block.is_position_available(pos):
+			position_available = false
+			print("❌ 位置被占用: ", pos)
+			break
+	
+	if not position_available:
+		new_block.queue_free()
+		print("❌ 位置不可用，放置失败")
+		return
+	
+	# 添加到炮塔
+	turret_snap_config.turret_block.add_block_to_turret(new_block, grid_positions)
+	
+	# 建立连接
+	if turret_snap_config.turret_connector and turret_snap_config.block_connector:
+		establish_turret_rigidbody_connection(turret_snap_config.turret_connector, new_block, turret_snap_config.block_connector)
+	
+	await new_block.connect_aready()
+	start_block_placement_with_rotation(current_block_scene.resource_path)
+	
+	print("✅ 炮塔块通过炮塔连接点放置成功")
+
+func place_turret_block_via_regular_connection():
+	print("=== 普通连接点放置炮塔块调试 ===")
+	
+	if not current_snap_config:
+		return
+	
+	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
+	disconnect_connections(connections_to_disconnect)
+	
+	var grid_positions = current_snap_config.positions
+	var new_block: Block = current_block_scene.instantiate()
+	selected_vehicle.add_child(new_block)
+	new_block.global_position = current_snap_config.ghost_position
+	new_block.global_rotation = current_ghost_block.global_rotation
+	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
+	
+	var control = selected_vehicle.control
+	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
+	selected_vehicle.control = control
+	
+	# 建立普通连接
+	if current_snap_config.vehicle_point and current_snap_config.ghost_point:
+		establish_connection(current_snap_config.vehicle_point, new_block, current_snap_config.ghost_point)
+	
+	await new_block.connect_aready()
+	start_block_placement_with_rotation(current_block_scene.resource_path)
+	
+	print("✅ 炮塔块通过普通连接点放置成功")
 
 # === 炮塔编辑模式功能 ===
 func enter_turret_editing_mode(turret: TurretRing):
@@ -286,6 +613,9 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	if is_recycle_mode:
 		exit_recycle_mode()
+	
+	if is_turret_placement_mode:
+		exit_turret_placement_mode()
 	
 	clear_tab_container_selection()
 	
@@ -617,8 +947,6 @@ func try_place_turret_block():
 		turret_snap_config.turret_connector,
 		turret_snap_config.block_connector
 	)
-	print(">>>>>>>>>>>", turret_snap_config.turret_connector.get_parent().global_rotation, "   "
-		,final_rotation)
 	new_block.global_position = final_position
 	new_block.global_rotation = final_rotation
 	new_block.base_rotation_degree = rad_to_deg(final_rotation)
@@ -643,6 +971,7 @@ func try_place_turret_block():
 	if turret_snap_config.turret_connector and turret_snap_config.block_connector:
 		establish_turret_rigidbody_connection(turret_snap_config.turret_connector, new_block, turret_snap_config.block_connector)
 	
+	await new_block.connect_aready()
 	start_block_placement_with_rotation(current_block_scene.resource_path)
 
 	
@@ -704,6 +1033,15 @@ func update_turret_mode_status():
 	if is_editing and selected_vehicle:
 		var has_turrets = has_turret_blocks()
 		var turret_count = get_turret_blocks().size()
+		
+		# 显示炮塔放置模式状态
+		if is_turret_placement_mode:
+			var mode_info = "炮塔放置模式激活"
+			if current_placement_turret:
+				mode_info += " - 连接到炮塔: " + current_placement_turret.name
+			else:
+				mode_info += " - 使用普通连接点"
+			print(mode_info)
 
 # === 炮塔网格预览功能 ===
 func show_turret_grid_preview():
@@ -848,7 +1186,7 @@ func _on_item_selected(index: int, tab_name: String):
 		if scene_path:
 			if is_recycle_mode:
 				exit_recycle_mode()
-			if is_turret_editing_mode:
+			if is_turret_editing_mode or is_turret_placement_mode:
 				start_block_placement(scene_path)
 			else:
 				emit_signal("block_selected", scene_path)
@@ -1261,6 +1599,9 @@ func enter_recycle_mode():
 	if is_turret_editing_mode:
 		exit_turret_editing_mode()
 	
+	if is_turret_placement_mode:
+		exit_turret_placement_mode()
+	
 	clear_tab_container_selection()
 	
 	update_recycle_button()
@@ -1330,6 +1671,9 @@ func exit_editor_mode():
 	
 	if is_turret_editing_mode:
 		exit_turret_editing_mode()
+	
+	if is_turret_placement_mode:
+		exit_turret_placement_mode()
 	
 	if selected_vehicle.check_and_regroup_disconnected_blocks() or selected_vehicle.commands.size() == 0:
 		error_label.show()
@@ -1412,9 +1756,11 @@ func start_block_placement(scene_path: String):
 	current_ghost_block.z_index = 100
 	current_ghost_block.do_connect = false
 	
-	if is_turret_editing_mode and current_ghost_block is CollisionObject2D:
-		current_ghost_block.collision_layer = 2
-		current_ghost_block.collision_mask = 2
+	# 在炮塔放置模式下设置碰撞层
+	if is_turret_placement_mode or is_turret_editing_mode:
+		if current_ghost_block is CollisionObject2D:
+			current_ghost_block.collision_layer = 2
+			current_ghost_block.collision_mask = 2
 	
 	current_ghost_block.base_rotation_degree = 0
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
@@ -1424,6 +1770,7 @@ func start_block_placement(scene_path: String):
 	current_ghost_connection_index = 0
 	current_vehicle_connection_index = 0
 	current_snap_config = {}
+	turret_snap_config = {}
 
 func setup_ghost_block_collision(ghost: Node2D):
 	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
@@ -1586,7 +1933,6 @@ func try_place_block():
 	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
 	var control = selected_vehicle.control
 	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
-	
 	selected_vehicle.control = control
 	
 	start_block_placement_with_rotation(current_block_scene.resource_path)
@@ -1657,9 +2003,11 @@ func start_block_placement_with_rotation(scene_path: String):
 	current_ghost_block.z_index = 100
 	current_ghost_block.do_connect = false
 	
-	if is_turret_editing_mode and current_ghost_block is CollisionObject2D:
-		current_ghost_block.collision_layer = 2
-		current_ghost_block.collision_mask = 2
+	# 在炮塔放置模式下设置碰撞层
+	if is_turret_placement_mode or is_turret_editing_mode:
+		if current_ghost_block is CollisionObject2D:
+			current_ghost_block.collision_layer = 2
+			current_ghost_block.collision_mask = 2
 	
 	current_ghost_block.base_rotation_degree = base_rotation_degree
 	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
