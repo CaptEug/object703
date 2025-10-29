@@ -143,15 +143,18 @@ func start_reload():
 	loading = true
 	reload_timer.start()
 
-func find_ammo():
+func find_ammo() -> bool:
 	connected_ammoracks.clear()
 	find_all_connected_ammorack()
+	if connected_ammoracks.is_empty():
+		return false
 	for ammorack in connected_ammoracks:
 		var inv = ammorack.inventory
 		for item in inv:
 			if item["id"] in shells:
 				var shell_chosen = ItemDB.get_item(item["id"])["shell_scene"]
 				return ammorack.take_item(item["id"], 1)
+	return false
 
 func has_ammo() -> bool:
 	connected_ammoracks.clear()
