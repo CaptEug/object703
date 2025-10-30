@@ -5,7 +5,7 @@ var load:float
 var turret:RigidBody2D
 var traverse:Array
 var max_torque:float = 10000
-var damping:float = 100
+var damping:float = 3000
 
 # 炮塔专用的grid系统
 var turret_grid := {}
@@ -24,6 +24,9 @@ func _physics_process(_delta):
 	# 只有在启用时才进行瞄准
 	if is_turret_rotation_enabled:
 		aim(get_global_mouse_position())
+	else:
+		if turret:
+			turret.rotation = 0
 
 func aim(target_pos):
 	if not is_turret_rotation_enabled:
@@ -237,6 +240,52 @@ func get_available_connection_points() -> Array[ConnectionPoint]:
 	
 	return points
 
+###################### 新增方法 - 修复编辑器错误 ######################
+
+func get_attached_blocks() -> Array:
+	"""获取炮塔上附加的所有块 - 用于编辑器"""
+	return turret_blocks.duplicate()
+
+func get_turret_blocks() -> Array:
+	"""获取炮塔上所有块的别名方法"""
+	return get_attached_blocks()
+
+func get_all_blocks() -> Array:
+	"""获取所有块（包括炮塔本身）"""
+	var all_blocks = [self]  # 包括炮塔本身
+	all_blocks.append_array(turret_blocks)
+	return all_blocks
+
+func get_turret_connectors() -> Array[RigidBodyConnector]:
+	"""获取炮塔上的所有RigidBodyConnector"""
+	var connectors: Array[RigidBodyConnector] = []
+	
+	# 获取炮塔底座上的连接器
+	var base_connectors = find_children("*", "RigidBodyConnector")
+	for connector in base_connectors:
+		if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+			connectors.append(connector)
+	
+	# 获取炮塔上已有块的连接器
+	for block in turret_blocks:
+		if is_instance_valid(block):
+			var block_connectors = block.find_children("*", "RigidBodyConnector")
+			for connector in block_connectors:
+				if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+					connectors.append(connector)
+	
+	return connectors
+
+func get_available_turret_connectors() -> Array[RigidBodyConnector]:
+	"""获取可用的炮塔连接器"""
+	var connectors: Array[RigidBodyConnector] = []
+	
+	for connector in get_turret_connectors():
+		if connector.is_connection_enabled and connector.connected_to == null:
+			connectors.append(connector)
+	
+	return connectors
+
 ###################### 炮塔编辑模式相关方法 ######################
 
 func enable_turret_rotation():
@@ -251,6 +300,7 @@ func disable_turret_rotation():
 	# 停止所有旋转力
 	if turret:
 		turret.angular_velocity = 0
+		turret.rotation = 0
 	
 	print("禁用炮塔旋转: ", block_name)
 
@@ -269,18 +319,20 @@ func lock_turret_rotation():
 	"""锁定炮塔旋转（完全停止）"""
 	disable_turret_rotation()
 	reset_turret_rotation()
-	
+	is_turret_rotation_enabled = false
 	# 额外确保停止所有物理运动
 	if turret:
-		turret.freeze = true
 		turret.angular_velocity = 0
-		print("锁定炮塔旋转: ", block_name)
+		turret.rotation = 0
+		print("锁定炮塔旋转: ", block_name, turret.rotation)
+	
 
 func unlock_turret_rotation():
 	"""解锁炮塔旋转"""
 	if turret:
 		turret.freeze = false
 	enable_turret_rotation()
+	is_turret_rotation_enabled = true
 	print("解锁炮塔旋转: ", block_name)
 
 func get_turret_grid_bounds() -> Dictionary:
@@ -328,3 +380,23 @@ func calculate_block_center(positions: Array) -> Vector2:
 	var center_x = (min_x + max_x + 1) * 8  # 16/2 = 8
 	var center_y = (min_y + max_y + 1) * 8
 	return Vector2(center_x, center_y)
+
+###################### 调试方法 ######################
+
+func print_turret_status():
+	"""打印炮塔状态信息"""
+	print("=== 炮塔状态 ===")
+	print("炮塔名称: ", block_name)
+	print("炮塔块数量: ", turret_blocks.size())
+	print("网格位置数量: ", turret_grid.size())
+	print("网格边界: ", get_turret_grid_bounds())
+	print("旋转启用: ", is_turret_rotation_enabled)
+	
+	# 打印所有块信息
+	for i in range(turret_blocks.size()):
+		var block = turret_blocks[i]
+		if is_instance_valid(block):
+			var grid_positions = get_turret_block_grid(block)
+			print("块 ", i, ": ", block.block_name, " 网格位置: ", grid_positions)
+		else:
+			print("块 ", i, ": 无效")
