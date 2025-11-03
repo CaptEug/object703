@@ -21,9 +21,30 @@ var items = {
 	
 	"57mmAP": {
 		"weight": 4,
-		"icon": preload("res://assets/icons/57mmap.png"),
+		"icon": preload("res://assets/icons/ap57mm.png"),
 		"max_stack": 999,
 		"shell_scene": preload("res://blocks/firepower/shells/ap_57_mm.tscn")
+	},
+	
+	"PZGR75": {
+		"weight": 7,
+		"icon": preload("res://assets/icons/pzgr75.png"),
+		"max_stack": 999,
+		"shell_scene": preload("res://blocks/firepower/shells/pzgr_75.tscn")
+	},
+	
+	"122mmAPHE": {
+		"weight": 25,
+		"icon": preload("res://assets/icons/aphe122mm.png"),
+		"max_stack": 999,
+		"shell_scene": preload("res://blocks/firepower/shells/pzgr_75.tscn")
+	},
+	
+	"380mmrocket": {
+		"weight": 350,
+		"icon": preload("res://assets/icons/rocket380mm.png"),
+		"max_stack": 999,
+		"shell_scene": preload("res://blocks/firepower/shells/rocket_380_mm.tscn")
 	},
 }
 
