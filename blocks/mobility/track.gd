@@ -6,6 +6,10 @@ var friction: float
 var max_force: float
 
 @onready var track_sprite:= find_child("Sprite2D")
+@onready var mask:= find_child("Mask")
+var mask_up_path:String
+var mask_down_path:String
+var mask_single_path:String
 var sprite_origin:Vector2
 var track_scroll:float = 0.0
 var whole_track:Array[Track] = []
@@ -19,7 +23,6 @@ var prev_position:Vector2
 func _ready():
 	super._ready()
 	set_state_force("idle", 0.0)
-	track_sprite.texture = track_sprite.texture.duplicate()
 	sprite_origin = track_sprite.texture.region.position
 	prev_position = global_position
 	
@@ -62,6 +65,16 @@ func broke():
 
 
 func update_track_sprite(delta):
+	#identify track edges
+	if track_up_clear() and track_down_clear():
+		mask.texture = load(mask_single_path)
+	elif track_up_clear():
+		mask.texture = load(mask_up_path)
+	elif track_down_clear():
+		mask.texture = load(mask_down_path)
+	else:
+		mask.texture = null
+	
 	var front_vec = Vector2.UP.rotated(global_rotation)
 	var movement_vec = global_position - prev_position
 	var forward_movement = movement_vec.dot(front_vec)
@@ -72,8 +85,10 @@ func update_track_sprite(delta):
 	for track in get_whole_track():
 		total_scroll += track.track_scroll
 	var synced_track_scroll = total_scroll / get_whole_track().size()
+	
 	# Wrap around texture region vertically
 	var wrapped_y = wrapf(synced_track_scroll, 0, 16 * size.y)
+	
 	# Update the region’s position
 	track_sprite.texture.region.position = sprite_origin + Vector2(0, wrapped_y)
 
@@ -91,3 +106,21 @@ func get_nearby_tracks(track):
 					if not whole_track.has(blk):
 						whole_track.append(blk)
 						get_nearby_tracks(blk)
+
+func track_up_clear():
+	for point in connection_points:
+		if is_equal_approx(point.rotation, -PI/2):
+			if not point.connected_to:
+				return true
+			else:
+				return not point.connected_to.parent_block is Track
+	return false
+
+func track_down_clear():
+	for point in connection_points:
+		if is_equal_approx(point.rotation, PI/2):
+			if not point.connected_to:
+				return true
+			else:
+				return not point.connected_to.parent_block is Track
+	return false
