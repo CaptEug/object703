@@ -148,3 +148,4 @@ func _add_test_item(tank: Vehicle) -> void:
 
 	# ⚠️ 如果没有任何可用 Cargo 或已满
 	print("⚠️ All cargo are full, cannot add item.")
+	

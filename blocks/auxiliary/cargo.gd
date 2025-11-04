@@ -44,11 +44,16 @@ func finalize_changes():
 # ============================================================
 # 物品交互接口（供 UI 调用）
 # ============================================================
-func pick_item(slot_index: int) -> Dictionary:
+func take_item(slot_index: int, count: int) -> Dictionary:
 	var item = get_item(slot_index)
+	var item_count = item["count"]
 	if item.is_empty():
 		return {}
-	inventory[slot_index] = {}
+	if item_count - count > 0:
+		inventory[slot_index]["count"] -= count
+		item = get_item(slot_index)
+	else:
+		inventory[slot_index] = {}
 	emit_signal("inventory_changed", self)
 	return item
 

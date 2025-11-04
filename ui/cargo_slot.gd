@@ -154,10 +154,6 @@ func _perform_drop(target_slot: Node) -> void:
 		storage_ref.set_item(slot_index, temp_item)
 		target_slot.storage_ref.set_item(target_slot.slot_index, item_data)
 
-	# ⚠️ 不立即发射信号，避免触发 Panel 重建
-	# storage_ref.emit_signal("inventory_changed", storage_ref)
-	# target_slot.storage_ref.emit_signal("inventory_changed", target_slot.storage_ref)
-
 	print("✅ Dropped item: ", item_data, " swapped with: ", temp_item)
 
 func hide_current_icon() -> void:
