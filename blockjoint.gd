@@ -50,17 +50,8 @@ func _physics_process(delta):
 		break_connection()
 		return
 	
-	if maintain_position:
-		maintain_block_position()
-	
 	if lock_rotation and is_instance_valid(target_body):
 		block.global_rotation = target_body.global_rotation
-
-func maintain_block_position():
-	var position_diff = initial_global_position - block.global_position
-	if position_diff.length() > 1.0:
-		var correction_force = position_diff * 100.0 * connection_strength
-		block.apply_central_force(correction_force)
 
 func break_connection():
 	print("断开关节连接")
