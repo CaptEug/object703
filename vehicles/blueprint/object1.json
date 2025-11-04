@@ -46,6 +46,17 @@
 		},
 		"13": {
 			"base_pos": [
+				2,
+				6
+			],
+			"name": "small cargo",
+			"path": "res://blocks/auxiliary/small_cargo.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"14": {
+			"base_pos": [
 				3,
 				4
 			],
@@ -55,7 +66,7 @@
 				0.0
 			]
 		},
-		"14": {
+		"15": {
 			"base_pos": [
 				3,
 				6
@@ -66,7 +77,7 @@
 				0.0
 			]
 		},
-		"15": {
+		"16": {
 			"base_pos": [
 				4,
 				1
@@ -77,7 +88,7 @@
 				0.0
 			]
 		},
-		"16": {
+		"17": {
 			"base_pos": [
 				4,
 				2
@@ -88,7 +99,7 @@
 				0.0
 			]
 		},
-		"17": {
+		"18": {
 			"base_pos": [
 				4,
 				3
@@ -99,24 +110,13 @@
 				0.0
 			]
 		},
-		"18": {
+		"19": {
 			"base_pos": [
 				4,
 				4
 			],
 			"name": "ammo rack",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"19": {
-			"base_pos": [
-				4,
-				5
-			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
 			"rotation": [
 				0.0
 			]
@@ -134,6 +134,17 @@
 		},
 		"20": {
 			"base_pos": [
+				4,
+				5
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"21": {
+			"base_pos": [
 				5,
 				2
 			],
@@ -143,7 +154,7 @@
 				0.0
 			]
 		},
-		"21": {
+		"22": {
 			"base_pos": [
 				5,
 				3
@@ -154,7 +165,7 @@
 				0.0
 			]
 		},
-		"22": {
+		"23": {
 			"base_pos": [
 				5,
 				4
@@ -165,7 +176,7 @@
 				0.0
 			]
 		},
-		"23": {
+		"24": {
 			"base_pos": [
 				5,
 				5
@@ -176,13 +187,13 @@
 				90.0
 			]
 		},
-		"24": {
+		"25": {
 			"base_pos": [
-				2,
+				1,
 				6
 			],
-			"name": "small cargo",
-			"path": "res://blocks/auxiliary/small_cargo.tscn",
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
 			"rotation": [
 				0
 			]

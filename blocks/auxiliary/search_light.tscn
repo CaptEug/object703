@@ -1,0 +1,75 @@
+[gd_scene load_steps=11 format=3 uid="uid://b60u6nneewapn"]
+
+[ext_resource type="Script" uid="uid://clchncp5d3wb5" path="res://blocks/auxiliary/search_light.gd" id="1_37jjf"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_37jjf"]
+[ext_resource type="Texture2D" uid="uid://f0n5ifd0300t" path="res://assets/lights/search_light.png" id="3_sk2n7"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="4_sk2n7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_37jjf"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_okuhd"]
+atlas = ExtResource("2_37jjf")
+region = Rect2(64, 80, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8cyme"]
+atlas = ExtResource("2_37jjf")
+region = Rect2(80, 80, 16, 16)
+
+[sub_resource type="Gradient" id="Gradient_37jjf"]
+offsets = PackedFloat32Array(0, 0.67)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sk2n7"]
+gradient = SubResource("Gradient_37jjf")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_qgd13"]
+closed = false
+polygon = PackedVector2Array(-4, -4, -4, 6, 4, 6, 4, -4)
+
+[node name="SearchLight" type="RigidBody2D"]
+script = ExtResource("1_37jjf")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_37jjf")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_okuhd")
+
+[node name="Turret" type="Sprite2D" parent="."]
+light_mask = 2
+texture = SubResource("AtlasTexture_8cyme")
+
+[node name="Light" type="PointLight2D" parent="Turret"]
+energy = 16.0
+range_item_cull_mask = 2
+texture = ExtResource("3_sk2n7")
+
+[node name="SearchLight" type="PointLight2D" parent="Turret"]
+position = Vector2(0, 4)
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_sk2n7")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="Turret"]
+occluder = SubResource("OccluderPolygon2D_qgd13")
+occluder_light_mask = 3
+
+[node name="ConnectionPoint" parent="." instance=ExtResource("4_sk2n7")]
+position = Vector2(0, -8)
+rotation = -1.5708
+
+[node name="ConnectionPoint2" parent="." instance=ExtResource("4_sk2n7")]
+position = Vector2(8, 0)
+
+[node name="ConnectionPoint3" parent="." instance=ExtResource("4_sk2n7")]
+position = Vector2(0, 8)
+rotation = 1.5708
+
+[node name="ConnectionPoint4" parent="." instance=ExtResource("4_sk2n7")]
+position = Vector2(-8, 0)
+rotation = -3.14159
