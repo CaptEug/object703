@@ -45,8 +45,6 @@ func refresh_inventory():
 		if block is Cargo:
 			add_storage_section(block)
 
-	#call_deferred("update_panel_size")  # 可选
-
 # ============================================================
 # 区块构建
 # ============================================================
@@ -112,7 +110,6 @@ func _on_inventory_changed(block: Cargo) -> void:
 			slot.item_data = item
 			slot.call_deferred("update_slot_display")
 
-	#call_deferred("update_panel_size")
 
 # ============================================================
 # 工具函数
