@@ -22,3 +22,6 @@ func _init():
 	size = SIZE
 	friction = FRICTION
 	max_force = MAX_FORCE
+	mask_up_path = "res://assets/masks/track_mask_up.png"
+	mask_down_path = "res://assets/masks/track_mask_down.png"
+	mask_single_path = "res://assets/masks/track_mask_single.png"

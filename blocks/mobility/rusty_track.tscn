@@ -8,6 +8,7 @@
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_11o0d"]
+resource_local_to_scene = true
 atlas = ExtResource("2_1cqs3")
 region = Rect2(0, 96, 16, 16)
 
@@ -22,7 +23,10 @@ metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_pt07c")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Mask" type="Sprite2D" parent="."]
+clip_children = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="Mask"]
 texture = SubResource("AtlasTexture_11o0d")
 
 [node name="Broken" type="Sprite2D" parent="."]

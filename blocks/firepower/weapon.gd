@@ -195,7 +195,7 @@ func auto_target(delta):
 			if traverse:
 				var min_angle = deg_to_rad(traverse[0])
 				var max_angle = deg_to_rad(traverse[1])
-				var target_angle = (target.global_position - global_position).angle() - rotation + deg_to_rad(90)
+				var target_angle = (target.global_position - global_position).angle() - global_rotation + deg_to_rad(90)
 				if target_angle > min_angle and target_angle < max_angle:
 					targets_in_range.append(target)
 			else:
