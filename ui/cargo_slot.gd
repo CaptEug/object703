@@ -147,12 +147,16 @@ func _perform_drop(target_slot: Node) -> void:
 	print("temp_item:")
 	print(temp_item)
 	target_slot.set_item(item_data)
-	set_item(temp_item)
+	print("item:")
+	print(item_data)
+	
 
 	# ✅ 同步底层数据
 	if storage_ref and target_slot.storage_ref:
 		storage_ref.set_item(slot_index, temp_item)
 		target_slot.storage_ref.set_item(target_slot.slot_index, item_data)
+	
+	set_item(temp_item)
 
 	print("✅ Dropped item: ", item_data, " swapped with: ", temp_item)
 
