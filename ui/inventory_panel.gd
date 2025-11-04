@@ -130,8 +130,7 @@ func _add_test_item(tank: Vehicle) -> void:
 		return
 
 	# ✅ 构造一个测试物品
-	var item_data := {"id": "scrap", "count": 10, "weight": 1, "icon": load("res://assets/icons/scrap.png")}
-
+	var item_data := {"id": "scrap", "count": 10}
 	print("[InventoryPanel] Trying to add item:", item_data["id"])
 
 	# ✅ 遍历所有 block，找到 Cargo 类型并尝试添加

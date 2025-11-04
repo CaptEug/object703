@@ -5,7 +5,7 @@ extends TextureRect
 
 @export var slot_index: int = 0
 @export var storage_ref: Node = null # 指向 Cargo 节点
-var item_data: Dictionary = {}       # { "id": "iron", "count": 20, "icon": Texture2D }
+var item_data: Dictionary = {}       # { "id": "iron", "count": 20}
 
 var is_dragging := false
 var drag_preview = null
@@ -49,7 +49,7 @@ func update_slot_display() -> void:
 	if item_data.is_empty():
 		hide_current_icon()
 	else:
-		item_icon.texture = item_data.get("icon", null)
+		item_icon.texture = ItemDB.get_item(item_data.get("id")).get("icon")
 		item_icon.visible = true
 
 		var count = item_data.get("count", 1)

@@ -6,7 +6,7 @@ signal inventory_changed(cargo: Cargo)
 
 @export var slot_count: int = 6
 @export var is_full: bool = false
-var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10, "weight": 1, "icon": Texture2D}
+var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10}
 var accept: Array = []  # 可以存放的物品类型约束（暂留）
 var max_load: float = false
 
@@ -115,5 +115,4 @@ func calculate_total_weight() -> float:
 	return total_weight
 	
 func test_generate_scrap() -> Dictionary:
-	var texture: Texture2D = load("res://assets/icons/scrap.png")
-	return {"id": "scrap", "count": 10, "weight": 1, "icon": texture}
+	return {"id": "scrap", "count": 10}

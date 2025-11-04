@@ -113,7 +113,7 @@ func _create_item_slot(item_data):
 
 	# 如果你原来在 .tscn 里有个 TextureRect:
 	var icon = TextureRect.new()
-	icon.texture = item_data.icon
+	icon.texture = ItemDB.get_item(item_data.get("id")).get("icon")
 	slot.add_child(icon)
 
 	# 可选：添加数量标签
