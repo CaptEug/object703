@@ -32,7 +32,7 @@ func aim(target_pos):
 	if not is_turret_rotation_enabled:
 		return
 		
-	var target_angle = (target_pos - global_position).angle() - rotation + deg_to_rad(90)
+	var target_angle = (target_pos - global_position).angle() - global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 	
 	if traverse:

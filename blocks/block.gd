@@ -31,7 +31,9 @@ var shard_particle_path = "res://assets/particles/metal_shard.tscn"
 @export var is_movable_on_connection := true
 
 var connection_points: Array[ConnectionPoint] = []
+var rigidbody_connectors: Array[RigidBodyConnector] = []
 var overlapping_points := []
+var overlapping_rigidbody_connectors := []
 var joint_connected_blocks := {}  # Tracks which blocks are connected through which joints
 
 ## Signals
@@ -52,7 +54,6 @@ func _ready():
 	sprite = find_child("Sprite2D") as Sprite2D
 	broken_sprite = find_child("Broken") as Sprite2D
 	
-	
 	# Initialize parent vehicle reference
 	parent_vehicle = get_parent_vehicle()
 	
@@ -64,40 +65,67 @@ func _ready():
 	
 	# Collect connection points
 	collect_connection_points()
-	#connect_aready()
+	collect_rigidbody_connectors()
+	
+	enable_all_connectors(true)
 	# Validation
-	if connection_points.is_empty():
+	if connection_points.is_empty() and rigidbody_connectors.is_empty():
 		push_warning("Block '%s' has no connection points" % block_name)
-
 
 func _process(_delta):
 	pass
 
+func set_layer(i : int):
+	self.collision_layer = i
+	for joint in connection_points:
+		if joint:
+			joint.layer = i
 
 func connect_aready():
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	
+	# 处理 ConnectionPoint 连接
 	if len(overlapping_points) > 0:
 		for point_con in overlapping_points:
 			var point1 = point_con[1]
 			if point1 is ConnectionPoint and is_movable_on_connection == true:
 				point1.try_connect(point_con[0])
-		for point_con in overlapping_points:
-			if point_con[0].find_parent_block() is Block:
-				if point_con[0].find_parent_block().freeze == true:
-					point_con[0].find_parent_block().freeze = false
-	is_movable_on_connection = false
-	#collision_layer = 1
-	for joint in joint_connected_blocks:
-		if is_instance_valid(joint):
-			var other_block = joint_connected_blocks[joint]
-			if is_instance_valid(other_block):
-				pass
 	
+	# 处理 RigidBodyConnector 连接
+	if len(overlapping_rigidbody_connectors) > 0:
+		for connector_con in overlapping_rigidbody_connectors:
+			var connector1 = connector_con[1]
+			if connector1 is RigidBodyConnector and is_movable_on_connection == true:
+				connector1.try_connect(connector_con[0])
+	
+	# 解冻逻辑
+	for point_con in overlapping_points:
+		if point_con[0].find_parent_block() is Block:
+			if point_con[0].find_parent_block().freeze == true:
+				point_con[0].find_parent_block().freeze = false
+				
+	for connector_con in overlapping_rigidbody_connectors:
+		if connector_con[0].find_parent_block() is Block:
+			if connector_con[0].find_parent_block().freeze == true:
+				connector_con[0].find_parent_block().freeze = false
+	
+	is_movable_on_connection = false
+
 ## Physics and Drawing
 func _emit_relay_signal():
 	frame_post_drawn.emit()
+
+func enable_all_connectors(enabled: bool):
+	for point in connection_points:
+		if is_instance_valid(point):
+			point.is_connection_enabled = enabled
+			point.qeck = enabled
+	
+	for connector in rigidbody_connectors:
+		if is_instance_valid(connector):
+			connector.is_connection_enabled = enabled
+			connector.qeck = enabled
 
 ## Input Handling
 func _on_input_event(_viewport, event, _shape_idx):
@@ -109,10 +137,8 @@ func _on_input_event(_viewport, event, _shape_idx):
 func _on_mouse_entered():
 	mouse_inside = true
 
-
 func _on_mouse_exited():
 	mouse_inside = false
-
 
 func damage(amount:int):
 	#print(str(name)+' receive damage:'+str(amount))
@@ -140,7 +166,6 @@ func broke():
 			sprite.visible = false
 			broken_sprite.visible = true
 
-
 func destroy():
 	# Disconnect all joints before destroying
 	await disconnect_all()
@@ -162,7 +187,6 @@ func get_parent_vehicle():
 	return null
 
 ## Neighbor and Connectivity System
-
 func get_all_connected_blocks() -> Array:
 	connected_blocks.clear()
 	get_connected_blocks(self)
@@ -210,6 +234,13 @@ func collect_connection_points():
 			for node in nodes:
 				connection_points.append(node as ConnectionPoint)
 
+# 收集 RigidBodyConnector 的方法
+func collect_rigidbody_connectors():
+	rigidbody_connectors.clear()
+	var nodes = find_children("*", "RigidBodyConnector", true, false)
+	for node in nodes:
+		rigidbody_connectors.append(node as RigidBodyConnector)
+
 func can_connect(source: ConnectionPoint, target: ConnectionPoint) -> bool:
 	var source_block = source.find_parent_block()
 	var target_block = target.find_parent_block()
@@ -220,7 +251,6 @@ func can_connect(source: ConnectionPoint, target: ConnectionPoint) -> bool:
 		source_block != target_block and
 		source.can_connect_with(target)
 	)
-
 
 func create_joint_with(source: ConnectionPoint, target: ConnectionPoint, _rigid_alignment: bool = false) -> Joint2D:
 	if do_connect == true:
@@ -296,6 +326,11 @@ func disconnect_all():
 		if is_instance_valid(joint) and not joint.is_queued_for_deletion():
 			disconnect_joint(joint)
 	
+	# 断开 RigidBodyConnector 连接
+	for connector in rigidbody_connectors:
+		if connector.connected_to:
+			connector.disconnect_connection()
+	
 	# Clear any remaining connections
 	joint_connected_blocks.clear()
 
@@ -305,17 +340,54 @@ func get_available_connection_points() -> Array[ConnectionPoint]:
 		func(point): return not point.connected_to
 	) if connection_points else []
 
+func get_available_rigidbody_connectors() -> Array[RigidBodyConnector]:
+	return rigidbody_connectors.filter(
+		func(connector): return not connector.connected_to
+	) if rigidbody_connectors else []
+
+func get_all_connectors() -> Array:
+	var all_connectors = []
+	all_connectors.append_array(connection_points)
+	all_connectors.append_array(rigidbody_connectors)
+	return all_connectors
+
+func get_available_connectors() -> Array:
+	var available = []
+	
+	# ConnectionPoints
+	for point in connection_points:
+		if not point.connected_to and point.is_connection_enabled:
+			available.append(point)
+	
+	# RigidBodyConnectors  
+	for connector in rigidbody_connectors:
+		if not connector.connected_to and connector.is_connection_enabled:
+			available.append(connector)
+	
+	return available
 
 func get_connected_points() -> Array[ConnectionPoint]:
 	return connection_points.filter(
 		func(point): return point.connected_to
 	) if connection_points else []
 
+func get_connected_rigidbody_connectors() -> Array[RigidBodyConnector]:
+	return rigidbody_connectors.filter(
+		func(connector): return connector.connected_to
+	) if rigidbody_connectors else []
+
 func get_connection_point_by_name(pointname: String) -> ConnectionPoint:
 	if connection_points:
 		for point in connection_points:
 			if point.name == pointname:
 				return point
+	return null
+
+func get_rigidbody_connector_by_name(connectorname: String) -> RigidBodyConnector:
+	if rigidbody_connectors:
+		for connector in rigidbody_connectors:
+			if connector.name == connectorname:
+				return connector
 	return null
 
 func get_joint_connected_blocks() -> Array[Block]:
@@ -354,6 +426,10 @@ func set_connection_enabled(enabled: bool, keep_existing_joints: bool = true):
 				# 重新建立连接（但不物理断开）
 				point.connected_to = other_point
 				other_point.connected_to = point
+	
+	# 设置 RigidBodyConnector 的启用状态
+	for connector in rigidbody_connectors:
+		connector.set_connection_enabled(enabled)
 	
 	queue_redraw()
 
@@ -398,8 +474,19 @@ func get_attached_rigidbodies() -> Array[RigidBody2D]:
 
 # 获取所有RigidBodyConnector
 func get_rigidbody_connectors() -> Array[RigidBodyConnector]:
-	var connectors: Array[RigidBodyConnector] = []
-	var nodes = find_children("*", "RigidBodyConnector", true, false)
-	for node in nodes:
-		connectors.append(node as RigidBodyConnector)
-	return connectors
+	return rigidbody_connectors.duplicate()
+
+# 统一的断开所有连接的方法
+func disconnect_all_connections():
+	# 断开 ConnectionPoint 连接
+	var joints = joint_connected_blocks.keys()
+	for joint in joints:
+		if is_instance_valid(joint) and not joint.is_queued_for_deletion():
+			disconnect_joint(joint)
+	
+	# 断开 RigidBodyConnector 连接
+	for connector in rigidbody_connectors:
+		if connector.connected_to:
+			connector.disconnect_connection()
+	
+	joint_connected_blocks.clear()

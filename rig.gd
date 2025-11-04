@@ -11,6 +11,7 @@ var connected_to: RigidBodyConnector = null
 var joint: Joint2D = null
 var detection_area: Area2D
 var overlapping_connectors: Array[RigidBodyConnector] = []
+var qeck = true  # 类似于 ConnectionPoint 中的控制变量
 
 # 新增：吸附相关属性
 var is_snapping := false
@@ -20,6 +21,20 @@ var snap_distance_threshold := 10.0  # 吸附距离阈值
 func _ready():
 	setup_detection_area()
 	queue_redraw()
+
+func _process(_delta):
+	# 类似于 ConnectionPoint 的处理逻辑
+	if find_parent_block() != null:
+		if find_parent_block().do_connect == false:
+			qeck = false
+		else:
+			qeck = true
+	
+	# 处理已存在的连接
+	for other_connector in overlapping_connectors:
+		if connected_to == other_connector:
+			# 维持连接的逻辑
+			pass
 
 func setup_detection_area():
 	detection_area = Area2D.new()
@@ -48,12 +63,28 @@ func _on_area_entered(area: Area2D):
 	if other_connector is RigidBodyConnector:
 		if other_connector != self:
 			if not overlapping_connectors.has(other_connector):
+				var con = [other_connector, self]
+				
+				# 将重叠信息传递给父 Block
+				var parent_block = find_parent_block()
+				if parent_block and parent_block.is_movable_on_connection == true:
+					if not parent_block.overlapping_rigidbody_connectors.has(con):
+						parent_block.overlapping_rigidbody_connectors.append(con)
+				
 				overlapping_connectors.append(other_connector)
 
 func _on_area_exited(area: Area2D):
 	var other_connector = area.get_parent()
 	if other_connector is RigidBodyConnector:
 		if other_connector in overlapping_connectors:
+			# 从父 Block 的重叠列表中移除
+			var parent_block = find_parent_block()
+			if parent_block:
+				for con in parent_block.overlapping_rigidbody_connectors:
+					if con[0] == other_connector and con[1] == self:
+						parent_block.overlapping_rigidbody_connectors.erase(con)
+						break
+			
 			overlapping_connectors.erase(other_connector)
 			if snap_target == other_connector:
 				snap_target = null
@@ -162,7 +193,6 @@ func get_parent_rigidbody() -> RigidBody2D:
 	return null
 
 func try_connect(other_connector: RigidBodyConnector) -> bool:
-	# 新增：检查是否已经连接
 	if connected_to != null:
 		return false
 	
@@ -195,18 +225,29 @@ func try_connect(other_connector: RigidBodyConnector) -> bool:
 	if not rigidbody:
 		return false
 	
+	# 添加冻结逻辑（类似于 ConnectionPoint）
+	if rigidbody_connector.is_attached_to_block() and not rigidbody_connector.find_parent_block().is_movable_on_connection:
+		rigidbody_connector.find_parent_block().freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
+		rigidbody_connector.find_parent_block().freeze = true
+	
+	# 移动逻辑
+	var block_can_move = block.is_movable_on_connection
+	var rigidbody_can_move = rigidbody_connector.is_attached_to_block() and rigidbody_connector.find_parent_block().is_movable_on_connection
+	
+	if block_can_move and not rigidbody_can_move and qeck == true:
+		# 移动 block 到连接位置
+		block.global_position += other_connector.global_position - global_position
+		block.global_rotation = rigidbody.global_rotation
+	
 	# 创建连接
 	connected_to = other_connector
 	other_connector.connected_to = self
 	
-	# 使用block的连接方法
 	joint = BlockPinJoint2D.connect_to_rigidbody(block, rigidbody, block_connector)
 	
 	if joint:
-		# 在另一个连接器中也记录joint
 		other_connector.joint = joint
 		
-		# 连接成功后，从重叠列表中移除已连接的连接器
 		if other_connector in overlapping_connectors:
 			overlapping_connectors.erase(other_connector)
 		

@@ -21,7 +21,7 @@ var area:Area2D
 
 
 func _ready():
-	line.visible = false
+	#line.visible = false
 	setup_detection_area()
 	queue_redraw()
 	
@@ -81,6 +81,9 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 		#return false
 	
 	if not can_connect_with(other_point):
+		return false
+	
+	if not layer == other_point.layer:
 		return false
 	
 	var parent_block = find_parent_block()
