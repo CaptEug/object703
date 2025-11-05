@@ -9,6 +9,7 @@ extends Control
 @onready var recycle_button = $Panel/DismantleButton
 @onready var load_button = $Panel/LoadButton
 @onready var repair_buttom = $Panel/RepairButton
+@onready var mode_button = $Panel/ModeButton
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 
@@ -60,6 +61,11 @@ var current_block_scene: PackedScene = null
 var panel_instance: Control = null
 var camera:Camera2D
 
+# === 模式切换变量 ===
+var is_vehicle_mode := true  # true: 车体模式, false: 炮塔模式
+var vehicle_icon:Texture = preload("res://assets/icons/hull.png")  # 车体图标
+var turret_icon:Texture = preload("res://assets/icons/turret.png")    # 炮塔图标
+
 # === 方块移动功能变量 ===
 var is_moving_block := false
 var moving_block: Block = null
@@ -101,6 +107,7 @@ func _ready():
 	name_input.text_changed.connect(_on_name_input_changed)
 	recycle_button.pressed.connect(_on_recycle_button_pressed)
 	repair_buttom.pressed.connect(_on_repair_button_pressed)
+	mode_button.pressed.connect(_on_mode_button_pressed)
 	create_tabs()
 	
 	save_dialog.hide()
@@ -117,6 +124,91 @@ func _ready():
 	
 	call_deferred("initialize_editor")
 
+func _on_mode_button_pressed():
+	if not is_editing:
+		return
+	
+	if is_vehicle_mode:
+		# 从车体模式切换到炮塔模式
+		switch_to_turret_mode()
+	else:
+		# 从炮塔模式切换回车体模式
+		switch_to_vehicle_mode()
+
+func switch_to_turret_mode():
+	"""切换到炮塔模式并自动进入第一个炮塔的编辑模式"""
+	if not is_editing or not selected_vehicle:
+		return
+	
+	print("=== 切换到炮塔模式 ===")
+	
+	# 退出当前所有特殊模式
+	if is_recycle_mode:
+		exit_recycle_mode()
+	
+	if is_moving_block:
+		cancel_block_move()
+	
+	if current_ghost_block:
+		current_ghost_block.queue_free()
+		current_ghost_block = null
+	
+	# 切换到炮塔模式
+	is_vehicle_mode = false
+	print("is_vehicle_mode 设置为: ", is_vehicle_mode)
+	
+	# 重要：查找并进入第一个炮塔的编辑模式
+	var turrets = get_turret_blocks()
+	if turrets.is_empty():
+		print("❌ 车辆上没有找到炮塔，无法进入炮塔编辑模式")
+		# 如果没有炮塔，切换回车体模式
+		is_vehicle_mode = true
+		update_mode_button_display()
+		return
+	
+	# 进入第一个炮塔的编辑模式
+	var first_turret = turrets[0]
+	print("🎯 找到炮塔，进入编辑模式:", first_turret.block_name)
+	enter_turret_editing_mode(first_turret)
+	
+	print("切换到炮塔编辑模式完成")
+
+
+func switch_to_vehicle_mode():
+	"""切换回车体模式"""
+	if not is_editing:
+		return
+	
+	print("=== 切换回车体模式 ===")
+	
+	# 如果正在炮塔编辑模式，退出
+	if is_turret_editing_mode:
+		exit_turret_editing_mode()
+	
+	# 切换到车体模式
+	is_vehicle_mode = true
+	print("is_vehicle_mode 设置为: ", is_vehicle_mode)
+	
+	# 重要：更新按钮显示
+	update_mode_button_display()
+	
+	print("切换回车体模式完成")
+
+func update_mode_button_display():
+	"""更新模式按钮的显示"""
+	if not mode_button:
+		return
+	
+	if is_vehicle_mode:
+		# 车体模式：显示车体图标
+		mode_button.texture_normal = vehicle_icon
+		mode_button.tooltip_text = "车体编辑模式 (点击切换到炮塔编辑)"
+	else:
+		# 炮塔模式：显示炮塔图标
+		mode_button.texture_normal = turret_icon
+		mode_button.tooltip_text = "炮塔编辑模式 (点击切换回车体编辑)"
+
+
 func _connect_block_buttons():
 	var block_buttons = get_tree().get_nodes_in_group("block_buttons")
 	for button in block_buttons:
@@ -130,6 +222,14 @@ func _on_block_button_pressed():
 
 func _input(event):
 	if get_viewport().gui_get_hovered_control():
+		return
+	
+	if event is InputEventKey and event.pressed and event.keycode == KEY_T:
+		if is_editing:
+			if is_vehicle_mode:
+				switch_to_turret_mode()
+			else:
+				switch_to_vehicle_mode()
 		return
 	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
@@ -271,8 +371,19 @@ func enter_turret_editing_mode(turret: TurretRing):
 	if is_turret_editing_mode:
 		exit_turret_editing_mode()
 	
+	print("=== 进入炮塔编辑模式 ===")
+	print("   目标炮塔:", turret.block_name if turret else "null")
+	
 	is_turret_editing_mode = true
 	current_editing_turret = turret
+	
+	# 重要：确保在炮塔模式下
+	if is_vehicle_mode:
+		is_vehicle_mode = false
+		print("🔄 自动切换到炮塔模式")
+	
+	# 更新按钮显示
+	update_mode_button_display()
 	
 	reset_turret_rotation(turret)
 	disable_turret_rotation(turret)
@@ -292,11 +403,15 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	highlight_current_editing_turret(turret)
 	
+	print("炮塔编辑模式进入完成，当前模式:", "车体" if is_vehicle_mode else "炮塔")
+	
 	
 
 func exit_turret_editing_mode():
 	if not is_turret_editing_mode:
 		return
+	
+	print("=== 退出炮塔编辑模式 ===")
 	
 	is_turret_editing_mode = false
 	
@@ -319,7 +434,14 @@ func exit_turret_editing_mode():
 	if current_ghost_block:
 		current_ghost_block.visible = true
 	
+	if not is_vehicle_mode:
+		is_vehicle_mode = true
+	# 重要：退出炮塔编辑模式时，根据当前模式更新按钮显示
+	update_mode_button_display()
+	
 	current_editing_turret = null
+	
+	print("炮塔编辑模式退出完成")
 
 func reset_turret_rotation(turret: TurretRing):
 	if turret and is_instance_valid(turret):
@@ -1688,6 +1810,10 @@ func enter_editor_mode(vehicle: Vehicle):
 
 	is_editing = true
 	
+	# 新增：默认进入车体模式
+	is_vehicle_mode = true
+	update_mode_button_display()
+	
 	if not is_new_vehicle:
 		is_first_block = false
 	
@@ -1711,6 +1837,10 @@ func enter_editor_mode(vehicle: Vehicle):
 func exit_editor_mode():
 	if not is_editing:
 		return
+	
+	# 新增：退出时重置模式
+	is_vehicle_mode = true
+	update_mode_button_display()
 	
 	if is_turret_editing_mode:
 		exit_turret_editing_mode()
@@ -1758,6 +1888,7 @@ func exit_editor_mode():
 	is_editing = false
 	panel_instance = null
 	selected_vehicle = null
+
 
 func enable_all_connection_points_for_editing(open: bool):
 	if not selected_vehicle:
