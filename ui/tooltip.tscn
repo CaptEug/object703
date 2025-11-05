@@ -1,9 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://cd31gfs2al3t6"]
+[gd_scene load_steps=7 format=3 uid="uid://cd31gfs2al3t6"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_hoai8"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_f63i6"]
 [ext_resource type="Script" uid="uid://bb3bkledibg15" path="res://ui/tooltip.gd" id="3_o07bd"]
-[ext_resource type="PackedScene" uid="uid://dnwpcmifp3o6j" path="res://ui/cargo_slot.tscn" id="4_f63i6"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_byk22"]
 atlas = ExtResource("2_f63i6")
@@ -24,7 +23,6 @@ offset_bottom = 26.0
 theme = ExtResource("1_hoai8")
 theme_override_styles/panel = SubResource("StyleBoxTexture_21d5s")
 script = ExtResource("3_o07bd")
-slot_scene = ExtResource("4_f63i6")
 
 [node name="RichTextLabel" type="RichTextLabel" parent="."]
 layout_mode = 2

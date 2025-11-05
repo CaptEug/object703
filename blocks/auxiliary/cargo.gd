@@ -6,7 +6,8 @@ signal inventory_changed(cargo: Cargo)
 
 @export var slot_count: int = 6
 @export var is_full: bool = false
-var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10, "weight": 1, "icon": Texture2D}
+@export var ui_ref: Node = null
+var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10}
 var accept: Array = []  # 可以存放的物品类型约束（暂留）
 var max_load: float = false
 
@@ -43,13 +44,20 @@ func finalize_changes():
 
 # ============================================================
 # 物品交互接口（供 UI 调用）
-# ============================================================
-func pick_item(slot_index: int) -> Dictionary:
-	var item = get_item(slot_index)
-	if item.is_empty():
-		return {}
-	inventory[slot_index] = {}
-	emit_signal("inventory_changed", self)
+
+func take_item(id: String, count: int) -> Dictionary:
+	var item = {}
+	for i in range(int(len(inventory))):
+		if inventory[i] == {}:
+			continue
+		elif inventory[i]["id"] == id:
+			if inventory[i]["count"] > count:
+				inventory[i]["count"] -= count
+				item = {"id": id, "count": count}
+			else:
+				item = {"id": id, "count": inventory[i]["count"]}
+				inventory[i] = {}
+			emit_signal("inventory_changed", self)
 	return item
 
 func place_item(slot_index: int, item: Dictionary) -> bool:
@@ -80,10 +88,7 @@ func split_item(slot_index: int) -> Dictionary:
 # ✅ 自动添加到第一个空位
 func add_item(item_data: Dictionary) -> bool:
 	for i in range(slot_count):
-		if inventory[i] == {}:
-			inventory[i] = item_data
-			emit_signal("inventory_changed", self)
-			return true
+		return place_item(i, item_data)
 	return false
 
 func clear_all():
@@ -113,5 +118,4 @@ func calculate_total_weight() -> float:
 	return total_weight
 	
 func test_generate_scrap() -> Dictionary:
-	var texture: Texture2D = load("res://assets/icons/scrap.png")
-	return {"id": "scrap", "count": 10, "weight": 1, "icon": texture}
+	return {"id": "scrap", "count": 10}
