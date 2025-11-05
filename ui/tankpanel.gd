@@ -102,7 +102,7 @@ func draw_grid():
 				continue
 			if is_instance_valid(grid[pos]) and not blocks.has(grid[pos]):
 				blocks.append(grid[pos])
-				var health_ratio = grid[pos].current_hp/grid[pos].HITPOINT
+				var health_ratio = grid[pos].current_hp/grid[pos].max_hp
 				var line_color = health_gradient.sample(clamp(health_ratio, 0.0, 1.0))
 				var rot = grid[pos].base_rotation_degree
 				var topleft = Vector2(pos) * grid_size

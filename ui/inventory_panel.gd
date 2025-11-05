@@ -14,6 +14,10 @@ func _input(event):
 	if event.is_action_pressed("add_test_item"):
 		if current_tank:
 			_add_test_item(current_tank)
+	
+	if event.is_action_pressed("take_test_item"):
+		if current_tank:
+			_test_take_item(current_tank)
 			
 func open_inventory(tank: Vehicle):
 	current_tank = tank
@@ -44,8 +48,6 @@ func refresh_inventory():
 	for block in current_tank.blocks:
 		if block is Cargo:
 			add_storage_section(block)
-
-	call_deferred("update_panel_size")  # 可选
 
 # ============================================================
 # 区块构建
@@ -106,15 +108,13 @@ func _on_inventory_changed(block: Cargo) -> void:
 		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
 
 		var item = block.get_item(i)
+		print("getted item:", item)
 		if slot.has_method("set_item"):
 			slot.call_deferred("set_item", item)  # ✅ 延迟调用
 		else:
 			slot.item_data = item
 			slot.call_deferred("update_slot_display")
 
-		grid.add_child(slot)
-
-	call_deferred("update_panel_size")
 
 # ============================================================
 # 工具函数
@@ -135,8 +135,7 @@ func _add_test_item(tank: Vehicle) -> void:
 		return
 
 	# ✅ 构造一个测试物品
-	var item_data := {"id": "scrap", "count": 10, "weight": 1, "icon": load("res://assets/icons/scrap.png")}
-
+	var item_data := {"id": "scrap", "count": 10}
 	print("[InventoryPanel] Trying to add item:", item_data["id"])
 
 	# ✅ 遍历所有 block，找到 Cargo 类型并尝试添加
@@ -148,3 +147,12 @@ func _add_test_item(tank: Vehicle) -> void:
 
 	# ⚠️ 如果没有任何可用 Cargo 或已满
 	print("⚠️ All cargo are full, cannot add item.")
+	
+func _test_take_item(current_tank) -> void:
+	var tank = current_tank
+	for block in tank.blocks:
+		if block is Cargo:
+			var scrap = block.take_item("scrap", 10)
+			print("item_taken", scrap)
+			return
+	

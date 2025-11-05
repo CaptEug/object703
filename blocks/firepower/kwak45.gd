@@ -8,7 +8,7 @@ const TYPE:= "Firepower"
 const RANGE:= 800
 const RELOAD:float = 0.5
 const AMMO_COST:float= 1.0
-const ROTATION_SPEED:float = deg_to_rad(200)  # rads per second
+const ROTATION_SPEED:float = deg_to_rad(180)  # rads per second
 const MUZZLE_ENERGY:float = 10
 const SPREAD:float = 0.02
 
