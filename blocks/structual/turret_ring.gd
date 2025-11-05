@@ -115,7 +115,7 @@ func remove_block_from_turret(block: Block):
 		# 从场景中移除
 		if block.get_parent() == turret:
 			turret.remove_child(block)
-		
+		block.queue_free()
 		# 更新炮塔物理属性
 		update_turret_physics()
 		

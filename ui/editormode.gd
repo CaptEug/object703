@@ -224,14 +224,6 @@ func _input(event):
 	if get_viewport().gui_get_hovered_control():
 		return
 	
-	if event is InputEventKey and event.pressed and event.keycode == KEY_T:
-		if is_editing:
-			if is_vehicle_mode:
-				switch_to_turret_mode()
-			else:
-				switch_to_vehicle_mode()
-		return
-	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
 			exit_editor_mode()
@@ -263,11 +255,14 @@ func _input(event):
 			if current_editing_turret and current_ghost_block:
 				can_place = turret_snap_config and not turret_snap_config.is_empty()
 			
-			if not can_place:
+			if not can_place and not is_recycle_mode:
 				exit_turret_editing_mode()
 				return
 			else:
-				try_place_turret_block()
+				if is_recycle_mode:
+					try_remove_turret_block()
+				else:
+					try_place_turret_block()
 				return
 	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -293,7 +288,12 @@ func _input(event):
 				is_dragging = false
 				
 				if is_recycle_mode:
-					try_remove_block()
+					if is_turret_editing_mode:
+						# 炮塔编辑模式下的删除
+						try_remove_turret_block()
+					else:
+						# 普通删除模式
+						try_remove_block()
 				
 				if is_moving_block:
 					place_moving_block()
@@ -328,10 +328,63 @@ func _input(event):
 				elif current_ghost_block:
 					rotate_ghost_connection()
 			KEY_X:
-				if is_recycle_mode:
-					exit_recycle_mode()
+				if is_turret_editing_mode:
+					# 炮塔编辑模式下切换删除模式
+					if is_recycle_mode:
+						exit_recycle_mode()
+					else:
+						enter_recycle_mode()
 				else:
-					enter_recycle_mode()
+					# 普通模式下切换删除模式
+					if is_recycle_mode:
+						exit_recycle_mode()
+					else:
+						enter_recycle_mode()
+			KEY_T:
+				# 切换蓝图显示
+				if is_editing and selected_vehicle:
+					toggle_blueprint_display()
+			KEY_N:
+				# 新建车辆
+				if not is_editing:
+					create_new_vehicle()
+			KEY_L:
+				# 切换加载模式
+				if is_loading_mode:
+					switch_to_normal_mode()
+				else:
+					switch_to_loading_mode()
+			KEY_F:
+				# 修复车辆
+				if is_editing and selected_vehicle and is_showing_blueprint:
+					repair_blueprint_missing_blocks()
+	
+	# 鼠标滚轮旋转
+	if event is InputEventMouseButton and is_editing:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+			if is_moving_block and moving_block_ghost:
+				rotate_moving_ghost()
+			elif current_ghost_block:
+				rotate_ghost_connection()
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+			if is_moving_block and moving_block_ghost:
+				# 反向旋转
+				for i in range(3):  # 旋转270度相当于反向90度
+					rotate_moving_ghost()
+			elif current_ghost_block:
+				for i in range(3):
+					rotate_ghost_connection()
+	
+	# 中键取消操作
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_MIDDLE:
+		if is_turret_editing_mode:
+			exit_turret_editing_mode()
+		elif is_moving_block:
+			cancel_block_move()
+		elif current_ghost_block:
+			cancel_placement()
+		elif is_recycle_mode:
+			exit_recycle_mode()
 
 func _process(delta):
 	if is_editing and selected_vehicle:
@@ -397,7 +450,9 @@ func enter_turret_editing_mode(turret: TurretRing):
 		cancel_block_move()
 	
 	if is_recycle_mode:
-		exit_recycle_mode()
+		# 保持删除模式，但更新光标和功能
+		Input.set_custom_mouse_cursor(saw_cursor)
+		print("炮塔编辑模式：删除功能已切换到炮塔专用")
 	
 	clear_tab_container_selection()
 	
@@ -425,7 +480,9 @@ func exit_turret_editing_mode():
 	if current_editing_turret:
 		highlight_current_editing_turret(current_editing_turret, false)
 	
-	hide_turret_grid_preview()
+	if is_recycle_mode:
+		Input.set_custom_mouse_cursor(saw_cursor)
+	
 	
 	turret_snap_config = {}
 	available_turret_connectors.clear()
@@ -600,10 +657,6 @@ func update_outside_turret_placement(mouse_position: Vector2):
 	var available_block_points = get_turret_block_connection_points()
 	var available_ghost_points_ = get_ghost_block_connection_points()
 	
-	print("炮塔范围外连接检查:")
-	print("可用块连接点数量:", available_block_points.size())
-	print("可用虚影连接点数量:", available_ghost_points.size())
-	
 	if available_block_points.is_empty() or available_ghost_points_.is_empty():
 		set_ghost_free_position(mouse_position)
 		return
@@ -611,10 +664,8 @@ func update_outside_turret_placement(mouse_position: Vector2):
 	var best_snap = find_best_regular_snap_config_for_turret(mouse_position, available_block_points, available_ghost_points_)
 	
 	if best_snap and not best_snap.is_empty():
-		print("✅ 找到炮塔范围外连接")
 		apply_turret_snap_config(best_snap)
 	else:
-		print("❌ 未找到合适的炮塔范围外连接")
 		set_ghost_free_position(mouse_position)
 
 func get_turret_connection_point_global_position(point: ConnectionPoint, block: Block) -> Vector2:
@@ -622,22 +673,101 @@ func get_turret_connection_point_global_position(point: ConnectionPoint, block: 
 	# 炮塔上的块应该使用块的全局位置，而不是炮塔座圈的位置
 	return block.global_position + point.position.rotated(block.global_rotation)
 
+func try_remove_turret_block():
+	"""炮塔编辑模式下删除块 - 只删除炮塔上的块"""
+	print("=== 尝试从炮塔移除block ===")
+	
+	if not is_turret_editing_mode:
+		print("❌ 不在炮塔编辑模式")
+		return
+		
+	if not current_editing_turret:
+		print("❌ 没有当前编辑的炮塔")
+		return
+		
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	print("鼠标位置 - 屏幕:", mouse_pos, " 世界:", global_mouse_pos)
+	
+	# 在炮塔范围内检测要删除的块
+	var block_to_remove = get_turret_block_at_position(global_mouse_pos)
+	
+	print("找到的块:", block_to_remove)
+	
+	if block_to_remove and block_to_remove != current_editing_turret:
+		print("✅ 准备移除块:", block_to_remove.block_name)
+		current_editing_turret.remove_block_from_turret(block_to_remove)
+		print("✅ 块移除完成")
+	else:
+		if not block_to_remove:
+			print("❌ 没有找到要删除的块")
+		elif block_to_remove == current_editing_turret:
+			print("⚠️ 不能删除炮塔座圈本身")
+
+func get_turret_block_at_position(position: Vector2) -> Block:
+	"""获取炮塔上指定位置的块（排除炮塔座圈本身）"""
+	
+	var space_state = get_tree().root.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = position
+	query.collision_mask = 2  # 使用炮塔编辑模式的碰撞层
+	
+	var result = space_state.intersect_point(query)
+	
+	for collision in result:
+		var block = collision.collider
+		
+		if (block is Block and 
+			block != current_editing_turret and 
+			is_block_on_turret(block)):
+			return block
+			
+	return null
+
+func is_block_on_turret(block: Block) -> bool:
+	"""检查块是否属于当前编辑的炮塔"""
+	if not current_editing_turret:
+		return false
+	
+	# 检查块是否直接附加到炮塔上
+	var attached_blocks = current_editing_turret.get_attached_blocks()
+	return block in attached_blocks
+
+func remove_turret_block(block: Block):
+	"""从炮塔上移除块"""
+	if not block or not current_editing_turret:
+		return
+	
+	print("正在从炮塔移除块: ", block.block_name)
+	
+	# 断开所有连接
+	var connections_to_disconnect = find_connections_for_block(block)
+	disconnect_connections(connections_to_disconnect)
+	
+	# 从炮塔上移除块
+	current_editing_turret.remove_block_from_turret(block)
+	
+	# 从车辆中完全移除
+	if selected_vehicle:
+		var control = selected_vehicle.control
+		selected_vehicle.remove_block(block, true)
+		selected_vehicle.control = control
+	
+	# 更新炮塔显示
+	if selected_vehicle:
+		selected_vehicle.update_vehicle()
+	
+	print("炮塔块移除完成")
+
 func find_best_regular_snap_config_for_turret(mouse_position: Vector2, block_points: Array[ConnectionPoint], ghost_points: Array[ConnectionPoint]) -> Dictionary:
 	"""用于炮塔普通ConnectionPoint连接的吸附配置 - 修复版"""
 	var best_config = {}
 	var min_distance = INF
 	var SNAP_DISTANCE = 100.0
-	
-	print("开始查找炮塔范围外连接...")
-	print("可用块连接点数量:", block_points.size())
-	
 	for block_point in block_points:
 		var block = block_point.find_parent_block()
 		if not block:
 			continue
-			
-		# 调试信息：显示连接点所属的块
-		print("检查连接点所属块:", block.block_name if block else "未知")
 		
 		# 再次确保不是炮塔座圈
 		if block == current_editing_turret:
@@ -675,12 +805,6 @@ func find_best_regular_snap_config_for_turret(mouse_position: Vector2, block_poi
 					"positions": positions,
 					"grid_positions": positions
 				}
-				print("找到连接点，距离:", distance, "块:", block.block_name)
-	
-	if best_config and not best_config.is_empty():
-		print("✅ 找到最佳连接配置，连接到块:", best_config.vehicle_block.block_name)
-	else:
-		print("❌ 未找到合适的连接配置")
 		
 	return best_config
 
@@ -798,8 +922,6 @@ func get_turret_block_connection_points() -> Array[ConnectionPoint]:
 	# 获取炮塔上所有已附加的块
 	var attached_blocks = current_editing_turret.get_attached_blocks()
 	
-	print("炮塔上附加块数量:", attached_blocks.size())
-	
 	for block in attached_blocks:
 		if is_instance_valid(block):
 			# 明确排除炮塔座圈本身
@@ -807,7 +929,6 @@ func get_turret_block_connection_points() -> Array[ConnectionPoint]:
 				print("跳过炮塔座圈本身")
 				continue
 				
-			print("检查块:", block.block_name, "类型:", block.get_class())
 			
 			# 获取该块的所有可用连接点
 			var available_points = 0
@@ -817,10 +938,6 @@ func get_turret_block_connection_points() -> Array[ConnectionPoint]:
 					point.connected_to == null):
 					points.append(point)
 					available_points += 1
-			
-			print("块", block.block_name, "可用连接点:", available_points)
-	
-	print("炮塔块连接点总数:", points.size(), " (排除炮塔座圈)")
 	return points
 	
 func get_ghost_block_rigidbody_connectors() -> Array[RigidBodyConnector]:
@@ -1749,10 +1866,18 @@ func _on_name_input_changed(_new_text: String):
 	error_label.hide()
 
 func _on_recycle_button_pressed():
-	if is_recycle_mode:
-		exit_recycle_mode()
+	if is_turret_editing_mode:
+		# 在炮塔编辑模式下，切换删除模式但不退出炮塔编辑
+		if is_recycle_mode:
+			exit_recycle_mode()
+		else:
+			enter_recycle_mode()
 	else:
-		enter_recycle_mode()
+		# 普通模式下正常切换
+		if is_recycle_mode:
+			exit_recycle_mode()
+		else:
+			enter_recycle_mode()
 
 func enter_recycle_mode():
 	is_recycle_mode = true
@@ -1764,8 +1889,11 @@ func enter_recycle_mode():
 	if is_moving_block:
 		cancel_block_move()
 	
+	
 	if is_turret_editing_mode:
-		exit_turret_editing_mode()
+		print("炮塔编辑模式：删除功能已切换到炮塔专用")
+	else:
+		clear_tab_container_selection()
 	
 	clear_tab_container_selection()
 	
@@ -2497,22 +2625,36 @@ func update_recycle_highlight():
 	
 	reset_all_blocks_color()
 	
-	var space_state = get_tree().root.get_world_2d().direct_space_state
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = global_mouse_pos
-	query.collision_mask = 1
-	
-	var result = space_state.intersect_point(query)
-	for collision in result:
-		var block = collision.collider
-		if block is Block and block.get_parent() == selected_vehicle:
+	if is_turret_editing_mode:
+		# 炮塔编辑模式下的高亮：只高亮炮塔上的块
+		var block = get_turret_block_at_position(global_mouse_pos)
+		if block:
 			block.modulate = Color.RED
-			break
+			# 同时高亮当前编辑的炮塔
+			if current_editing_turret:
+				current_editing_turret.modulate = Color(1, 0.8, 0.3, 1.0)
+	else:
+		# 普通删除模式的高亮
+		var space_state = get_tree().root.get_world_2d().direct_space_state
+		var query = PhysicsPointQueryParameters2D.new()
+		query.position = global_mouse_pos
+		query.collision_mask = 1
+		
+		var result = space_state.intersect_point(query)
+		for collision in result:
+			var block = collision.collider
+			if block is Block and block.get_parent() == selected_vehicle:
+				block.modulate = Color.RED
+				break
 
 func reset_all_blocks_color():
 	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
-			block.modulate = Color.WHITE
+			if is_turret_editing_mode and block == current_editing_turret:
+				# 保持炮塔的高亮
+				block.modulate = Color(1, 0.8, 0.3, 1.0)
+			else:
+				block.modulate = Color.WHITE
 
 func exit_recycle_mode():
 	if is_recycle_mode:
@@ -2523,7 +2665,11 @@ func exit_recycle_mode():
 		if selected_vehicle:
 			reset_all_blocks_color()
 		
-		emit_signal("recycle_mode_toggled", false)
+		if is_turret_editing_mode:
+			print("炮塔编辑模式：退出删除模式，保持炮塔编辑")
+		else:
+			# 普通模式下正常退出
+			emit_signal("recycle_mode_toggled", false)
 
 func create_new_vehicle():
 	if is_editing:
