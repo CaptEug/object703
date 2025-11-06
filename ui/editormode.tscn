@@ -13,6 +13,7 @@ layout_mode = 3
 anchors_preset = 0
 theme = ExtResource("1_ils3j")
 script = ExtResource("2_8aq6r")
+TURRET_EDITING_HIGHLIGHT_COLOR = Color(0.834304, 0.830695, 0.804185, 1)
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
@@ -75,6 +76,7 @@ mouse_default_cursor_shape = 2
 texture_normal = ExtResource("6_v1y0q")
 
 [node name="ModeButton" type="TextureButton" parent="Panel"]
+layout_mode = 0
 offset_left = 220.0
 offset_top = 146.0
 offset_right = 252.0

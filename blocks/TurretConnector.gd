@@ -3,7 +3,7 @@ extends Marker2D
 
 # 连接参数
 @export var is_connection_enabled := true
-@export var connection_range := 5.0
+@export var connection_range := 4.0
 @export var connection_type := "rigidbody"
 @export var location := Vector2i()
 
@@ -189,7 +189,8 @@ func find_parent_block() -> Block:
 func get_parent_rigidbody() -> RigidBody2D:
 	var parent = get_parent()
 	if parent is RigidBody2D:
-		return parent as RigidBody2D
+		if not parent is Block: 
+			return parent as RigidBody2D
 	return null
 
 func try_connect(other_connector: TurretConnector) -> bool:

@@ -1,5 +1,17 @@
 extends Control
 
+# === 颜色配置变量 ===
+# 虚影块颜色
+@export var GHOST_FREE_COLOR = Color(1, 0.3, 0.3, 0.7)  # 不能放置
+@export var GHOST_SNAP_COLOR = Color(0.5, 1, 0.5, 0.7)  # 可以放置
+@export var GHOST_TURRET_RANGE_COLOR = Color(0.3, 1, 0.3, 0.7)  # 炮塔范围内
+@export var GHOST_TURRET_OUTSIDE_COLOR = Color(0.3, 0.5, 1, 0.7)  # 炮塔范围外连接
+@export var GHOST_MOVING_COLOR = Color(1, 1, 0.3, 0.7)  # 移动中的虚影
+@export var GHOST_BLUEPRINT_COLOR = Color(0.3, 0.6, 1.0, 0.5)  # 蓝图虚影颜色
+@export var RECYCLE_HIGHLIGHT_COLOR = Color.RED  # 删除模式高亮颜色
+@export var TURRET_EDITING_HIGHLIGHT_COLOR = Color(1, 0.8, 0.3, 1.0)  # 炮塔编辑高亮
+@export var BLOCK_DIM_COLOR = Color(0.5, 0.5, 0.5, 0.6)  # 方块变暗颜色
+
 @onready var tab_container = $TabContainer
 @onready var description_label = $Panel/RichTextLabel
 @onready var build_vehicle_button = $Panel/SaveButton
@@ -173,7 +185,6 @@ func switch_to_turret_mode():
 	
 	print("切换到炮塔编辑模式完成")
 
-
 func switch_to_vehicle_mode():
 	"""切换回车体模式"""
 	if not is_editing:
@@ -208,7 +219,6 @@ func update_mode_button_display():
 		mode_button.texture_normal = turret_icon
 		mode_button.tooltip_text = "炮塔编辑模式 (点击切换回车体编辑)"
 
-
 func _connect_block_buttons():
 	var block_buttons = get_tree().get_nodes_in_group("block_buttons")
 	for button in block_buttons:
@@ -224,6 +234,7 @@ func _input(event):
 	if get_viewport().gui_get_hovered_control():
 		return
 	
+	# B键切换编辑模式
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
 			exit_editor_mode()
@@ -236,110 +247,30 @@ func _input(event):
 				print("错误: 未找到可编辑的车辆")
 		return
 	
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if is_editing and not is_turret_editing_mode and not is_recycle_mode and not is_moving_block:
-			var mouse_pos = get_viewport().get_mouse_position()
-			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-			var clicked_turret = get_turret_at_position(global_mouse_pos)
-			
-			if clicked_turret:
-				enter_turret_editing_mode(clicked_turret)
-				return
-	
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if is_turret_editing_mode:
-			var mouse_pos = get_viewport().get_mouse_position()
-			var _global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-			
-			var can_place = false
-			if current_editing_turret and current_ghost_block:
-				can_place = turret_snap_config and not turret_snap_config.is_empty()
-			
-			if not can_place and not is_recycle_mode:
-				exit_turret_editing_mode()
-				return
-			else:
-				if is_recycle_mode:
-					try_remove_turret_block()
-				else:
-					try_place_turret_block()
-				return
-	
+	# ESC键取消操作
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		if is_turret_editing_mode:
 			exit_turret_editing_mode()
 			return
+		elif is_moving_block:
+			cancel_block_move()
+		else:
+			cancel_placement()
 	
-	if not is_editing:
-		return
-	
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_RIGHT:
-			if is_turret_editing_mode:
-				exit_turret_editing_mode()
-			elif is_moving_block:
-				cancel_block_move()
-			else:
-				cancel_placement()
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				is_mouse_pressed = true
-				drag_timer = 0.0
-				is_dragging = false
-				
-				if is_recycle_mode:
-					if is_turret_editing_mode:
-						# 炮塔编辑模式下的删除
-						try_remove_turret_block()
-					else:
-						# 普通删除模式
-						try_remove_block()
-				
-				if is_moving_block:
-					place_moving_block()
-					return
-					
-				if not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode:
-					var mouse_pos = get_viewport().get_mouse_position()
-					var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-					var block = get_block_at_position(global_mouse_pos)
-					if block:
-						print("检测到方块，开始拖拽计时")
-			else:
-				is_mouse_pressed = false
-				
-				if is_dragging and is_moving_block:
-					place_moving_block()
-				elif not is_dragging and not is_moving_block and not is_recycle_mode and not is_turret_editing_mode:
-					try_place_block()
-	
+	# 其他快捷键处理
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_ESCAPE:
-				if is_turret_editing_mode:
-					exit_turret_editing_mode()
-				elif is_moving_block:
-					cancel_block_move()
-				else:
-					cancel_placement()
 			KEY_R:
 				if is_moving_block and moving_block_ghost:
 					rotate_moving_ghost()
 				elif current_ghost_block:
 					rotate_ghost_connection()
 			KEY_X:
-				if is_turret_editing_mode:
-					# 炮塔编辑模式下切换删除模式
-					if is_recycle_mode:
-						exit_recycle_mode()
-					else:
-						enter_recycle_mode()
+				# 切换删除模式
+				if is_recycle_mode:
+					exit_recycle_mode()
 				else:
-					# 普通模式下切换删除模式
-					if is_recycle_mode:
-						exit_recycle_mode()
-					else:
-						enter_recycle_mode()
+					enter_recycle_mode()
 			KEY_T:
 				# 切换蓝图显示
 				if is_editing and selected_vehicle:
@@ -359,32 +290,135 @@ func _input(event):
 				if is_editing and selected_vehicle and is_showing_blueprint:
 					repair_blueprint_missing_blocks()
 	
-	# 鼠标滚轮旋转
-	if event is InputEventMouseButton and is_editing:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
-			if is_moving_block and moving_block_ghost:
-				rotate_moving_ghost()
-			elif current_ghost_block:
-				rotate_ghost_connection()
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
-			if is_moving_block and moving_block_ghost:
-				# 反向旋转
-				for i in range(3):  # 旋转270度相当于反向90度
-					rotate_moving_ghost()
-			elif current_ghost_block:
-				for i in range(3):
-					rotate_ghost_connection()
-	
-	# 中键取消操作
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_MIDDLE:
-		if is_turret_editing_mode:
-			exit_turret_editing_mode()
-		elif is_moving_block:
-			cancel_block_move()
-		elif current_ghost_block:
-			cancel_placement()
-		elif is_recycle_mode:
-			exit_recycle_mode()
+	# 鼠标按键处理
+	if event is InputEventMouseButton:
+		if event.pressed:
+			# 鼠标按下事件
+			match event.button_index:
+				MOUSE_BUTTON_LEFT:
+					# 鼠标左键按下
+					is_mouse_pressed = true
+					drag_timer = 0.0
+					is_dragging = false
+					
+					if is_turret_editing_mode:
+						# 炮塔编辑模式下的点击处理
+						var mouse_pos = get_viewport().get_mouse_position()
+						var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+						
+						# 检查是否点击到其他炮塔
+						var clicked_turret = get_turret_at_position(global_mouse_pos)
+						var clicked_self = false
+						
+						# 检查是否点击到自己（当前编辑的炮塔）
+						if current_editing_turret == clicked_turret:
+							clicked_self = true
+						
+						if current_ghost_block:
+							# 有幽灵方块时的放置逻辑
+							var can_place = turret_snap_config and not turret_snap_config.is_empty()
+							
+							if can_place and not is_recycle_mode:
+								try_place_turret_block()
+							elif is_recycle_mode:
+								try_remove_turret_block()
+							else:
+								# 不能放置且不在删除模式，保持当前状态不退出
+								pass
+						else:
+							# 没有幽灵方块时的点击逻辑
+							if clicked_turret and clicked_turret != current_editing_turret:
+								# 点击到其他炮塔，切换到该炮塔的编辑模式
+								exit_turret_editing_mode()
+								enter_turret_editing_mode(clicked_turret)
+							elif not clicked_turret and not clicked_self:
+								# 点击空白处且没有点击到自己或其他炮塔，退出炮塔编辑模式
+								exit_turret_editing_mode()
+							# 点击到自己或其他情况，保持当前编辑模式
+					
+					elif is_editing and not is_turret_editing_mode and not is_recycle_mode and not is_moving_block:
+						# 进入炮塔编辑模式
+						var mouse_pos = get_viewport().get_mouse_position()
+						var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+						var clicked_turret = get_turret_at_position(global_mouse_pos)
+						
+						if clicked_turret:
+							enter_turret_editing_mode(clicked_turret)
+							return
+					
+					# 其他左键按下逻辑（非炮塔编辑模式）
+					if not is_turret_editing_mode:
+						if is_recycle_mode:
+							if is_turret_editing_mode:
+								# 炮塔编辑模式下的删除
+								try_remove_turret_block()
+							else:
+								# 普通删除模式
+								try_remove_block()
+						
+						if is_moving_block:
+							place_moving_block()
+							return
+							
+						if not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode:
+							var mouse_pos = get_viewport().get_mouse_position()
+							var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+							var block = get_block_at_position(global_mouse_pos)
+							if block:
+								print("检测到方块，开始拖拽计时")
+				
+				MOUSE_BUTTON_RIGHT:
+					# 右键取消操作
+					if is_turret_editing_mode and current_ghost_block == null:
+						exit_turret_editing_mode()
+					elif is_moving_block:
+						cancel_block_move()
+					elif is_recycle_mode:
+						exit_recycle_mode()
+					else:
+						cancel_placement()
+						
+				
+				MOUSE_BUTTON_MIDDLE:
+					# 中键取消操作
+					if is_turret_editing_mode and current_ghost_block == null:
+						exit_turret_editing_mode()
+					elif is_moving_block:
+						cancel_block_move()
+					elif current_ghost_block:
+						cancel_placement()
+					elif is_recycle_mode:
+						exit_recycle_mode()
+				
+				MOUSE_BUTTON_WHEEL_UP:
+					# 鼠标滚轮向上旋转
+					if is_editing:
+						if is_moving_block and moving_block_ghost:
+							rotate_moving_ghost()
+						elif current_ghost_block:
+							rotate_ghost_connection()
+				
+				MOUSE_BUTTON_WHEEL_DOWN:
+					# 鼠标滚轮向下旋转
+					if is_editing:
+						if is_moving_block and moving_block_ghost:
+							# 反向旋转
+							for i in range(3):
+								rotate_moving_ghost()
+						elif current_ghost_block:
+							for i in range(3):
+								rotate_ghost_connection()
+		
+		else:
+			# 鼠标释放事件
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				# 鼠标左键释放
+				is_mouse_pressed = false
+				
+				if is_dragging and is_moving_block:
+					place_moving_block()
+				elif not is_dragging and not is_moving_block and not is_recycle_mode and not is_turret_editing_mode:
+					try_place_block()
 
 func _process(delta):
 	if is_editing and selected_vehicle:
@@ -429,6 +463,7 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	is_turret_editing_mode = true
 	current_editing_turret = turret
+	cancel_placement()
 	
 	# 重要：确保在炮塔模式下
 	if is_vehicle_mode:
@@ -441,7 +476,8 @@ func enter_turret_editing_mode(turret: TurretRing):
 	reset_turret_rotation(turret)
 	disable_turret_rotation(turret)
 	
-	dim_non_turret_blocks(true)
+	# 设置块的颜色状态：只有当前编辑炮塔高亮，其他所有块变暗
+	reset_all_blocks_color()
 	
 	if current_ghost_block:
 		current_ghost_block.visible = false
@@ -456,11 +492,7 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	clear_tab_container_selection()
 	
-	highlight_current_editing_turret(turret)
-	
 	print("炮塔编辑模式进入完成，当前模式:", "车体" if is_vehicle_mode else "炮塔")
-	
-	
 
 func exit_turret_editing_mode():
 	if not is_turret_editing_mode:
@@ -472,17 +504,19 @@ func exit_turret_editing_mode():
 	
 	if current_editing_turret:
 		enable_turret_rotation(current_editing_turret)
+		# 移除炮塔高亮
+		current_editing_turret.modulate = Color.WHITE
 	
 	Input.set_custom_mouse_cursor(null)
 	
-	dim_non_turret_blocks(false)
-	
-	if current_editing_turret:
-		highlight_current_editing_turret(current_editing_turret, false)
+	# 恢复所有块的颜色
+	if selected_vehicle:
+		for block in selected_vehicle.blocks:
+			if is_instance_valid(block):
+				block.modulate = Color.WHITE
 	
 	if is_recycle_mode:
 		Input.set_custom_mouse_cursor(saw_cursor)
-	
 	
 	turret_snap_config = {}
 	available_turret_connectors.clear()
@@ -493,6 +527,7 @@ func exit_turret_editing_mode():
 	
 	if not is_vehicle_mode:
 		is_vehicle_mode = true
+	
 	# 重要：退出炮塔编辑模式时，根据当前模式更新按钮显示
 	update_mode_button_display()
 	
@@ -518,11 +553,12 @@ func dim_non_turret_blocks(dim: bool):
 	
 	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
-			if block is TurretRing:
+			# 当前编辑的炮塔保持高亮，不受变暗影响
+			if block == current_editing_turret:
 				continue
 			
 			if dim:
-				block.modulate = Color(0.5, 0.5, 0.5, 0.6)
+				block.modulate = BLOCK_DIM_COLOR
 			else:
 				block.modulate = Color.WHITE
 
@@ -531,7 +567,7 @@ func highlight_current_editing_turret(turret: TurretRing, highlight: bool = true
 		return
 	
 	if highlight:
-		turret.modulate = Color(1, 0.8, 0.3, 1.0)
+		turret.modulate = TURRET_EDITING_HIGHLIGHT_COLOR
 	else:
 		turret.modulate = Color.WHITE
 
@@ -597,7 +633,6 @@ func is_position_in_turret_range_for_ghost(mouse_position: Vector2) -> bool:
 	var adjusted_grid_x = grid_x
 	var adjusted_grid_y = grid_y
 	
-
 	# 计算虚影块的所有网格位置（考虑旋转）
 	var ghost_grid_positions = calculate_ghost_grid_positions_for_turret(
 		Vector2i(adjusted_grid_x, adjusted_grid_y), 
@@ -784,7 +819,7 @@ func find_best_regular_snap_config_for_turret(mouse_position: Vector2, block_poi
 				continue
 				
 			# 计算网格位置
-			var positions = calculate_rotated_grid_positions_for_turret(block_point, ghost_point, target_rotation)
+			var positions = calculate_rotated_grid_positions_for_turret(block_point, ghost_point)
 			if positions is bool or positions.is_empty():
 				continue
 				
@@ -813,10 +848,10 @@ func calculate_aligned_rotation_for_turret_block(vehicle_block: Block) -> float:
 	# 使用车辆块的全局旋转，加上虚影的基础旋转
 	# 减去相机旋转以确保基础旋转正确
 	var world_rotation = vehicle_block.global_rotation
-	var _camera_rotation = camera.target_rot
+	var self_rotation = deg_to_rad(vehicle_block.base_rotation_degree)
 	var base_rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
-	return world_rotation + base_rotation
+	return world_rotation + base_rotation - self_rotation
 
 func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
 	"""检查炮塔连接点是否可以连接 - 修复版"""
@@ -833,27 +868,49 @@ func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Co
 	var can_connect = are_rotations_opposite_best(ghost_point_direction, vehicle_point_direction)
 	return can_connect
 
-func calculate_rotated_grid_positions_for_turret(vehicle_point: Connector, ghost_point: Connector, target_rotation: float) -> Array:
-	"""计算炮塔块的旋转网格位置 - 修复版"""
+func calculate_rotated_grid_positions_for_turret(turret_point: Connector, ghost_point: Connector):
+	"""计算旋转后的网格位置 - 用于连接吸附"""
 	var grid_positions = []
+	var grid_block = {}
 	
-	var vehicle_block = vehicle_point.find_parent_block()
-	if not vehicle_block:
+	if not current_editing_turret:
 		return grid_positions
 	
-	# 使用连接点的location直接计算网格位置
-	var vehicle_location = vehicle_point.location
-	var ghost_location = ghost_point.location
+	var block_size = ghost_point.find_parent_block().size
+
+	var location_v = turret_point.location
 	
-	# 计算基础网格位置
-	var base_grid_pos = calculate_base_grid_position_for_turret(vehicle_location, ghost_location, target_rotation)
+	var rotation_b = turret_point.find_parent_block().base_rotation_degree
+	var grid_b = {}
+	var grid_b_pos = {}
 	
-	# 计算所有网格位置
-	grid_positions = calculate_all_grid_positions_for_turret_simple(base_grid_pos, current_ghost_block.size, current_ghost_block.base_rotation_degree)
+	# 获取车辆块的网格位置
+	for key in current_editing_turret.turret_grid:
+		if current_editing_turret.turret_grid[key] == turret_point.find_parent_block():
+			grid_b[key] = current_editing_turret.turret_grid[key]
 	
-	# 检查位置是否可用
-	if not are_turret_grid_positions_available_for_placement(grid_positions):
-		return []
+	grid_b_pos = get_rectangle_corners(grid_b)
+	var grid_connect_g
+	if grid_b_pos.is_empty():
+		return false
+	var connect_pos_v
+	if rotation_b == 0:
+		connect_pos_v = Vector2i(grid_b_pos["1"].x + location_v.x, grid_b_pos["1"].y + location_v.y)
+	elif rotation_b == -90:
+		connect_pos_v = Vector2i(grid_b_pos["4"].x + location_v.y, grid_b_pos["4"].y - location_v.x)
+	elif rotation_b == -180 or rotation_b == 180:
+		connect_pos_v = Vector2i(grid_b_pos["3"].x - location_v.x, grid_b_pos["3"].y - location_v.y)
+	elif rotation_b == 90:
+		connect_pos_v = Vector2i(grid_b_pos["2"].x - location_v.y, grid_b_pos["2"].y + location_v.x)
+	grid_connect_g = get_connection_offset(connect_pos_v, turret_point.rotation, turret_point.find_parent_block().base_rotation_degree)
+	
+	if grid_connect_g != null and block_size != null and ghost_point.location != null:
+		grid_block = to_grid(grid_connect_g, block_size, ghost_point.location)
+	
+	for pos in grid_block:
+		if current_editing_turret.turret_grid.has(pos):
+			return false
+		grid_positions.append(pos)
 	
 	return grid_positions
 
@@ -1136,7 +1193,7 @@ func calculate_turret_block_rotation(turret_point: TurretConnector, ghost_point:
 	var ghost_base_rotation = deg_to_rad(ghost_point.get_parent().base_rotation_degree)
 	var ghost_direction = ghost_base_rotation
 	
-	var relative_rotation = turret_direction - ghost_direction
+	var relative_rotation = turret_direction + ghost_direction
 	
 	return relative_rotation
 
@@ -1200,19 +1257,18 @@ func apply_turret_snap_config(snap_config: Dictionary):
 	
 	# 根据范围显示不同颜色
 	if snap_config.has("positions") and not snap_config.positions.is_empty():
-		current_ghost_block.modulate = Color(0.3, 0.5, 1, 0.7)  # 蓝色：炮塔范围外连接
+		current_ghost_block.modulate = GHOST_TURRET_OUTSIDE_COLOR  # 蓝色：炮塔范围外连接
 	else:
-		current_ghost_block.modulate = Color(0.3, 1, 0.3, 0.7)  # 绿色：炮塔范围内
+		current_ghost_block.modulate = GHOST_TURRET_RANGE_COLOR  # 绿色：炮塔范围内
 	
 	# 存储吸附配置用于放置
 	turret_snap_config = snap_config.duplicate()  # 使用副本避免引用问题
-
 
 func set_ghost_free_position(mouse_position: Vector2):
 	"""设置虚影自由位置（无吸附）"""
 	current_ghost_block.global_position = mouse_position
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-	current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.7)  # 红色：不能放置
+	current_ghost_block.modulate = GHOST_FREE_COLOR  # 红色：不能放置
 	turret_snap_config = {}
 
 func try_place_turret_block():
@@ -1230,7 +1286,7 @@ func try_place_turret_block():
 		return
 	
 	print("=== 炮塔编辑模式放置 ===")
-	print("吸附配置键:", turret_snap_config.keys())
+	print("吸附配置键:", turret_snap_config)
 	
 	# 检查必要的键是否存在
 	if not turret_snap_config.has("ghost_position"):
@@ -1264,9 +1320,10 @@ func try_place_turret_block():
 	# 使用吸附配置中的位置和旋转
 	new_block.global_position = turret_snap_config.ghost_position
 	
-		# 使用虚影的旋转
-	new_block.global_rotation = current_ghost_block.global_rotation
+	# 使用虚影的旋转
+	new_block.global_rotation = turret_snap_config.ghost_rotation
 	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
+	print("current_ghost_block.global_rotation =", new_block.global_rotation)
 	
 	# 添加到炮塔
 	if turret_snap_config.has("grid_positions"):
@@ -1277,25 +1334,10 @@ func try_place_turret_block():
 		new_block.queue_free()
 		return
 	
+	print("current_ghost_block.global_rotation =", new_block.global_rotation)
+	
 	# 根据吸附配置类型建立连接
 	var connection_established = false
-	
-	# 检查是否是炮塔范围内连接（RigidBody连接）
-	if turret_snap_config.has("turret_point") and turret_snap_config.has("ghost_point"):
-		# 阶段1：炮塔范围内，使用RigidBody连接到炮塔座圈
-		establish_rigidbody_connection(turret_snap_config.turret_point, new_block, turret_snap_config.ghost_point)
-		print("✅ 炮塔范围内放置 - 使用RigidBody连接到炮塔座圈")
-		connection_established = true
-	
-	# 检查是否是炮塔范围外连接（普通Connector连接）
-	elif turret_snap_config.has("vehicle_point") and turret_snap_config.has("ghost_point"):
-		# 阶段2：炮塔范围外，使用普通Connector连接到炮塔上的块
-		establish_regular_connection(turret_snap_config.vehicle_point, new_block, turret_snap_config.ghost_point)
-		print("✅ 炮塔范围外放置 - 使用Connector连接到炮塔上的块")
-		connection_established = true
-	
-	if not connection_established:
-		print("⚠️ 放置了块但没有建立连接")
 	
 	# 等待块准备完成
 	if new_block.has_method("connect_aready"):
@@ -1303,42 +1345,15 @@ func try_place_turret_block():
 	else:
 		# 如果没有connect_aready方法，等待一帧
 		await get_tree().process_frame
+	
 	if selected_vehicle:
 		selected_vehicle.update_vehicle()
+	
 	# 重新开始块放置
 	start_block_placement_with_rotation(current_block_scene.resource_path)
 	
 	print("✅ 炮塔块放置完成")
-
-func establish_rigidbody_connection(turret_connector: TurretConnector, new_block: Block, block_connector: TurretConnector):
-	"""建立炮塔刚性体连接"""
-	var new_block_connectors = new_block.find_children("*", "TurretConnector")
-	var target_connector = null
-	
-	for connector in new_block_connectors:
-		if connector is TurretConnector and connector.name == block_connector.name:
-			target_connector = connector
-			break
-	
-	if target_connector is TurretConnector:
-		target_connector.is_connection_enabled = true
-		turret_connector.try_connect(target_connector)
-		print("we ", turret_connector.try_connect(target_connector))
-		
-func establish_regular_connection(vehicle_point: Connector, new_block: Block, ghost_point: Connector):
-	"""建立普通连接点连接"""
-	var new_block_points = new_block.find_children("*", "Connector")
-	var target_point = null
-	
-	for point in new_block_points:
-		if point is Connector and point.name == ghost_point.name:
-			target_point = point
-			break
-	
-	if target_point is Connector:
-		target_point.is_connection_enabled = true
-		vehicle_point.try_connect(target_point)
-		print("we", " 3 ",vehicle_point.layer)
+	print("current_ghost_block.global_rotation =", new_block.global_rotation)
 
 # === 炮塔检测功能 ===
 func has_turret_blocks() -> bool:
@@ -1701,7 +1716,7 @@ func create_ghost_block_with_data(scene_path: String, rotation_deg: float, grid_
 	var ghost = scene.instantiate()
 	get_tree().current_scene.add_child(ghost)
 	
-	ghost.modulate = Color(0.3, 0.6, 1.0, 0.5)
+	ghost.modulate = GHOST_BLUEPRINT_COLOR
 	ghost.z_index = 45
 	ghost.visible = true
 	
@@ -1889,9 +1904,11 @@ func enter_recycle_mode():
 	if is_moving_block:
 		cancel_block_move()
 	
-	
+	# 重要：在进入删除模式时重置块的颜色状态
 	if is_turret_editing_mode:
 		print("炮塔编辑模式：删除功能已切换到炮塔专用")
+		# 在炮塔编辑模式下，确保只有当前编辑炮塔高亮，其他所有块变暗
+		reset_all_blocks_color()
 	else:
 		clear_tab_container_selection()
 	
@@ -2017,7 +2034,6 @@ func exit_editor_mode():
 	panel_instance = null
 	selected_vehicle = null
 
-
 func enable_all_connection_points_for_editing(open: bool):
 	if not selected_vehicle:
 		return
@@ -2034,7 +2050,6 @@ func restore_original_connections():
 	
 	enable_all_connection_points_for_editing(false)
 	await get_tree().process_frame
-	
 
 func start_block_placement(scene_path: String):
 	if not is_editing or not selected_vehicle:
@@ -2100,7 +2115,7 @@ func update_ghost_block_position(mouse_position: Vector2):
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
 		current_ghost_block.global_position = mouse_position
 		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
+		current_ghost_block.modulate = GHOST_FREE_COLOR
 		current_snap_config = {}
 		return
 	
@@ -2109,12 +2124,12 @@ func update_ghost_block_position(mouse_position: Vector2):
 	if snap_config:
 		current_ghost_block.global_position = snap_config.ghost_position
 		current_ghost_block.global_rotation = snap_config.ghost_rotation
-		current_ghost_block.modulate = Color(0.5, 1, 0.5, 0.5)
+		current_ghost_block.modulate = GHOST_SNAP_COLOR
 		current_snap_config = snap_config
 	else:
 		current_ghost_block.global_position = mouse_position
 		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
+		current_ghost_block.modulate = GHOST_FREE_COLOR
 		current_snap_config = {}
 
 func get_ghost_block_available_connection_points() -> Array[Connector]:
@@ -2376,7 +2391,6 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint):
 			return false
 		grid_positions.append(pos)
 	
-	
 	return grid_positions
 
 func get_connection_offset(connect_pos_v: Vector2i, _rotation: float, direction: int) -> Vector2i:
@@ -2440,7 +2454,6 @@ func to_grid(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g: Vect
 				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.y, grid_connect_g.y - connect_pos_g.x)
 				grid_block[Vector2i(left_up.x - j, left_up.y + i)] = current_ghost_block
 	return grid_block
-	
 
 func find_connections_to_disconnect_for_placement() -> Array:
 	var connections_to_disconnect = []
@@ -2623,16 +2636,14 @@ func update_recycle_highlight():
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	
+	# 先重置所有块的颜色
 	reset_all_blocks_color()
 	
 	if is_turret_editing_mode:
 		# 炮塔编辑模式下的高亮：只高亮炮塔上的块
 		var block = get_turret_block_at_position(global_mouse_pos)
 		if block:
-			block.modulate = Color.RED
-			# 同时高亮当前编辑的炮塔
-			if current_editing_turret:
-				current_editing_turret.modulate = Color(1, 0.8, 0.3, 1.0)
+			block.modulate = RECYCLE_HIGHLIGHT_COLOR
 	else:
 		# 普通删除模式的高亮
 		var space_state = get_tree().root.get_world_2d().direct_space_state
@@ -2644,16 +2655,23 @@ func update_recycle_highlight():
 		for collision in result:
 			var block = collision.collider
 			if block is Block and block.get_parent() == selected_vehicle:
-				block.modulate = Color.RED
+				block.modulate = RECYCLE_HIGHLIGHT_COLOR
 				break
 
 func reset_all_blocks_color():
+	if not selected_vehicle:
+		return
+	
 	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
-			if is_turret_editing_mode and block == current_editing_turret:
-				# 保持炮塔的高亮
-				block.modulate = Color(1, 0.8, 0.3, 1.0)
+			if is_turret_editing_mode:
+				# 炮塔编辑模式下：只有当前编辑炮塔保持高亮，其他所有块都变暗
+				if block == current_editing_turret:
+					block.modulate = TURRET_EDITING_HIGHLIGHT_COLOR
+				else:
+					block.modulate = BLOCK_DIM_COLOR
 			else:
+				# 普通模式下：所有块恢复正常颜色
 				block.modulate = Color.WHITE
 
 func exit_recycle_mode():
@@ -2810,7 +2828,7 @@ func update_moving_ghost_position(mouse_position: Vector2):
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
 		moving_block_ghost.global_position = mouse_position
 		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
-		moving_block_ghost.modulate = Color(1, 1, 0.3, 0.7)
+		moving_block_ghost.modulate = GHOST_MOVING_COLOR
 		moving_snap_config = {}
 		return
 	
@@ -2819,12 +2837,12 @@ func update_moving_ghost_position(mouse_position: Vector2):
 	if snap_config:
 		moving_block_ghost.global_position = snap_config.ghost_position
 		moving_block_ghost.global_rotation = snap_config.ghost_rotation
-		moving_block_ghost.modulate = Color(0.5, 1, 0.5, 0.7)
+		moving_block_ghost.modulate = GHOST_SNAP_COLOR
 		moving_snap_config = snap_config
 	else:
 		moving_block_ghost.global_position = mouse_position
 		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
-		moving_block_ghost.modulate = Color(1, 1, 0.3, 0.7)
+		moving_block_ghost.modulate = GHOST_MOVING_COLOR
 		moving_snap_config = {}
 
 func get_current_snap_config_for_moving() -> Dictionary:
@@ -2886,7 +2904,7 @@ func create_moving_ghost(block: Block):
 	moving_block_ghost = scene.instantiate()
 	get_tree().current_scene.add_child(moving_block_ghost)
 	
-	moving_block_ghost.modulate = Color(1, 1, 0.5, 0.7)
+	moving_block_ghost.modulate = GHOST_MOVING_COLOR
 	moving_block_ghost.z_index = 100
 	moving_block_ghost.global_position = moving_block_original_position
 	moving_block_ghost.global_rotation = moving_block_original_rotation
