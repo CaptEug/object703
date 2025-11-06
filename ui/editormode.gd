@@ -231,9 +231,6 @@ func _on_block_button_pressed():
 	is_ui_interaction = false
 
 func _input(event):
-	if get_viewport().gui_get_hovered_control():
-		return
-	
 	# B键切换编辑模式
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
@@ -292,6 +289,8 @@ func _input(event):
 	
 	# 鼠标按键处理
 	if event is InputEventMouseButton:
+		if get_viewport().gui_get_hovered_control():
+			return
 		if event.pressed:
 			# 鼠标按下事件
 			match event.button_index:
