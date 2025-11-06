@@ -22,7 +22,10 @@ func initialize_inventory():
 	inventory.resize(slot_count)
 	for i in range(slot_count):
 		inventory[i] = {}
-	set_item(0, test_generate_scrap())
+	add_item("57mmAP", 10)
+	add_item("PZGR75", 10)
+	add_item("122mmAPHE", 10)
+	add_item("380mmrocket", 10)
 
 func get_item(slot_index: int) -> Dictionary:
 	if slot_index < 0 or slot_index >= slot_count:
@@ -45,20 +48,48 @@ func finalize_changes():
 # ============================================================
 # 物品交互接口（供 UI 调用）
 
-func take_item(id: String, count: int) -> Dictionary:
-	var item = {}
-	for i in range(int(len(inventory))):
-		if inventory[i] == {}:
+func add_item(id: String, count: int) -> bool:
+	
+	for i in range(len(inventory)):
+		if inventory[i].is_empty():
+			continue
+		if inventory[i]["id"] == id:
+			inventory[i]["count"] += count
+			return true
+	
+	var item_data = {"id": id, "count": count}
+	for i in range(len(inventory)):
+		if inventory[i].is_empty():
+			return place_item(i, item_data)
+	
+	return false
+
+
+func take_item(id: String, count: int) -> bool:
+	var total_item_stored:int = 0
+	var count_remain = count
+	#Check total numer in inventory
+	for i in range(len(inventory)):
+		if inventory[i].is_empty():
 			continue
 		elif inventory[i]["id"] == id:
-			if inventory[i]["count"] > count:
-				inventory[i]["count"] -= count
-				item = {"id": id, "count": count}
+			total_item_stored += inventory[i]["count"]
+	if total_item_stored < count:
+		return false
+	
+	for i in range(len(inventory)):
+		if inventory[i].is_empty():
+			continue
+		elif inventory[i]["id"] == id:
+			if inventory[i]["count"] >= count_remain:
+				inventory[i]["count"] -= count_remain
+				return true
 			else:
-				item = {"id": id, "count": inventory[i]["count"]}
+				count_remain -= inventory[i]["count"]
 				inventory[i] = {}
 			emit_signal("inventory_changed", self)
-	return item
+	
+	return false
 
 func place_item(slot_index: int, item: Dictionary) -> bool:
 	if slot_index < 0 or slot_index >= slot_count:
@@ -85,11 +116,7 @@ func split_item(slot_index: int) -> Dictionary:
 	emit_signal("inventory_changed", self)
 	return new_item
 	
-# ✅ 自动添加到第一个空位
-func add_item(item_data: Dictionary) -> bool:
-	for i in range(slot_count):
-		return place_item(i, item_data)
-	return false
+
 
 func clear_all():
 	for i in range(slot_count):
@@ -117,5 +144,3 @@ func calculate_total_weight() -> float:
 		total_weight += i.count * i.weight
 	return total_weight
 	
-func test_generate_scrap() -> Dictionary:
-	return {"id": "scrap", "count": 10}

@@ -135,7 +135,7 @@ func _add_test_item(tank: Vehicle) -> void:
 		return
 
 	# ✅ 构造一个测试物品
-	var item_data := {"id": "scrap", "count": 10}
+	var item_data := {"id": "122mmAPHE", "count": 10}
 	print("[InventoryPanel] Trying to add item:", item_data["id"])
 
 	# ✅ 遍历所有 block，找到 Cargo 类型并尝试添加
@@ -152,7 +152,7 @@ func _test_take_item(current_tank) -> void:
 	var tank = current_tank
 	for block in tank.blocks:
 		if block is Cargo:
-			var scrap = block.take_item("scrap", 10)
+			var scrap = block.take_item("scrap", 1)
 			print("item_taken", scrap)
 			return
 	

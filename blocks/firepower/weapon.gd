@@ -55,9 +55,9 @@ func _process(delta):
 	if not functioning:
 		crosshair.visible = false
 		return
-	#check reload every frame
-	if has_ammo():
-		if not loading and not loaded:
+	#check reload
+	if not loading and not loaded:
+		if find_ammo():
 			start_reload()
 	
 	#check targeting method
@@ -120,6 +120,7 @@ func fire():
 	current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
 	if gun_fire_sound:
 		gun_fire_sound.play()
+	shell_chosen = null
 	loaded = false
 
 func shoot(muz:Marker2D, shell_picked:PackedScene):
@@ -151,19 +152,11 @@ func find_ammo() -> bool:
 	for ammorack in connected_ammoracks:
 		var inv = ammorack.inventory
 		for item in inv:
+			if item == {}:
+				continue
 			if item["id"] in shells:
-				var shell_chosen = ItemDB.get_item(item["id"])["shell_scene"]
+				shell_chosen = ItemDB.get_item(item["id"])["shell_scene"]
 				return ammorack.take_item(item["id"], 1)
-	return false
-
-func has_ammo() -> bool:
-	connected_ammoracks.clear()
-	find_all_connected_ammorack()
-	#var total_ammo = 0
-	#for ammorack in connected_ammoracks:
-		#total_ammo += ammorack.ammo_storage
-	#if total_ammo > ammo_cost:
-		#return true
 	return false
 
 

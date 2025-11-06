@@ -104,3 +104,7 @@ location = Vector2i(0, 2)
 position = Vector2(-24, 0)
 rotation = 3.14159
 location = Vector2i(0, 1)
+
+[node name="ConnectionPoint12" parent="." instance=ExtResource("3_txfcf")]
+position = Vector2(-24, -16)
+rotation = -3.14158
