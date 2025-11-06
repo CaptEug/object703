@@ -463,7 +463,7 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	is_turret_editing_mode = true
 	current_editing_turret = turret
-	current_ghost_block = null
+	cancel_placement()
 	
 	# 重要：确保在炮塔模式下
 	if is_vehicle_mode:
