@@ -64,7 +64,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 	"""添加block到炮塔grid系统"""
 	if block not in turret_blocks:
 		turret_blocks.append(block)
-		
+		block.z_index = 100
 		# 如果没有指定grid位置，自动计算
 		if grid_positions.is_empty():
 			grid_positions = calculate_block_grid_positions(block)
