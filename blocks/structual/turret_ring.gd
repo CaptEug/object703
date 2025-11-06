@@ -194,14 +194,7 @@ func update_turret_physics():
 	for block in turret_blocks:
 		if is_instance_valid(block):
 			total_mass += block.mass
-			var block_positions = get_turret_block_grid(block)
-			if not block_positions.is_empty():
-				var block_center = calculate_block_center(block_positions)
-				center_of_mass += block_center * block.mass
-	
 	if total_mass > 0:
-		center_of_mass /= total_mass
-		# 更新炮塔的质量和质心
 		turret.mass = total_mass
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:

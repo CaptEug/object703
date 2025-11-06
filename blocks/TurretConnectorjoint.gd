@@ -39,7 +39,7 @@ func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnecto
 	print("连接点位置: ", position)
 	
 	if lock_rotation:
-		block.rotation = target.rotation
+		block.rotation = target.rotation + deg_to_rad(block.base_rotation_degree)
 		print("旋转锁定启用")
 	
 	print("关节设置完成: ", block.name, " <-> ", target.name)
@@ -49,9 +49,9 @@ func _physics_process(delta):
 		print("关节目标失效，断开连接")
 		break_connection()
 		return
-	
+	#
 	if lock_rotation and is_instance_valid(target_body):
-		block.global_rotation = target_body.global_rotation
+		block.global_rotation = target_body.global_rotation + deg_to_rad(block.base_rotation_degree) 
 
 func break_connection():
 	print("断开关节连接")
