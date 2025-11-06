@@ -784,7 +784,7 @@ func update_vehicle_size():
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
 
 # 获取距离某个位置一定范围内的可用连接点
-func get_available_points_near_position(_position: Vector2, max_distance: float = 30.0) -> Array[ConnectionPoint]:
+func get_available_points_near_position(_position: Vector2, max_distance: float = 30.0) -> Array[Connector]:
 	var temp_points = []
 	var max_distance_squared = max_distance * max_distance
 	
@@ -798,9 +798,9 @@ func get_available_points_near_position(_position: Vector2, max_distance: float 
 					temp_points.append(point)
 	
 	# 显式转换类型
-	var available_points: Array[ConnectionPoint] = []
+	var available_points: Array[Connector] = []
 	for point in temp_points:
-		if point is ConnectionPoint:
+		if point is Connector:
 			available_points.append(point)
 	
 	return available_points

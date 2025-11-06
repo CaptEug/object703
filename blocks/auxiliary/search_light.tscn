@@ -1,9 +1,9 @@
 [gd_scene load_steps=11 format=3 uid="uid://b60u6nneewapn"]
 
-[ext_resource type="Script" uid="uid://clchncp5d3wb5" path="res://blocks/auxiliary/search_light.gd" id="1_37jjf"]
+[ext_resource type="Script" path="res://blocks/auxiliary/search_light.gd" id="1_37jjf"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_37jjf"]
 [ext_resource type="Texture2D" uid="uid://f0n5ifd0300t" path="res://assets/lights/search_light.png" id="3_sk2n7"]
-[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="4_sk2n7"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="4_sk2n7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_37jjf"]
 size = Vector2(16, 16)

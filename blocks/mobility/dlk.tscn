@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3 uid="uid://csobt205oh5gd"]
 
-[ext_resource type="Script" uid="uid://mocxh8csrjt" path="res://blocks/mobility/dlk.gd" id="1_8pn6h"]
+[ext_resource type="Script" path="res://blocks/mobility/dlk.gd" id="1_8pn6h"]
 [ext_resource type="Texture2D" uid="uid://dkyi4dpe5mppa" path="res://assets/blocks_uk.png" id="2_8dyy0"]
-[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_8pn6h"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_8pn6h"]
 [ext_resource type="PackedScene" uid="uid://busyvtgukolkx" path="res://assets/particles/exhaust_gas.tscn" id="4_8pn6h"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iff7l"]

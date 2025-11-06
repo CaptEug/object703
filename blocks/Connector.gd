@@ -1,4 +1,4 @@
-class_name ConnectionPoint
+class_name Connector
 extends Marker2D
 
 @onready var line = $Line2D
@@ -10,10 +10,10 @@ extends Marker2D
 @export var location:= Vector2i()
 @export var layer = 1
 
-var connected_to: ConnectionPoint = null
+var connected_to: Connector = null
 var joint: Joint2D = null
 var detection_area: Area2D
-var overlapping_points: Array[ConnectionPoint] = []
+var overlapping_points: Array[Connector] = []
 var qeck = true
 var area:Area2D
 
@@ -64,7 +64,7 @@ func change_layer(area2D: Area2D, ceng: int):
 
 func _on_area_entered(area: Area2D):
 	var other_point = area.get_parent()
-	if other_point is ConnectionPoint:
+	if other_point is Connector:
 		if not overlapping_points.has(other_point):
 			var con = [other_point, self]
 			if find_parent_block().is_movable_on_connection == true:
@@ -73,10 +73,10 @@ func _on_area_entered(area: Area2D):
 
 func _on_area_exited(area: Area2D):
 	var other_point = area.get_parent()
-	if other_point is ConnectionPoint:
+	if other_point is Connector:
 		overlapping_points.erase(other_point)
 
-func try_connect(other_point: ConnectionPoint) -> bool:
+func try_connect(other_point: Connector) -> bool:
 	#if not (is_connection_enabled and other_point.is_connection_enabled):
 		#return false
 	
@@ -103,7 +103,7 @@ func try_connect(other_point: ConnectionPoint) -> bool:
 			connected_to = other_point
 	return true
 
-func can_connect_with(other_point: ConnectionPoint) -> bool:
+func can_connect_with(other_point: Connector) -> bool:
 	if connected_to or other_point.connected_to:
 		return false
 	
@@ -208,7 +208,7 @@ func unhighlight():
 
 # 新增：获取连接状态信息
 func get_connection_info() -> String:
-	var info = "ConnectionPoint: " + name + "\n"
+	var info = "Connector: " + name + "\n"
 	info += "Enabled: " + str(is_connection_enabled) + "\n"
 	info += "Connected: " + str(connected_to != null) + "\n"
 	info += "Type: " + connection_type + "\n"
