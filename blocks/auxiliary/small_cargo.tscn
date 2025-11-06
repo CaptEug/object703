@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b1yias26hr043" path="res://blocks/auxiliary/small_cargo.gd" id="1_koieb"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_jiu6e"]
-[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_gims6"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_gims6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_koieb"]
 size = Vector2(16, 16)

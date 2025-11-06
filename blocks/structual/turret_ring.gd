@@ -220,22 +220,22 @@ func is_position_available(grid_pos: Vector2i) -> bool:
 	"""检查指定grid位置是否可用"""
 	return turret_grid.get(grid_pos) == null
 
-func get_available_connection_points() -> Array[ConnectionPoint]:
+func get_available_connection_points() -> Array[Connector]:
 	"""获取炮塔上可用的连接点"""
-	var points: Array[ConnectionPoint] = []
+	var points: Array[Connector] = []
 	
 	# 获取炮塔底座上的连接点
-	var base_points = find_children("*", "ConnectionPoint")
+	var base_points = find_children("*", "Connector")
 	for point in base_points:
-		if point is ConnectionPoint and not point.connected_to:
+		if point is Connector and not point.connected_to:
 			points.append(point)
 	
 	# 获取炮塔上已有块的连接点
 	for block in turret_blocks:
 		if is_instance_valid(block):
-			var block_points = block.find_children("*", "ConnectionPoint")
+			var block_points = block.find_children("*", "Connector")
 			for point in block_points:
-				if point is ConnectionPoint and not point.connected_to:
+				if point is Connector and not point.connected_to:
 					points.append(point)
 	
 	return points
@@ -256,29 +256,29 @@ func get_all_blocks() -> Array:
 	all_blocks.append_array(turret_blocks)
 	return all_blocks
 
-func get_turret_connectors() -> Array[RigidBodyConnector]:
-	"""获取炮塔上的所有RigidBodyConnector"""
-	var connectors: Array[RigidBodyConnector] = []
+func get_turret_connectors() -> Array[TurretConnector]:
+	"""获取炮塔上的所有TurretConnector"""
+	var connectors: Array[TurretConnector] = []
 	
 	# 获取炮塔底座上的连接器
-	var base_connectors = find_children("*", "RigidBodyConnector")
+	var base_connectors = find_children("*", "TurretConnector")
 	for connector in base_connectors:
-		if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+		if connector is TurretConnector and connector.is_connection_enabled and connector.connected_to == null:
 			connectors.append(connector)
 	
 	# 获取炮塔上已有块的连接器
 	for block in turret_blocks:
 		if is_instance_valid(block):
-			var block_connectors = block.find_children("*", "RigidBodyConnector")
+			var block_connectors = block.find_children("*", "TurretConnector")
 			for connector in block_connectors:
-				if connector is RigidBodyConnector and connector.is_connection_enabled and connector.connected_to == null:
+				if connector is TurretConnector and connector.is_connection_enabled and connector.connected_to == null:
 					connectors.append(connector)
 	
 	return connectors
 
-func get_available_turret_connectors() -> Array[RigidBodyConnector]:
+func get_available_turret_connectors() -> Array[TurretConnector]:
 	"""获取可用的炮塔连接器"""
-	var connectors: Array[RigidBodyConnector] = []
+	var connectors: Array[TurretConnector] = []
 	
 	for connector in get_turret_connectors():
 		if connector.is_connection_enabled and connector.connected_to == null:

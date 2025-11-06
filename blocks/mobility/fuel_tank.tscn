@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://drgiam11wppfv" path="res://blocks/mobility/fuel_tank.gd" id="1_bexs3"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_tycq7"]
-[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/connection_point.tscn" id="3_tycq7"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_tycq7"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ux1n8"]
 size = Vector2(16, 16)

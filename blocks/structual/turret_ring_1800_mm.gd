@@ -26,11 +26,11 @@ func setup_connectors():
 	collision_layer = 1  # RigidBody在层3
 		# 自动连接所有重叠的连接器
 
-func get_rigidbody_connectors_on_node(node: Node) -> Array[RigidBodyConnector]:
-	var connectors: Array[RigidBodyConnector] = []
-	var children = node.find_children("*", "RigidBodyConnector", true, false)
+func get_rigidbody_connectors_on_node(node: Node) -> Array[TurretConnector]:
+	var connectors: Array[TurretConnector] = []
+	var children = node.find_children("*", "TurretConnector", true, false)
 	for child in children:
-		connectors.append(child as RigidBodyConnector)
+		connectors.append(child as TurretConnector)
 	return connectors
 
 #func _process(delta: float) -> void:

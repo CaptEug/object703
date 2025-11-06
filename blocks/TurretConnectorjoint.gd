@@ -1,4 +1,4 @@
-class_name BlockPinJoint2D
+class_name TurretConnectorJoint
 extends PinJoint2D
 
 @export var connection_strength: float = 1.0
@@ -8,10 +8,10 @@ extends PinJoint2D
 var block: Block
 var target_body: RigidBody2D
 var initial_global_position: Vector2
-var connector: RigidBodyConnector
+var connector: TurretConnector
 
 func _ready():
-	print("BlockPinJoint2D 创建")
+	print("TurretConnectorJoint 创建")
 	setup_joint()
 
 func setup_joint():
@@ -20,7 +20,7 @@ func setup_joint():
 	disable_collision = true
 	print("关节参数设置完成")
 
-func setup(block_node: Block, target: RigidBody2D, connector_ref: RigidBodyConnector):
+func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnector):
 	print("设置关节连接")
 	block = block_node
 	target_body = target
@@ -66,9 +66,9 @@ func break_connection():
 	queue_free()
 	print("关节已销毁")
 
-static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector_ref: RigidBodyConnector, lock_rot: bool = true, maintain_pos: bool = true) -> BlockPinJoint2D:
-	print("创建BlockPinJoint2D连接")
-	var joint = BlockPinJoint2D.new()
+static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector_ref: TurretConnector, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
+	print("创建TurretConnectorJoint连接")
+	var joint = TurretConnectorJoint.new()
 	joint.lock_rotation = lock_rot
 	joint.maintain_position = maintain_pos
 	joint.setup(block, rigidbody, connector_ref)

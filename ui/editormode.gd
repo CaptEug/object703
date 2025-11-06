@@ -43,8 +43,8 @@ var turret_cursor:Texture = preload("res://assets/icons/file.png")
 var turret_grid_previews := []
 
 # === 炮塔连接点吸附系统 ===
-var available_turret_connectors: Array[RigidBodyConnector] = []
-var available_block_connectors: Array[RigidBodyConnector] = []
+var available_turret_connectors: Array[TurretConnector] = []
+var available_block_connectors: Array[TurretConnector] = []
 var turret_snap_config: Dictionary = {}
 
 # === 蓝图显示功能 ===
@@ -82,8 +82,8 @@ var DRAG_DELAY: float = 0.2
 # 连接点吸附系统
 var current_ghost_connection_index := 0
 var current_vehicle_connection_index = 0
-var available_ghost_points: Array[ConnectionPoint] = []
-var available_vehicle_points: Array[ConnectionPoint] = []
+var available_ghost_points: Array[Connector] = []
+var available_vehicle_points: Array[Connector] = []
 var current_snap_config: Dictionary = {}
 var snap_config
 var is_first_block := true
@@ -653,7 +653,7 @@ func update_turret_range_placement(mouse_position: Vector2):
 		set_ghost_free_position(mouse_position)
 
 func update_outside_turret_placement(mouse_position: Vector2):
-	"""在炮塔范围外：使用ConnectionPoint连接到炮塔上已有的块"""
+	"""在炮塔范围外：使用Connector连接到炮塔上已有的块"""
 	var available_block_points = get_turret_block_connection_points()
 	var available_ghost_points_ = get_ghost_block_connection_points()
 	
@@ -668,7 +668,7 @@ func update_outside_turret_placement(mouse_position: Vector2):
 	else:
 		set_ghost_free_position(mouse_position)
 
-func get_turret_connection_point_global_position(point: ConnectionPoint, block: Block) -> Vector2:
+func get_turret_connection_point_global_position(point: Connector, block: Block) -> Vector2:
 	"""获取炮塔上块的连接点的全局位置"""
 	# 炮塔上的块应该使用块的全局位置，而不是炮塔座圈的位置
 	return block.global_position + point.position.rotated(block.global_rotation)
@@ -759,8 +759,8 @@ func remove_turret_block(block: Block):
 	
 	print("炮塔块移除完成")
 
-func find_best_regular_snap_config_for_turret(mouse_position: Vector2, block_points: Array[ConnectionPoint], ghost_points: Array[ConnectionPoint]) -> Dictionary:
-	"""用于炮塔普通ConnectionPoint连接的吸附配置 - 修复版"""
+func find_best_regular_snap_config_for_turret(mouse_position: Vector2, block_points: Array[Connector], ghost_points: Array[Connector]) -> Dictionary:
+	"""用于炮塔普通Connector连接的吸附配置 - 修复版"""
 	var best_config = {}
 	var min_distance = INF
 	var SNAP_DISTANCE = 100.0
@@ -818,7 +818,7 @@ func calculate_aligned_rotation_for_turret_block(vehicle_block: Block) -> float:
 	
 	return world_rotation + base_rotation
 
-func can_points_connect_with_rotation_for_turret(point_a: ConnectionPoint, point_b: ConnectionPoint, ghost_rotation: float) -> bool:
+func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
 	"""检查炮塔连接点是否可以连接 - 修复版"""
 	if point_a.connection_type != point_b.connection_type:
 		return false
@@ -833,7 +833,7 @@ func can_points_connect_with_rotation_for_turret(point_a: ConnectionPoint, point
 	var can_connect = are_rotations_opposite_best(ghost_point_direction, vehicle_point_direction)
 	return can_connect
 
-func calculate_rotated_grid_positions_for_turret(vehicle_point: ConnectionPoint, ghost_point: ConnectionPoint, target_rotation: float) -> Array:
+func calculate_rotated_grid_positions_for_turret(vehicle_point: Connector, ghost_point: Connector, target_rotation: float) -> Array:
 	"""计算炮塔块的旋转网格位置 - 修复版"""
 	var grid_positions = []
 	
@@ -896,25 +896,25 @@ func are_turret_grid_positions_available_for_placement(grid_positions: Array) ->
 			return false
 	return true
 
-func get_turret_platform_connectors() -> Array[RigidBodyConnector]:
-	"""获取炮塔平台本身的RigidBodyConnector"""
-	var points: Array[RigidBodyConnector] = []
+func get_turret_platform_connectors() -> Array[TurretConnector]:
+	"""获取炮塔平台本身的TurretConnector"""
+	var points: Array[TurretConnector] = []
 	
 	if not current_editing_turret:
 		return points
 	
-	var connectors = current_editing_turret.find_children("*", "RigidBodyConnector", true)
+	var connectors = current_editing_turret.find_children("*", "TurretConnector", true)
 	for connector in connectors:
-		if (connector is RigidBodyConnector and 
+		if (connector is TurretConnector and 
 			connector.is_connection_enabled and 
 			connector.connected_to == null):
 			points.append(connector)
 	
 	return points
 
-func get_turret_block_connection_points() -> Array[ConnectionPoint]:
-	"""获取炮塔上其他块的ConnectionPoint - 排除炮塔座圈本身"""
-	var points: Array[ConnectionPoint] = []
+func get_turret_block_connection_points() -> Array[Connector]:
+	"""获取炮塔上其他块的Connector - 排除炮塔座圈本身"""
+	var points: Array[Connector] = []
 	
 	if not current_editing_turret:
 		return points
@@ -933,41 +933,41 @@ func get_turret_block_connection_points() -> Array[ConnectionPoint]:
 			# 获取该块的所有可用连接点
 			var available_points = 0
 			for point in block.connection_points:
-				if (point is ConnectionPoint and 
+				if (point is Connector and 
 					point.is_connection_enabled and 
 					point.connected_to == null):
 					points.append(point)
 					available_points += 1
 	return points
 	
-func get_ghost_block_rigidbody_connectors() -> Array[RigidBodyConnector]:
-	"""获取虚影块的RigidBodyConnector"""
-	var points: Array[RigidBodyConnector] = []
+func get_ghost_block_rigidbody_connectors() -> Array[TurretConnector]:
+	"""获取虚影块的TurretConnector"""
+	var points: Array[TurretConnector] = []
 	
 	if not current_ghost_block:
 		return points
 	
-	var connectors = current_ghost_block.find_children("*", "RigidBodyConnector", true)
+	var connectors = current_ghost_block.find_children("*", "TurretConnector", true)
 	for connector in connectors:
-		if (connector is RigidBodyConnector and 
+		if (connector is TurretConnector and 
 			connector.is_connection_enabled and 
 			connector.connected_to == null):
 			points.append(connector)
 	
 	return points
 
-func get_ghost_block_connection_points() -> Array[ConnectionPoint]:
-	"""获取虚影块的ConnectionPoint"""
-	var points: Array[ConnectionPoint] = []
+func get_ghost_block_connection_points() -> Array[Connector]:
+	"""获取虚影块的Connector"""
+	var points: Array[Connector] = []
 	if current_ghost_block:
 		var connection_points = current_ghost_block.get_available_connection_points()
 		for point in connection_points:
-			if point is ConnectionPoint:
+			if point is Connector:
 				point.qeck = false
 				points.append(point)
 	return points
 
-func find_best_rigidbody_snap_config(mouse_position: Vector2, turret_points: Array[RigidBodyConnector], ghost_points: Array[RigidBodyConnector]) -> Dictionary:
+func find_best_rigidbody_snap_config(mouse_position: Vector2, turret_points: Array[TurretConnector], ghost_points: Array[TurretConnector]) -> Dictionary:
 	"""专门用于RigidBody连接的吸附配置 - 修复键名"""
 	var best_config = {}
 	var min_distance = INF
@@ -991,8 +991,8 @@ func find_best_rigidbody_snap_config(mouse_position: Vector2, turret_points: Arr
 	
 	return best_config
 
-func find_best_regular_snap_config(mouse_position: Vector2, block_points: Array[ConnectionPoint], ghost_points: Array[ConnectionPoint]) -> Dictionary:
-	"""用于普通ConnectionPoint连接的吸附配置"""
+func find_best_regular_snap_config(mouse_position: Vector2, block_points: Array[Connector], ghost_points: Array[Connector]) -> Dictionary:
+	"""用于普通Connector连接的吸附配置"""
 	var best_config = {}
 	var min_distance = INF
 	
@@ -1029,7 +1029,7 @@ func find_best_regular_snap_config(mouse_position: Vector2, block_points: Array[
 	
 	return best_config
 
-func calculate_rigidbody_snap_config(turret_point: RigidBodyConnector, ghost_point: RigidBodyConnector) -> Dictionary:
+func calculate_rigidbody_snap_config(turret_point: TurretConnector, ghost_point: TurretConnector) -> Dictionary:
 	"""计算RigidBody连接的吸附配置 - 完整版"""
 	if not turret_point or not ghost_point:
 		return {}
@@ -1121,13 +1121,13 @@ func calculate_single_grid_position(base_pos: Vector2i, local_pos: Vector2i, blo
 		_:
 			return base_pos + local_pos
 
-func calculate_turret_world_position(turret_point: RigidBodyConnector, ghost_local_pos: Vector2, rotation: float) -> Vector2:
+func calculate_turret_world_position(turret_point: TurretConnector, ghost_local_pos: Vector2, rotation: float) -> Vector2:
 	"""计算炮塔块的世界位置"""
 	# 世界位置 = 炮塔连接点位置 - 旋转后的虚影连接点局部位置
 	var use_pos = turret_point.position - ghost_local_pos.rotated(rotation)
 	return turret_point.get_parent().to_global(use_pos)
 
-func calculate_turret_block_rotation(turret_point: RigidBodyConnector, ghost_point: RigidBodyConnector) -> float:
+func calculate_turret_block_rotation(turret_point: TurretConnector, ghost_point: TurretConnector) -> float:
 	"""计算炮塔块旋转 - 简化和稳定版本"""
 	# 获取炮塔连接器的方向
 	var turret_direction = turret_point.global_rotation
@@ -1156,7 +1156,7 @@ func rotate_grid_offset(offset: Vector2i, rotation: float) -> Vector2i:
 		_:
 			return offset
 
-func can_rigidbody_connectors_connect(connector_a: RigidBodyConnector, connector_b: RigidBodyConnector) -> bool:
+func can_rigidbody_connectors_connect(connector_a: TurretConnector, connector_b: TurretConnector) -> bool:
 	"""检查RigidBody连接点是否可以连接"""
 	if not connector_a or not connector_b:
 		return false
@@ -1287,11 +1287,11 @@ func try_place_turret_block():
 		print("✅ 炮塔范围内放置 - 使用RigidBody连接到炮塔座圈")
 		connection_established = true
 	
-	# 检查是否是炮塔范围外连接（普通ConnectionPoint连接）
+	# 检查是否是炮塔范围外连接（普通Connector连接）
 	elif turret_snap_config.has("vehicle_point") and turret_snap_config.has("ghost_point"):
-		# 阶段2：炮塔范围外，使用普通ConnectionPoint连接到炮塔上的块
+		# 阶段2：炮塔范围外，使用普通Connector连接到炮塔上的块
 		establish_regular_connection(turret_snap_config.vehicle_point, new_block, turret_snap_config.ghost_point)
-		print("✅ 炮塔范围外放置 - 使用ConnectionPoint连接到炮塔上的块")
+		print("✅ 炮塔范围外放置 - 使用Connector连接到炮塔上的块")
 		connection_established = true
 	
 	if not connection_established:
@@ -1310,32 +1310,32 @@ func try_place_turret_block():
 	
 	print("✅ 炮塔块放置完成")
 
-func establish_rigidbody_connection(turret_connector: RigidBodyConnector, new_block: Block, block_connector: RigidBodyConnector):
+func establish_rigidbody_connection(turret_connector: TurretConnector, new_block: Block, block_connector: TurretConnector):
 	"""建立炮塔刚性体连接"""
-	var new_block_connectors = new_block.find_children("*", "RigidBodyConnector")
+	var new_block_connectors = new_block.find_children("*", "TurretConnector")
 	var target_connector = null
 	
 	for connector in new_block_connectors:
-		if connector is RigidBodyConnector and connector.name == block_connector.name:
+		if connector is TurretConnector and connector.name == block_connector.name:
 			target_connector = connector
 			break
 	
-	if target_connector is RigidBodyConnector:
+	if target_connector is TurretConnector:
 		target_connector.is_connection_enabled = true
 		turret_connector.try_connect(target_connector)
 		print("we ", turret_connector.try_connect(target_connector))
 		
-func establish_regular_connection(vehicle_point: ConnectionPoint, new_block: Block, ghost_point: ConnectionPoint):
+func establish_regular_connection(vehicle_point: Connector, new_block: Block, ghost_point: Connector):
 	"""建立普通连接点连接"""
-	var new_block_points = new_block.find_children("*", "ConnectionPoint")
+	var new_block_points = new_block.find_children("*", "Connector")
 	var target_point = null
 	
 	for point in new_block_points:
-		if point is ConnectionPoint and point.name == ghost_point.name:
+		if point is Connector and point.name == ghost_point.name:
 			target_point = point
 			break
 	
-	if target_point is ConnectionPoint:
+	if target_point is Connector:
 		target_point.is_connection_enabled = true
 		vehicle_point.try_connect(target_point)
 		print("we", " 3 ",vehicle_point.layer)
@@ -1784,7 +1784,7 @@ func setup_blueprint_ghost_collision(ghost: Node2D):
 	if ghost is Block:
 		ghost.do_connect = false
 	
-	var connection_points = ghost.find_children("*", "ConnectionPoint", true)
+	var connection_points = ghost.find_children("*", "Connector", true)
 	for point in connection_points:
 		if point.has_method("set_connection_enabled"):
 			point.set_connection_enabled(false)
@@ -2117,12 +2117,12 @@ func update_ghost_block_position(mouse_position: Vector2):
 		current_ghost_block.modulate = Color(1, 0.3, 0.3, 0.5)
 		current_snap_config = {}
 
-func get_ghost_block_available_connection_points() -> Array[ConnectionPoint]:
-	var points: Array[ConnectionPoint] = []
+func get_ghost_block_available_connection_points() -> Array[Connector]:
+	var points: Array[Connector] = []
 	if current_ghost_block:
 		var connection_points = current_ghost_block.get_available_connection_points()
 		for point in connection_points:
-			if point is ConnectionPoint:
+			if point is Connector:
 				point.qeck = false
 				points.append(point)
 	return points
@@ -2175,7 +2175,7 @@ func calculate_aligned_rotation_from_base(vehicle_block: Block) -> float:
 	var dir = vehicle_block.base_rotation_degree
 	return deg_to_rad(current_ghost_block.base_rotation_degree) + deg_to_rad(-dir) + vehicle_block.global_rotation
 
-func can_points_connect_with_rotation(point_a: ConnectionPoint, point_b: ConnectionPoint, ghost_rotation: float) -> bool:
+func can_points_connect_with_rotation(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
 	if point_a.connection_type != point_b.connection_type:
 		return false
 	if point_a.layer != point_b.layer:
@@ -2193,7 +2193,7 @@ func are_rotations_opposite_best(rot1: float, rot2: float) -> bool:
 	var dot_product = dir1.dot(dir2)
 	return dot_product < -0.9
 
-func get_connection_point_global_position(point: ConnectionPoint, block: Block) -> Vector2:
+func get_connection_point_global_position(point: Connector, block: Block) -> Vector2:
 	if block is TurretRing and block.turret and is_turret_editing_mode:
 		return block.turret.to_global(point.position)
 	else:
@@ -2320,16 +2320,16 @@ func start_block_placement_with_rotation(scene_path: String):
 	current_snap_config = {}
 	turret_snap_config = {}
 
-func establish_connection(vehicle_point: ConnectionPoint, new_block: Block, ghost_point: ConnectionPoint):
-	var new_block_points = new_block.find_children("*", "ConnectionPoint")
+func establish_connection(vehicle_point: Connector, new_block: Block, ghost_point: Connector):
+	var new_block_points = new_block.find_children("*", "Connector")
 	var target_point = null
 	
 	for point in new_block_points:
-		if point is ConnectionPoint and point.name == ghost_point.name:
+		if point is Connector and point.name == ghost_point.name:
 			target_point = point
 			break
 	
-	if target_point is ConnectionPoint:
+	if target_point is Connector:
 		target_point.is_connection_enabled = true
 		vehicle_point.try_connect(target_point)
 		print("we", vehicle_point.layer)
@@ -2840,12 +2840,12 @@ func get_current_snap_config_for_moving() -> Dictionary:
 	
 	return best_config
 
-func get_moving_ghost_available_connection_points() -> Array[ConnectionPoint]:
-	var points: Array[ConnectionPoint] = []
+func get_moving_ghost_available_connection_points() -> Array[Connector]:
+	var points: Array[Connector] = []
 	if moving_block_ghost:
 		var connection_points = moving_block_ghost.get_available_connection_points()
 		for point in connection_points:
-			if point is ConnectionPoint:
+			if point is Connector:
 				point.qeck = false
 				points.append(point)
 	return points

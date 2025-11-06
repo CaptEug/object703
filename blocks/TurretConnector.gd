@@ -1,4 +1,4 @@
-class_name RigidBodyConnector
+class_name TurretConnector
 extends Marker2D
 
 # 连接参数
@@ -7,15 +7,15 @@ extends Marker2D
 @export var connection_type := "rigidbody"
 @export var location := Vector2i()
 
-var connected_to: RigidBodyConnector = null
+var connected_to: TurretConnector = null
 var joint: Joint2D = null
 var detection_area: Area2D
-var overlapping_connectors: Array[RigidBodyConnector] = []
+var overlapping_connectors: Array[TurretConnector] = []
 var qeck = true  # 类似于 ConnectionPoint 中的控制变量
 
 # 新增：吸附相关属性
 var is_snapping := false
-var snap_target: RigidBodyConnector = null
+var snap_target: TurretConnector = null
 var snap_distance_threshold := 10.0  # 吸附距离阈值
 
 func _ready():
@@ -60,7 +60,7 @@ func setup_detection_area():
 
 func _on_area_entered(area: Area2D):
 	var other_connector = area.get_parent()
-	if other_connector is RigidBodyConnector:
+	if other_connector is TurretConnector:
 		if other_connector != self:
 			if not overlapping_connectors.has(other_connector):
 				var con = [other_connector, self]
@@ -75,7 +75,7 @@ func _on_area_entered(area: Area2D):
 
 func _on_area_exited(area: Area2D):
 	var other_connector = area.get_parent()
-	if other_connector is RigidBodyConnector:
+	if other_connector is TurretConnector:
 		if other_connector in overlapping_connectors:
 			# 从父 Block 的重叠列表中移除
 			var parent_block = find_parent_block()
@@ -91,7 +91,7 @@ func _on_area_exited(area: Area2D):
 				is_snapping = false
 
 # 新增：检查是否可以吸附到目标连接器
-func can_snap_to(other_connector: RigidBodyConnector) -> bool:
+func can_snap_to(other_connector: TurretConnector) -> bool:
 	if not is_connection_enabled or not other_connector.is_connection_enabled:
 		return false
 	
@@ -114,8 +114,8 @@ func can_snap_to(other_connector: RigidBodyConnector) -> bool:
 	return true
 
 # 新增：获取最近的可用连接器用于吸附
-func get_nearest_snap_target() -> RigidBodyConnector:
-	var nearest_target: RigidBodyConnector = null
+func get_nearest_snap_target() -> TurretConnector:
+	var nearest_target: TurretConnector = null
 	var min_distance = snap_distance_threshold
 	
 	for other_connector in overlapping_connectors:
@@ -128,7 +128,7 @@ func get_nearest_snap_target() -> RigidBodyConnector:
 	return nearest_target
 
 # 新增：计算吸附位置和旋转
-func calculate_snap_transform(other_connector: RigidBodyConnector) -> Dictionary:
+func calculate_snap_transform(other_connector: TurretConnector) -> Dictionary:
 	var result = {
 		"position": Vector2.ZERO,
 		"rotation": 0.0
@@ -192,7 +192,7 @@ func get_parent_rigidbody() -> RigidBody2D:
 		return parent as RigidBody2D
 	return null
 
-func try_connect(other_connector: RigidBodyConnector) -> bool:
+func try_connect(other_connector: TurretConnector) -> bool:
 	if connected_to != null:
 		return false
 	
@@ -243,7 +243,7 @@ func try_connect(other_connector: RigidBodyConnector) -> bool:
 	connected_to = other_connector
 	other_connector.connected_to = self
 	
-	joint = BlockPinJoint2D.connect_to_rigidbody(block, rigidbody, block_connector)
+	joint = TurretConnectorJoint.connect_to_rigidbody(block, rigidbody, block_connector)
 	
 	if joint:
 		other_connector.joint = joint
@@ -259,7 +259,7 @@ func try_connect(other_connector: RigidBodyConnector) -> bool:
 		other_connector.connected_to = null
 		return false
 
-func can_connect_with(other_connector: RigidBodyConnector) -> bool:
+func can_connect_with(other_connector: TurretConnector) -> bool:
 	# 新增：优先检查连接状态
 	if connected_to != null:
 		return false
@@ -295,8 +295,8 @@ func disconnect_connection():
 		connected_to.queue_redraw()
 	
 	if joint and is_instance_valid(joint):
-		if joint is BlockPinJoint2D:
-			(joint as BlockPinJoint2D).break_connection()
+		if joint is TurretConnectorJoint:
+			(joint as TurretConnectorJoint).break_connection()
 		else:
 			joint.queue_free()
 	
