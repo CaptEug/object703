@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://busjg8clrfvko"]
-
-[ext_resource type="Script" uid="uid://dlenxle1aw2do" path="res://blocks/seat_point.gd" id="1_yqv7p"]
-
-[node name="SeatPoint" type="Marker2D"]
-script = ExtResource("1_yqv7p")
