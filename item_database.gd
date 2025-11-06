@@ -37,7 +37,7 @@ var items = {
 		"weight": 25,
 		"icon": preload("res://assets/icons/aphe122mm.png"),
 		"max_stack": 999,
-		"shell_scene": preload("res://blocks/firepower/shells/pzgr_75.tscn")
+		"shell_scene": preload("res://blocks/firepower/shells/aphe_122_mm.tscn")
 	},
 	
 	"380mmrocket": {

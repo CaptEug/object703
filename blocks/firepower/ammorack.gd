@@ -1,5 +1,5 @@
 class_name Ammorack
-extends Block
+extends Cargo
 
 var ammo_storage :float
 var ammo_storage_cap:float
