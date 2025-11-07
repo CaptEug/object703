@@ -50,9 +50,31 @@ location = Vector2i(1, 0)
 position = Vector2(16, -16)
 location = Vector2i(2, 0)
 
+[node name="Rig5" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(-16, 0)
+location = Vector2i(0, 1)
+
+[node name="Rig3" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(-16, -16)
+
+[node name="Rig6" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(0, 16)
+location = Vector2i(1, 2)
+
+[node name="Rig4" parent="Turret" instance=ExtResource("4_txfcf")]
+location = Vector2i(1, 1)
+
 [node name="Rig2" parent="Turret" instance=ExtResource("4_txfcf")]
 position = Vector2(16, 0)
 location = Vector2i(2, 1)
+
+[node name="Rig8" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(16, 16)
+location = Vector2i(2, 2)
+
+[node name="Rig7" parent="Turret" instance=ExtResource("4_txfcf")]
+position = Vector2(-16, 16)
+location = Vector2i(0, 2)
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_txfcf")]
 position = Vector2(-16, -24)
