@@ -4,12 +4,8 @@ extends Control
 # 虚影块颜色
 @export var GHOST_FREE_COLOR = Color(1, 0.3, 0.3, 0.6)  # 不能放置
 @export var GHOST_SNAP_COLOR = Color(0.3, 1, 0.3, 0.6)  # 可以放置
-#@export var GHOST_TURRET_RANGE_COLOR = Color(0.3, 1, 0.3, 0.6)  # 炮塔范围内
-#@export var GHOST_TURRET_OUTSIDE_COLOR = Color(0.3, 0.5, 1, 0.6)  # 炮塔范围外连接
-#@export var GHOST_MOVING_COLOR = Color(1, 1, 0.3, 0.6)  # 移动中的虚影
 @export var GHOST_BLUEPRINT_COLOR = Color(0.3, 0.6, 1.0, 0.6)  # 蓝图虚影颜色
 @export var RECYCLE_HIGHLIGHT_COLOR = Color(1, 0.3, 0.3, 0.6)  # 删除模式高亮颜色
-#@export var TURRET_EDITING_HIGHLIGHT_COLOR = Color(1, 0.8, 0.3, 1.0)  # 炮塔编辑高亮
 @export var BLOCK_DIM_COLOR = Color(0.5, 0.5, 0.5, 0.6)  # 方块变暗颜色
 
 @onready var tab_container = $TabContainer
@@ -258,9 +254,7 @@ func _input(event):
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
 			KEY_R:
-				if is_moving_block and moving_block_ghost:
-					rotate_moving_ghost()
-				elif current_ghost_block:
+				if current_ghost_block:
 					rotate_ghost_connection()
 			KEY_X:
 				# 切换删除模式
@@ -415,16 +409,7 @@ func _process(delta):
 	if not is_editing or not selected_vehicle:
 		return
 	
-	if is_mouse_pressed and not is_dragging and not is_moving_block and not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode:
-		drag_timer += delta
-		if drag_timer >= DRAG_DELAY:
-			start_drag_block()
-	
-	if is_moving_block and moving_block_ghost:
-		var mouse_pos = get_viewport().get_mouse_position()
-		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		update_moving_ghost_position(global_mouse_pos)
-	elif current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
+	if current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		if is_turret_editing_mode:
@@ -543,15 +528,6 @@ func dim_non_turret_blocks(dim: bool):
 				block.modulate = BLOCK_DIM_COLOR
 			else:
 				block.modulate = Color.WHITE
-
-func highlight_current_editing_turret(turret: TurretRing, highlight: bool = true):
-	if not turret or not is_instance_valid(turret):
-		return
-	
-	if highlight:
-		turret.modulate = TURRET_EDITING_HIGHLIGHT_COLOR
-	else:
-		turret.modulate = Color.WHITE
 
 # === 炮塔编辑模式吸附系统 ===
 func update_turret_placement_feedback():
@@ -1244,11 +1220,7 @@ func apply_turret_snap_config(snap_config: Dictionary):
 		# 如果没有提供旋转，使用基础旋转加上相机旋转
 		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
 	
-	# 根据范围显示不同颜色
-	if snap_config.has("positions") and not snap_config.positions.is_empty():
-		current_ghost_block.modulate = GHOST_TURRET_OUTSIDE_COLOR  # 蓝色：炮塔范围外连接
-	else:
-		current_ghost_block.modulate = GHOST_TURRET_RANGE_COLOR  # 绿色：炮塔范围内
+	current_ghost_block.modulate = GHOST_SNAP_COLOR
 	
 	# 存储吸附配置用于放置
 	turret_snap_config = snap_config.duplicate()  # 使用副本避免引用问题
@@ -2656,7 +2628,7 @@ func reset_all_blocks_color():
 				if child is Block:
 					if is_turret_editing_mode:
 						if block == current_editing_turret:
-							child.modulate = TURRET_EDITING_HIGHLIGHT_COLOR
+							child.modulate = Color.WHITE
 						else:
 							child.modulate = BLOCK_DIM_COLOR
 					else:
@@ -2665,7 +2637,7 @@ func reset_all_blocks_color():
 			if is_turret_editing_mode:
 				# 炮塔编辑模式下：只有当前编辑炮塔保持高亮，其他所有块都变暗
 				if block == current_editing_turret:
-					block.modulate = TURRET_EDITING_HIGHLIGHT_COLOR
+					block.modulate = Color.WHITE
 				else:
 					block.modulate = BLOCK_DIM_COLOR
 			else:
@@ -2808,41 +2780,6 @@ func get_block_at_position(position: Vector2) -> Block:
 			return block
 	return null
 
-func start_drag_block():
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	var block = get_block_at_position(global_mouse_pos)
-	
-	if block:
-		is_dragging = true
-		start_block_move(block)
-
-func update_moving_ghost_position(mouse_position: Vector2):
-	if not moving_block_ghost:
-		return
-	
-	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 50.0)
-	available_ghost_points = get_moving_ghost_available_connection_points()
-	
-	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
-		moving_block_ghost.global_position = mouse_position
-		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
-		moving_block_ghost.modulate = GHOST_MOVING_COLOR
-		moving_snap_config = {}
-		return
-	
-	var snap_config = get_current_snap_config_for_moving()
-	
-	if snap_config:
-		moving_block_ghost.global_position = snap_config.ghost_position
-		moving_block_ghost.global_rotation = snap_config.ghost_rotation
-		moving_block_ghost.modulate = GHOST_SNAP_COLOR
-		moving_snap_config = snap_config
-	else:
-		moving_block_ghost.global_position = mouse_position
-		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot
-		moving_block_ghost.modulate = GHOST_MOVING_COLOR
-		moving_snap_config = {}
 
 func get_current_snap_config_for_moving() -> Dictionary:
 	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
@@ -2866,66 +2803,6 @@ func get_moving_ghost_available_connection_points() -> Array[Connector]:
 				point.qeck = false
 				points.append(point)
 	return points
-
-func start_block_move(block: Block):
-	if is_moving_block:
-		cancel_block_move()
-	
-	moving_block = block
-	moving_block_original_position = block.global_position
-	moving_block_original_rotation = block.global_rotation
-	moving_block_original_grid_positions = get_block_grid_positions(block)
-	
-	create_moving_ghost(block)
-	
-	var control = selected_vehicle.control
-	selected_vehicle.remove_block(block, false)
-	selected_vehicle.control = control
-	
-	is_moving_block = true
-	
-	moving_snap_config = {}
-	
-	block.visible = false
-	
-	if current_ghost_block:
-		current_ghost_block.visible = false
-
-func create_moving_ghost(block: Block):
-	var scene_path = block.scene_file_path
-	if not scene_path or scene_path.is_empty():
-		return
-	
-	var scene = load(scene_path)
-	if not scene:
-		return
-	
-	moving_block_ghost = scene.instantiate()
-	get_tree().current_scene.add_child(moving_block_ghost)
-	
-	moving_block_ghost.modulate = GHOST_MOVING_COLOR
-	moving_block_ghost.z_index = 100
-	moving_block_ghost.global_position = moving_block_original_position
-	moving_block_ghost.global_rotation = moving_block_original_rotation
-	moving_block_ghost.base_rotation_degree = moving_block.base_rotation_degree
-	
-	setup_moving_ghost_collision(moving_block_ghost)
-
-func setup_moving_ghost_collision(ghost: Node2D):
-	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
-	for shape in collision_shapes:
-		shape.disabled = true
-	
-	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
-	for poly in collision_polygons:
-		poly.disabled = true
-	
-	if ghost is RigidBody2D:
-		ghost.freeze = true
-		ghost.collision_layer = 0
-		ghost.collision_mask = 0
-	
-	ghost.do_connect = false
 
 func place_moving_block():
 	if not is_moving_block or not moving_block or not moving_block_ghost:
@@ -3008,24 +2885,3 @@ func finish_block_move():
 	
 	if current_ghost_block:
 		current_ghost_block.visible = true
-
-func rotate_moving_ghost():
-	"""旋转移动中的虚影"""
-	if not moving_block_ghost:
-		return
-	
-	# 旋转基础旋转90度
-	moving_block_ghost.base_rotation_degree += 90
-	moving_block_ghost.base_rotation_degree = fmod(moving_block_ghost.base_rotation_degree + 90, 360) - 90
-	
-	# 更新虚影显示
-	moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree)
-	
-	# 如果有吸附配置，重新计算位置
-	if moving_snap_config and not moving_snap_config.is_empty():
-		var mouse_pos = get_viewport().get_mouse_position()
-		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		update_moving_ghost_position(global_mouse_pos)
-	else:
-		# 自由移动时只更新旋转
-		moving_block_ghost.rotation = deg_to_rad(moving_block_ghost.base_rotation_degree) + camera.target_rot

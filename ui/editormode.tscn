@@ -13,15 +13,6 @@ layout_mode = 3
 anchors_preset = 0
 theme = ExtResource("1_ils3j")
 script = ExtResource("2_8aq6r")
-GHOST_FREE_COLOR = null
-GHOST_SNAP_COLOR = null
-GHOST_TURRET_RANGE_COLOR = null
-GHOST_TURRET_OUTSIDE_COLOR = null
-GHOST_MOVING_COLOR = null
-GHOST_BLUEPRINT_COLOR = null
-RECYCLE_HIGHLIGHT_COLOR = null
-TURRET_EDITING_HIGHLIGHT_COLOR = null
-BLOCK_DIM_COLOR = null
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1
