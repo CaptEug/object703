@@ -35,6 +35,7 @@ visible = false
 texture = SubResource("AtlasTexture_4kaej")
 
 [node name="Turret" type="Sprite2D" parent="."]
+light_mask = 2
 texture = SubResource("AtlasTexture_fqeka")
 offset = Vector2(0, -8)
 

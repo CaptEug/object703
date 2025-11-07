@@ -58,6 +58,7 @@ metadata/_custom_type_script = "uid://umbrwl1bnc2h"
 polygon = PackedVector2Array(-8, -16, 8, -8, 8, 16, -8, 16)
 
 [node name="Turret" type="Sprite2D" parent="."]
+light_mask = 2
 rotation = 0.261799
 texture = SubResource("AtlasTexture_dambf")
 offset = Vector2(0, -8)
