@@ -25,6 +25,14 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 grow_vertical = 0
+GHOST_FREE_COLOR = null
+GHOST_SNAP_COLOR = null
+GHOST_TURRET_RANGE_COLOR = null
+GHOST_TURRET_OUTSIDE_COLOR = null
+GHOST_MOVING_COLOR = null
+GHOST_BLUEPRINT_COLOR = null
+RECYCLE_HIGHLIGHT_COLOR = null
+BLOCK_DIM_COLOR = null
 
 [node name="Tooltip" parent="CanvasLayer" instance=ExtResource("3_m5lm4")]
 visible = false
