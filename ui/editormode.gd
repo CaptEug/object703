@@ -3,7 +3,7 @@ extends Control
 # === 颜色配置变量 ===
 # 虚影块颜色
 @export var GHOST_FREE_COLOR = Color(1, 0.3, 0.3, 0.6)  # 不能放置
-@export var GHOST_SNAP_COLOR = Color(0.3, 1, 0.3, 0.6)  # 可以放置
+@export var GHOST_SNAP_COLOR = Color(0.6, 1, 0.6, 0.6)  # 可以放置
 @export var GHOST_BLUEPRINT_COLOR = Color(0.3, 0.6, 1.0, 0.6)  # 蓝图虚影颜色
 @export var RECYCLE_HIGHLIGHT_COLOR = Color(1, 0.3, 0.3, 0.6)  # 删除模式高亮颜色
 @export var BLOCK_DIM_COLOR = Color(0.5, 0.5, 0.5, 0.6)  # 方块变暗颜色
