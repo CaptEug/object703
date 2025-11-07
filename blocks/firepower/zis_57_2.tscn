@@ -118,11 +118,13 @@ texture = SubResource("AtlasTexture_ytknx")
 offset = Vector2(0, -8)
 
 [node name="Barrel" type="Sprite2D" parent="Turret"]
+light_mask = 2
 z_index = -1
 texture = SubResource("AtlasTexture_5o4hx")
 offset = Vector2(-8, -8)
 
 [node name="Barrel2" type="Sprite2D" parent="Turret"]
+light_mask = 2
 z_index = -1
 texture = SubResource("AtlasTexture_b2j2j")
 offset = Vector2(8, -8)

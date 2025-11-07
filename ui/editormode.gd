@@ -2,14 +2,14 @@ extends Control
 
 # === 颜色配置变量 ===
 # 虚影块颜色
-@export var GHOST_FREE_COLOR = Color(1, 0.3, 0.3, 0.7)  # 不能放置
-@export var GHOST_SNAP_COLOR = Color(0.5, 1, 0.5, 0.7)  # 可以放置
-@export var GHOST_TURRET_RANGE_COLOR = Color(0.3, 1, 0.3, 0.7)  # 炮塔范围内
-@export var GHOST_TURRET_OUTSIDE_COLOR = Color(0.3, 0.5, 1, 0.7)  # 炮塔范围外连接
-@export var GHOST_MOVING_COLOR = Color(1, 1, 0.3, 0.7)  # 移动中的虚影
-@export var GHOST_BLUEPRINT_COLOR = Color(0.3, 0.6, 1.0, 0.5)  # 蓝图虚影颜色
-@export var RECYCLE_HIGHLIGHT_COLOR = Color.RED  # 删除模式高亮颜色
-@export var TURRET_EDITING_HIGHLIGHT_COLOR = Color(1, 0.8, 0.3, 1.0)  # 炮塔编辑高亮
+@export var GHOST_FREE_COLOR = Color(1, 0.3, 0.3, 0.6)  # 不能放置
+@export var GHOST_SNAP_COLOR = Color(0.3, 1, 0.3, 0.6)  # 可以放置
+#@export var GHOST_TURRET_RANGE_COLOR = Color(0.3, 1, 0.3, 0.6)  # 炮塔范围内
+#@export var GHOST_TURRET_OUTSIDE_COLOR = Color(0.3, 0.5, 1, 0.6)  # 炮塔范围外连接
+#@export var GHOST_MOVING_COLOR = Color(1, 1, 0.3, 0.6)  # 移动中的虚影
+@export var GHOST_BLUEPRINT_COLOR = Color(0.3, 0.6, 1.0, 0.6)  # 蓝图虚影颜色
+@export var RECYCLE_HIGHLIGHT_COLOR = Color(1, 0.3, 0.3, 0.6)  # 删除模式高亮颜色
+#@export var TURRET_EDITING_HIGHLIGHT_COLOR = Color(1, 0.8, 0.3, 1.0)  # 炮塔编辑高亮
 @export var BLOCK_DIM_COLOR = Color(0.5, 0.5, 0.5, 0.6)  # 方块变暗颜色
 
 @onready var tab_container = $TabContainer
