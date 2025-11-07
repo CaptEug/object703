@@ -154,9 +154,6 @@ func switch_to_turret_mode():
 	if is_recycle_mode:
 		exit_recycle_mode()
 	
-	if is_moving_block:
-		cancel_block_move()
-	
 	if current_ghost_block:
 		current_ghost_block.queue_free()
 		current_ghost_block = null
@@ -245,10 +242,7 @@ func _input(event):
 		if is_turret_editing_mode:
 			exit_turret_editing_mode()
 			return
-		elif is_moving_block:
-			cancel_block_move()
-		else:
-			cancel_placement()
+		cancel_placement()
 	
 	# 其他快捷键处理
 	if event is InputEventKey and event.pressed:
@@ -350,10 +344,6 @@ func _input(event):
 							else:
 								# 普通删除模式
 								try_remove_block()
-						
-						if is_moving_block:
-							place_moving_block()
-							return
 							
 						if not is_recycle_mode and not current_ghost_block and not is_turret_editing_mode:
 							var mouse_pos = get_viewport().get_mouse_position()
@@ -366,8 +356,6 @@ func _input(event):
 					# 右键取消操作
 					if is_recycle_mode:
 						exit_recycle_mode()
-					elif is_moving_block:
-						cancel_block_move()
 					elif is_turret_editing_mode and current_ghost_block == null:
 						exit_turret_editing_mode()
 					else:
@@ -378,8 +366,6 @@ func _input(event):
 					# 右键取消操作
 					if is_recycle_mode:
 						exit_recycle_mode()
-					elif is_moving_block:
-						cancel_block_move()
 					elif is_turret_editing_mode and current_ghost_block == null:
 						exit_turret_editing_mode()
 					else:
@@ -390,11 +376,7 @@ func _input(event):
 			if event.button_index == MOUSE_BUTTON_LEFT:
 				# 鼠标左键释放
 				is_mouse_pressed = false
-				
-				if is_dragging and is_moving_block:
-					place_moving_block()
-				elif not is_dragging and not is_moving_block and not is_recycle_mode and not is_turret_editing_mode:
-					try_place_block()
+				try_place_block()
 
 func _process(delta):
 	if is_editing and selected_vehicle:
@@ -448,9 +430,6 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	if current_ghost_block:
 		current_ghost_block.visible = false
-	
-	if is_moving_block:
-		cancel_block_move()
 	
 	if is_recycle_mode:
 		# 保持删除模式，但更新光标和功能
@@ -1861,9 +1840,6 @@ func enter_recycle_mode():
 	
 	cancel_placement()
 	
-	if is_moving_block:
-		cancel_block_move()
-	
 	# 重要：在进入删除模式时重置块的颜色状态
 	if is_turret_editing_mode:
 		print("炮塔编辑模式：删除功能已切换到炮塔专用")
@@ -2804,38 +2780,6 @@ func get_moving_ghost_available_connection_points() -> Array[Connector]:
 				points.append(point)
 	return points
 
-func place_moving_block():
-	if not is_moving_block or not moving_block or not moving_block_ghost:
-		return
-	
-	if moving_snap_config and not moving_snap_config.is_empty():
-		var connections_to_disconnect = find_connections_to_disconnect_for_moving()
-		disconnect_connections(connections_to_disconnect)
-		
-		var grid_positions = moving_snap_config.positions
-		
-		if not are_grid_positions_available(grid_positions):
-			cancel_block_move()
-			return
-		
-		moving_block.global_position = moving_snap_config.ghost_position
-		moving_block.global_rotation = moving_snap_config.ghost_rotation
-		
-		var world_rotation_deg = rad_to_deg(moving_snap_config.ghost_rotation)
-		var camera_rotation_deg = rad_to_deg(camera.target_rot)
-		moving_block.base_rotation_degree = wrapf(world_rotation_deg - camera_rotation_deg, -180, 180)
-		
-		var control = selected_vehicle.control
-		selected_vehicle._add_block(moving_block, moving_block.position, grid_positions)
-		selected_vehicle.control = control
-		
-	else:
-		cancel_block_move()
-		return
-	
-	finish_block_move()
-	
-	update_blueprint_ghosts()
 
 func are_grid_positions_available(grid_positions: Array) -> bool:
 	for pos in grid_positions:
@@ -2855,33 +2799,3 @@ func find_connections_to_disconnect_for_moving() -> Array:
 			})
 	
 	return connections_to_disconnect
-
-func cancel_block_move():
-	if not is_moving_block or not moving_block:
-		return
-	
-	moving_block.global_position = moving_block_original_position
-	moving_block.global_rotation = moving_block_original_rotation
-	moving_block.base_rotation_degree = rad_to_deg(moving_block_original_rotation - camera.target_rot)
-	
-	var control = selected_vehicle.control
-	selected_vehicle._add_block(moving_block, moving_block.position, moving_block_original_grid_positions)
-	selected_vehicle.control = control
-	
-	finish_block_move()
-
-func finish_block_move():
-	if moving_block:
-		moving_block.visible = true
-		moving_block = null
-	
-	if moving_block_ghost:
-		moving_block_ghost.queue_free()
-		moving_block_ghost = null
-	
-	is_moving_block = false
-	is_dragging = false
-	moving_snap_config = {}
-	
-	if current_ghost_block:
-		current_ghost_block.visible = true
