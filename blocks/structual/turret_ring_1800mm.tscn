@@ -33,6 +33,7 @@ texture = SubResource("AtlasTexture_wsjul")
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 node_a = NodePath("..")
 node_b = NodePath("../Turret")
+bias = 0.01
 angular_limit_lower = -0.0506145
 angular_limit_upper = 0.0994838
 motor_enabled = true

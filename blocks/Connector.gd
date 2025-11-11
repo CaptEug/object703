@@ -61,6 +61,7 @@ func setup_detection_area():
 func change_layer(area2D: Area2D, ceng: int):
 	area2D.collision_layer = ceng
 	area2D.collision_mask = ceng 
+	layer = ceng
 
 func _on_area_entered(area: Area2D):
 	var other_point = area.get_parent()
@@ -77,9 +78,6 @@ func _on_area_exited(area: Area2D):
 		overlapping_points.erase(other_point)
 
 func try_connect(other_point: Connector) -> bool:
-	#if not (is_connection_enabled and other_point.is_connection_enabled):
-		#return false
-	
 	if not can_connect_with(other_point):
 		return false
 	
@@ -88,6 +86,7 @@ func try_connect(other_point: Connector) -> bool:
 	
 	var parent_block = find_parent_block()
 	var other_block = other_point.find_parent_block()
+	
 	if not other_block.is_movable_on_connection:
 		if other_block is Block:
 			other_block.freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC

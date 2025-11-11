@@ -118,12 +118,13 @@ func update_vehicle():
 
 ###################### BLOCK MANAGEMENT ######################
 
-func _add_block(block: Block,local_pos, grid_positions):
-	if block.parent_vehicle == null:
-		add_child(block)
-		block.parent_vehicle = self
-	block.position = local_pos
-	await block.connect_aready()
+func _add_block(block: Block,local_pos = null, grid_positions = null):
+	if not local_pos == null and not grid_positions == null:
+		if block.parent_vehicle == null:
+			add_child(block)
+			block.parent_vehicle = self
+		block.position = local_pos
+		await block.connect_aready()
 	if block not in blocks:
 		# 添加方块到车辆
 		blocks.append(block)
@@ -147,10 +148,14 @@ func _add_block(block: Block,local_pos, grid_positions):
 		block.set_connection_enabled(true)
 	update_vehicle()
 
-func remove_block(block: Block, imd: bool, _disconnected:bool = false):
+func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 	# 正常移除逻辑
 	blocks.erase(block)
 	if imd:
+		if block is TurretRing:
+			for turret_block in block.turret.get_children():
+				if turret_block is Block:
+					block.remove_block_from_turret(turret_block)
 		total_blocks.erase(block)
 		block.queue_free()
 	
@@ -173,8 +178,6 @@ func remove_block(block: Block, imd: bool, _disconnected:bool = false):
 		fueltanks.erase(block)
 	
 	update_vehicle()
-	#for blk:Block in blocks:
-		#blk.check_connectivity()
 
 func has_block(block_name:String):
 	for block in blocks:
@@ -292,9 +295,12 @@ func load_from_blueprint(bp: Dictionary):
 			return pos_a.x < pos_b.x
 		return pos_a.y < pos_b.y
 	)
+	
+	# 第一遍：加载所有主块（包括炮塔座圈）
+	var loaded_blocks = {}  # 存储已加载的块，key: block_id, value: Block实例
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
-		var block_scene = load(block_data["path"])  # 使用完整路径加载
+		var block_scene = load(block_data["path"])
 		
 		if block_scene:
 			var block:Block = block_scene.instantiate()
@@ -317,6 +323,74 @@ func load_from_blueprint(bp: Dictionary):
 					target_grid.append(grid_pos)
 			var local_pos = get_rectangle_corners(target_grid)
 			await _add_block(block, local_pos, target_grid)
+			loaded_blocks[block_id] = block
+	
+	# 第二遍：加载炮塔上的块
+	for block_id in block_ids:
+		var block_data = bp["blocks"][block_id]
+		if block_data.has("turret_grid"):
+			var turret_block = loaded_blocks[block_id]
+			if turret_block is TurretRing:
+				await turret_block.lock_turret_rotation()
+				for point in turret_block.turret.get_children():
+					if point is TurretConnector:
+						if point.connected_to == null:
+							point.is_connection_enabled = true
+							
+				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
+				turret_block.unlock_turret_rotation()
+
+func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded_blocks: Dictionary):
+	"""加载炮塔上的块"""
+	if not turret_grid_data.has("blocks"):
+		return
+	
+	# 获取炮塔在车辆网格中的位置
+	var turret_vehicle_pos = Vector2i.ZERO
+
+	# 加载炮塔上的每个块
+	for block_id in turret_grid_data["blocks"]:
+		var block_data = turret_grid_data["blocks"][block_id]
+		var block_scene = load(block_data["path"])
+		
+		if block_scene:
+			var block:Block = block_scene.instantiate()
+			var local_base_pos = Vector2i(block_data["base_pos"][0], block_data["base_pos"][1])
+			block.base_rotation_degree = block_data["rotation"][0]
+			block.collision_layer = 2
+			block.collision_mask = 2
+			# 计算块在炮塔局部坐标系中的所有网格位置
+			var turret_local_positions = []
+			for x in block.size.x:
+				for y in block.size.y:
+					var local_pos: Vector2i
+					match int(block.base_rotation_degree):
+						0:
+							local_pos = local_base_pos + Vector2i(x, y)
+						90:
+							local_pos = local_base_pos + Vector2i(-y, x)
+						-90:
+							local_pos = local_base_pos + Vector2i(y, -x)
+						180, -180:
+							local_pos = local_base_pos + Vector2i(-x, -y)
+						_:
+							local_pos = local_base_pos + Vector2i(x, y)
+					turret_local_positions.append(local_pos)
+			
+			var turretblock_pos = get_rectangle_corners(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
+			# 将块添加到炮塔
+			turret.add_block_to_turret(block, turret_local_positions)
+			var world_pos = turret.to_global(turretblock_pos)
+			# 设置块的位置和旋转
+			block.global_position = world_pos
+			block.rotation_degrees = block.base_rotation_degree
+			
+			# 将块添加到车辆的总块列表中
+			if block not in total_blocks:
+				total_blocks.append(block)
+			await block.connect_aready()
+	# 更新车辆状态
+	update_vehicle()
 
 
 func get_rectangle_corners(grid_data):

@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://jbbm78mi6qb5"]
+[gd_scene load_steps=10 format=3 uid="uid://jbbm78mi6qb5"]
 
 [ext_resource type="Script" uid="uid://mksnqq0fauve" path="res://blocks/firepower/ammo_rack.gd" id="1_j1dh7"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_nkxv4"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_rvs0d"]
 [ext_resource type="Texture2D" uid="uid://crr3h1wldaocx" path="res://assets/lights/ammorack_light.png" id="3_t3niw"]
+[ext_resource type="PackedScene" uid="uid://cqp2x0iv8nyqp" path="res://blocks/TurretConnector.tscn" id="5_s6m1l"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mhqor"]
 size = Vector2(16, 16)
@@ -56,3 +57,5 @@ rotation = 1.57079
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExplosionArea"]
 shape = SubResource("CircleShape2D_3ma2v")
+
+[node name="Rig" parent="." instance=ExtResource("5_s6m1l")]

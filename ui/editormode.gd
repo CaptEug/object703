@@ -320,10 +320,6 @@ func _input(event):
 								# 点击到其他炮塔，切换到该炮塔的编辑模式
 								exit_turret_editing_mode()
 								enter_turret_editing_mode(clicked_turret)
-							elif not clicked_turret and not clicked_self:
-								# 点击空白处且没有点击到自己或其他炮塔，退出炮塔编辑模式
-								exit_turret_editing_mode()
-							# 点击到自己或其他情况，保持当前编辑模式
 					
 					elif is_editing and not is_turret_editing_mode and not is_recycle_mode and not is_moving_block:
 						# 进入炮塔编辑模式
@@ -413,7 +409,10 @@ func enter_turret_editing_mode(turret: TurretRing):
 	is_turret_editing_mode = true
 	current_editing_turret = turret
 	cancel_placement()
-	
+	for point in turret.turret.get_children():
+		if point is TurretConnector:
+			if point.connected_to == null:
+				point.is_connection_enabled = true
 	# 重要：确保在炮塔模式下
 	if is_vehicle_mode:
 		is_vehicle_mode = false
@@ -1905,9 +1904,6 @@ func enter_editor_mode(vehicle: Vehicle):
 	
 	vehicle.control = Callable()
 	
-	for block:Block in vehicle.blocks:
-		block.collision_layer = 1
-	
 	show()
 	
 	current_ghost_connection_index = 0
@@ -1941,7 +1937,6 @@ func exit_editor_mode():
 		return
 	
 	for block:Block in selected_vehicle.blocks:
-		block.collision_layer = 1
 		block.modulate = Color.WHITE
 	
 	is_new_vehicle = false
@@ -2129,8 +2124,12 @@ func calculate_aligned_rotation_from_base(vehicle_block: Block) -> float:
 func can_points_connect_with_rotation(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
 	if point_a.connection_type != point_b.connection_type:
 		return false
-	if point_a.layer != point_b.layer:
-		return false
+	if is_editing and is_turret_editing_mode:
+		if point_a.layer != 4:
+			return false
+	if is_editing and not is_turret_editing_mode:
+		if point_a.layer != 1:
+			return false
 	if not point_a.is_connection_enabled or not point_b.is_connection_enabled:
 		return false
 	var ghost_point_direction = point_b.rotation + ghost_rotation
@@ -2530,29 +2529,79 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	var max_x = -INF
 	var max_y = -INF
 	
+	# 计算车辆主体的网格范围
 	for grid_pos in selected_vehicle.grid:
 		min_x = min(min_x, grid_pos.x)
 		min_y = min(min_y, grid_pos.y)
 		max_x = max(max_x, grid_pos.x)
 		max_y = max(max_y, grid_pos.y)
 	
+	# 存储所有块（包括炮塔）
 	for grid_pos in selected_vehicle.grid:
 		var block = selected_vehicle.grid[grid_pos]
 		if not processed_blocks.has(block):
 			var relative_pos = Vector2i(grid_pos.x - min_x, grid_pos.y - min_y)
 			var rotation_str = block.base_rotation_degree
 			
-			blueprint_data_save["blocks"][str(block_counter)] = {
+			var block_data = {
 				"name": block.block_name,
 				"path": block.scene_file_path,
 				"base_pos": [relative_pos.x, relative_pos.y],
 				"rotation": [rotation_str],
 			}
+			
+			# 如果是炮塔，添加炮塔网格信息
+			if block is TurretRing and is_instance_valid(block) and block.turret_grid and not block.turret_grid.is_empty():
+				block_data["turret_grid"] = create_turret_grid_data(block)
+			
+			blueprint_data_save["blocks"][str(block_counter)] = block_data
 			block_counter += 1
 			processed_blocks[block] = true
 	
 	blueprint_data_save["vehicle_size"] = [max_x - min_x + 1, max_y - min_y + 1]
 	return blueprint_data_save
+
+func create_turret_grid_data(turret: TurretRing) -> Dictionary:
+	"""创建炮塔网格数据，格式与vehicle的blocks类似，不存储相同的块"""
+	var turret_grid_data = {
+		"blocks": {},
+	}
+	
+	# 计算炮塔网格的范围
+	var min_x = INF
+	var min_y = INF
+	var max_x = -INF
+	var max_y = -INF
+	
+	for turret_grid_pos in turret.turret_grid:
+		min_x = min(min_x, turret_grid_pos.x)
+		min_y = min(min_y, turret_grid_pos.y)
+		max_x = max(max_x, turret_grid_pos.x)
+		max_y = max(max_y, turret_grid_pos.y)
+	
+	# 存储炮塔上的所有块（排除炮塔座圈本身），不重复存储相同的块
+	var turret_block_counter = 1
+	var processed_turret_blocks = {}
+	
+	for turret_grid_pos in turret.turret_grid:
+		var turret_block = turret.turret_grid[turret_grid_pos]
+		
+		# 跳过炮塔座圈本身，只存储附加的块
+		if turret_block and turret_block != turret:
+			# 如果这个块还没有被处理过
+			if not processed_turret_blocks.has(turret_block):
+				var relative_pos = turret_grid_pos
+				turret_grid_data["blocks"][str(turret_block_counter)] = {
+					"name": turret_block.block_name,
+					"path": turret_block.scene_file_path,
+					"base_pos": [relative_pos.x, relative_pos.y],
+					"rotation": [turret_block.base_rotation_degree],
+				}
+				processed_turret_blocks[turret_block] = str(turret_block_counter)
+				turret_block_counter += 1
+	
+	turret_grid_data["grid_size"] = [max_x - min_x + 1, max_y - min_y + 1]
+	return turret_grid_data
 
 func save_blueprint(blueprint_data_save: Dictionary, save_path: String) -> bool:
 	var dir = DirAccess.open("res://vehicles/blueprint/")
@@ -2738,7 +2787,6 @@ func try_place_ghost_block(ghost: Node2D, ghost_data: GhostData) -> bool:
 	var control = selected_vehicle.control
 	selected_vehicle._add_block(new_block, new_block.position, ghost_data.grid_positions)
 	selected_vehicle.control = control
-	
 	return true
 
 # === 长按拖拽功能 ===
