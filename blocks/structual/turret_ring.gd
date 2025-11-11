@@ -4,7 +4,7 @@ extends Block
 var load:float
 var turret:RigidBody2D
 var traverse:Array
-var max_torque:float = 10000
+var max_torque:float = 100000
 var damping:float = 3000
 
 # 炮塔专用的grid系统
@@ -21,6 +21,8 @@ func _ready():
 	initialize_turret_grid()
 
 func _physics_process(_delta):
+	if turret:
+		turret.position = Vector2.ZERO
 	# 只有在启用时才进行瞄准
 	if is_turret_rotation_enabled:
 		aim(get_global_mouse_position())
@@ -62,6 +64,16 @@ func initialize_turret_grid():
 
 func add_block_to_turret(block: Block, grid_positions: Array = []):
 	"""添加block到炮塔grid系统"""
+	if parent_vehicle:
+		parent_vehicle.blocks.append(block)
+		if block is Powerpack and block not in parent_vehicle.powerpacks:
+			parent_vehicle.powerpacks.append(block)
+		elif block is Command and block not in parent_vehicle.commands:
+			parent_vehicle.commands.append(block)
+		elif block is Ammorack and block not in parent_vehicle.ammoracks:
+			parent_vehicle.ammoracks.append(block)
+		elif block is Fueltank and block not in parent_vehicle.fueltanks:
+			parent_vehicle.fueltanks.append(block)
 	if block not in turret_blocks:
 		turret_blocks.append(block)
 		block.z_index = 100
@@ -91,6 +103,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			block.collision_layer = 2
 			block.collision_mask = 2
 		
+		block.get_parent_vehicle()
 		# 更新炮塔物理属性
 		update_turret_physics()
 		
@@ -101,6 +114,17 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
+	if parent_vehicle:
+		parent_vehicle.blocks.erase(block)
+		if block is Powerpack and block in parent_vehicle.powerpacks:
+			parent_vehicle.powerpacks.erase(block)
+		elif block is Command and block in parent_vehicle.commands:
+			parent_vehicle.commands.erase(block)
+		elif block is Ammorack and block in parent_vehicle.ammoracks:
+			parent_vehicle.ammoracks.erase(block)
+		elif block is Fueltank and block in parent_vehicle.fueltanks:
+			parent_vehicle.fueltanks.erase(block)
+	
 	if block in turret_blocks:
 		turret_blocks.erase(block)
 		
@@ -116,6 +140,7 @@ func remove_block_from_turret(block: Block):
 		if block.get_parent() == turret:
 			turret.remove_child(block)
 		block.queue_free()
+		
 		# 更新炮塔物理属性
 		update_turret_physics()
 		

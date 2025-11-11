@@ -69,7 +69,6 @@ func power_reduction(delta):
 func calculate_power_distribution(forward_input, turn_input):
 	if not parent_vehicle:
 		return
-	
 	var track_power_move = parent_vehicle.balanced_forces
 	var track_power_rotat = parent_vehicle.rotation_forces
 	

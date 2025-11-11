@@ -235,11 +235,6 @@ func try_connect(other_connector: TurretConnector) -> bool:
 	var block_can_move = block.is_movable_on_connection
 	var rigidbody_can_move = rigidbody_connector.is_attached_to_block() and rigidbody_connector.find_parent_block().is_movable_on_connection
 	
-	if block_can_move and not rigidbody_can_move and qeck == true:
-		# 移动 block 到连接位置
-		block.global_position += other_connector.global_position - global_position
-		block.global_rotation = rigidbody.global_rotation
-	
 	# 创建连接
 	connected_to = other_connector
 	other_connector.connected_to = self

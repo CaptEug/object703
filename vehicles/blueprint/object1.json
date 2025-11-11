@@ -13,6 +13,17 @@
 		},
 		"10": {
 			"base_pos": [
+				1,
+				6
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"11": {
+			"base_pos": [
 				2,
 				0
 			],
@@ -22,29 +33,70 @@
 				0.0
 			]
 		},
-		"11": {
+		"12": {
 			"base_pos": [
 				2,
 				2
 			],
-			"name": "122mm D-52S cannon",
-			"path": "res://blocks/firepower/d_52s.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"12": {
-			"base_pos": [
-				2,
-				4
-			],
-			"name": "V-7",
-			"path": "res://blocks/mobility/v_7.tscn",
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
 			"rotation": [
 				0.0
 			]
 		},
 		"13": {
+			"base_pos": [
+				2,
+				3
+			],
+			"name": "TurretRing1800mm",
+			"path": "res://blocks/structual/turret_ring_1800mm.tscn",
+			"rotation": [
+				0.0
+			],
+			"turret_grid": {
+				"blocks": {
+					"1": {
+						"base_pos": [
+							1,
+							0
+						],
+						"name": "122mm D-52T cannon",
+						"path": "res://blocks/firepower/d_52t.tscn",
+						"rotation": [
+							0.0
+						]
+					},
+					"2": {
+						"base_pos": [
+							0,
+							0
+						],
+						"name": "122mm D-52T cannon",
+						"path": "res://blocks/firepower/d_52t.tscn",
+						"rotation": [
+							0.0
+						]
+					},
+					"3": {
+						"base_pos": [
+							2,
+							0
+						],
+						"name": "QF 6-pounder gun",
+						"path": "res://blocks/firepower/qf_6_pounder.tscn",
+						"rotation": [
+							0
+						]
+					}
+				},
+				"grid_size": [
+					3,
+					2
+				]
+			}
+		},
+		"14": {
 			"base_pos": [
 				2,
 				6
@@ -55,29 +107,29 @@
 				0.0
 			]
 		},
-		"14": {
-			"base_pos": [
-				3,
-				4
-			],
-			"name": "V-7",
-			"path": "res://blocks/mobility/v_7.tscn",
-			"rotation": [
-				0.0
-			]
-		},
 		"15": {
 			"base_pos": [
 				3,
-				6
+				2
 			],
-			"name": "large cargo",
-			"path": "res://blocks/auxiliary/large_cargo.tscn",
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
 			"rotation": [
 				0.0
 			]
 		},
 		"16": {
+			"base_pos": [
+				3,
+				6
+			],
+			"name": "V-7",
+			"path": "res://blocks/mobility/v_7.tscn",
+			"rotation": [
+				-90.0
+			]
+		},
+		"17": {
 			"base_pos": [
 				4,
 				1
@@ -88,7 +140,7 @@
 				0.0
 			]
 		},
-		"17": {
+		"18": {
 			"base_pos": [
 				4,
 				2
@@ -99,24 +151,13 @@
 				0.0
 			]
 		},
-		"18": {
-			"base_pos": [
-				4,
-				3
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": [
-				0.0
-			]
-		},
 		"19": {
 			"base_pos": [
-				4,
-				4
+				5,
+				2
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
 			"rotation": [
 				0.0
 			]
@@ -134,28 +175,6 @@
 		},
 		"20": {
 			"base_pos": [
-				4,
-				5
-			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"21": {
-			"base_pos": [
-				5,
-				2
-			],
-			"name": "pike armor",
-			"path": "res://blocks/structual/pike_armor.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"22": {
-			"base_pos": [
 				5,
 				3
 			],
@@ -165,7 +184,7 @@
 				0.0
 			]
 		},
-		"23": {
+		"21": {
 			"base_pos": [
 				5,
 				4
@@ -176,7 +195,7 @@
 				0.0
 			]
 		},
-		"24": {
+		"22": {
 			"base_pos": [
 				5,
 				5
@@ -185,17 +204,6 @@
 			"path": "res://blocks/structual/pike_armor.tscn",
 			"rotation": [
 				90.0
-			]
-		},
-		"25": {
-			"base_pos": [
-				1,
-				6
-			],
-			"name": "search light",
-			"path": "res://blocks/auxiliary/search_light.tscn",
-			"rotation": [
-				0
 			]
 		},
 		"3": {
@@ -282,6 +290,6 @@
 	],
 	"vehicle_size": [
 		6,
-		8
+		7
 	]
 }

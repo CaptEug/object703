@@ -184,6 +184,13 @@ func get_parent_vehicle():
 	if parent_vehicle:
 		if self in parent_vehicle.blocks:
 			return parent_vehicle
+	else:
+		if get_parent() != null:
+			if get_parent().get_parent() is TurretRing:
+				parent_vehicle = get_parent().get_parent().parent_vehicle
+				if parent_vehicle:
+					if self in parent_vehicle.blocks:
+						return parent_vehicle
 	return null
 
 ## Neighbor and Connectivity System
@@ -197,11 +204,10 @@ func get_connected_blocks(block: Block):
 		return
 	
 	var jcb = block.joint_connected_blocks
-	if block.collision_layer != 2:
-		for blk in jcb.values():
-			if is_instance_valid(blk) and not connected_blocks.has(blk) and blk != self:
-				connected_blocks.append(blk)
-				get_connected_blocks(blk)
+	for blk in jcb.values():
+		if is_instance_valid(blk) and not connected_blocks.has(blk) and blk != self:
+			connected_blocks.append(blk)
+			get_connected_blocks(blk)
 
 func check_connectivity():
 	if self is Command:
