@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://d4j7vpjojyh4g"]
+
+[ext_resource type="Script" uid="uid://c3l8lqwt7rbr0" path="res://blocks/firepower/shells/shell_trail.gd" id="1_5dyxn"]
+[ext_resource type="Texture2D" uid="uid://di1forcnqx0fg" path="res://assets/trail.png" id="1_thf06"]
+
+[node name="ShellTrail" type="Line2D"]
+texture = ExtResource("1_thf06")
+script = ExtResource("1_5dyxn")

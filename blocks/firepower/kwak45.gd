@@ -14,7 +14,7 @@ const SPREAD:float = 0.02
 
 var description := ""
 
-const SHELLS = ["122mmAPHE", "122mmHE"]
+const SHELLS = ["PZGR75"]
 
 func _init():
 	max_hp = HITPOINT

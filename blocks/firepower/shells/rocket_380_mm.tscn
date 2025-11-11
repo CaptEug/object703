@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://dwiyf51xkobmi"]
+[gd_scene load_steps=8 format=3 uid="uid://dwiyf51xkobmi"]
 
 [ext_resource type="Script" uid="uid://e18cwclf4m2u" path="res://blocks/firepower/shells/rocket_380_mm.gd" id="1_6x7cm"]
-[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/firepower/shells/trail.tscn" id="2_85ud0"]
+[ext_resource type="PackedScene" uid="uid://dxi7i5jk186vv" path="res://blocks/firepower/shells/smoke_trail.tscn" id="2_85ud0"]
+[ext_resource type="PackedScene" uid="uid://d4j7vpjojyh4g" path="res://blocks/firepower/shells/shell_trail.tscn" id="3_v16at"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6x7cm"]
 radius = 0.01
@@ -13,8 +14,8 @@ radius = 6.0
 radius = 100.0
 
 [sub_resource type="Gradient" id="Gradient_v16at"]
-offsets = PackedFloat32Array(0, 0.480565, 1)
-colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.757, 2, 1, 0.5, 1)
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 0.498039, 1, 2, 1, 0.5, 1)
 
 [node name="Rocket380Mm" type="RigidBody2D"]
 collision_layer = 0
@@ -35,6 +36,8 @@ shape = SubResource("CircleShape2D_85ud0")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExplosionArea"]
 shape = SubResource("CircleShape2D_v16at")
 
-[node name="Trail" parent="." instance=ExtResource("2_85ud0")]
+[node name="SmokeTrail" parent="." instance=ExtResource("2_85ud0")]
 width = 30.0
+
+[node name="ShellTrail" parent="." instance=ExtResource("3_v16at")]
 gradient = SubResource("Gradient_v16at")

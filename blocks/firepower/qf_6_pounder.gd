@@ -10,7 +10,7 @@ const RELOAD:float = 2.0
 const AMMO_COST:float= 1
 const ROTATION_SPEED:float = deg_to_rad(20)  # rads per second
 const TRAVERSE:= [0, 100] #degree
-const MUZZLE_ENERGY:float = 10
+const MUZZLE_ENERGY:float = 2
 const SPREAD:float = 0.05
 
 var description := ""
