@@ -15,7 +15,8 @@ var thrust:float = 0.0
 var acceleration:float
 var target_dir:Vector2
 var shell_body:Area2D
-var trail:Line2D
+var shell_trail:Line2D
+var smoke_trail:Line2D
 
 var from:Vehicle
 var stopped := false
@@ -25,7 +26,8 @@ var spark_particle = preload("res://assets/particles/spark.tscn")
 
 func _ready():
 	shell_body = find_child("Area2D") as Area2D
-	trail = find_child("Trail") as Line2D
+	shell_trail = find_child("ShellTrail") as Line2D
+	smoke_trail = find_child("SmokeTrail") as Line2D
 	explosion_area = find_child("ExplosionArea") as Area2D
 	if explosion_area:
 		explosion_shape = explosion_area.find_child("CollisionShape2D") as CollisionShape2D
@@ -35,7 +37,6 @@ func _ready():
 	collision_mask = 0
 	linear_damp = 0.1
 	mass = weight/1000
-	trail.lifetime = lifetime
 	var timer = Timer.new()
 	timer.wait_time = lifetime
 	timer.autostart = true
@@ -72,17 +73,18 @@ func explode():
 			block.damage(dmg)
 
 func stop():
-	shell_body.queue_free()
 	stopped = true
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0
 	set_physics_process(false)
-	trail.fade()
+	shell_trail.visible = false
+	smoke_trail.fade()
 
 
 func _on_timer_timeout():
-	trail.fade()
-	await get_tree().create_timer(trail.lifetime).timeout
+	shell_trail.fade()
+	smoke_trail.fade()
+	await get_tree().create_timer(smoke_trail.lifetime).timeout
 	queue_free()
 
 

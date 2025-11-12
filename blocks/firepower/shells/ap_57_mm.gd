@@ -3,7 +3,7 @@ extends Shell
 const SHELL_NAME:String = '57mm BR-273P'
 const TYPE:String = 'AP'
 const WEIGHT:float = 4
-const LIFETIME:float = 0.5
+const LIFETIME:float = 1
 const KENETIC_DAMAGE:int = 80
 
 func _init():
