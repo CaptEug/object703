@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://ca320w2cj51gd"]
+[gd_scene load_steps=10 format=3 uid="uid://ca320w2cj51gd"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ils3j"]
 [ext_resource type="Script" uid="uid://ifelvwg72870" path="res://ui/editormode.gd" id="2_8aq6r"]
@@ -20,9 +20,14 @@ region = Rect2(32, 128, 32, 32)
 atlas = ExtResource("3_qf13m")
 region = Rect2(64, 128, 32, 32)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_7lnpe"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_i836d"]
 atlas = ExtResource("3_qf13m")
 region = Rect2(96, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7lnpe"]
+resource_local_to_scene = true
+atlas = ExtResource("3_qf13m")
+region = Rect2(64, 160, 32, 32)
 
 [node name="Tankbuilderui" type="Control"]
 layout_mode = 3
@@ -99,7 +104,7 @@ offset_bottom = 178.0
 tooltip_text = "repair/build all"
 mouse_default_cursor_shape = 2
 toggle_mode = true
-texture_normal = SubResource("AtlasTexture_7lnpe")
+texture_normal = SubResource("AtlasTexture_i836d")
 texture_pressed = SubResource("AtlasTexture_7lnpe")
 
 [node name="TabContainer" type="TabContainer" parent="."]
