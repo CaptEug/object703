@@ -47,7 +47,6 @@ var original_tab_names := []
 # === 炮塔编辑模式变量 ===
 var is_turret_editing_mode := false
 var current_editing_turret: TurretRing = null
-var turret_cursor:Texture = preload("res://assets/icons/file.png")
 var turret_grid_previews := []
 
 # === 炮塔连接点吸附系统 ===
@@ -71,8 +70,6 @@ var camera:Camera2D
 
 # === 模式切换变量 ===
 var is_vehicle_mode := true  # true: 车体模式, false: 炮塔模式
-var vehicle_icon:Texture = preload("res://assets/icons/hull.png")  # 车体图标
-var turret_icon:Texture = preload("res://assets/icons/turret.png")    # 炮塔图标
 
 # === 方块移动功能变量 ===
 var is_moving_block := false
@@ -205,11 +202,9 @@ func update_mode_button_display():
 	
 	if is_vehicle_mode:
 		# 车体模式：显示车体图标
-		mode_button.texture_normal = vehicle_icon
 		mode_button.tooltip_text = "车体编辑模式 (点击切换到炮塔编辑)"
 	else:
 		# 炮塔模式：显示炮塔图标
-		mode_button.texture_normal = turret_icon
 		mode_button.tooltip_text = "炮塔编辑模式 (点击切换回车体编辑)"
 
 func _connect_block_buttons():
@@ -409,7 +404,7 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	print("=== 进入炮塔编辑模式 ===")
 	print("   目标炮塔:", turret.block_name if turret else "null")
-	
+	mode_button.button_pressed = true
 	is_turret_editing_mode = true
 	current_editing_turret = turret
 	cancel_placement()
@@ -450,7 +445,7 @@ func exit_turret_editing_mode():
 	print("=== 退出炮塔编辑模式 ===")
 	
 	is_turret_editing_mode = false
-	
+	mode_button.button_pressed = false
 	# 清除所有炮塔边框
 	clear_all_turret_borders()
 	
