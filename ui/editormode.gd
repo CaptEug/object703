@@ -2723,35 +2723,53 @@ func remove_turret_selection_border(turret: TurretRing):
 		turret_selection_borders.erase(instance_id)
 
 func create_selection_border(turret: TurretRing) -> Node2D:
-	"""创建选择边框"""
-	# 计算边框的尺寸和位置
-	var border_width = 3.0  # 边框宽度
-	var border_color = Color(0.2, 1.0, 0.2, 0.8)  # 亮绿色边框
-	
-	# 创建边框节点
+	"""创建选择边框 - 修复位置问题"""
 	var border_container = Node2D.new()
 	border_container.name = "TurretSelectionBorder"
 	
-	# 计算边框的世界坐标位置和旋转
 	var world_position = calculate_border_world_position(turret)
+	var border_size = calculate_border_size(turret)
 	
-	# 设置边框位置和旋转
 	border_container.global_position = world_position
 	border_container.global_rotation = turret.global_rotation
 	
-	# 计算边框尺寸（基于炮塔座圈的size和旋转）
-	var border_size = calculate_border_size(turret)
+	var border_width = 1.0
+	var border_color = Color.GREEN
 	
-	# 创建四个边的线段
-	create_border_line(border_container, Vector2(0, 0), Vector2(border_size.x, 0), border_width, border_color)  # 上边
-	create_border_line(border_container, Vector2(border_size.x, 0), Vector2(border_size.x, border_size.y), border_width, border_color)  # 右边
-	create_border_line(border_container, Vector2(border_size.x, border_size.y), Vector2(0, border_size.y), border_width, border_color)  # 下边
-	create_border_line(border_container, Vector2(0, border_size.y), Vector2(0, 0), border_width, border_color)  # 左边
+	# 不再做居中偏移，直接从(0,0)开始绘制
+	# 上边
+	var top_border = ColorRect.new()
+	top_border.size = Vector2(border_size.x, border_width)
+	top_border.position = Vector2(0, 0)  # 不再居中
+	top_border.color = border_color
 	
-	# 设置z-index确保边框显示在最前面
-	border_container.z_index = 1000
+	# 下边
+	var bottom_border = ColorRect.new()
+	bottom_border.size = Vector2(border_size.x, border_width)
+	bottom_border.position = Vector2(0, border_size.y - border_width)  # 调整位置
+	bottom_border.color = border_color
+	
+	# 左边
+	var left_border = ColorRect.new()
+	left_border.size = Vector2(border_width, border_size.y)
+	left_border.position = Vector2(0, 0)  # 不再居中
+	left_border.color = border_color
+	
+	# 右边
+	var right_border = ColorRect.new()
+	right_border.size = Vector2(border_width, border_size.y)
+	right_border.position = Vector2(border_size.x - border_width, 0)  # 调整位置
+	right_border.color = border_color
+	
+	border_container.add_child(top_border)
+	border_container.add_child(bottom_border)
+	border_container.add_child(left_border)
+	border_container.add_child(right_border)
+	
+	border_container.z_index = 10
 	
 	return border_container
+
 
 func calculate_border_size(turret: TurretRing) -> Vector2:
 	"""根据炮塔座圈的size和旋转计算边框尺寸"""
