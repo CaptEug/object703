@@ -387,6 +387,10 @@ func _process(delta):
 	if not is_editing or not selected_vehicle:
 		return
 	
+	# 更新炮塔边框位置
+	if is_turret_editing_mode and not turret_selection_borders.is_empty():
+		update_turret_border_positions()
+	
 	if current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
@@ -447,10 +451,11 @@ func exit_turret_editing_mode():
 	
 	is_turret_editing_mode = false
 	
+	# 清除所有炮塔边框
+	clear_all_turret_borders()
+	
 	if current_editing_turret:
 		enable_turret_rotation(current_editing_turret)
-		# 移除炮塔高亮
-		current_editing_turret.modulate = Color.WHITE
 	
 	Input.set_custom_mouse_cursor(null)
 	
@@ -1897,6 +1902,15 @@ func enter_editor_mode(vehicle: Vehicle):
 	if not is_new_vehicle:
 		is_first_block = false
 	
+	for block in selected_vehicle.get_children():
+		if block is Block:
+			var have_com = false
+			for connect_block in block.get_all_connected_blocks():
+				if connect_block is Command or block is Command:
+					have_com = true
+			if have_com == false:
+				selected_vehicle.remove_block(block, true)
+			
 	camera.focus_on_vehicle(selected_vehicle)
 	camera.sync_rotation_to_vehicle(selected_vehicle)
 	
@@ -2647,27 +2661,185 @@ func reset_all_blocks_color():
 	if not selected_vehicle:
 		return
 	
+	# 清除所有现有边框
+	clear_all_turret_borders()
+	
 	for block in selected_vehicle.blocks:
-		if block is TurretRing:
-			for child in block.turret.get_children():
-				if child is Block:
-					if is_turret_editing_mode:
-						if block == current_editing_turret:
-							child.modulate = Color.WHITE
-						else:
-							child.modulate = BLOCK_DIM_COLOR
-					else:
-						child.modulate = Color.WHITE
 		if is_instance_valid(block):
 			if is_turret_editing_mode:
-				# 炮塔编辑模式下：只有当前编辑炮塔保持高亮，其他所有块都变暗
+				# 炮塔编辑模式下：只有当前编辑炮塔和其上的块保持正常颜色，其他所有块都变暗
 				if block == current_editing_turret:
+					# 当前编辑的炮塔座圈本身保持正常颜色并添加绿色边框
+					block.modulate = Color.WHITE
+					add_turret_selection_border(block)  # 添加绿色边框
+					# 该炮塔上的所有块也保持正常颜色
+					for child in block.turret.get_children():
+						if child is Block:
+							child.modulate = Color.WHITE
+				elif current_editing_turret.turret_blocks.has(block):
+					# 当前编辑炮塔上的块保持正常颜色
 					block.modulate = Color.WHITE
 				else:
+					# 其他炮塔座圈变暗
 					block.modulate = BLOCK_DIM_COLOR
+					# 其他炮塔上的块也变暗
+					if block is TurretRing:
+						for child in block.turret.get_children():
+							if child is Block:
+								child.modulate = BLOCK_DIM_COLOR
 			else:
-				# 普通模式下：所有块恢复正常颜色
+				# 非炮塔编辑模式：所有块都恢复正常颜色并移除边框
 				block.modulate = Color.WHITE
+				# 所有炮塔上的块也恢复正常颜色
+				if block is TurretRing:
+					for child in block.turret.get_children():
+						if child is Block:
+							child.modulate = Color.WHITE
+
+# 存储炮塔边框的字典
+var turret_selection_borders = {}
+
+func add_turret_selection_border(turret: TurretRing):
+	"""为选中的炮塔添加绿色边框"""
+	if not turret or not is_instance_valid(turret):
+		return
+	
+	# 如果已经有边框了，先移除
+	if turret_selection_borders.has(turret.get_instance_id()):
+		remove_turret_selection_border(turret)
+	
+	# 创建边框节点
+	var border = create_selection_border(turret)
+	if border:
+		# 添加到场景中
+		get_tree().current_scene.add_child(border)
+		# 存储引用
+		turret_selection_borders[turret.get_instance_id()] = border
+		
+		print("为炮塔添加选择边框: ", turret.block_name)
+
+func remove_turret_selection_border(turret: TurretRing):
+	"""移除炮塔的绿色边框"""
+	var instance_id = turret.get_instance_id()
+	if turret_selection_borders.has(instance_id):
+		var border = turret_selection_borders[instance_id]
+		if is_instance_valid(border):
+			border.queue_free()
+		turret_selection_borders.erase(instance_id)
+
+func create_selection_border(turret: TurretRing) -> Node2D:
+	"""创建选择边框"""
+	# 计算边框的尺寸和位置
+	var border_width = 3.0  # 边框宽度
+	var border_color = Color(0.2, 1.0, 0.2, 0.8)  # 亮绿色边框
+	
+	# 创建边框节点
+	var border_container = Node2D.new()
+	border_container.name = "TurretSelectionBorder"
+	
+	# 计算边框的世界坐标位置和旋转
+	var world_position = calculate_border_world_position(turret)
+	
+	# 设置边框位置和旋转
+	border_container.global_position = world_position
+	border_container.global_rotation = turret.global_rotation
+	
+	# 计算边框尺寸（基于炮塔座圈的size和旋转）
+	var border_size = calculate_border_size(turret)
+	
+	# 创建四个边的线段
+	create_border_line(border_container, Vector2(0, 0), Vector2(border_size.x, 0), border_width, border_color)  # 上边
+	create_border_line(border_container, Vector2(border_size.x, 0), Vector2(border_size.x, border_size.y), border_width, border_color)  # 右边
+	create_border_line(border_container, Vector2(border_size.x, border_size.y), Vector2(0, border_size.y), border_width, border_color)  # 下边
+	create_border_line(border_container, Vector2(0, border_size.y), Vector2(0, 0), border_width, border_color)  # 左边
+	
+	# 设置z-index确保边框显示在最前面
+	border_container.z_index = 1000
+	
+	return border_container
+
+func calculate_border_size(turret: TurretRing) -> Vector2:
+	"""根据炮塔座圈的size和旋转计算边框尺寸"""
+	var grid_size = 16
+	var base_size = Vector2(turret.size.x * grid_size, turret.size.y * grid_size)
+	
+	# 根据基础旋转调整尺寸
+	match int(turret.base_rotation_degree):
+		90, -90, 270:
+			# 旋转90度或-90度时，宽高交换
+			return Vector2(base_size.y, base_size.x)
+		180, -180:
+			# 旋转180度，尺寸不变
+			return base_size
+		_:
+			# 0度或其他情况，使用原始尺寸
+			return base_size
+
+
+
+func create_border_line(parent: Node2D, from: Vector2, to: Vector2, width: float, color: Color):
+	"""创建边框线段"""
+	var line = Line2D.new()
+	line.points = [from, to]
+	line.width = width
+	line.default_color = color
+	line.antialiased = true
+	parent.add_child(line)
+
+func calculate_border_world_position(turret: TurretRing) -> Vector2:
+	"""计算边框的世界坐标位置"""
+	var grid_size = 16
+	var border_size = calculate_border_size(turret)
+	
+	# 计算边框的中心偏移（让边框中心与炮塔中心对齐）
+	var center_offset = border_size * 0.5
+	
+	# 根据旋转调整偏移
+	match int(turret.base_rotation_degree):
+		90:
+			# 旋转90度：需要调整偏移
+			center_offset = Vector2(border_size.y * 0.5, border_size.x * 0.5)
+		-90, 270:
+			# 旋转-90度：需要调整偏移
+			center_offset = Vector2(border_size.y * 0.5, border_size.x * 0.5)
+		180, -180:
+			# 旋转180度：偏移与0度相同
+			center_offset = border_size * 0.5
+		_:
+			# 0度：正常偏移
+			center_offset = border_size * 0.5
+	
+	# 计算局部位置（从炮塔中心减去一半边框尺寸）
+	var local_position = Vector2.ZERO - center_offset
+	
+	# 转换为世界坐标
+	return turret.to_global(local_position)
+
+
+func update_turret_border_positions():
+	"""更新所有炮塔边框的位置（在车辆旋转时调用）"""
+	for instance_id in turret_selection_borders:
+		var turret = instance_from_id(instance_id)
+		var border = turret_selection_borders[instance_id]
+		
+		if is_instance_valid(turret) and is_instance_valid(border):
+			var bounds = turret.get_turret_grid_bounds()
+			if not bounds.is_empty():
+				var world_position = calculate_border_world_position(turret)
+				border.global_position = world_position
+				border.global_rotation = turret.global_rotation
+
+func clear_all_turret_borders():
+	"""清除所有炮塔边框"""
+	for instance_id in turret_selection_borders:
+		var border = turret_selection_borders[instance_id]
+		if is_instance_valid(border):
+			border.queue_free()
+	turret_selection_borders.clear()
+
+func instance_from_id(instance_id: int) -> Object:
+	"""根据实例ID获取对象实例"""
+	return instance_from_id(instance_id)
 
 	
 func exit_recycle_mode():
