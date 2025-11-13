@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxeywevyjtfh0"
-path="res://.godot/imported/pzgr75.png-52afd6e735bdc8083e3971476cf8d868.ctex"
+uid="uid://6d4bdslmcutd"
+path="res://.godot/imported/buttons.png-d9254ede48169ddf4981cf8f2bb5bcc1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/pzgr75.png"
-dest_files=["res://.godot/imported/pzgr75.png-52afd6e735bdc8083e3971476cf8d868.ctex"]
+source_file="res://assets/icons/buttons.png"
+dest_files=["res://.godot/imported/buttons.png-d9254ede48169ddf4981cf8f2bb5bcc1.ctex"]
 
 [params]
 

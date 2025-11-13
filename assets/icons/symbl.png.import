@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cedxb1cyh1chq"
-path="res://.godot/imported/tank.png-c1b3fc4008816ee1e5635788e43a7215.ctex"
+uid="uid://cjkyiyg0n6t0e"
+path="res://.godot/imported/symbl.png-90c2119316f3932a4d439bea3e2995a8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/tank.png"
-dest_files=["res://.godot/imported/tank.png-c1b3fc4008816ee1e5635788e43a7215.ctex"]
+source_file="res://assets/icons/symbl.png"
+dest_files=["res://.godot/imported/symbl.png-90c2119316f3932a4d439bea3e2995a8.ctex"]
 
 [params]
 

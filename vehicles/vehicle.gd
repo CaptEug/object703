@@ -9,8 +9,6 @@ var move_state:String
 var max_engine_power:float
 var current_engine_power:float
 var total_weight:int
-var total_ammo:float
-var total_ammo_cap:float
 var total_fuel:float
 var total_fuel_cap:float
 var total_store:int
@@ -92,8 +90,6 @@ func update_vehicle():
 	#Get all total parameters
 	get_max_engine_power()
 	get_current_engine_power()
-	get_ammo_cap()
-	get_current_ammo()
 	get_fuel_cap()
 	get_current_fuel()
 	update_vehicle_size()
@@ -220,22 +216,6 @@ func get_current_engine_power() -> float:
 			currunt_power += engine.power
 	current_engine_power = currunt_power
 	return currunt_power
-
-func get_ammo_cap():
-	var ammo_cap := 0.0
-	for ammorack in ammoracks:
-		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
-			ammo_cap += ammorack.ammo_storage_cap
-	total_ammo_cap = ammo_cap
-	return ammo_cap
-
-func get_current_ammo():
-	var currunt_ammo := 0.0
-	for ammorack in ammoracks:
-		if ammorack.is_inside_tree() and is_instance_valid(ammorack):
-			currunt_ammo += ammorack.ammo_storage
-	total_ammo = currunt_ammo
-	return currunt_ammo
 
 func get_fuel_cap():
 	var fuel_cap := 0.0

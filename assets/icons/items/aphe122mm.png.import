@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0swqnih5atun"
-path="res://.godot/imported/scrap.png-17d015aaaec264b76e95039011ef9301.ctex"
+uid="uid://ceqxjwujih5yt"
+path="res://.godot/imported/aphe122mm.png-43bd45f6ecbe2704e0fafdd5a9090493.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/scrap.png"
-dest_files=["res://.godot/imported/scrap.png-17d015aaaec264b76e95039011ef9301.ctex"]
+source_file="res://assets/icons/items/aphe122mm.png"
+dest_files=["res://.godot/imported/aphe122mm.png-43bd45f6ecbe2704e0fafdd5a9090493.ctex"]
 
 [params]
 

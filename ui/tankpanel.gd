@@ -13,7 +13,6 @@ var idle_icon:Texture = preload("res://assets/icons/idle.png")
 var manual_icon:Texture = preload("res://assets/icons/driving_wheel.png")
 var remote_icon:Texture = preload("res://assets/icons/remote_control.png")
 var ai_icon:Texture = preload("res://assets/icons/ai.png")
-var crosshair:Texture = preload("res://assets/icons/crosshair.png")
 var exit_focus = true
 
 var command_sign:Texture = preload("res://assets/icons/command.png")

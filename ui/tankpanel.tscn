@@ -1,13 +1,10 @@
-[gd_scene load_steps=15 format=3 uid="uid://cqye7fhmmkft8"]
+[gd_scene load_steps=13 format=3 uid="uid://cqye7fhmmkft8"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_sh8cn"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_6e8cr"]
 [ext_resource type="Script" uid="uid://dsrbwryh0conf" path="res://ui/tankpanel.gd" id="2_b7f80"]
-[ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/icons/arrows.png" id="2_sh8cn"]
-[ext_resource type="Texture2D" uid="uid://d3l7auv8n1vja" path="res://assets/icons/crossI.png" id="4_3deui"]
 [ext_resource type="Texture2D" uid="uid://dnn2g7ksth8o" path="res://assets/icons/idle.png" id="4_bu53t"]
-[ext_resource type="Texture2D" uid="uid://e0sne2h1x0sa" path="res://assets/icons/I.png" id="5_6e8cr"]
-[ext_resource type="Texture2D" uid="uid://bgqcxa847i8fu" path="res://assets/icons/b.png" id="7_3deui"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbl.png" id="6_6e8cr"]
 [ext_resource type="PackedScene" uid="uid://cil4c3i7uegwf" path="res://ui/inventory_panel.tscn" id="9_kkd3v"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
@@ -27,13 +24,17 @@ axis_stretch_vertical = 1
 offsets = PackedFloat32Array(0.25, 0.5, 0.75, 1)
 colors = PackedColorArray(0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_b7f80"]
-atlas = ExtResource("2_sh8cn")
-region = Rect2(0, 16, 16, 16)
+[sub_resource type="AtlasTexture" id="AtlasTexture_i2tau"]
+atlas = ExtResource("6_6e8cr")
+region = Rect2(240, 0, 16, 16)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_sh8cn"]
-atlas = ExtResource("2_sh8cn")
-region = Rect2(16, 16, 16, 16)
+[sub_resource type="AtlasTexture" id="AtlasTexture_3deui"]
+atlas = ExtResource("6_6e8cr")
+region = Rect2(0, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kkd3v"]
+atlas = ExtResource("6_6e8cr")
+region = Rect2(16, 64, 16, 16)
 
 [node name="Tankpanel" type="Panel"]
 offset_right = 320.0
@@ -53,14 +54,14 @@ offset_top = 16.0
 offset_right = 304.0
 offset_bottom = 32.0
 mouse_default_cursor_shape = 2
-texture_normal = ExtResource("4_3deui")
+texture_normal = SubResource("AtlasTexture_i2tau")
 
 [node name="Controlbutton" type="TextureButton" parent="."]
 layout_mode = 0
 offset_left = 276.0
-offset_top = 156.0
+offset_top = 274.0
 offset_right = 308.0
-offset_bottom = 188.0
+offset_bottom = 306.0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("4_bu53t")
 
@@ -93,7 +94,7 @@ offset_left = 16.0
 offset_top = 270.0
 offset_right = 32.0
 offset_bottom = 286.0
-texture_normal = ExtResource("5_6e8cr")
+texture_normal = SubResource("AtlasTexture_3deui")
 
 [node name="Label" type="Label" parent="CargoButton"]
 layout_mode = 0
@@ -111,7 +112,7 @@ offset_left = 16.0
 offset_top = 288.0
 offset_right = 32.0
 offset_bottom = 304.0
-texture_normal = ExtResource("7_3deui")
+texture_normal = SubResource("AtlasTexture_kkd3v")
 
 [node name="Label" type="Label" parent="ModifyButton"]
 layout_mode = 0
@@ -122,32 +123,6 @@ offset_bottom = 16.0
 theme_override_colors/font_color = Color(0, 1, 0, 1)
 theme_override_font_sizes/font_size = 8
 text = "to modify vehicle"
-
-[node name="Fuel" type="ProgressBar" parent="."]
-layout_mode = 0
-offset_left = 281.0
-offset_top = 192.0
-offset_right = 289.0
-offset_bottom = 288.0
-fill_mode = 3
-show_percentage = false
-
-[node name="Sprite2D" type="Sprite2D" parent="Fuel"]
-position = Vector2(4, 104)
-texture = SubResource("AtlasTexture_b7f80")
-
-[node name="Ammo" type="ProgressBar" parent="."]
-layout_mode = 0
-offset_left = 295.0
-offset_top = 192.0
-offset_right = 303.0
-offset_bottom = 288.0
-fill_mode = 3
-show_percentage = false
-
-[node name="Sprite2D" type="Sprite2D" parent="Ammo"]
-position = Vector2(4, 104)
-texture = SubResource("AtlasTexture_sh8cn")
 
 [node name="InventoryPanel" parent="." instance=ExtResource("9_kkd3v")]
 visible = false

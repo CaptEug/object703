@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhbrxb0dhowse"
-path="res://.godot/imported/gas.png-2bd6f24217046ae8b60b77f91179ce05.ctex"
+uid="uid://dxeywevyjtfh0"
+path="res://.godot/imported/pzgr75.png-5799b1f84be2cf00ba5a069925a8d244.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/gas.png"
-dest_files=["res://.godot/imported/gas.png-2bd6f24217046ae8b60b77f91179ce05.ctex"]
+source_file="res://assets/icons/items/pzgr75.png"
+dest_files=["res://.godot/imported/pzgr75.png-5799b1f84be2cf00ba5a069925a8d244.ctex"]
 
 [params]
 

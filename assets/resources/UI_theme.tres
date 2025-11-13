@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
-[ext_resource type="Texture2D" uid="uid://biyojl8ju41n2" path="res://assets/icons/arrows.png" id="3_vwcpp"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbl.png" id="3_vwcpp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4w2ry"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
@@ -172,11 +172,11 @@ texture_margin_bottom = 8.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6vqaq"]
 atlas = ExtResource("3_vwcpp")
-region = Rect2(0, 0, 16, 16)
+region = Rect2(224, 16, 16, 16)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_edc7y"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_2u1il"]
 atlas = ExtResource("3_vwcpp")
-region = Rect2(16, 0, 16, 16)
+region = Rect2(240, 16, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_we4p1"]
 atlas = ExtResource("1_4w2ry")
@@ -275,7 +275,7 @@ Tree/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
 Tree/colors/guide_color = Color(0, 0.701961, 0, 0)
 Tree/fonts/font = ExtResource("3_4w2ry")
 Tree/icons/arrow = SubResource("AtlasTexture_6vqaq")
-Tree/icons/arrow_collapsed = SubResource("AtlasTexture_edc7y")
+Tree/icons/arrow_collapsed = SubResource("AtlasTexture_2u1il")
 Tree/styles/hovered = SubResource("StyleBoxTexture_6vqaq")
 Tree/styles/panel = SubResource("StyleBoxTexture_4w2ry")
 Tree/styles/selected_focus = SubResource("StyleBoxFlat_vwcpp")
