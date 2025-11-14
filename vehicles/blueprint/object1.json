@@ -58,7 +58,7 @@
 				"blocks": {
 					"1": {
 						"base_pos": [
-							1,
+							0,
 							0
 						],
 						"name": "122mm D-52T cannon",
@@ -69,24 +69,24 @@
 					},
 					"2": {
 						"base_pos": [
-							0,
+							1,
 							0
 						],
 						"name": "122mm D-52T cannon",
 						"path": "res://blocks/firepower/d_52t.tscn",
 						"rotation": [
-							0.0
+							0
 						]
 					},
 					"3": {
 						"base_pos": [
-							2,
+							-1,
 							0
 						],
-						"name": "QF 6-pounder gun",
-						"path": "res://blocks/firepower/qf_6_pounder.tscn",
+						"name": "122mm D-52T cannon",
+						"path": "res://blocks/firepower/d_52t.tscn",
 						"rotation": [
-							0.0
+							0
 						]
 					}
 				},

@@ -895,6 +895,9 @@ func find_connected_components_dfs(all_blocks: Array) -> Array:
 	var components = []
 	
 	for block in all_blocks:
+		if block.collision_layer != 1:
+			continue
+		
 		var block_id = block.get_instance_id()
 		if not visited.get(block_id, false):
 			var component = []

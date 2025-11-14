@@ -4,7 +4,7 @@ extends Block
 var load:float
 var turret:RigidBody2D
 var traverse:Array
-var max_torque:float = 1000000
+var max_torque:float = 100
 var damping:float = 30
 
 # 炮塔专用的grid系统-*0+
@@ -46,13 +46,11 @@ func aim(target_pos):
 		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
 	
 	var torque = angle_diff/abs(angle_diff) * max_torque
-	
 	if abs(angle_diff) > deg_to_rad(1): 
 		if abs(angle_diff) < deg_to_rad(15):
 			torque = angle_diff/deg_to_rad(15) * max_torque
 		turret.apply_torque(torque)
-	
-	print(turret.angular_velocity)
+	#print(turret.angular_velocity)
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
 
@@ -100,7 +98,8 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			# 在添加到炮塔之前，需要将全局坐标转换为炮塔局部坐标
 			var global_pos = block.global_position
 			var global_rot = block.global_rotation
-			turret.add_child(block)
+			parent_vehicle._add_block(block, global_pos, grid_positions)
+			print(block.get_parent())
 			block.global_position = global_pos  # 保持全局位置不变
 			block.global_rotation = global_rot  # 保持全局旋转不变
 			
@@ -116,7 +115,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 		# 更新炮塔大小
 		update_turret_size()
 		
-		print("添加block到炮塔: ", block.block_name, " 位置: ", grid_positions)
 
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
@@ -143,8 +141,7 @@ func remove_block_from_turret(block: Block):
 			turret_grid.erase(pos)
 		
 		# 从场景中移除
-		if block.get_parent() == turret:
-			turret.remove_child(block)
+		parent_vehicle.remove_block(block, true)
 		block.queue_free()
 		
 		# 更新炮塔物理属性
@@ -153,7 +150,6 @@ func remove_block_from_turret(block: Block):
 		# 更新炮塔大小
 		update_turret_size()
 		
-		print("从炮塔移除block: ", block.block_name)
 
 func calculate_block_grid_positions(block: Block) -> Array:
 	"""计算block在炮塔grid中的位置 - 使用连接点location"""
@@ -314,7 +310,6 @@ func get_available_turret_connectors() -> Array[TurretConnector]:
 func enable_turret_rotation():
 	"""启用炮塔旋转"""
 	is_turret_rotation_enabled = true
-	print("启用炮塔旋转: ", block_name)
 
 func disable_turret_rotation():
 	"""禁用炮塔旋转"""
@@ -325,7 +320,6 @@ func disable_turret_rotation():
 		turret.angular_velocity = 0
 		turret.rotation = 0
 	
-	print("禁用炮塔旋转: ", block_name)
 
 func reset_turret_rotation():
 	"""炮塔回正"""
@@ -347,7 +341,6 @@ func lock_turret_rotation():
 	if turret:
 		turret.angular_velocity = 0
 		turret.rotation = 0
-		print("锁定炮塔旋转: ", block_name, turret.rotation)
 	
 
 func unlock_turret_rotation():
@@ -356,7 +349,6 @@ func unlock_turret_rotation():
 		turret.freeze = false
 	enable_turret_rotation()
 	is_turret_rotation_enabled = true
-	print("解锁炮塔旋转: ", block_name)
 
 func get_turret_grid_bounds() -> Dictionary:
 	"""获取炮塔网格的边界"""
@@ -403,23 +395,3 @@ func calculate_block_center(positions: Array) -> Vector2:
 	var center_x = (min_x + max_x + 1) * 8  # 16/2 = 8
 	var center_y = (min_y + max_y + 1) * 8
 	return Vector2(center_x, center_y)
-
-###################### 调试方法 ######################
-
-func print_turret_status():
-	"""打印炮塔状态信息"""
-	print("=== 炮塔状态 ===")
-	print("炮塔名称: ", block_name)
-	print("炮塔块数量: ", turret_blocks.size())
-	print("网格位置数量: ", turret_grid.size())
-	print("网格边界: ", get_turret_grid_bounds())
-	print("旋转启用: ", is_turret_rotation_enabled)
-	
-	# 打印所有块信息
-	for i in range(turret_blocks.size()):
-		var block = turret_blocks[i]
-		if is_instance_valid(block):
-			var grid_positions = get_turret_block_grid(block)
-			print("块 ", i, ": ", block.block_name, " 网格位置: ", grid_positions)
-		else:
-			print("块 ", i, ": 无效")
