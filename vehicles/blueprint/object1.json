@@ -86,7 +86,7 @@
 						"name": "QF 6-pounder gun",
 						"path": "res://blocks/firepower/qf_6_pounder.tscn",
 						"rotation": [
-							0
+							0.0
 						]
 					}
 				},

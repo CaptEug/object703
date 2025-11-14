@@ -20,8 +20,8 @@ func _ready():
 	initialize_turret_grid()
 
 func _physics_process(_delta):
-	if turret:
-		turret.position = Vector2.ZERO
+	#if turret:
+		#turret.position = Vector2.ZERO
 	# 只有在启用时才进行瞄准
 	if is_turret_rotation_enabled:
 		aim(get_global_mouse_position())
