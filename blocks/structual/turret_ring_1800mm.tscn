@@ -32,55 +32,56 @@ texture = SubResource("AtlasTexture_wsjul")
 
 [node name="PinJoint2D" type="PinJoint2D" parent="."]
 node_a = NodePath("..")
-node_b = NodePath("../Turret")
+node_b = NodePath("../TurretBasket")
 bias = 0.01
 angular_limit_lower = -0.0506145
 angular_limit_upper = 0.0994838
 motor_enabled = true
 motor_target_velocity = 0.66497
 
-[node name="Turret" type="RigidBody2D" parent="."]
+[node name="TurretBasket" type="RigidBody2D" parent="."]
+z_index = 1
 collision_layer = 0
 collision_mask = 4
 angular_damp = 1.0
 
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="Turret"]
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="TurretBasket"]
 shape = SubResource("RectangleShape2D_wsjul")
 
-[node name="Sprite2D" type="Sprite2D" parent="Turret"]
+[node name="Sprite2D" type="Sprite2D" parent="TurretBasket"]
 texture = SubResource("AtlasTexture_mo4t2")
 
-[node name="RigidBodyConnector" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="RigidBodyConnector" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(0, -16)
 location = Vector2i(1, 0)
 
-[node name="Rig" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(16, -16)
 location = Vector2i(2, 0)
 
-[node name="Rig5" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig5" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(-16, 0)
 location = Vector2i(0, 1)
 
-[node name="Rig3" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig3" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(-16, -16)
 
-[node name="Rig6" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig6" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(0, 16)
 location = Vector2i(1, 2)
 
-[node name="Rig4" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig4" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 location = Vector2i(1, 1)
 
-[node name="Rig2" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig2" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(16, 0)
 location = Vector2i(2, 1)
 
-[node name="Rig8" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig8" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(16, 16)
 location = Vector2i(2, 2)
 
-[node name="Rig7" parent="Turret" instance=ExtResource("4_txfcf")]
+[node name="Rig7" parent="TurretBasket" instance=ExtResource("4_txfcf")]
 position = Vector2(-16, 16)
 location = Vector2i(0, 2)
 
