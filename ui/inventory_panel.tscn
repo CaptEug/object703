@@ -4,11 +4,8 @@
 [ext_resource type="Script" uid="uid://dl6vu7vh0mtcm" path="res://ui/inventory_panel.gd" id="2_hc366"]
 
 [node name="InventoryPanel" type="Panel"]
-anchors_preset = -1
-anchor_right = 0.512
-anchor_bottom = 0.926
-offset_right = 223.176
-offset_bottom = -123.048
+offset_right = 236.0
+offset_bottom = 281.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_ang1s")
@@ -35,8 +32,8 @@ text = "X"
 layout_mode = 0
 offset_left = 8.0
 offset_top = 46.0
-offset_right = 807.0
-offset_bottom = 468.0
+offset_right = 220.0
+offset_bottom = 258.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
 layout_mode = 2
