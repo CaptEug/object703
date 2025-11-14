@@ -94,8 +94,8 @@ static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector
 	var turretring = rigidbody.get_node(node_a_path)  # 使用传入的参数
 	if turretring is TurretRing:
 		if not block.joint_connected_blocks.has(turretring):
-			block.joint_connected_blocks[joint] = rigidbody.get_parent()
+			block.joint_connected_blocks[joint] = turretring
 		if not turretring.joint_connected_blocks.has(block):
-			rigidbody.get_parent().joint_connected_blocks[joint] = block
+			turretring.joint_connected_blocks[joint] = block
 	
 	return joint

@@ -31,7 +31,9 @@ func connect_aready():
 		turret_basket.position = position
 		turret_basket.rotation = rotation
 		parent_vehicle.add_child(turret_basket)
+		joint.node_a = get_path()
 		joint.node_b = turret_basket.get_path()
+		turret_basket.joint = joint
 
 func _physics_process(_delta):
 	#if turret:
@@ -230,7 +232,7 @@ func update_turret_physics():
 		if is_instance_valid(block):
 			total_mass += block.mass
 			block.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
-			block.center_of_mass = Vector2.ZERO - block.position
+			block.center_of_mass = position - block.position
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""

@@ -1289,9 +1289,6 @@ func try_place_turret_block():
 	
 	# 重新开始块放置
 	start_block_placement_with_rotation(current_block_scene.resource_path)
-	
-	print("✅ 炮塔块放置完成")
-	print("炮塔grid", current_editing_turret.turret_grid)
 
 # === 炮塔检测功能 ===
 func has_turret_blocks() -> bool:
