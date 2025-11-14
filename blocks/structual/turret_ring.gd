@@ -326,10 +326,10 @@ func disable_turret_rotation():
 	"""禁用炮塔旋转"""
 	is_turret_rotation_enabled = false
 	
-	# 停止所有旋转力
+	# 停止所有旋转力v
 	if turret_basket:
 		turret_basket.angular_velocity = 0
-		turret_basket.rotation = 0
+		turret_basket.global_rotation = global_rotation
 	
 
 func reset_turret_rotation():
