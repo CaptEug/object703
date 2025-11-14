@@ -4,8 +4,7 @@ extends Block
 var load:float
 var turret:RigidBody2D
 var traverse:Array
-var max_torque:float = 10000
-var damping:float = 3000
+var max_torque:float
 
 # 炮塔专用的grid系统-*0+
 var turret_grid := {}
@@ -47,11 +46,14 @@ func aim(target_pos):
 		var max_angle = deg_to_rad(traverse[1])
 		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
 	
-	var torque = angle_diff * max_torque - turret.angular_velocity * damping
+	var torque = angle_diff/abs(angle_diff) * max_torque
 	
 	if abs(angle_diff) > deg_to_rad(1): 
+		if abs(angle_diff) < deg_to_rad(15):
+			torque = angle_diff/deg_to_rad(15) * max_torque
 		turret.apply_torque(torque)
 	
+	print(turret.angular_velocity)
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
 
