@@ -4,13 +4,14 @@ extends Block
 var load:float
 var turret:RigidBody2D
 var traverse:Array
-var max_torque:float = 10000
-var damping:float = 3000
+var max_torque:float = 1000000
+var damping:float = 30
 
 # 炮塔专用的grid系统-*0+
 var turret_grid := {}
 var turret_blocks := []
 var turret_size: Vector2i
+var total_mass:= 0.0
 
 # 炮塔旋转控制
 var is_turret_rotation_enabled: bool = true
@@ -18,6 +19,7 @@ var is_turret_rotation_enabled: bool = true
 func _ready():
 	super._ready()
 	turret = find_child("Turret") as RigidBody2D
+	total_mass = mass
 	initialize_turret_grid()
 
 func _physics_process(_delta):
@@ -30,10 +32,6 @@ func _physics_process(_delta):
 		if turret:
 			turret.rotation = 0
 	
-	for block:Block in turret_blocks:
-		if is_instance_valid(block):
-			block.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
-			block.center_of_mass = Vector2.ZERO - block.position
 	
 func aim(target_pos):
 	if not is_turret_rotation_enabled:
@@ -218,13 +216,13 @@ func update_turret_size():
 
 func update_turret_physics():
 	"""更新炮塔的物理属性（质量、质心等）"""
-	var total_mass = mass
-	var center_of_mass = Vector2.ZERO
+	total_mass = mass
 	
 	for block:Block in turret_blocks:
 		if is_instance_valid(block):
 			total_mass += block.mass
-			block.center_of_mass = Vector2.ZERO
+			block.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
+			block.center_of_mass = Vector2.ZERO - block.position
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""
