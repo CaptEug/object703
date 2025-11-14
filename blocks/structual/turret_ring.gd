@@ -6,9 +6,9 @@ var turret_basket:RigidBody2D
 var joint:PinJoint2D
 var traverse:Array
 var max_torque:float
+var rotation_speed:float = deg_to_rad(60)
 var damping:float = 1
-var angvel_diff_old:= 0
-var couple_torque_old:= 0
+var relative_rot:float = 0.0
 
 # 炮塔专用的grid系统-*0+
 var turret_grid := {}
@@ -37,53 +37,71 @@ func connect_aready():
 		joint.node_b = turret_basket.get_path()
 		turret_basket.joint = joint
 
-func _physics_process(_delta):
+func _physics_process(delta):
 	# 只有在启用时才进行瞄准
 	if is_turret_rotation_enabled:
-		aim(get_global_mouse_position())
+		aim(delta, get_global_mouse_position())
 	else:
 		if turret_basket:
 			turret_basket.rotation = 0
 		
 
 
-func aim(target_pos):
+func aim(delta, target_pos):
 	if not is_turret_rotation_enabled:
 		return
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
-	var angvel_diff = turret_basket.angular_velocity - angular_velocity
-	var I = 1.0 / PhysicsServer2D.body_get_direct_state(turret_basket.get_rid()).inverse_inertia
-	print("inertia:", I)
-	var Kp
-	if not is_nan(I) and not is_inf(I):
-		Kp = 100 * I
-	else:
-		Kp = 0
 	
-	var couple_torque = couple_torque_old - Kp * (angvel_diff - angvel_diff_old)
-	couple_torque = - Kp * angvel_diff
+	relative_rot +=  clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
+	print("angvel: ", turret_basket.angular_velocity)
+	turret_basket.rotation = relative_rot + rotation
 	
 	if traverse:
 		var min_angle = deg_to_rad(traverse[0])
 		var max_angle = deg_to_rad(traverse[1])
-		turret_basket.rotation = clamp(turret_basket.rotation, min_angle, max_angle)
-	
-	var torque = angle_diff/abs(angle_diff) * max_torque 
-	
-	if abs(angle_diff) > deg_to_rad(1): 
-		if abs(angle_diff) < deg_to_rad(15):
-			torque = angle_diff/deg_to_rad(15) * max_torque
-		turret_basket.apply_torque(torque + couple_torque)
-	
-	angvel_diff_old = angvel_diff
-	couple_torque_old = couple_torque
-	
-	print("toraue:",torque)
-	print("C torque:", couple_torque)
+		relative_rot = clamp(relative_rot, min_angle, max_angle)
 	
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
+
+#func aim(target_pos):
+	#if not is_turret_rotation_enabled:
+		#return
+	#var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
+	#var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
+	#var angvel_diff = turret_basket.angular_velocity - angular_velocity
+	#var I = 1.0 / PhysicsServer2D.body_get_direct_state(turret_basket.get_rid()).inverse_inertia
+	#print("inertia:", I)
+	#var Kp
+	#if not is_nan(I) and not is_inf(I):
+		#Kp = 100 * I
+	#else:
+		#Kp = 0
+	#
+	#var couple_torque = couple_torque_old - Kp * (angvel_diff - angvel_diff_old)
+	#couple_torque = - Kp * angvel_diff
+	#
+	#if traverse:
+		#var min_angle = deg_to_rad(traverse[0])
+		#var max_angle = deg_to_rad(traverse[1])
+		#turret_basket.rotation = clamp(turret_basket.rotation, min_angle, max_angle)
+	#
+	#var torque = angle_diff/abs(angle_diff) * max_torque 
+	#
+	#if abs(angle_diff) > deg_to_rad(1): 
+		#if abs(angle_diff) < deg_to_rad(15):
+			#torque = angle_diff/deg_to_rad(15) * max_torque
+		#turret_basket.apply_torque(torque + couple_torque)
+	#
+	#angvel_diff_old = angvel_diff
+	#couple_torque_old = couple_torque
+	#
+	#print("toraue:",torque)
+	#print("C torque:", couple_torque)
+	#
+	## return true if aimed
+	#return abs(angle_diff) < deg_to_rad(1)
 
 ###################### 炮塔Grid系统 ######################
 

@@ -53,7 +53,26 @@
 			"path": "res://blocks/structual/turret_ring_1800mm.tscn",
 			"rotation": [
 				0.0
-			]
+			],
+			"turret_grid": {
+				"blocks": {
+					"1": {
+						"base_pos": [
+							1,
+							0
+						],
+						"name": "122mm D-52T cannon",
+						"path": "res://blocks/firepower/d_52t.tscn",
+						"rotation": [
+							0.0
+						]
+					}
+				},
+				"grid_size": [
+					1,
+					2
+				]
+			}
 		},
 		"14": {
 			"base_pos": [
