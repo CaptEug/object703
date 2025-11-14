@@ -2151,7 +2151,7 @@ func are_rotations_opposite_best(rot1: float, rot2: float) -> bool:
 	return dot_product < -0.9
 
 func get_connection_point_global_position(point: Connector, block: Block) -> Vector2:
-	if block is TurretRing and block.turret and is_turret_editing_mode:
+	if block is TurretRing and is_turret_editing_mode:
 		return block.turret.to_global(point.position)
 	else:
 		return block.global_position + point.position.rotated(block.global_rotation)

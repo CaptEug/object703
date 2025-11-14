@@ -4,7 +4,7 @@ const HITPOINT:float = 1600
 const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'TurretRing1800mm'
 const SIZE:= Vector2(3, 3)
-const MAX_TORQUE:float = 100000
+const MAX_TORQUE:float = 10000
 const COST:= [{"metal": 10}]
 
 func _init():
@@ -35,4 +35,4 @@ func get_rigidbody_connectors_on_node(node: Node) -> Array[TurretConnector]:
 
 func _process(delta: float) -> void:
 	super._process(delta)
-	var node = find_child("Node2D") as Node2D
+	#print(1.0 / PhysicsServer2D.body_get_direct_state(turret_basket.get_rid()).inverse_inertia)
