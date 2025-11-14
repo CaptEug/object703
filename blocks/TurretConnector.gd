@@ -239,7 +239,7 @@ func try_connect(other_connector: TurretConnector) -> bool:
 	connected_to = other_connector
 	other_connector.connected_to = self
 	
-	joint = TurretConnectorJoint.connect_to_rigidbody(block, rigidbody, block_connector)
+	joint = TurretConnectorJoint.connect_to_rigidbody(block, rigidbody, block_connector, rigidbody.joint.node_a)
 	
 	if joint:
 		other_connector.joint = joint

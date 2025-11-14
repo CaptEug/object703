@@ -6,7 +6,7 @@ var turret_basket:RigidBody2D
 var joint:PinJoint2D
 var traverse:Array
 var max_torque:float
-var damping:float = 30
+var damping:float = 1
 
 # 炮塔专用的grid系统-*0+
 var turret_grid := {}
@@ -47,8 +47,7 @@ func _physics_process(_delta):
 func aim(target_pos):
 	if not is_turret_rotation_enabled:
 		return
-		
-	var target_angle = (target_pos - global_position).angle() - global_rotation + deg_to_rad(90)
+	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	
 	if traverse:
@@ -61,7 +60,6 @@ func aim(target_pos):
 		if abs(angle_diff) < deg_to_rad(15):
 			torque = angle_diff/deg_to_rad(15) * max_torque
 		turret_basket.apply_torque(torque)
-	
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
 

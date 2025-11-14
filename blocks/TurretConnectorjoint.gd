@@ -84,14 +84,18 @@ func break_connection():
 	
 	queue_free()
 
-static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector_ref: TurretConnector, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
+static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector_ref: TurretConnector, node_a_path: NodePath, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
 	var joint = TurretConnectorJoint.new()
 	joint.lock_rotation = lock_rot
 	joint.maintain_position = maintain_pos
 	joint.setup(block, rigidbody, connector_ref)
 	block.add_child(joint)
-	if not block.joint_connected_blocks.has(rigidbody.get_parent()):
-		block.joint_connected_blocks[joint] = rigidbody.get_parent()
-	if not rigidbody.get_parent().joint_connected_blocks.has(block):
-		rigidbody.get_parent().joint_connected_blocks[joint] = block
+	
+	var turretring = rigidbody.get_node(node_a_path)  # 使用传入的参数
+	if turretring is TurretRing:
+		if not block.joint_connected_blocks.has(turretring):
+			block.joint_connected_blocks[joint] = rigidbody.get_parent()
+		if not turretring.joint_connected_blocks.has(block):
+			rigidbody.get_parent().joint_connected_blocks[joint] = block
+	
 	return joint

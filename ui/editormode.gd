@@ -615,7 +615,6 @@ func update_turret_range_placement(mouse_position: Vector2):
 	if available_turret_points.is_empty() or available_ghost_points_.is_empty():
 		set_ghost_free_position(mouse_position)
 		return
-	
 	var best_snap = find_best_rigidbody_snap_config(mouse_position, available_turret_points, available_ghost_points_)
 	
 	if best_snap and not best_snap.is_empty():
@@ -896,7 +895,7 @@ func get_turret_platform_connectors() -> Array[TurretConnector]:
 	if not current_editing_turret:
 		return points
 	
-	var connectors = current_editing_turret.find_children("*", "TurretConnector", true)
+	var connectors = current_editing_turret.turret_basket.get_children()
 	for connector in connectors:
 		if (connector is TurretConnector and 
 			connector.is_connection_enabled and 
@@ -1899,6 +1898,8 @@ func enter_editor_mode(vehicle: Vehicle):
 	
 	for block in selected_vehicle.get_children():
 		if block is Block:
+			if block.collision_layer != 1:
+				continue
 			var have_com = false
 			for connect_block in block.get_all_connected_blocks():
 				if connect_block is Command or block is Command:
@@ -2153,8 +2154,8 @@ func are_rotations_opposite_best(rot1: float, rot2: float) -> bool:
 	return dot_product < -0.9
 
 func get_connection_point_global_position(point: Connector, block: Block) -> Vector2:
-	if block is TurretRing and block.turret_basket and is_turret_editing_mode:
-		return block.turret_basket.to_global(point.position)
+	if block is TurretRing and block.turret and is_turret_editing_mode:
+		return block.turret.to_global(point.position)
 	else:
 		return block.global_position + point.position.rotated(block.global_rotation)
 
@@ -2679,7 +2680,7 @@ func reset_all_blocks_color():
 					block.modulate = BLOCK_DIM_COLOR
 					# 其他炮塔上的块也变暗
 					if block is TurretRing:
-						for child in block.turret_basket.get_children():
+						for child in block.turret.get_children():
 							if child is Block:
 								child.modulate = BLOCK_DIM_COLOR
 			else:

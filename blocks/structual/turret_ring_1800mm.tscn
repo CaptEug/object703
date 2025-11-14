@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://saiofmomjqe0"]
+[gd_scene load_steps=10 format=3 uid="uid://saiofmomjqe0"]
 
 [ext_resource type="Script" uid="uid://v4op8dl1ftml" path="res://blocks/structual/turret_ring_1800_mm.gd" id="1_pmo8s"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_mo4t2"]
+[ext_resource type="Script" uid="uid://hv7gwyv71a6t" path="res://blocks/structual/turret_basket.gd" id="3_4dn0s"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_txfcf"]
 [ext_resource type="PackedScene" uid="uid://cqp2x0iv8nyqp" path="res://blocks/TurretConnector.tscn" id="4_txfcf"]
 
@@ -44,6 +45,7 @@ z_index = 1
 collision_layer = 0
 collision_mask = 4
 angular_damp = 1.0
+script = ExtResource("3_4dn0s")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="TurretBasket"]
 shape = SubResource("RectangleShape2D_wsjul")

@@ -4,7 +4,7 @@ const HITPOINT:float = 1600
 const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'TurretRing1800mm'
 const SIZE:= Vector2(3, 3)
-const MAX_TORQUE:float = 10000
+const MAX_TORQUE:float = 1000
 const COST:= [{"metal": 10}]
 
 func _init():
@@ -33,7 +33,6 @@ func get_rigidbody_connectors_on_node(node: Node) -> Array[TurretConnector]:
 		connectors.append(child as TurretConnector)
 	return connectors
 
-#func _process(delta: float) -> void:
-	## 调试信息
-	#if armor_block:
-		#print("Armor connected to RigidBody: ", armor_block.is_attached_to_rigidbody())
+func _process(delta: float) -> void:
+	super._process(delta)
+	var node = find_child("Node2D") as Node2D
