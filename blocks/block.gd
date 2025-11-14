@@ -45,7 +45,7 @@ func _ready():
 	# Initialize physics properties
 	mass = weight/1000
 	linear_damp = 5
-	angular_damp = 5
+	angular_damp = 1
 	#collision_layer = 0
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
