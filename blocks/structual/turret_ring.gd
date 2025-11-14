@@ -2,9 +2,10 @@ class_name TurretRing
 extends Block
 
 var load:float
-var turret:RigidBody2D
+var turret_basket:RigidBody2D
+var joint:PinJoint2D
 var traverse:Array
-var max_torque:float = 100
+var max_torque:float
 var damping:float = 30
 
 # 炮塔专用的grid系统-*0+
@@ -18,9 +19,19 @@ var is_turret_rotation_enabled: bool = true
 
 func _ready():
 	super._ready()
-	turret = find_child("Turret") as RigidBody2D
+	turret_basket = find_child("TurretBasket") as RigidBody2D
+	joint = find_child("PinJoint2D") as PinJoint2D
 	total_mass = mass
 	initialize_turret_grid()
+
+func connect_aready():
+	super.connect_aready()
+	if parent_vehicle:
+		remove_child(turret_basket)
+		turret_basket.position = position
+		turret_basket.rotation = rotation
+		parent_vehicle.add_child(turret_basket)
+		joint.node_b = turret_basket.get_path()
 
 func _physics_process(_delta):
 	#if turret:
@@ -29,28 +40,28 @@ func _physics_process(_delta):
 	if is_turret_rotation_enabled:
 		aim(get_global_mouse_position())
 	else:
-		if turret:
-			turret.rotation = 0
-	
-	
+		if turret_basket:
+			turret_basket.rotation = 0
+
+
 func aim(target_pos):
 	if not is_turret_rotation_enabled:
 		return
 		
 	var target_angle = (target_pos - global_position).angle() - global_rotation + deg_to_rad(90)
-	var angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
+	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	
 	if traverse:
 		var min_angle = deg_to_rad(traverse[0])
 		var max_angle = deg_to_rad(traverse[1])
-		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
+		turret_basket.rotation = clamp(turret_basket.rotation, min_angle, max_angle)
 	
 	var torque = angle_diff/abs(angle_diff) * max_torque
 	if abs(angle_diff) > deg_to_rad(1): 
 		if abs(angle_diff) < deg_to_rad(15):
 			torque = angle_diff/deg_to_rad(15) * max_torque
-		turret.apply_torque(torque)
-	#print(turret.angular_velocity)
+		turret_basket.apply_torque(torque)
+	
 	# return true if aimed
 	return abs(angle_diff) < deg_to_rad(1)
 
@@ -62,7 +73,7 @@ func initialize_turret_grid():
 	turret_blocks.clear()
 	
 	# 查找炮塔上已有的block（比如装甲块）
-	for child in turret.get_children():
+	for child in turret_basket.get_children():
 		if child is Block and child != self:
 			add_block_to_turret(child)
 
@@ -90,7 +101,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			turret_grid[pos] = block
 		
 		# 设置block为炮塔的子节点
-		if block.get_parent() != turret:
+		if block.get_parent() != turret_basket:
 			var old_parent = block.get_parent()
 			if old_parent and old_parent.has_method("remove_block"):
 				old_parent.remove_block(block, false)
@@ -316,20 +327,20 @@ func disable_turret_rotation():
 	is_turret_rotation_enabled = false
 	
 	# 停止所有旋转力
-	if turret:
-		turret.angular_velocity = 0
-		turret.rotation = 0
+	if turret_basket:
+		turret_basket.angular_velocity = 0
+		turret_basket.rotation = 0
 	
 
 func reset_turret_rotation():
 	"""炮塔回正"""
-	if turret and is_instance_valid(turret):
+	if turret_basket and is_instance_valid(turret_basket):
 		# 确保炮塔回正到0度
-		if turret:
-			turret.rotation = 0
+		if turret_basket:
+			turret_basket.rotation = 0
 		# 如果有基础旋转角度，也重置
 		if has_method("set_base_rotation_degree"):
-			turret.base_rotation_degree = 0
+			turret_basket.base_rotation_degree = 0
 		
 
 func lock_turret_rotation():
@@ -338,15 +349,16 @@ func lock_turret_rotation():
 	reset_turret_rotation()
 	is_turret_rotation_enabled = false
 	# 额外确保停止所有物理运动
-	if turret:
-		turret.angular_velocity = 0
-		turret.rotation = 0
+	if turret_basket:
+		turret_basket.angular_velocity = 0
+		turret_basket.rotation = 0
+		print("锁定炮塔旋转: ", block_name, turret_basket.rotation)
 	
 
 func unlock_turret_rotation():
 	"""解锁炮塔旋转"""
-	if turret:
-		turret.freeze = false
+	if turret_basket:
+		turret_basket.freeze = false
 	enable_turret_rotation()
 	is_turret_rotation_enabled = true
 

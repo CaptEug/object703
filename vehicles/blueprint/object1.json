@@ -53,48 +53,7 @@
 			"path": "res://blocks/structual/turret_ring_1800mm.tscn",
 			"rotation": [
 				0.0
-			],
-			"turret_grid": {
-				"blocks": {
-					"1": {
-						"base_pos": [
-							0,
-							0
-						],
-						"name": "122mm D-52T cannon",
-						"path": "res://blocks/firepower/d_52t.tscn",
-						"rotation": [
-							0.0
-						]
-					},
-					"2": {
-						"base_pos": [
-							1,
-							0
-						],
-						"name": "122mm D-52T cannon",
-						"path": "res://blocks/firepower/d_52t.tscn",
-						"rotation": [
-							0
-						]
-					},
-					"3": {
-						"base_pos": [
-							-1,
-							0
-						],
-						"name": "122mm D-52T cannon",
-						"path": "res://blocks/firepower/d_52t.tscn",
-						"rotation": [
-							0
-						]
-					}
-				},
-				"grid_size": [
-					3,
-					2
-				]
-			}
+			]
 		},
 		"14": {
 			"base_pos": [
@@ -167,8 +126,8 @@
 				0,
 				3
 			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
 			"rotation": [
 				0.0
 			]
@@ -178,8 +137,8 @@
 				5,
 				3
 			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
 			"rotation": [
 				0.0
 			]
@@ -189,8 +148,8 @@
 				5,
 				4
 			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
+			"name": "Daimler-littleknight",
+			"path": "res://blocks/mobility/dlk.tscn",
 			"rotation": [
 				0.0
 			]
@@ -211,8 +170,8 @@
 				0,
 				4
 			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
+			"name": "Daimler-littleknight",
+			"path": "res://blocks/mobility/dlk.tscn",
 			"rotation": [
 				0.0
 			]

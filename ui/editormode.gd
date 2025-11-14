@@ -408,7 +408,7 @@ func enter_turret_editing_mode(turret: TurretRing):
 	is_turret_editing_mode = true
 	current_editing_turret = turret
 	cancel_placement()
-	for point in turret.turret.get_children():
+	for point in turret.turret_basket.get_children():
 		if point is TurretConnector:
 			if point.connected_to == null:
 				point.is_connection_enabled = true
@@ -539,7 +539,7 @@ func is_position_in_turret_range_for_ghost(mouse_position: Vector2) -> bool:
 	
 	# 获取炮塔的网格范围
 	var _turret_bounds = current_editing_turret.get_turret_grid_bounds()
-	var turret_use = current_editing_turret.turret
+	var turret_use = current_editing_turret.turret_basket
 	
 	# 计算鼠标在炮塔局部坐标系中的位置
 	var local_mouse_pos = turret_use.to_local(mouse_position)
@@ -2153,8 +2153,8 @@ func are_rotations_opposite_best(rot1: float, rot2: float) -> bool:
 	return dot_product < -0.9
 
 func get_connection_point_global_position(point: Connector, block: Block) -> Vector2:
-	if block is TurretRing and block.turret and is_turret_editing_mode:
-		return block.turret.to_global(point.position)
+	if block is TurretRing and block.turret_basket and is_turret_editing_mode:
+		return block.turret_basket.to_global(point.position)
 	else:
 		return block.global_position + point.position.rotated(block.global_rotation)
 
@@ -2668,7 +2668,7 @@ func reset_all_blocks_color():
 					block.modulate = Color.WHITE
 					add_turret_selection_border(block)  # 添加绿色边框
 					# 该炮塔上的所有块也保持正常颜色
-					for child in block.turret.get_children():
+					for child in block.turret_basket.get_children():
 						if child is Block:
 							child.modulate = Color.WHITE
 				elif current_editing_turret.turret_blocks.has(block):
@@ -2679,7 +2679,7 @@ func reset_all_blocks_color():
 					block.modulate = BLOCK_DIM_COLOR
 					# 其他炮塔上的块也变暗
 					if block is TurretRing:
-						for child in block.turret.get_children():
+						for child in block.turret_basket.get_children():
 							if child is Block:
 								child.modulate = BLOCK_DIM_COLOR
 			else:
@@ -2687,7 +2687,7 @@ func reset_all_blocks_color():
 				block.modulate = Color.WHITE
 				# 所有炮塔上的块也恢复正常颜色
 				if block is TurretRing:
-					for child in block.turret.get_children():
+					for child in block.turret_basket.get_children():
 						if child is Block:
 							child.modulate = Color.WHITE
 

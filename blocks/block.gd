@@ -37,15 +37,12 @@ var overlapping_rigidbody_connectors := []
 var joint_connected_blocks := {}  # Tracks which blocks are connected through which joints
 
 ## Signals
-signal frame_post_drawn
 signal connection_established(from: Connector, to: Connector, joint: Joint2D)
 signal connection_broken(joint: Joint2D)
 signal connections_processed(block: Block)
 
 func _ready():
-	GlobalTimeManager.time_scale = 1
 	# Initialize physics properties
-	RenderingServer.frame_post_draw.connect(_emit_relay_signal)
 	mass = weight/1000
 	linear_damp = 5
 	angular_damp = 5
@@ -53,9 +50,6 @@ func _ready():
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
 	broken_sprite = find_child("Broken") as Sprite2D
-	
-	# Initialize parent vehicle reference
-	parent_vehicle = get_parent_vehicle()
 	
 	# Set up input signals
 	input_pickable = true
@@ -113,8 +107,6 @@ func connect_aready():
 	is_movable_on_connection = false
 
 ## Physics and Drawing
-func _emit_relay_signal():
-	frame_post_drawn.emit()
 
 func enable_all_connectors(enabled: bool):
 	for point in connection_points:

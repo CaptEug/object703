@@ -312,7 +312,7 @@ func load_from_blueprint(bp: Dictionary):
 			var turret_block = loaded_blocks[block_id]
 			if turret_block is TurretRing:
 				await turret_block.lock_turret_rotation()
-				for point in turret_block.turret.get_children():
+				for point in turret_block.turret_basket.get_children():
 					if point is TurretConnector:
 						if point.connected_to == null:
 							point.is_connection_enabled = true
