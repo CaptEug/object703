@@ -6,8 +6,6 @@
 [ext_resource type="Texture2D" uid="uid://dnn2g7ksth8o" path="res://assets/icons/idle.png" id="4_bu53t"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbl.png" id="6_6e8cr"]
 [ext_resource type="PackedScene" uid="uid://cil4c3i7uegwf" path="res://ui/inventory_panel.tscn" id="9_kkd3v"]
-[ext_resource type="PackedScene" uid="uid://cqixwd0vdlyat" path="res://ui/storage_section.tscn" id="10_syhaw"]
-[ext_resource type="PackedScene" uid="uid://dnwpcmifp3o6j" path="res://ui/cargo_slot.tscn" id="11_muuo3"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
 atlas = ExtResource("2_6e8cr")
@@ -135,8 +133,6 @@ offset_right = 550.0
 offset_bottom = 320.0
 grow_horizontal = 1
 grow_vertical = 1
-storage_section_scene = ExtResource("10_syhaw")
-slot_scene = ExtResource("11_muuo3")
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="Controlbutton" to="." method="_on_controlbutton_pressed"]
