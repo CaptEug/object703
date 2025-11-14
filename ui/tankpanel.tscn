@@ -129,8 +129,8 @@ visible = false
 layout_mode = 1
 offset_left = 320.0
 offset_top = 49.0
-offset_right = 386.16
-offset_bottom = 23.68
+offset_right = 550.0
+offset_bottom = 320.0
 grow_horizontal = 1
 grow_vertical = 1
 

@@ -10,14 +10,6 @@ var block_to_section := {}  # 记录每个 block -> section 的映射
 # ============================================================
 # 面板控制
 # ============================================================
-func _input(event):
-	if event.is_action_pressed("add_test_item"):
-		if current_tank:
-			_add_test_item(current_tank)
-	
-	if event.is_action_pressed("take_test_item"):
-		if current_tank:
-			_test_take_item(current_tank)
 			
 func open_inventory(tank: Vehicle):
 	current_tank = tank
@@ -127,26 +119,6 @@ func clear_container(container: Node) -> void:
 func _on_close_button_pressed() -> void:
 	close_inventory()
 
-func _add_test_item(tank: Vehicle) -> void:
-	print("current tank:")
-	print(tank.name)
-	if not tank:
-		print("❌ No tank provided.")
-		return
-
-	# ✅ 构造一个测试物品
-	var item_data := {"id": "122mmAPHE", "count": 10}
-	print("[InventoryPanel] Trying to add item:", item_data["id"])
-
-	# ✅ 遍历所有 block，找到 Cargo 类型并尝试添加
-	for block in tank.blocks:
-		if block is Cargo:
-			if block.add_item(item_data):
-				print("✅ Item added to cargo:", block.block_name)
-				return
-
-	# ⚠️ 如果没有任何可用 Cargo 或已满
-	print("⚠️ All cargo are full, cannot add item.")
 	
 func _test_take_item(current_tank) -> void:
 	var tank = current_tank
