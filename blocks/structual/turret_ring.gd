@@ -54,7 +54,7 @@ func aim(delta, target_pos):
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	
 	relative_rot +=  clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
-	#print("angvel: ", turret_basket.angular_velocity)
+	print("angvel: ", turret_basket.angular_velocity)
 	turret_basket.rotation = relative_rot + rotation
 	
 	if traverse:

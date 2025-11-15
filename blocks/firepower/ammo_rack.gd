@@ -17,4 +17,3 @@ func _init():
 	size = SIZE
 	type = TYPE
 	ammo_storage = AMMO_CAPACITY
-	ammo_storage_cap = AMMO_CAPACITY

@@ -58,18 +58,95 @@
 				"blocks": {
 					"1": {
 						"base_pos": [
-							1,
-							-1
+							0,
+							0
 						],
 						"name": "122mm D-52T cannon",
 						"path": "res://blocks/firepower/d_52t.tscn",
 						"rotation": [
-							0.0
+							0
+						]
+					},
+					"2": {
+						"base_pos": [
+							2,
+							0
+						],
+						"name": "122mm D-52T cannon",
+						"path": "res://blocks/firepower/d_52t.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"3": {
+						"base_pos": [
+							1,
+							0
+						],
+						"name": "Daimler-littleknight",
+						"path": "res://blocks/mobility/dlk.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"4": {
+						"base_pos": [
+							1,
+							1
+						],
+						"name": "ammo rack",
+						"path": "res://blocks/firepower/ammo_rack.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"5": {
+						"base_pos": [
+							-1,
+							1
+						],
+						"name": "rusty track",
+						"path": "res://blocks/mobility/rusty_track.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"6": {
+						"base_pos": [
+							3,
+							1
+						],
+						"name": "rusty track",
+						"path": "res://blocks/mobility/rusty_track.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"7": {
+						"base_pos": [
+							3,
+							0
+						],
+						"name": "rusty track",
+						"path": "res://blocks/mobility/rusty_track.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"8": {
+						"base_pos": [
+							-1,
+							0
+						],
+						"name": "rusty track",
+						"path": "res://blocks/mobility/rusty_track.tscn",
+						"rotation": [
+							0
 						]
 					}
 				},
 				"grid_size": [
-					1,
+					5,
 					2
 				]
 			}
