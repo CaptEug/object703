@@ -2,7 +2,6 @@ class_name Ammorack
 extends Cargo
 
 var ammo_storage :float
-var ammo_storage_cap:float
 var explosion_area:Area2D
 var explosion_shape:CollisionShape2D
 var exploded:bool = false
@@ -18,13 +17,7 @@ func _process(_delta):
 	super._process(_delta)
 	#update explosion radius
 	explosion_shape.shape.radius = ammo_storage/2
-	
 
-func deduct_ammo(amount:float) ->bool:
-	if amount <= ammo_storage:
-		ammo_storage -= amount
-		return true
-	return false
 
 func broke():
 	super.broke()

@@ -39,12 +39,12 @@ func connect_aready():
 
 func _physics_process(delta):
 	# 只有在启用时才进行瞄准
-	if is_turret_rotation_enabled:
-		aim(delta, get_global_mouse_position())
-	else:
-		if turret_basket:
-			turret_basket.rotation = 0
-		
+	if get_parent_vehicle():
+		if is_turret_rotation_enabled:
+			aim(delta, get_global_mouse_position())
+		else:
+			if turret_basket:
+				turret_basket.rotation = rotation
 
 
 func aim(delta, target_pos):
@@ -52,9 +52,13 @@ func aim(delta, target_pos):
 		return
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
+	var rotation_step = rotation_speed * delta
 	
-	relative_rot +=  clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
-	print("angvel: ", turret_basket.angular_velocity)
+	if abs(angle_diff) < deg_to_rad(15):
+		rotation_step = rotation_speed * delta * abs(angle_diff)/deg_to_rad(15)
+	if abs(angle_diff) > deg_to_rad(1):
+		relative_rot +=  clamp(angle_diff, -rotation_step, rotation_step)
+	
 	turret_basket.rotation = relative_rot + rotation
 	
 	if traverse:
