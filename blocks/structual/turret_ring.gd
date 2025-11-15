@@ -52,9 +52,14 @@ func aim(delta, target_pos):
 		return
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
+	var rotation_step = rotation_speed * delta
 	
-	relative_rot +=  clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
-	print("angvel: ", turret_basket.angular_velocity)
+	if abs(angle_diff) < deg_to_rad(30):
+		rotation_step = rotation_speed * delta * abs(angle_diff)/deg_to_rad(30)
+	
+	if abs(angle_diff) > deg_to_rad(1):
+		relative_rot += clamp(angle_diff, -rotation_step, rotation_step)
+	
 	turret_basket.rotation = relative_rot + rotation
 	
 	if traverse:
