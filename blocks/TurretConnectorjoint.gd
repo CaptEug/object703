@@ -16,8 +16,8 @@ func _ready():
 	setup_joint()
 
 func setup_joint():
-	softness = 0.1
-	bias = 1
+	softness = 0.01
+	bias = 0.5
 	disable_collision = true
 
 func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnector):
@@ -63,8 +63,8 @@ func apply_rotation_constraint(delta: float):
 	var target_angular_velocity = target_body.angular_velocity
 	var angular_velocity_diff = target_angular_velocity - block.angular_velocity
 	
-	var restoration_torque = rotation_diff * rotation_stiffness * 100.0 * actual_inertia
-	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia * 0.1
+	var restoration_torque = rotation_diff * rotation_stiffness * 1000.0 * actual_inertia
+	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia * 10
 	var total_torque = restoration_torque + damping_torque
 	
 	block.apply_torque(total_torque)

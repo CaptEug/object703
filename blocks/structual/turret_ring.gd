@@ -43,7 +43,7 @@ func _physics_process(delta):
 		aim(delta, get_global_mouse_position())
 	else:
 		if turret_basket:
-			turret_basket.rotation = 0
+			turret_basket.rotation = rotation
 	pass
 
 
