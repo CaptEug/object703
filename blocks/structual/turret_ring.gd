@@ -52,13 +52,9 @@ func aim(delta, target_pos):
 		return
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
-	var rotation_step = rotation_speed * delta
 	
-	if abs(angle_diff) < deg_to_rad(15):
-		rotation_step = rotation_speed * delta * abs(angle_diff)/deg_to_rad(15)
-	if abs(angle_diff) > deg_to_rad(1):
-		relative_rot +=  clamp(angle_diff, -rotation_step, rotation_step)
-	
+	relative_rot +=  clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
+	print("angvel: ", turret_basket.angular_velocity)
 	turret_basket.rotation = relative_rot + rotation
 	
 	if traverse:
@@ -161,7 +157,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			block.collision_layer = 2
 			block.collision_mask = 2
 		
-		block.get_parent_vehicle()
 		# 更新炮塔物理属性
 		update_turret_physics()
 		
@@ -371,7 +366,8 @@ func disable_turret_rotation():
 	# 停止所有旋转力v
 	if turret_basket:
 		turret_basket.angular_velocity = 0
-		turret_basket.global_rotation = global_rotation
+		turret_basket.rotation = rotation
+		print(turret_basket.rotation - rotation)
 	
 
 func reset_turret_rotation():

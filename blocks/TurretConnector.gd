@@ -226,11 +226,6 @@ func try_connect(other_connector: TurretConnector) -> bool:
 	if not rigidbody:
 		return false
 	
-	# 添加冻结逻辑（类似于 ConnectionPoint）
-	if rigidbody_connector.is_attached_to_block() and not rigidbody_connector.find_parent_block().is_movable_on_connection:
-		rigidbody_connector.find_parent_block().freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
-		rigidbody_connector.find_parent_block().freeze = true
-	
 	# 移动逻辑
 	var block_can_move = block.is_movable_on_connection
 	var rigidbody_can_move = rigidbody_connector.is_attached_to_block() and rigidbody_connector.find_parent_block().is_movable_on_connection

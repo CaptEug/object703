@@ -318,6 +318,7 @@ func load_from_blueprint(bp: Dictionary):
 							point.is_connection_enabled = true
 							
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
+				turret_block.update_turret_physics()
 				turret_block.unlock_turret_rotation()
 
 func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded_blocks: Dictionary):
