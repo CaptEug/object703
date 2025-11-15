@@ -38,13 +38,13 @@ func connect_aready():
 		turret_basket.joint = joint
 
 func _physics_process(delta):
-	# 只有在启用时才进行瞄准
+	## 只有在启用时才进行瞄准
 	if is_turret_rotation_enabled:
 		aim(delta, get_global_mouse_position())
 	else:
 		if turret_basket:
 			turret_basket.rotation = 0
-		
+	pass
 
 
 func aim(delta, target_pos):
@@ -54,7 +54,7 @@ func aim(delta, target_pos):
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	
 	relative_rot +=  clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
-	print("angvel: ", turret_basket.angular_velocity)
+	#print("angvel: ", turret_basket.angular_velocity)
 	turret_basket.rotation = relative_rot + rotation
 	
 	if traverse:
@@ -157,7 +157,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			block.collision_layer = 2
 			block.collision_mask = 2
 		
-		block.get_parent_vehicle()
 		# 更新炮塔物理属性
 		update_turret_physics()
 		
@@ -367,7 +366,8 @@ func disable_turret_rotation():
 	# 停止所有旋转力v
 	if turret_basket:
 		turret_basket.angular_velocity = 0
-		turret_basket.global_rotation = global_rotation
+		turret_basket.rotation = rotation
+		print(turret_basket.rotation - rotation)
 	
 
 func reset_turret_rotation():

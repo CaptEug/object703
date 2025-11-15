@@ -59,7 +59,7 @@
 					"1": {
 						"base_pos": [
 							1,
-							0
+							-1
 						],
 						"name": "122mm D-52T cannon",
 						"path": "res://blocks/firepower/d_52t.tscn",

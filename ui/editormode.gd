@@ -1261,7 +1261,6 @@ func try_place_turret_block():
 	# 使用虚影的旋转
 	new_block.global_rotation = turret_snap_config.ghost_rotation
 	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
-	print("current_ghost_block.global_rotation =", new_block.global_rotation)
 	
 	# 添加到炮塔
 	if turret_snap_config.has("grid_positions"):

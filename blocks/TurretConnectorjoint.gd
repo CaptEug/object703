@@ -17,7 +17,7 @@ func _ready():
 
 func setup_joint():
 	softness = 0.1
-	bias = 0.8
+	bias = 1
 	disable_collision = true
 
 func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnector):
@@ -31,48 +31,42 @@ func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnecto
 	node_a = block.get_path()
 	node_b = target.get_path()
 	
-	# 设置连接点在block的本地坐标
 	var local_connect_pos = block.to_local(connector.global_position)
 	position = local_connect_pos
 	
 	if lock_rotation:
-		# 初始设置一次旋转，后续通过物理力维持
 		block.rotation = target.rotation + deg_to_rad(block.base_rotation_degree)
-	
-
 
 func _physics_process(delta):
 	if not is_instance_valid(block) or not is_instance_valid(target_body):
 		break_connection()
 		return
 	
-	# 应用旋转约束力
 	if lock_rotation and is_instance_valid(target_body):
 		apply_rotation_constraint(delta)
 
 func apply_rotation_constraint(delta: float):
-	# 计算目标旋转角度
-	var target_rotation = target_body.global_rotation + deg_to_rad(block.base_rotation_degree)
+	var body_rid = block.get_rid()
+	var body_state = PhysicsServer2D.body_get_direct_state(body_rid)
+	var inverse_inertia = body_state.inverse_inertia
+	var actual_inertia = 1.0 / inverse_inertia if inverse_inertia > 0 else 0.0
 	
-	# 计算当前旋转与目标旋转的差值（归一化到 -PI 到 PI 范围内）
+	if actual_inertia <= 0:
+		return
+	
+	var target_rotation = target_body.global_rotation + deg_to_rad(block.base_rotation_degree)
 	var rotation_diff = wrapf(target_rotation - block.global_rotation, -PI, PI)
 	
-	# 如果角度差很小，不需要施加力
 	if abs(rotation_diff) < 0.001:
 		return
 	
-	# 计算角速度差
 	var target_angular_velocity = target_body.angular_velocity
 	var angular_velocity_diff = target_angular_velocity - block.angular_velocity
 	
-	# 计算恢复扭矩（弹簧力）和阻尼扭矩
-	var restoration_torque = rotation_diff * rotation_stiffness * 100000 * block.mass
-	var damping_torque = angular_velocity_diff * rotation_damping
-	
-	# 总扭矩
+	var restoration_torque = rotation_diff * rotation_stiffness * 100.0 * actual_inertia
+	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia * 0.1
 	var total_torque = restoration_torque + damping_torque
 	
-	# 应用扭矩到block
 	block.apply_torque(total_torque)
 
 func break_connection():
@@ -91,7 +85,7 @@ static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector
 	joint.setup(block, rigidbody, connector_ref)
 	block.add_child(joint)
 	
-	var turretring = rigidbody.get_node(node_a_path)  # 使用传入的参数
+	var turretring = rigidbody.get_node(node_a_path)
 	if turretring is TurretRing:
 		if not block.joint_connected_blocks.has(turretring):
 			block.joint_connected_blocks[joint] = turretring
