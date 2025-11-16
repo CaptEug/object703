@@ -125,6 +125,7 @@ theme_override_font_sizes/font_size = 8
 text = "to modify vehicle"
 
 [node name="InventoryPanel" parent="." instance=ExtResource("9_kkd3v")]
+unique_name_in_owner = true
 visible = false
 layout_mode = 1
 offset_left = 320.0

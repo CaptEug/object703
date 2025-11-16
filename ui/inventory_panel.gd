@@ -82,6 +82,8 @@ func add_storage_section(block: Cargo) -> void:
 
 func _on_inventory_changed(block: Cargo) -> void:
 	if not block_to_section.has(block):
+		add_storage_section(block)
+		print("added new section")
 		return
 	var section = block_to_section[block]
 	if not is_instance_valid(section):
