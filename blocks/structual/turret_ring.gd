@@ -49,6 +49,9 @@ func _physics_process(delta):
 
 func aim(delta, target_pos):
 	if not is_turret_rotation_enabled:
+		return   
+	# 添加 parent_vehicle 的 null 检查
+	if not parent_vehicle:
 		return
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)

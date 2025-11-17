@@ -128,6 +128,97 @@ func _ready():
 	load_all_blocks()
 	
 	call_deferred("initialize_editor")
+	update_vehicle_info_display()
+
+# === 车辆信息显示功能 ===
+func update_vehicle_info_display():
+	"""更新车辆总体信息显示 - 简化版"""
+	if not is_editing or not selected_vehicle:
+		# 如果没有在编辑模式，显示编辑器基本信息
+		show_editor_info()
+		return
+	
+	# 设置车辆信息专用字体大小为8
+	description_label.add_theme_font_size_override("normal_font_size", 8)
+	description_label.add_theme_font_size_override("bold_font_size", 8)
+	description_label.add_theme_font_size_override("italics_font_size", 8)
+	description_label.add_theme_font_size_override("bold_italics_font_size", 8)
+	description_label.add_theme_font_size_override("mono_font_size", 8)
+	
+	# 计算车辆统计数据
+	var stats = calculate_vehicle_stats()
+	
+	# 更新显示 - 只显示5项信息
+	description_label.clear()
+	
+	# 1. 名字（编号）
+	description_label.append_text("Name: %s\n" % (selected_vehicle.vehicle_name if selected_vehicle.vehicle_name else "Unnamed"))
+	description_label.append_text("ID: %s\n\n" % selected_vehicle.name)
+	
+	# 2. 总重量
+	description_label.append_text("Total Weight: %.1f T\n\n" % stats.total_weight)
+	
+	# 3. 最大总发动机出力
+	description_label.append_text("MAX Engne Output: %.1f kN\n\n" % stats.total_engine_power)
+	
+	# 4. 功重比
+	description_label.append_text("Power-to-Weight: %.2f kN/T\n\n" % stats.power_to_weight_ratio)
+	
+
+# 简化的统计计算函数
+func calculate_vehicle_stats() -> Dictionary:
+	"""计算车辆统计数据 - 简化版"""
+	if not selected_vehicle:
+		return {}
+	
+	var total_weight := 0.0
+	var total_engine_power := 0.0
+	var total_resource_consumption := {}
+	
+	# 计算各项参数
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			total_weight += block.mass
+			# 发动机功率
+			if block is Powerpack:
+				total_engine_power += block.max_power
+			# 资源消耗
+			total_resource_consumption = block.cost
+	
+	# 计算功重比
+	var power_to_weight_ratio = 0.0
+	if total_weight > 0:
+		power_to_weight_ratio = total_engine_power / total_weight
+	
+	return {
+		"total_weight": total_weight,
+		"total_engine_power": total_engine_power,
+		"power_to_weight_ratio": power_to_weight_ratio,
+		"resource_consumption": total_resource_consumption,
+		"fuel_capacity": selected_vehicle.total_fuel_cap,
+		"current_fuel": selected_vehicle.total_fuel
+	}
+
+func show_editor_info():
+	"""显示编辑器基本信息 - 英文版"""
+	description_label.text = "[b]TankEditor - Vehicle Builder[/b]\n\n"
+	description_label.append_text("Hotkeys:\n")
+	description_label.append_text("• B: Enter/Exit Edit Mode\n")
+	description_label.append_text("• R: Rotate Block\n")
+	description_label.append_text("• X: Toggle Delete Mode\n")
+	description_label.append_text("• T: Toggle Blueprint Display\n")
+	description_label.append_text("• ESC: Cancel Operation\n")
+	description_label.append_text("• F: Repair Vehicle\n")
+	description_label.append_text("• N: New Vehicle\n")
+	description_label.append_text("• L: Load Mode\n\n")
+	
+	description_label.append_text("[b]Edit Mode[/b]\n")
+	if is_vehicle_mode:
+		description_label.append_text("Current: Hull Edit Mode\n")
+		description_label.append_text("Click turret to edit turret\n")
+	else:
+		description_label.append_text("Current: Turret Edit Mode\n")
+		description_label.append_text("Right-click to exit turret edit\n")
 
 func _on_mode_button_pressed():
 	if not is_editing:
@@ -1433,6 +1524,13 @@ func update_description(scene_path: String):
 	var scene = load(scene_path)
 	var block = scene.instantiate()
 	if block:
+		# 设置字体大小为16
+		description_label.add_theme_font_size_override("normal_font_size", 16)
+		description_label.add_theme_font_size_override("bold_font_size", 16)
+		description_label.add_theme_font_size_override("italics_font_size", 16)
+		description_label.add_theme_font_size_override("bold_italics_font_size", 16)
+		description_label.add_theme_font_size_override("mono_font_size", 16)
+		
 		description_label.clear()
 		description_label.append_text("[b]%s[/b]\n\n" % block.block_name)
 		description_label.append_text("TYPE: %s\n" % block.type)
@@ -1440,7 +1538,6 @@ func update_description(scene_path: String):
 		if block.has_method("get_description"):
 			description_label.append_text("DESCRIPTION: %s\n" % block.get_description())
 		block.queue_free()
-
 func _on_build_vehicle_pressed():
 	try_save_vehicle()
 
@@ -1540,7 +1637,7 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 	
 	var current_block_positions = {}
 	
-	for block in selected_vehicle.total_blocks:
+	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
 			var block_grid_positions = get_block_grid_positions(block)
 			for grid_pos in block_grid_positions:
@@ -1916,6 +2013,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	current_vehicle_connection_index = 0
 	
 	toggle_blueprint_display()
+	update_vehicle_info_display()
 
 func exit_editor_mode():
 	if not is_editing:
@@ -1970,6 +2068,7 @@ func exit_editor_mode():
 	is_editing = false
 	panel_instance = null
 	selected_vehicle = null
+	update_vehicle_info_display()
 
 func enable_all_connection_points_for_editing(open: bool):
 	if not selected_vehicle:
@@ -2484,6 +2583,7 @@ func cancel_placement():
 	current_block_scene = null
 	current_snap_config = {}
 	clear_tab_container_selection()
+	update_vehicle_info_display()
 
 func get_block_size(block: Block) -> Vector2i:
 	if block.has_method("get_size"):
@@ -2676,7 +2776,7 @@ func reset_all_blocks_color():
 					block.modulate = BLOCK_DIM_COLOR
 					# 其他炮塔上的块也变暗
 					if block is TurretRing:
-						for child in block.turret.get_children():
+						for child in block.turret_basket.get_children():
 							if child is Block:
 								child.modulate = BLOCK_DIM_COLOR
 			else:
