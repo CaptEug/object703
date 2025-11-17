@@ -42,8 +42,8 @@ func _ready():
 	timer.autostart = true
 	timer.timeout.connect(_on_timer_timeout)
 	add_child(timer)
+	shell_body.collision_mask = 3
 	shell_body.body_entered.connect(_on_shell_body_entered)
-	
 
 
 func _physics_process(delta):
@@ -77,6 +77,7 @@ func stop():
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0
 	set_physics_process(false)
+	shell_body.queue_free()
 	shell_trail.visible = false
 	smoke_trail.fade()
 
