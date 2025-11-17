@@ -11,7 +11,6 @@ var muzzle_energy:float
 var turret:Sprite2D 
 var muzzles:Array
 var current_muzzle:int = 0
-var crosshair:Sprite2D
 var animplayer:AnimationPlayer
 var gun_fire_sound:AudioStreamPlayer2D
 var spread:float
@@ -34,11 +33,9 @@ func _ready():
 		for muz in turret.get_children():
 			if muz is Marker2D:
 				muzzles.append(muz)
-		crosshair = turret.find_child("Crosshair") as Sprite2D
 		broken_turret =  find_child("BrokenTurret") as Sprite2D
 	else:
 		muzzles.append(find_child("Muzzle") as Marker2D)
-		crosshair = find_child("Crosshair") as Sprite2D
 	
 	animplayer = find_child("AnimationPlayer") as AnimationPlayer
 	gun_fire_sound = find_child("GunFireSound") as AudioStreamPlayer2D
@@ -52,9 +49,6 @@ func _ready():
 
 func _process(delta):
 	super._process(delta)
-	if not functioning:
-		crosshair.visible = false
-		return
 	#check reload
 	if not loading and not loaded:
 		if find_ammo():
@@ -63,7 +57,6 @@ func _process(delta):
 	#check targeting method
 	if get_parent_vehicle():
 		var control_method = get_parent_vehicle().control.get_method()
-		crosshair.visible = (control_method == "manual_control")
 		if control_method == "manual_control":
 			targeting = Callable(self, "manual_target")
 		elif (control_method == "remote_control") or (control_method == "AI_control"):
@@ -213,10 +206,6 @@ func manual_target(delta):
 		if get_viewport().gui_get_hovered_control():
 			return
 		fire()
-	
-	var dis = clamp(global_position.distance_to(get_global_mouse_position()),0,range)
-	var tween = get_tree().create_tween()
-	tween.tween_property(crosshair, "position", Vector2(0,-dis), 0.2)
 
 
 func broke():

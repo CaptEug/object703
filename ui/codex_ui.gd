@@ -41,7 +41,6 @@ func prepare_data():
 				item.set_text(0, block.block_name)
 				#item.set_icon(0, load(block.icons["normal"]))
 				item.set_metadata(0, block)
-	
 
 func get_scenes_from_folder(folder_path: String) -> Array:
 	var scenes = []

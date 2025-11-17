@@ -1,9 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://ywknmytaihqu"]
+[gd_scene load_steps=11 format=3 uid="uid://ywknmytaihqu"]
 
 [ext_resource type="Script" uid="uid://k5g8brs670ll" path="res://blocks/firepower/kwak45.gd" id="1_r7kom"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_ynhj4"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_3ymda"]
-[ext_resource type="Texture2D" uid="uid://brtjidrm0jx83" path="res://assets/icons/crosshair.png" id="3_xollo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_b0pqf"]
 size = Vector2(32, 32)
@@ -85,10 +84,6 @@ position = Vector2(0, -46)
 libraries = {
 &"": SubResource("AnimationLibrary_ynhj4")
 }
-
-[node name="Crosshair" type="Sprite2D" parent="Turret"]
-visible = false
-texture = ExtResource("3_xollo")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("3_3ymda")]
 position = Vector2(-16, 8)
