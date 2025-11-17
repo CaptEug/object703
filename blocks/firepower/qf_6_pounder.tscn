@@ -1,8 +1,7 @@
-[gd_scene load_steps=11 format=3 uid="uid://bf1gvlsameosb"]
+[gd_scene load_steps=10 format=3 uid="uid://bf1gvlsameosb"]
 
 [ext_resource type="Script" uid="uid://dlj0cpd4fgerg" path="res://blocks/firepower/qf_6_pounder.gd" id="1_uilim"]
 [ext_resource type="Texture2D" uid="uid://dkyi4dpe5mppa" path="res://assets/blocks_uk.png" id="2_uilim"]
-[ext_resource type="Texture2D" uid="uid://brtjidrm0jx83" path="res://assets/icons/crosshair.png" id="3_dambf"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_nyirs"]
 [ext_resource type="PackedScene" uid="uid://cqp2x0iv8nyqp" path="res://blocks/TurretConnector.tscn" id="5_pwmgy"]
 
@@ -72,10 +71,6 @@ root_node = NodePath("../..")
 libraries = {
 &"": SubResource("AnimationLibrary_fjpbi")
 }
-
-[node name="Crosshair" type="Sprite2D" parent="Turret"]
-visible = false
-texture = ExtResource("3_dambf")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_nyirs")

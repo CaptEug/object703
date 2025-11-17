@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
-[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbl.png" id="3_vwcpp"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="3_vwcpp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4w2ry"]
 bg_color = Color(0.6, 0.6, 0.6, 0)

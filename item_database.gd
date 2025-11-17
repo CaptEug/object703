@@ -16,7 +16,7 @@ var items = {
 	},
 	
 	"gas": {
-		"tag": "material",
+		"tag": "fuel",
 		"weight": 10,
 		"icon": preload("res://assets/icons/items/gas.png"),
 		"max_stack": 999,
