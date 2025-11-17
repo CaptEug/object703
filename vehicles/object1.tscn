@@ -1,7 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://bna702djki3qu"]
+[gd_scene load_steps=4 format=3 uid="uid://bna702djki3qu"]
 
 [ext_resource type="Script" uid="uid://cgrptcdo585lo" path="res://vehicles/object_1.gd" id="1_b6146"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="2_h02lt"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dklke"]
+atlas = ExtResource("2_h02lt")
+region = Rect2(0, 0, 264, 264)
 
 [node name="Object1" type="Node2D"]
 script = ExtResource("1_b6146")
+com_marker_texture = SubResource("AtlasTexture_dklke")
 metadata/_custom_type_script = "uid://bd6kccmkxqjkk"

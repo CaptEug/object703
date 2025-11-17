@@ -39,8 +39,18 @@ var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
 var ready_connect = true
 
+# 重心显示相关变量 - 添加导出属性以便在编辑器中修改
+@export var show_center_of_mass: bool = false
+@export var com_marker_texture: Texture2D = load("res://assets/icons/symbls.png")
+@export var com_marker_region: Rect2 = Rect2(224, 32, 16, 16)
+
+var center_of_mass_marker: Sprite2D
+
 
 func _ready():
+	# 创建重心标记
+	_create_center_of_mass_marker()
+	
 	if blueprint:
 		Get_ready_again()
 	else:
@@ -54,6 +64,45 @@ func _ready():
 		commands = []
 		ammoracks = []
 		fueltanks = []
+
+
+func _create_center_of_mass_marker():
+	# 如果已存在标记，先移除
+	if center_of_mass_marker and is_instance_valid(center_of_mass_marker):
+		center_of_mass_marker.queue_free()
+	
+	center_of_mass_marker = Sprite2D.new()
+	
+	# 设置纹理
+	if com_marker_texture:
+		# 如果指定了区域，使用AtlasTexture
+		if com_marker_region != Rect2(0, 0, 0, 0):
+			var atlas_texture = AtlasTexture.new()
+			atlas_texture.atlas = com_marker_texture
+			atlas_texture.region = com_marker_region
+			center_of_mass_marker.texture = atlas_texture
+		else:
+			center_of_mass_marker.texture = com_marker_texture
+	
+	center_of_mass_marker.centered = true
+	center_of_mass_marker.visible = show_center_of_mass
+	center_of_mass_marker.z_index = 1000
+	add_child(center_of_mass_marker)
+
+
+
+
+func _update_center_of_mass_marker_appearance():
+	if center_of_mass_marker and is_instance_valid(center_of_mass_marker):
+		# 更新纹理
+		if com_marker_texture:
+			if com_marker_region != Rect2(0, 0, 0, 0):
+				var atlas_texture = AtlasTexture.new()
+				atlas_texture.atlas = com_marker_texture
+				atlas_texture.region = com_marker_region
+				center_of_mass_marker.texture = atlas_texture
+			else:
+				center_of_mass_marker.texture = com_marker_texture
 
 
 func Get_ready_again():
@@ -72,7 +121,14 @@ func _process(delta):
 			if block.joint_connected_blocks.size() != 0:
 				block.set_connection_enabled(false)
 				ready_connect = true
+	
 	center_of_mass = calculate_center_of_mass()
+	
+	# 更新重心标记位置 - 转换为世界坐标
+	if center_of_mass_marker:
+		var world_com = _get_world_center_of_mass()
+		center_of_mass_marker.position = world_com
+	
 	if control:
 		update_tracks_state(control.call(), delta)
 	#updating targets
@@ -81,6 +137,34 @@ func _process(delta):
 		current_targets += block.targets
 	targets = current_targets
 
+func _get_world_center_of_mass() -> Vector2:
+	if blocks.is_empty():
+		return Vector2.ZERO
+	
+	# 获取第一块作为参考
+	var first_block = blocks[0]
+	if not is_instance_valid(first_block):
+		return center_of_mass
+	
+	# 获取第一块的网格位置
+	var first_grid_positions = get_block_grid(first_block)
+	if first_grid_positions.is_empty():
+		return first_block.global_position
+	
+	# 计算第一块的理论中心位置（基于网格，相对于Vehicle节点）
+	var first_block_theoretical_center = get_rectangle_corners(first_grid_positions)
+	
+	# 计算重心相对于第一块理论位置的偏移（在Vehicle局部坐标系中）
+	var com_offset_from_first_block = center_of_mass - first_block_theoretical_center
+	
+	# 应用第一块的实际旋转（相对于基础旋转）
+	var effective_rotation = first_block.rotation - deg_to_rad(first_block.base_rotation_degree)
+	var rotated_offset = com_offset_from_first_block.rotated(effective_rotation)
+	
+	# 最终的世界坐标 = 第一块实际位置 + 旋转后的偏移
+	var world_com = first_block.position + rotated_offset
+	
+	return world_com
 
 func update_vehicle():
 	#Check block connectivity
@@ -97,6 +181,10 @@ func update_vehicle():
 	calculate_center_of_mass()
 	calculate_balanced_forces()
 	calculate_rotation_forces()
+	
+	# 更新重心标记
+	update_center_of_mass_marker()
+	
 	# 重新获取控制方法
 	if not check_control(control.get_method()):
 		if not check_control("AI_control"):
@@ -233,6 +321,45 @@ func get_current_fuel():
 	total_fuel = currunt_fuel
 	return currunt_fuel
 
+
+########################## 重心显示相关方法 ##########################
+
+# 切换重心显示/隐藏的方法
+func toggle_center_of_mass():
+	show_center_of_mass = !show_center_of_mass
+	if center_of_mass_marker:
+		center_of_mass_marker.visible = show_center_of_mass
+
+# 显示重心
+func show_com_marker():
+	show_center_of_mass = true
+	if center_of_mass_marker:
+		center_of_mass_marker.visible = true
+
+# 隐藏重心
+func hide_com_marker():
+	show_center_of_mass = false
+	if center_of_mass_marker:
+		center_of_mass_marker.visible = false
+
+# 更新重心标记位置
+func update_center_of_mass_marker():
+	if center_of_mass_marker:
+		center_of_mass_marker.position = center_of_mass
+
+# 重新创建重心标记（当纹理设置改变时调用）
+func refresh_com_marker():
+	_create_center_of_mass_marker()
+
+# 设置重心标记纹理区域
+func set_com_marker_region(x: float, y: float, width: float, height: float):
+	com_marker_region = Rect2(x, y, width, height)
+	_update_center_of_mass_marker_appearance()
+
+# 设置重心标记纹理
+func set_com_marker_texture(texture: Texture2D):
+	com_marker_texture = texture
+	_update_center_of_mass_marker_appearance()
 
 
 ########################## VEHICLE LOADING ###########################
@@ -485,7 +612,27 @@ func get_globle_mass_center() ->Vector2:
 			return first_block.global_position + rotated_offset
 	
 	return globle_center_of_mass
-	
+
+func calculate_center_of_mass_() -> Vector2:
+	var total_mass := 0.0
+	var weighted_sum := Vector2.ZERO
+	var has_calculated := {}
+	for grid_pos in grid:
+		if  grid[grid_pos] != null:
+			var body: RigidBody2D = grid[grid_pos]
+			if blocks.has(body):
+				if has_calculated.get(body.get_instance_id(), false):
+					continue
+				var rid = get_block_grid(body)
+				var global_com:Vector2 = get_rectangle_corners(rid)
+				if body is TurretRing:
+					weighted_sum += global_com * body.total_mass
+					total_mass += body.total_mass
+				else:
+					weighted_sum += global_com * body.mass
+					total_mass += body.mass
+				has_calculated[body.get_instance_id()] = true
+	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()

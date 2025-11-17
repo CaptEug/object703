@@ -162,7 +162,7 @@ func update_vehicle_info_display():
 	description_label.append_text("MAX Engne Output: %.1f kN\n\n" % stats.total_engine_power)
 	
 	# 4. 功重比
-	description_label.append_text("Power-to-Weight: %.2f kN/T\n\n" % stats.power_to_weight_ratio)
+	description_label.append_text("Power/Weight: %.2f kN/T\n\n" % stats.power_to_weight_ratio)
 	
 
 # 简化的统计计算函数
@@ -2006,7 +2006,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	enable_all_connection_points_for_editing(true)
 	
 	vehicle.control = Callable()
-	
+	selected_vehicle.center_of_mass_marker.visible = true
 	show()
 	
 	current_ghost_connection_index = 0
@@ -2048,7 +2048,7 @@ func exit_editor_mode():
 	
 	if is_recycle_mode:
 		exit_recycle_mode()
-	
+	selected_vehicle.center_of_mass_marker.visible = false
 	clear_tab_container_selection()
  	
 	restore_original_connections()
