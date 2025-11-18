@@ -67,8 +67,6 @@ func _ready():
 		push_warning("Block '%s' has no connection points" % block_name)
 
 func _process(_delta):
-	if self.freeze == true:
-		print(self)
 	pass
 
 func set_layer(i : int):

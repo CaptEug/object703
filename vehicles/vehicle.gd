@@ -238,8 +238,11 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 	if imd:
 		if block is TurretRing:
 			for turret_block in block.turret_basket.get_children():
+				print(turret_block)
 				if turret_block is Block:
 					block.remove_block_from_turret(turret_block)
+				else:
+					turret_block.queue_free()
 		total_blocks.erase(block)
 		block.queue_free()
 	
