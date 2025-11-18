@@ -71,6 +71,8 @@ func _draw():
 	var line_color = Color(1,1,1)
 	var line_width:float = 2.0
 	var segments := 64
+	if turret:
+		draw_set_transform(turret.position)
 	if traverse:
 		var start_angle = deg_to_rad(traverse[0]-90)
 		var end_angle = deg_to_rad(traverse[1]-90)
@@ -97,6 +99,7 @@ func aim(delta, target_pos):
 		var max_angle = deg_to_rad(traverse[1])
 		turret.rotation = clamp(turret.rotation, min_angle, max_angle)
 	if has_turret:
+		target_angle = (target_pos - turret.global_position).angle() - global_rotation + deg_to_rad(90)
 		angle_diff = wrapf(target_angle - turret.rotation, -PI, PI)
 		turret.rotation += clamp(angle_diff, -rotation_speed * delta, rotation_speed * delta)
 		return abs(angle_diff) < deg_to_rad(1)
