@@ -1,7 +1,5 @@
 extends FloatingPanel
 
-@onready var fuel_progressbar = $Fuel
-@onready var ammo_progressbar = $Ammo
 @onready var inventory_panel = $InventoryPanel
 @export var health_gradient: Gradient  # Set this from the Inspector
 var time:float = 0

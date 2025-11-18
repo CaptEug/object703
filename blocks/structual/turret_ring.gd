@@ -50,8 +50,8 @@ func aim(delta, target_pos):
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	var rotation_step = rotation_speed * delta
 	
-	if abs(angle_diff) < deg_to_rad(30):
-		rotation_step = rotation_speed * delta * abs(angle_diff)/deg_to_rad(30)
+	#if abs(angle_diff) < deg_to_rad(30):
+		#rotation_step = rotation_speed * delta * abs(angle_diff)/deg_to_rad(30)
 	
 	if abs(angle_diff) > deg_to_rad(1):
 		relative_rot += clamp(angle_diff, -rotation_step, rotation_step)
