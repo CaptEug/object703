@@ -58,4 +58,4 @@ rotation = 1.57079
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExplosionArea"]
 shape = SubResource("CircleShape2D_3ma2v")
 
-[node name="Rig" parent="." instance=ExtResource("5_s6m1l")]
+[node name="TurretConnector" parent="." instance=ExtResource("5_s6m1l")]

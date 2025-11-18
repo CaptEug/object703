@@ -8,19 +8,19 @@
 [ext_resource type="PackedScene" uid="uid://cqp2x0iv8nyqp" path="res://blocks/TurretConnector.tscn" id="7_ideco"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yqdh3"]
-size = Vector2(16, 32)
+size = Vector2(16, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tauxs"]
 atlas = ExtResource("2_c60hf")
-region = Rect2(160, 192, 16, 32)
+region = Rect2(160, 192, 16, 48)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dcorw"]
 atlas = ExtResource("2_c60hf")
-region = Rect2(176, 128, 16, 96)
+region = Rect2(176, 112, 16, 112)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7qhwx"]
 atlas = ExtResource("2_c60hf")
-region = Rect2(192, 192, 16, 16)
+region = Rect2(192, 192, 16, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yqdh3"]
 atlas = ExtResource("2_c60hf")
@@ -28,7 +28,7 @@ region = Rect2(208, 192, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ideco"]
 atlas = ExtResource("2_c60hf")
-region = Rect2(192, 144, 16, 48)
+region = Rect2(192, 128, 16, 64)
 
 [sub_resource type="Animation" id="Animation_qmyrl"]
 length = 0.001
@@ -96,25 +96,28 @@ script = ExtResource("1_yqdh3")
 metadata/_custom_type_script = "uid://umbrwl1bnc2h"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_yqdh3")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_tauxs")
+offset = Vector2(0, 40)
 
 [node name="Gun" type="Sprite2D" parent="."]
 light_mask = 2
 texture = SubResource("AtlasTexture_dcorw")
-offset = Vector2(0, -32)
+offset = Vector2(0, -8)
 
 [node name="Sprite2D2" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_7qhwx")
-offset = Vector2(0, -8)
+offset = Vector2(0, 32)
 
 [node name="Sprite2D3" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_yqdh3")
-offset = Vector2(0, -8)
+offset = Vector2(0, 24)
 
 [node name="Cover" type="Sprite2D" parent="."]
+visible = false
 texture = SubResource("AtlasTexture_ideco")
 offset = Vector2(0, -8)
 
@@ -131,29 +134,46 @@ stream = ExtResource("4_tauxs")
 script = ExtResource("6_7qhwx")
 
 [node name="ConnectionPoint" parent="." instance=ExtResource("4_7qhwx")]
-position = Vector2(8, -8)
+position = Vector2(8, 24)
+location = Vector2i(0, 5)
 
 [node name="ConnectionPoint2" parent="." instance=ExtResource("4_7qhwx")]
-position = Vector2(8, 8)
-location = Vector2i(0, 1)
+position = Vector2(8, 40)
+location = Vector2i(0, 6)
 
 [node name="ConnectionPoint3" parent="." instance=ExtResource("4_7qhwx")]
-position = Vector2(-8, 8)
-rotation = -3.14159
-location = Vector2i(0, 1)
+position = Vector2(8, 56)
+rotation = -6.28318
+location = Vector2i(0, 7)
 
 [node name="ConnectionPoint4" parent="." instance=ExtResource("4_7qhwx")]
-position = Vector2(-8, -8)
-rotation = 3.14159
+position = Vector2(0, 64)
+rotation = 1.57079
+location = Vector2i(0, 7)
 
 [node name="ConnectionPoint5" parent="." instance=ExtResource("4_7qhwx")]
-position = Vector2(0, 16)
-rotation = 1.57079
-location = Vector2i(0, 1)
+position = Vector2(-8, 56)
+rotation = 3.14159
+location = Vector2i(0, 7)
 
-[node name="Rig" parent="." instance=ExtResource("7_ideco")]
-position = Vector2(0, -8)
+[node name="ConnectionPoint6" parent="." instance=ExtResource("4_7qhwx")]
+position = Vector2(-8, 40)
+rotation = -3.14159
+location = Vector2i(0, 6)
 
-[node name="Rig2" parent="." instance=ExtResource("7_ideco")]
-position = Vector2(0, 8)
-location = Vector2i(0, 1)
+[node name="ConnectionPoint7" parent="." instance=ExtResource("4_7qhwx")]
+position = Vector2(-8, 24)
+rotation = 3.14159
+location = Vector2i(0, 5)
+
+[node name="TurretConnector" parent="." instance=ExtResource("7_ideco")]
+position = Vector2(0, 24)
+location = Vector2i(0, 5)
+
+[node name="TurretConnector2" parent="." instance=ExtResource("7_ideco")]
+position = Vector2(0, 40)
+location = Vector2i(0, 6)
+
+[node name="TurretConnector3" parent="." instance=ExtResource("7_ideco")]
+position = Vector2(0, 56)
+location = Vector2i(0, 7)

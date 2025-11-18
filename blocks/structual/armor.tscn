@@ -37,4 +37,4 @@ position = Vector2(8, 0)
 position = Vector2(0, -8)
 rotation = -1.57079
 
-[node name="Rig" parent="." instance=ExtResource("4_xjj48")]
+[node name="TurretConnector" parent="." instance=ExtResource("4_xjj48")]

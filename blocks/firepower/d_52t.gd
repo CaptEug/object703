@@ -3,7 +3,7 @@ extends Weapon
 const HITPOINT:float = 800
 const WEIGHT:float = 2500
 const BLOCK_NAME:String = '122mm D-52T cannon'
-const SIZE:= Vector2(1, 2)
+const SIZE:= Vector2(1, 8)
 const TYPE:= "Firepower"
 const RANGE:= 900
 const RELOAD:float = 5.0
@@ -12,6 +12,7 @@ const MUZZLE_ENERGY:float = 25
 const SPREAD:float = 0.05
 
 var description := ""
+var outline_tex := preload("res://assets/outlines/d52t_outline.png")
 
 const SHELLS = ["122mmAPHE", "122mmHE"]
 
