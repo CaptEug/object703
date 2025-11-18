@@ -13,112 +13,197 @@
 		},
 		"10": {
 			"base_pos": [
-				3,
-				11
-			],
-			"name": "V-7",
-			"path": "res://blocks/mobility/v_7.tscn",
-			"rotation": [
-				-90.0
-			]
-		},
-		"11": {
-			"base_pos": [
-				4,
-				7
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"12": {
-			"base_pos": [
-				5,
-				7
-			],
-			"name": "pike armor",
-			"path": "res://blocks/structual/pike_armor.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"13": {
-			"base_pos": [
-				5,
-				8
-			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"14": {
-			"base_pos": [
-				5,
-				9
-			],
-			"name": "Daimler-littleknight",
-			"path": "res://blocks/mobility/dlk.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"15": {
-			"base_pos": [
-				5,
-				10
-			],
-			"name": "pike armor",
-			"path": "res://blocks/structual/pike_armor.tscn",
-			"rotation": [
-				90.0
-			]
-		},
-		"16": {
-			"base_pos": [
-				1,
-				8
-			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"17": {
-			"base_pos": [
 				2,
 				0
 			],
 			"name": "122mm D-52S cannon",
 			"path": "res://blocks/firepower/d_52s.tscn",
 			"rotation": [
-				0
+				0.0
 			]
 		},
-		"18": {
+		"11": {
 			"base_pos": [
-				1,
-				6
+				2,
+				8
 			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
+			"name": "TurretRing1800mm",
+			"path": "res://blocks/structual/turret_ring_1800mm.tscn",
 			"rotation": [
-				0
+				0.0
+			],
+			"turret_grid": {
+				"blocks": {
+					"1": {
+						"base_pos": [
+							1,
+							-5
+						],
+						"name": "122mm D-52T cannon",
+						"path": "res://blocks/firepower/d_52t.tscn",
+						"rotation": [
+							0.0
+						]
+					},
+					"2": {
+						"base_pos": [
+							2,
+							1
+						],
+						"name": "command cupola",
+						"path": "res://blocks/command/cupola.tscn",
+						"rotation": [
+							0.0
+						]
+					},
+					"3": {
+						"base_pos": [
+							2,
+							2
+						],
+						"name": "pike armor",
+						"path": "res://blocks/structual/pike_armor.tscn",
+						"rotation": [
+							90.0
+						]
+					},
+					"4": {
+						"base_pos": [
+							0,
+							1
+						],
+						"name": "armor",
+						"path": "res://blocks/structual/armor.tscn",
+						"rotation": [
+							0.0
+						]
+					},
+					"5": {
+						"base_pos": [
+							0,
+							2
+						],
+						"name": "pike armor",
+						"path": "res://blocks/structual/pike_armor.tscn",
+						"rotation": [
+							180.0
+						]
+					},
+					"6": {
+						"base_pos": [
+							2,
+							0
+						],
+						"name": "pike armor",
+						"path": "res://blocks/structual/pike_armor.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"7": {
+						"base_pos": [
+							0,
+							0
+						],
+						"name": "pike armor",
+						"path": "res://blocks/structual/pike_armor.tscn",
+						"rotation": [
+							-90.0
+						]
+					}
+				},
+				"grid_size": [
+					3,
+					8
+				]
+			}
+		},
+		"12": {
+			"base_pos": [
+				2,
+				11
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0.0
 			]
 		},
-		"19": {
+		"13": {
 			"base_pos": [
-				1,
+				2,
+				12
+			],
+			"name": "small cargo",
+			"path": "res://blocks/auxiliary/small_cargo.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"14": {
+			"base_pos": [
+				3,
+				11
+			],
+			"name": "V-7",
+			"path": "res://blocks/mobility/v_7.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"15": {
+			"base_pos": [
+				4,
 				5
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": [
-				0
+				0.0
+			]
+		},
+		"16": {
+			"base_pos": [
+				4,
+				6
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"17": {
+			"base_pos": [
+				4,
+				11
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"18": {
+			"base_pos": [
+				4,
+				12
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"19": {
+			"base_pos": [
+				5,
+				7
+			],
+			"name": "QF 6-pounder gun",
+			"path": "res://blocks/firepower/qf_6_pounder.tscn",
+			"rotation": [
+				0.0
 			]
 		},
 		"2": {
@@ -134,33 +219,66 @@
 		},
 		"20": {
 			"base_pos": [
-				4,
-				5
+				5,
+				9
 			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
+			"name": "Daimler-littleknight",
+			"path": "res://blocks/mobility/dlk.tscn",
 			"rotation": [
-				0
+				0.0
 			]
 		},
 		"21": {
 			"base_pos": [
-				4,
-				6
+				5,
+				10
 			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
 			"rotation": [
-				0
+				90.0
 			]
 		},
 		"22": {
 			"base_pos": [
 				1,
-				10
+				9
 			],
 			"name": "ammo rack",
 			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"23": {
+			"base_pos": [
+				1,
+				8
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"24": {
+			"base_pos": [
+				1,
+				7
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"25": {
+			"base_pos": [
+				4,
+				7
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
 			"rotation": [
 				0
 			]
@@ -190,7 +308,7 @@
 		"5": {
 			"base_pos": [
 				1,
-				7
+				5
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -201,10 +319,10 @@
 		"6": {
 			"base_pos": [
 				1,
-				9
+				6
 			],
-			"name": "command cupola",
-			"path": "res://blocks/command/cupola.tscn",
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": [
 				0.0
 			]
@@ -212,51 +330,32 @@
 		"7": {
 			"base_pos": [
 				1,
-				11
+				10
 			],
-			"name": "search light",
-			"path": "res://blocks/auxiliary/search_light.tscn",
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
 			"rotation": [
 				0.0
 			]
 		},
 		"8": {
 			"base_pos": [
-				2,
-				8
+				1,
+				11
 			],
-			"name": "TurretRing1800mm",
-			"path": "res://blocks/structual/turret_ring_1800mm.tscn",
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": [
 				0.0
-			],
-			"turret_grid": {
-				"blocks": {
-					"1": {
-						"base_pos": [
-							1,
-							-5
-						],
-						"name": "122mm D-52T cannon",
-						"path": "res://blocks/firepower/d_52t.tscn",
-						"rotation": [
-							0.0
-						]
-					}
-				},
-				"grid_size": [
-					1,
-					8
-				]
-			}
+			]
 		},
 		"9": {
 			"base_pos": [
-				2,
-				11
+				1,
+				12
 			],
-			"name": "small cargo",
-			"path": "res://blocks/auxiliary/small_cargo.tscn",
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": [
 				0.0
 			]
@@ -268,6 +367,6 @@
 	],
 	"vehicle_size": [
 		6,
-		12
+		13
 	]
 }

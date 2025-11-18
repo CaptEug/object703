@@ -14,6 +14,7 @@ const MUZZLE_ENERGY:float = 2
 const SPREAD:float = 0.05
 
 var description := ""
+var outline_tex := preload("res://assets/outlines/qf6_outline.png")
 
 const SHELLS = ["57mmAP"]
 
