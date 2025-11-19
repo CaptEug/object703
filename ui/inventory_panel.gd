@@ -61,6 +61,7 @@ func add_storage_section(block: Cargo) -> void:
 		var slot = slot_scene.instantiate()
 		slot.slot_index = i
 		slot.storage_ref = block
+		slot.accept = block.ACCEPT
 
 		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
 

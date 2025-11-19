@@ -1,6 +1,7 @@
 class_name Ammorack
 extends Cargo
 
+const ACCEPT:= ["ammo"]
 var ammo_storage :float
 var explosion_area:Area2D
 var explosion_shape:CollisionShape2D
