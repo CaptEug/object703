@@ -1,6 +1,8 @@
 class_name Vehicle
 extends Node2D
 
+signal cargo_changed()
+
 const GRID_SIZE:int = 16
 
 var vehicle_size:Vector2i
@@ -38,18 +40,10 @@ var selected:bool
 var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
 var ready_connect = true
-
-# 重心显示相关变量 - 添加导出属性以便在编辑器中修改
-@export var show_center_of_mass: bool = false
-@export var com_marker_texture: Texture2D = load("res://assets/icons/symbls.png")
-@export var com_marker_region: Rect2 = Rect2(224, 32, 16, 16)
-
 var center_of_mass_marker: Sprite2D
 
 
 func _ready():
-	# 创建重心标记
-	_create_center_of_mass_marker()
 	
 	if blueprint:
 		Get_ready_again()
@@ -64,46 +58,6 @@ func _ready():
 		commands = []
 		ammoracks = []
 		fueltanks = []
-
-
-func _create_center_of_mass_marker():
-	# 如果已存在标记，先移除
-	if center_of_mass_marker and is_instance_valid(center_of_mass_marker):
-		center_of_mass_marker.queue_free()
-	
-	center_of_mass_marker = Sprite2D.new()
-	
-	# 设置纹理
-	if com_marker_texture:
-		# 如果指定了区域，使用AtlasTexture
-		if com_marker_region != Rect2(0, 0, 0, 0):
-			var atlas_texture = AtlasTexture.new()
-			atlas_texture.atlas = com_marker_texture
-			atlas_texture.region = com_marker_region
-			center_of_mass_marker.texture = atlas_texture
-		else:
-			center_of_mass_marker.texture = com_marker_texture
-	
-	center_of_mass_marker.centered = true
-	center_of_mass_marker.visible = show_center_of_mass
-	center_of_mass_marker.z_index = 1000
-	add_child(center_of_mass_marker)
-
-
-
-
-func _update_center_of_mass_marker_appearance():
-	if center_of_mass_marker and is_instance_valid(center_of_mass_marker):
-		# 更新纹理
-		if com_marker_texture:
-			if com_marker_region != Rect2(0, 0, 0, 0):
-				var atlas_texture = AtlasTexture.new()
-				atlas_texture.atlas = com_marker_texture
-				atlas_texture.region = com_marker_region
-				center_of_mass_marker.texture = atlas_texture
-			else:
-				center_of_mass_marker.texture = com_marker_texture
-
 
 func Get_ready_again():
 	if blueprint is String:
@@ -182,9 +136,6 @@ func update_vehicle():
 	calculate_balanced_forces()
 	calculate_rotation_forces()
 	
-	# 更新重心标记
-	update_center_of_mass_marker()
-	
 	# 重新获取控制方法
 	if not check_control(control.get_method()):
 		if not check_control("AI_control"):
@@ -225,8 +176,11 @@ func _add_block(block: Block,local_pos = null, grid_positions = null):
 			commands.append(block)
 		elif block is Ammorack:
 			ammoracks.append(block)
+			emit_signal("cargo_changed")
 		elif block is Fueltank:
 			fueltanks.append(block)
+		elif block is Cargo:
+			emit_signal("cargo_changed")
 		for pos in grid_positions:
 			grid[pos] = block
 		block.set_connection_enabled(true)
@@ -323,47 +277,6 @@ func get_current_fuel():
 			currunt_fuel += fueltank.fuel_storage
 	total_fuel = currunt_fuel
 	return currunt_fuel
-
-
-########################## 重心显示相关方法 ##########################
-
-# 切换重心显示/隐藏的方法
-func toggle_center_of_mass():
-	show_center_of_mass = !show_center_of_mass
-	if center_of_mass_marker:
-		center_of_mass_marker.visible = show_center_of_mass
-
-# 显示重心
-func show_com_marker():
-	show_center_of_mass = true
-	if center_of_mass_marker:
-		center_of_mass_marker.visible = true
-
-# 隐藏重心
-func hide_com_marker():
-	show_center_of_mass = false
-	if center_of_mass_marker:
-		center_of_mass_marker.visible = false
-
-# 更新重心标记位置
-func update_center_of_mass_marker():
-	if center_of_mass_marker:
-		center_of_mass_marker.position = center_of_mass
-
-# 重新创建重心标记（当纹理设置改变时调用）
-func refresh_com_marker():
-	_create_center_of_mass_marker()
-
-# 设置重心标记纹理区域
-func set_com_marker_region(x: float, y: float, width: float, height: float):
-	com_marker_region = Rect2(x, y, width, height)
-	_update_center_of_mass_marker_appearance()
-
-# 设置重心标记纹理
-func set_com_marker_texture(texture: Texture2D):
-	com_marker_texture = texture
-	_update_center_of_mass_marker_appearance()
-
 
 ########################## VEHICLE LOADING ###########################
 

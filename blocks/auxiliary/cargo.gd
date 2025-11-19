@@ -26,6 +26,7 @@ func initialize_inventory():
 	add_item("PZGR75", 10)
 	add_item("122mmAPHE", 10)
 	add_item("380mmrocket", 10)
+	
 
 func get_item(slot_index: int) -> Dictionary:
 	if slot_index < 0 or slot_index >= slot_count:
@@ -83,11 +84,14 @@ func take_item(id: String, count: int) -> bool:
 		elif inventory[i]["id"] == id:
 			if inventory[i]["count"] >= count_remain:
 				inventory[i]["count"] -= count_remain
+				if inventory[i]["count"] == 0:
+					inventory[i] = {}
+				emit_signal("inventory_changed", self)
 				return true
 			else:
 				count_remain -= inventory[i]["count"]
 				inventory[i] = {}
-			emit_signal("inventory_changed", self)
+				emit_signal("inventory_changed", self)
 	
 	return false
 

@@ -63,6 +63,12 @@ var blueprint_data: Dictionary
 var is_showing_blueprint := false
 var ghost_data_map = {}
 
+# === 重心显示变量 ===
+var com_marker: Sprite2D
+var com_texture: Texture2D = preload("res://assets/icons/symbls.png")
+var com_marker_region: Rect2 = Rect2(224, 32, 16, 16)
+var show_center_of_mass: bool = true
+
 func _ready():
 	# 初始化编辑系统
 	hull_editing_system = HullEditingSystem.new()
@@ -93,7 +99,7 @@ func _ready():
 	
 	update_recycle_button()
 	load_all_blocks()
-	
+	_create_com_marker()
 	call_deferred("initialize_editor")
 	update_vehicle_info_display()
 
@@ -139,6 +145,53 @@ func create_tab_with_itemlist(tab_name: String):
 	
 	tab_container.add_child(item_list)
 	item_lists[tab_name] = item_list
+
+func _create_com_marker():
+	if com_marker and is_instance_valid(com_marker):
+		com_marker.queue_free()
+	
+	com_marker = Sprite2D.new()
+	
+	# 设置纹理
+	if com_texture:
+		if com_marker_region != Rect2(0, 0, 0, 0):
+			var atlas_texture = AtlasTexture.new()
+			atlas_texture.atlas = com_texture
+			atlas_texture.region = com_marker_region
+			com_marker.texture = atlas_texture
+		else:
+			com_marker.texture = com_texture
+	
+	com_marker.centered = true
+	com_marker.visible = false
+	com_marker.z_index = 1000
+	
+	add_child(com_marker)
+
+func _update_com_marker():
+	if is_editing and selected_vehicle and show_center_of_mass:
+		com_marker.visible = true
+		# 获取车辆的世界重心坐标
+		com_marker.global_position = pos_to_UI(selected_vehicle)
+	else:
+		com_marker.visible = false
+
+func pos_to_UI(vehicle:Vehicle) -> Vector2:
+	if not vehicle or not camera:
+		return Vector2.ZERO
+	
+	var world_com = vehicle.to_global(vehicle._get_world_center_of_mass())
+	var relative_pos = world_com - camera.global_position
+	
+	# 应用旋转和缩放
+	relative_pos = relative_pos.rotated(-camera.global_rotation)
+	relative_pos *= camera.zoom
+	
+	var viewport_center = Vector2(get_viewport().size / 2)
+	var target_pos = viewport_center + relative_pos
+	
+	return target_pos
+
 
 func load_all_blocks():
 	var all_blocks = []
@@ -292,6 +345,10 @@ func _input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
 			exit_editor_mode()
+			if turret_editing_system.current_ghost_block:
+				turret_editing_system.cancel_placement()
+			if hull_editing_system.current_ghost_block:
+				hull_editing_system.cancel_placement()
 		else:
 			if selected_vehicle == null:
 				find_and_select_vehicle()
@@ -370,6 +427,7 @@ func _process(delta):
 	if is_editing and is_recycle_mode and selected_vehicle:
 		update_recycle_highlight()
 	
+	_update_com_marker()
 	hull_editing_system.process(delta)
 	turret_editing_system.process(delta)
 
@@ -494,8 +552,6 @@ func reset_all_blocks_color():
 	if not selected_vehicle:
 		return
 	
-	turret_editing_system.clear_all_turret_borders()
-	
 	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
 			if turret_editing_system.is_turret_editing_mode:
@@ -562,10 +618,12 @@ func enter_editor_mode(vehicle: Vehicle):
 	hull_editing_system.enable_all_connection_points_for_editing(true)
 	
 	vehicle.control = Callable()
-	selected_vehicle.center_of_mass_marker.visible = true
 	show()
 	
 	hull_editing_system.reset_connection_indices()
+	
+	show_center_of_mass = true
+	com_marker.visible = true
 	
 	toggle_blueprint_display()
 	update_vehicle_info_display()
@@ -602,7 +660,6 @@ func exit_editor_mode():
 	
 	if is_recycle_mode:
 		exit_recycle_mode()
-	selected_vehicle.center_of_mass_marker.visible = false
 	clear_tab_container_selection()
  	
 	hull_editing_system.restore_original_connections()
@@ -614,6 +671,9 @@ func exit_editor_mode():
 	clear_blueprint_ghosts()
 	
 	camera.target_rot = 0.0
+	
+	show_center_of_mass = false
+	com_marker.visible = false
 	
 	hide()
 	is_editing = false
