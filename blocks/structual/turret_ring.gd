@@ -123,7 +123,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 		
 		# 更新炮塔物理属性
 		update_turret_physics()
-		
+		parent_vehicle.update_vehicle()
 		# 更新炮塔大小
 		update_turret_size()
 		
@@ -158,7 +158,7 @@ func remove_block_from_turret(block: Block):
 		
 		# 更新炮塔物理属性
 		update_turret_physics()
-		
+		parent_vehicle.update_vehicle()
 		# 更新炮塔大小
 		update_turret_size()
 		
@@ -232,8 +232,10 @@ func update_turret_physics():
 	for block:Block in turret_blocks:
 		if is_instance_valid(block):
 			total_mass += block.mass
-			block.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
-			block.center_of_mass = position - block.position
+			if block.center_of_mass_mode != RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM:
+				block.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
+				block.center_of_mass = turret_basket.position - block.position
+				block.angular_damp = 0.1
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""
