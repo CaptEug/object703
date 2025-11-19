@@ -41,7 +41,6 @@ var selected:bool
 var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
 var ready_connect = true
-var center_of_mass_marker: Sprite2D
 
 
 func _ready():
@@ -77,12 +76,6 @@ func _process(delta):
 				block.set_connection_enabled(false)
 				ready_connect = true
 	
-	center_of_mass = calculate_center_of_mass()
-	
-	# 更新重心标记位置 - 转换为世界坐标
-	if center_of_mass_marker:
-		var world_com = _get_world_center_of_mass()
-		center_of_mass_marker.position = world_com
 	
 	if control:
 		update_tracks_state(control.call(), delta)
@@ -92,34 +85,6 @@ func _process(delta):
 		current_targets += block.targets
 	targets = current_targets
 
-func _get_world_center_of_mass() -> Vector2:
-	if blocks.is_empty():
-		return Vector2.ZERO
-	
-	# 获取第一块作为参考
-	var first_block = blocks[0]
-	if not is_instance_valid(first_block):
-		return center_of_mass
-	
-	# 获取第一块的网格位置
-	var first_grid_positions = get_block_grid(first_block)
-	if first_grid_positions.is_empty():
-		return first_block.global_position
-	
-	# 计算第一块的理论中心位置（基于网格，相对于Vehicle节点）
-	var first_block_theoretical_center = get_rectangle_corners(first_grid_positions)
-	
-	# 计算重心相对于第一块理论位置的偏移（在Vehicle局部坐标系中）
-	var com_offset_from_first_block = center_of_mass - first_block_theoretical_center
-	
-	# 应用第一块的实际旋转（相对于基础旋转）
-	var effective_rotation = first_block.rotation - deg_to_rad(first_block.base_rotation_degree)
-	var rotated_offset = com_offset_from_first_block.rotated(effective_rotation)
-	
-	# 最终的世界坐标 = 第一块实际位置 + 旋转后的偏移
-	var world_com = first_block.position + rotated_offset
-	
-	return world_com
 
 func update_vehicle():
 	#Check block connectivity
@@ -504,11 +469,11 @@ func calculate_center_of_mass() -> Vector2:
 				has_calculated[body.get_instance_id()] = true
 	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
-func get_globle_mass_center() ->Vector2:
+func get_global_mass_center() ->Vector2:
 	var com = calculate_center_of_mass()
-	var globle_center_of_mass = Vector2.ZERO
+	var global_center_of_mass = Vector2.ZERO
 	if grid.keys().size() == 0:
-		return globle_center_of_mass
+		return global_center_of_mass
 	var first_grid_pos = grid.keys()[0]
 	var first_block = grid[first_grid_pos]
 	var first_gird = []
@@ -531,7 +496,7 @@ func get_globle_mass_center() ->Vector2:
 				# 返回世界坐标
 			return first_block.global_position + rotated_offset
 	
-	return globle_center_of_mass
+	return global_center_of_mass
 
 func calculate_center_of_mass_() -> Vector2:
 	var total_mass := 0.0

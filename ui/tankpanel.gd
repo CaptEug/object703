@@ -12,6 +12,7 @@ var manual_icon:Texture = preload("res://assets/icons/driving_wheel.png")
 var remote_icon:Texture = preload("res://assets/icons/remote_control.png")
 var ai_icon:Texture = preload("res://assets/icons/ai.png")
 var exit_focus = true
+var old_CoM = Vector2.ZERO
 
 var command_sign:Texture = preload("res://assets/icons/command.png")
 
@@ -29,7 +30,10 @@ func _process(delta):
 		$Offlinelabel.visible = selected_vehicle.destroyed
 		$Offlinelabel.add_theme_color_override("font_color", color*blink_strength)
 		retrieve_vehicle_data()
-		
+		var CoM = selected_vehicle.get_global_mass_center()
+		var v = (CoM - old_CoM).length() / delta
+		old_CoM = CoM
+		$Velocity.text = "Velocity: " + "%.2f" % v + "kM/h"
 		#update cursor and cam
 		if selected_vehicle.control.get_method() == "manual_control":
 			camera.focus_on_vehicle(selected_vehicle)
@@ -44,18 +48,13 @@ func _process(delta):
 	$CargoButton.visible = is_frontmost()
 	$ModifyButton.visible = is_frontmost()
 	
-		
+	
 
 func _draw():
 	if selected_vehicle:
 		draw_grid()
 
 func retrieve_vehicle_data():
-	#get vehicle resource data
-	#fuel_progressbar.max_value = selected_vehicle.get_fuel_cap()
-	#fuel_progressbar.value = selected_vehicle.get_current_fuel()
-	#ammo_progressbar.max_value = selected_vehicle.get_ammo_cap()
-	#ammo_progressbar.value = selected_vehicle.get_current_ammo()
 	if inventory_panel and selected_vehicle:
 		#inventory_panel.set_tank(selected_vehicle)
 		pass

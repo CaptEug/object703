@@ -172,7 +172,6 @@ func _update_com_marker():
 		com_marker.visible = true
 		# 获取车辆的世界重心坐标
 		com_marker.global_position = pos_to_UI(selected_vehicle)
-		#
 	else:
 		com_marker.visible = false
 
@@ -181,14 +180,14 @@ func pos_to_UI(vehicle: Vehicle) -> Vector2:
 		return Vector2.ZERO
 	
 	# 获取车辆质心的全局世界坐标
-	var world_com: Vector2 = vehicle.to_global(vehicle._get_world_center_of_mass())
+	var world_com: Vector2 = vehicle.get_global_mass_center()
 	
 	var camera_global_xform: Transform2D = camera.get_global_transform()
-
+	
 	var relative_to_camera: Vector2 = camera_global_xform.affine_inverse() * world_com
-
+	
 	relative_to_camera *= camera.zoom
-
+	
 	var viewport_center: Vector2 = get_viewport().size / 2
 	var target_pos: Vector2 = viewport_center + relative_to_camera
 	return target_pos

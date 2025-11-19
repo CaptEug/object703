@@ -124,6 +124,16 @@ theme_override_colors/font_color = Color(0, 1, 0, 1)
 theme_override_font_sizes/font_size = 8
 text = "to modify vehicle"
 
+[node name="Velocity" type="Label" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 257.0
+offset_right = 110.0
+offset_bottom = 267.0
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 8
+text = "Velocity: 00.0 kM/h"
+
 [node name="InventoryPanel" parent="." instance=ExtResource("9_kkd3v")]
 visible = false
 layout_mode = 1

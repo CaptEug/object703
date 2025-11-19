@@ -46,6 +46,14 @@ var items = {
 		"shell_scene": preload("res://blocks/firepower/shells/aphe_122_mm.tscn")
 	},
 	
+	"122mmHE": {
+		"tag": "ammo",
+		"weight": 25,
+		"icon": preload("res://assets/icons/items/he122mm.png"),
+		"max_stack": 999,
+		"shell_scene": preload("res://blocks/firepower/shells/aphe_122_mm.tscn")
+	},
+	
 	"380mmrocket": {
 		"tag": "ammo",
 		"weight": 350,

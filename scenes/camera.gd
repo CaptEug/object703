@@ -52,7 +52,7 @@ func focus_on_vehicle(vehicle: Vehicle):
 	if not vehicle:
 		return
 		
-	target_pos = vehicle.get_globle_mass_center()
+	target_pos = vehicle.get_global_mass_center()
 	
 	if vehicle.control.get_method() == "manual_control":
 		if Input.is_action_pressed("AIMING"):

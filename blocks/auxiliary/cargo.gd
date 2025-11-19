@@ -26,6 +26,7 @@ func initialize_inventory():
 	add_item("PZGR75", 10)
 	add_item("122mmAPHE", 10)
 	add_item("380mmrocket", 10)
+	add_item("gas", 10)
 	
 
 func get_item(slot_index: int) -> Dictionary:

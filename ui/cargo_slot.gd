@@ -32,7 +32,7 @@ func _ready():
 
 	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	count_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	count_label.add_theme_font_size_override("font_size", 8)
+	count_label.add_theme_font_size_override("font_size", 16)
 	count_label.visible = false
 
 	add_to_group("cargo_slot")

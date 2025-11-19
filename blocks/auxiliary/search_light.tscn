@@ -46,7 +46,6 @@ light_mask = 4
 texture = SubResource("AtlasTexture_8cyme")
 
 [node name="Light" type="PointLight2D" parent="Turret"]
-visible = false
 energy = 16.0
 range_item_cull_mask = 4
 texture = ExtResource("3_sk2n7")
