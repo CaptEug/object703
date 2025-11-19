@@ -26,9 +26,6 @@ func initialize_inventory():
 	add_item("PZGR75", 10)
 	add_item("122mmAPHE", 10)
 	add_item("380mmrocket", 10)
-	#self.connect("inventory_changed", Callable(%InventoryPanel, "_on_inventory_changed"))
-	#print("connected to inventory:",self.is_connected("inventory_changed", Callable(%InventoryPanel, "_on_inventory_changed")))
-	#emit_signal("inventory_changed",self)
 	
 
 func get_item(slot_index: int) -> Dictionary:
