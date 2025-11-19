@@ -183,87 +183,91 @@ func _perform_drop(target_slot: Node) -> void:
 	var target_item = target_slot.item_data if target_slot.item_data != null else {}
 	var target_item_tag = ItemDB.get_item(target_item["id"])["tag"] if target_item != {} else source_item_tag
 
-	# 目标为空 → 直接放入
-	if target_item == {} or target_item.is_empty():
-		# 如果拖拽物来自拆分（drag_is_split），只需把 source_item 放入目标，
-		# 源槽已经在拆分时更新为剩余，不需清空。
-		target_slot.set_item(source_item)
-		if not drag_is_split:
-			# 拖动整个槽（非拆分）时，清空原槽
-			set_item({})
-		# 底层同步
-		if drag_from_slot_ref and drag_from_slot_ref.storage_ref and target_slot.storage_ref:
-			target_slot.storage_ref.set_item(target_slot.slot_index, source_item)
+	if source_item_tag in target_slot.accept:
+		# 目标为空 → 直接放入
+		if (target_item == {} or target_item.is_empty()):
+			# 如果拖拽物来自拆分（drag_is_split），只需把 source_item 放入目标，
+			# 源槽已经在拆分时更新为剩余，不需清空。
+			target_slot.set_item(source_item)
 			if not drag_is_split:
-				drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, {})
-		return
-
-	# 相同 id 且可堆叠 → 叠加逻辑
-	var same_id = source_item.has("id") and target_item.has("id") and source_item["id"] == target_item["id"]
-	if same_id and source_item.get("stackable", true):
-		var max_stack = source_item.get("max_stack", 99)
-		var total = source_item.get("count", 1) + target_item.get("count", 1)
-		if total <= max_stack:
-			# 全部合并到目标
-			target_item["count"] = total
-			target_slot.set_item(target_item)
-			if not drag_is_split:
+				# 拖动整个槽（非拆分）时，清空原槽
 				set_item({})
 			# 底层同步
 			if drag_from_slot_ref and drag_from_slot_ref.storage_ref and target_slot.storage_ref:
-				target_slot.storage_ref.set_item(target_slot.slot_index, target_item)
+				target_slot.storage_ref.set_item(target_slot.slot_index, source_item)
 				if not drag_is_split:
 					drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, {})
 			return
-		else:
-			# 部分合并，剩余留在拖拽物或源槽
-			var overflow = total - max_stack
-			target_item["count"] = max_stack
-			target_slot.set_item(target_item)
-			# 如果拖拽物是拆分出来的，则将 overflow 放回原槽（或作为新堆留在源槽）
-			if drag_is_split:
-				# 源槽已经被设置为剩余，不处理：但如果 overflow>0，尝试放回源槽或丢弃
-				# 这里我们把 overflow 放回源槽（附加到源槽）
-				var src_remaining = drag_from_slot_ref.item_data
-				if src_remaining == null or src_remaining == {}:
-					drag_from_slot_ref.set_item({"id": source_item["id"], "count": overflow})
-					if drag_from_slot_ref.storage_ref:
-						drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, drag_from_slot_ref.item_data)
-				else:
-					# 如果源槽已有，增加其数量（不检查最大堆栈）
-					src_remaining["count"] = src_remaining.get("count", 0) + overflow
-					drag_from_slot_ref.set_item(src_remaining)
-					if drag_from_slot_ref.storage_ref:
-						drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, src_remaining)
+
+		# 相同 id 且可堆叠 → 叠加逻辑
+		var same_id = source_item.has("id") and target_item.has("id") and source_item["id"] == target_item["id"]
+		if same_id and source_item.get("stackable", true):
+			var max_stack = source_item.get("max_stack", 99)
+			var total = source_item.get("count", 1) + target_item.get("count", 1)
+			if total <= max_stack:
+				# 全部合并到目标
+				target_item["count"] = total
+				target_slot.set_item(target_item)
+				if not drag_is_split:
+					set_item({})
+				# 底层同步
+				if drag_from_slot_ref and drag_from_slot_ref.storage_ref and target_slot.storage_ref:
+					target_slot.storage_ref.set_item(target_slot.slot_index, target_item)
+					if not drag_is_split:
+						drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, {})
+				return
 			else:
-				# 非拆分：源槽留 overflow
-				set_item({"id": source_item["id"], "count": overflow})
-				if storage_ref:
-					storage_ref.set_item(slot_index, {"id": source_item["id"], "count": overflow})
-			# 底层同步目标
-			if target_slot.storage_ref:
-				target_slot.storage_ref.set_item(target_slot.slot_index, target_item)
-			return
+				# 部分合并，剩余留在拖拽物或源槽
+				var overflow = total - max_stack
+				target_item["count"] = max_stack
+				target_slot.set_item(target_item)
+				# 如果拖拽物是拆分出来的，则将 overflow 放回原槽（或作为新堆留在源槽）
+				if drag_is_split:
+					# 源槽已经被设置为剩余，不处理：但如果 overflow>0，尝试放回源槽或丢弃
+					# 这里我们把 overflow 放回源槽（附加到源槽）
+					var src_remaining = drag_from_slot_ref.item_data
+					if src_remaining == null or src_remaining == {}:
+						drag_from_slot_ref.set_item({"id": source_item["id"], "count": overflow})
+						if drag_from_slot_ref.storage_ref:
+							drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, drag_from_slot_ref.item_data)
+					else:
+						# 如果源槽已有，增加其数量（不检查最大堆栈）
+						src_remaining["count"] = src_remaining.get("count", 0) + overflow
+						drag_from_slot_ref.set_item(src_remaining)
+						if drag_from_slot_ref.storage_ref:
+							drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, src_remaining)
+				else:
+					# 非拆分：源槽留 overflow
+					set_item({"id": source_item["id"], "count": overflow})
+					if storage_ref:
+						storage_ref.set_item(slot_index, {"id": source_item["id"], "count": overflow})
+				# 底层同步目标
+				if target_slot.storage_ref:
+					target_slot.storage_ref.set_item(target_slot.slot_index, target_item)
+				return
 
-	# 不同物品 → 交换
-	# 把拖拽物放到目标，把目标放回源槽（如果拖拽是拆分，则源槽保持原剩余）
-	target_slot.set_item(source_item)
-	if not drag_is_split:
-		set_item(target_item)
-	else:
-		# 拆分的情况：源槽已被更新为 remain（不覆盖），但如果你想把目标放回源槽，则做如下：
-		drag_from_slot_ref.set_item(target_item)
-
-	# 底层同步
-	if target_slot.storage_ref:
-		target_slot.storage_ref.set_item(target_slot.slot_index, source_item)
-	if drag_from_slot_ref and drag_from_slot_ref.storage_ref:
-		# 若拆分则源槽已经被设置过；否则设置为 target_item
+		# 不同物品 → 交换
+		# 把拖拽物放到目标，把目标放回源槽（如果拖拽是拆分，则源槽保持原剩余）
+		target_slot.set_item(source_item)
 		if not drag_is_split:
-			drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, item_data if not drag_is_split else drag_from_slot_ref.item_data)
+			set_item(target_item)
 		else:
-			# already handled
-			pass
+			# 拆分的情况：源槽已被更新为 remain（不覆盖），但如果你想把目标放回源槽，则做如下：
+			drag_from_slot_ref.set_item(target_item)
+
+		# 底层同步
+		if target_slot.storage_ref:
+			target_slot.storage_ref.set_item(target_slot.slot_index, source_item)
+		if drag_from_slot_ref and drag_from_slot_ref.storage_ref:
+			# 若拆分则源槽已经被设置过；否则设置为 target_item
+			if not drag_is_split:
+				drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, item_data if not drag_is_split else drag_from_slot_ref.item_data)
+			else:
+				# already handled
+				pass
+	elif drag_is_split:
+		_return_item()
+
 
 
 func hide_current_icon() -> void:
