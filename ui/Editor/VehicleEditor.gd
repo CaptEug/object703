@@ -338,9 +338,6 @@ func show_editor_info():
 
 # === 输入处理 ===
 func _input(event):
-	if is_ui_interaction or get_viewport().gui_get_hovered_control():
-		return
-	
 	# B键切换编辑模式
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
@@ -405,6 +402,8 @@ func _input(event):
 							turret_editing_system.current_editing_turret = clik_block
 							switch_to_turret_mode()
 					if not turret_editing_system.is_turret_editing_mode:
+						if is_ui_interaction or get_viewport().gui_get_hovered_control():
+							return
 						hull_editing_system.handle_left_click()
 					else:
 						turret_editing_system.handle_left_click()
