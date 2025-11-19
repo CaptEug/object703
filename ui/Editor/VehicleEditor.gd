@@ -338,9 +338,6 @@ func show_editor_info():
 
 # === 输入处理 ===
 func _input(event):
-	if is_ui_interaction or get_viewport().gui_get_hovered_control():
-		return
-	
 	# B键切换编辑模式
 	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
 		if is_editing:
@@ -405,17 +402,22 @@ func _input(event):
 							turret_editing_system.current_editing_turret = clik_block
 							switch_to_turret_mode()
 					if not turret_editing_system.is_turret_editing_mode:
+						if is_ui_interaction or get_viewport().gui_get_hovered_control():
+							return
 						hull_editing_system.handle_left_click()
 					else:
 						turret_editing_system.handle_left_click()
 				MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE:
-					if turret_editing_system.is_turret_editing_mode and turret_editing_system.current_ghost_block == null:
-						turret_editing_system.exit_turret_editing_mode()
-					elif not turret_editing_system.current_ghost_block == null:
-							if turret_editing_system.is_turret_editing_mode:
-								turret_editing_system.cancel_placement()
+					if is_recycle_mode:
+						exit_recycle_mode()
 					else:
-						hull_editing_system.cancel_placement()
+						if turret_editing_system.is_turret_editing_mode and turret_editing_system.current_ghost_block == null:
+							turret_editing_system.exit_turret_editing_mode()
+						elif not turret_editing_system.current_ghost_block == null:
+								if turret_editing_system.is_turret_editing_mode:
+									turret_editing_system.cancel_placement()
+						else:
+							hull_editing_system.cancel_placement()
 
 func _process(delta):
 	if is_editing and selected_vehicle:
