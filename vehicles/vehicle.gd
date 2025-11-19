@@ -22,6 +22,7 @@ var total_blocks:= []
 var powerpacks:= []
 var tracks:= []
 var ammoracks:= []
+var cargos:= []
 var fueltanks:= []
 var commands:= []
 var vehicle_panel:Panel
@@ -180,6 +181,7 @@ func _add_block(block: Block,local_pos = null, grid_positions = null):
 		elif block is Fueltank:
 			fueltanks.append(block)
 		elif block is Cargo:
+			cargos.append(block)
 			emit_signal("cargo_changed")
 		for pos in grid_positions:
 			grid[pos] = block
@@ -215,8 +217,12 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		commands.erase(block)
 	if block in ammoracks:
 		ammoracks.erase(block)
+		emit_signal("cargo_changed")
 	if block in fueltanks:
 		fueltanks.erase(block)
+	if block in cargos:
+		cargos.erase(block)
+		emit_signal("cargo_changed")
 	
 	update_vehicle()
 
