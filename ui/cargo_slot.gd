@@ -113,6 +113,7 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	# 创建跟随鼠标的预览（显示 drag_source_item）
 	drag_preview = Control.new()
 	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	drag_preview.custom_minimum_size = Vector2(32, 32)
 
 	var tex = TextureRect.new()
 	tex.texture = ItemDB.get_item(drag_source_item.get("id")).get("icon") if drag_source_item.has("id") else null
@@ -126,6 +127,9 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	drag_preview.z_index = 999
+	
+	label.anchor_right = 1.0
+	label.anchor_bottom = 1.0
 	drag_preview.add_child(label)
 
 	# 放到最顶层（挂到 root，保证可见）
