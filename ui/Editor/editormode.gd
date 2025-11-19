@@ -73,7 +73,6 @@ func _ready():
 	# 初始化编辑系统
 	hull_editing_system = HullEditingSystem.new()
 	hull_editing_system.setup(self)
-	
 	turret_editing_system = TurretEditingSystem.new()
 	turret_editing_system.setup(self)
 	
@@ -164,7 +163,7 @@ func _create_com_marker():
 	
 	com_marker.centered = true
 	com_marker.visible = false
-	com_marker.z_index = 1000
+	com_marker.z_index = -1
 	
 	add_child(com_marker)
 
@@ -173,23 +172,25 @@ func _update_com_marker():
 		com_marker.visible = true
 		# 获取车辆的世界重心坐标
 		com_marker.global_position = pos_to_UI(selected_vehicle)
+		#
 	else:
 		com_marker.visible = false
 
-func pos_to_UI(vehicle:Vehicle) -> Vector2:
+func pos_to_UI(vehicle: Vehicle) -> Vector2:
 	if not vehicle or not camera:
 		return Vector2.ZERO
 	
-	var world_com = vehicle.to_global(vehicle._get_world_center_of_mass())
-	var relative_pos = world_com - camera.global_position
+	# 获取车辆质心的全局世界坐标
+	var world_com: Vector2 = vehicle.to_global(vehicle._get_world_center_of_mass())
 	
-	# 应用旋转和缩放
-	relative_pos = relative_pos.rotated(-camera.global_rotation)
-	relative_pos *= camera.zoom
-	
-	var viewport_center = Vector2(get_viewport().size / 2)
-	var target_pos = viewport_center + relative_pos
-	
+	var camera_global_xform: Transform2D = camera.get_global_transform()
+
+	var relative_to_camera: Vector2 = camera_global_xform.affine_inverse() * world_com
+
+	relative_to_camera *= camera.zoom
+
+	var viewport_center: Vector2 = get_viewport().size / 2
+	var target_pos: Vector2 = viewport_center + relative_to_camera
 	return target_pos
 
 
