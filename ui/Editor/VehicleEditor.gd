@@ -284,8 +284,8 @@ func update_vehicle_info_display():
 	description_label.clear()
 	description_label.append_text("Name: %s\n" % (selected_vehicle.vehicle_name if selected_vehicle.vehicle_name else "Unnamed"))
 	description_label.append_text("ID: %s\n\n" % selected_vehicle.name)
-	description_label.append_text("Total Weight: %.1f T\n\n" % stats.total_weight)
-	description_label.append_text("MAX Engne Output: %.1f kN\n\n" % stats.total_engine_power)
+	description_label.append_text("Weight: %.1f T\n\n" % stats.total_weight)
+	description_label.append_text("MAX Engne Power: %.1f kN\n\n" % stats.total_engine_power)
 	description_label.append_text("Power/Weight: %.2f kN/T\n\n" % stats.power_to_weight_ratio)
 
 func calculate_vehicle_stats() -> Dictionary:
