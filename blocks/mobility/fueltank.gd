@@ -1,5 +1,5 @@
 class_name Fueltank
-extends Block
+extends Cargo
 
 var fuel_storage: int = 0 
 var current_fuel_pack: float = 0.0 

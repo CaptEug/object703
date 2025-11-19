@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://beh1prpitcc5h"
-path="res://.godot/imported/remote_control.png-e8013f37c4fc7861f48133517a0ffd1b.ctex"
+uid="uid://b4djkdlb3w2ji"
+path="res://.godot/imported/forbid.png-1b81a79935bf7a80d2abfcdb2d180e77.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/remote_control.png"
-dest_files=["res://.godot/imported/remote_control.png-e8013f37c4fc7861f48133517a0ffd1b.ctex"]
+source_file="res://assets/icons/forbid.png"
+dest_files=["res://.godot/imported/forbid.png-1b81a79935bf7a80d2abfcdb2d180e77.ctex"]
 
 [params]
 
