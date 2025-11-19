@@ -367,7 +367,6 @@ func load_from_blueprint(bp: Dictionary):
 							point.is_connection_enabled = true
 							
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
-				turret_block.update_turret_physics()
 				turret_block.unlock_turret_rotation()
 
 func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded_blocks: Dictionary):
@@ -409,12 +408,11 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 			
 			var turretblock_pos = get_rectangle_corners(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
 			# 将块添加到炮塔
-			turret.add_block_to_turret(block, turret_local_positions)
 			var world_pos = turret.to_global(turretblock_pos)
 			# 设置块的位置和旋转
 			block.global_position = world_pos
+			turret.add_block_to_turret(block, turret_local_positions)
 			block.rotation_degrees = block.base_rotation_degree
-			
 			# 将块添加到车辆的总块列表中
 			if block not in total_blocks:
 				total_blocks.append(block)
