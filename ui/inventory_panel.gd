@@ -14,6 +14,8 @@ var block_to_section := {}  # 记录每个 block -> section 的映射
 func open_inventory(tank: Vehicle):
 	current_tank = tank
 	refresh_inventory()
+	if not current_tank.is_connected("cargo_changed", Callable(self, "_on_cargo_changed")):
+		current_tank.connect("cargo_changed", Callable(self, "_on_cargo_changed"))
 	visible = true
 
 func toggle_inventory(tank: Vehicle):
@@ -82,6 +84,8 @@ func add_storage_section(block: Cargo) -> void:
 
 func _on_inventory_changed(block: Cargo) -> void:
 	if not block_to_section.has(block):
+		add_storage_section(block)
+		print("added new section")
 		return
 	var section = block_to_section[block]
 	if not is_instance_valid(section):
@@ -107,6 +111,9 @@ func _on_inventory_changed(block: Cargo) -> void:
 			slot.item_data = item
 			slot.call_deferred("update_slot_display")
 
+func _on_cargo_changed():
+	refresh_inventory()
+	pass
 
 # ============================================================
 # 工具函数

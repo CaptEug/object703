@@ -1,6 +1,8 @@
 class_name Vehicle
 extends Node2D
 
+signal cargo_changed()
+
 const GRID_SIZE:int = 16
 
 var vehicle_size:Vector2i
@@ -174,8 +176,11 @@ func _add_block(block: Block,local_pos = null, grid_positions = null):
 			commands.append(block)
 		elif block is Ammorack:
 			ammoracks.append(block)
+			emit_signal("cargo_changed")
 		elif block is Fueltank:
 			fueltanks.append(block)
+		elif block is Cargo:
+			emit_signal("cargo_changed")
 		for pos in grid_positions:
 			grid[pos] = block
 		block.set_connection_enabled(true)
