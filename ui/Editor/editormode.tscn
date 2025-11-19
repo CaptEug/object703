@@ -34,7 +34,8 @@ atlas = ExtResource("3_qf13m")
 region = Rect2(0, 0, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8k6hb"]
-region = Rect2(0, 0, 256, 256)
+atlas = ExtResource("3_qf13m")
+region = Rect2(16, 0, 16, 16)
 
 [node name="EditormodeUI" type="Control"]
 layout_mode = 3
@@ -131,6 +132,7 @@ offset_left = 18.0
 offset_top = -3.0
 offset_right = 34.0
 offset_bottom = 13.0
+toggle_mode = true
 texture_normal = SubResource("AtlasTexture_l54rn")
 texture_pressed = SubResource("AtlasTexture_8k6hb")
 
