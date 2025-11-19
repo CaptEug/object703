@@ -17,9 +17,6 @@ var available_turret_connectors: Array[TurretConnector] = []
 var available_block_connectors: Array[TurretConnector] = []
 var turret_snap_config: Dictionary = {}
 
-# 炮塔边框
-var turret_selection_borders = {}
-
 const GRID_SIZE = 16
 
 func get_viewport():
@@ -57,9 +54,6 @@ func handle_left_click():
 			enter_turret_editing_mode(clicked_turret)
 
 func process(delta):
-	if is_turret_editing_mode and not turret_selection_borders.is_empty():
-		update_turret_border_positions()
-	
 	if is_turret_editing_mode and current_ghost_block:
 		update_turret_placement_feedback()
 	
@@ -107,9 +101,6 @@ func exit_turret_editing_mode():
 	print("=== 退出炮塔编辑模式 ===")
 	
 	is_turret_editing_mode = false
-	
-	# 清除所有炮塔边框
-	clear_all_turret_borders()
 	
 	if current_editing_turret:
 		enable_turret_rotation(current_editing_turret)
@@ -481,132 +472,12 @@ func start_block_placement_with_rotation(scene_path: String):
 	
 	turret_snap_config = {}
 
-# === 炮塔边框功能 ===
-func add_turret_selection_border(turret: TurretRing):
-	if not turret or not is_instance_valid(turret):
-		return
-	
-	if turret_selection_borders.has(turret.get_instance_id()):
-		remove_turret_selection_border(turret)
-	
-	var border = create_selection_border(turret)
-	if border:
-		get_tree().current_scene.add_child(border)  # 使用 get_tree()
-		turret_selection_borders[turret.get_instance_id()] = border
-		
-		print("为炮塔添加选择边框: ", turret.block_name)
-
-func remove_turret_selection_border(turret: TurretRing):
-	var instance_id = turret.get_instance_id()
-	if turret_selection_borders.has(instance_id):
-		var border = turret_selection_borders[instance_id]
-		if is_instance_valid(border):
-			border.queue_free()
-		turret_selection_borders.erase(instance_id)
-
-func create_selection_border(turret: TurretRing) -> Node2D:
-	var border_container = Node2D.new()
-	border_container.name = "TurretSelectionBorder"
-	
-	var world_position = calculate_border_world_position(turret)
-	var border_size = calculate_border_size(turret)
-	
-	border_container.global_position = world_position
-	border_container.global_rotation = turret.global_rotation
-	
-	var border_width = 1.0
-	var border_color = Color.GREEN
-	
-	# 上边
-	var top_border = ColorRect.new()
-	top_border.size = Vector2(border_size.x, border_width)
-	top_border.position = Vector2(0, 0)
-	top_border.color = border_color
-	
-	# 下边
-	var bottom_border = ColorRect.new()
-	bottom_border.size = Vector2(border_size.x, border_width)
-	bottom_border.position = Vector2(0, border_size.y - border_width)
-	bottom_border.color = border_color
-	
-	# 左边
-	var left_border = ColorRect.new()
-	left_border.size = Vector2(border_width, border_size.y)
-	left_border.position = Vector2(0, 0)
-	left_border.color = border_color
-	
-	# 右边
-	var right_border = ColorRect.new()
-	right_border.size = Vector2(border_width, border_size.y)
-	right_border.position = Vector2(border_size.x - border_width, 0)
-	right_border.color = border_color
-	
-	border_container.add_child(top_border)
-	border_container.add_child(bottom_border)
-	border_container.add_child(left_border)
-	border_container.add_child(right_border)
-	
-	border_container.z_index = 10
-	return border_container
-
-func calculate_border_size(turret: TurretRing) -> Vector2:
-	var grid_size = 16
-	var base_size = Vector2(turret.size.x * grid_size, turret.size.y * grid_size)
-	
-	match int(turret.base_rotation_degree):
-		90, -90, 270:
-			return Vector2(base_size.y, base_size.x)
-		180, -180:
-			return base_size
-		_:
-			return base_size
-
-func calculate_border_world_position(turret: TurretRing) -> Vector2:
-	var grid_size = 16
-	var border_size = calculate_border_size(turret)
-	
-	var center_offset = border_size * 0.5
-	
-	match int(turret.base_rotation_degree):
-		90:
-			center_offset = Vector2(border_size.y * 0.5, border_size.x * 0.5)
-		-90, 270:
-			center_offset = Vector2(border_size.y * 0.5, border_size.x * 0.5)
-		180, -180:
-			center_offset = border_size * 0.5
-		_:
-			center_offset = border_size * 0.5
-	
-	var local_position = Vector2.ZERO - center_offset
-	
-	return turret.to_global(local_position)
-
-func update_turret_border_positions():
-	for instance_id in turret_selection_borders:
-		var turret = instance_from_id(instance_id)
-		var border = turret_selection_borders[instance_id]
-		
-		if is_instance_valid(turret) and is_instance_valid(border):
-			var bounds = turret.get_turret_grid_bounds()
-			if not bounds.is_empty():
-				var world_position = calculate_border_world_position(turret)
-				border.global_position = world_position
-				border.global_rotation = turret.global_rotation
-
-func clear_all_turret_borders():
-	for instance_id in turret_selection_borders:
-		var border = turret_selection_borders[instance_id]
-		if is_instance_valid(border):
-			border.queue_free()
-	turret_selection_borders.clear()
-
 func instance_from_id(instance_id: int) -> Object:
 	return instance_from_id(instance_id)
 
 func handle_block_colors_in_turret_mode(block: Block):
 	if block == current_editing_turret:
 		block.modulate = Color.WHITE
-		add_turret_selection_border(block)
 		for child in block.turret_basket.get_children():
 			if child is Block:
 				child.modulate = Color.WHITE
