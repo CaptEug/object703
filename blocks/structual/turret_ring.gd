@@ -13,6 +13,7 @@ var turret_grid := {}
 var turret_blocks := []
 var turret_size: Vector2i
 var total_mass:= 0.0
+var block_mass:= 0.0
 
 # 炮塔旋转控制
 var is_turret_rotation_enabled: bool = true
@@ -36,6 +37,7 @@ func connect_aready():
 		turret_basket.joint = joint
 
 func _physics_process(delta):
+
 	## 只有在启用时才进行瞄准
 	if parent_vehicle and is_turret_rotation_enabled:
 		aim(delta, get_global_mouse_position())
@@ -228,14 +230,12 @@ func update_turret_size():
 func update_turret_physics():
 	"""更新炮塔的物理属性（质量、质心等）"""
 	total_mass = mass
-	
+	block_mass = mass
 	for block:Block in turret_blocks:
 		if is_instance_valid(block):
 			total_mass += block.mass
-			if block.center_of_mass_mode != RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM:
-				block.center_of_mass_mode = RigidBody2D.CENTER_OF_MASS_MODE_CUSTOM
-				block.center_of_mass = turret_basket.position - block.position
-				block.angular_damp = 0.1
+			block.angular_damp = 0
+			block.linear_damp = 0
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""
