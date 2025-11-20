@@ -1,23 +1,129 @@
-[gd_scene load_steps=4 format=3 uid="uid://35doo33k56pf"]
+[gd_scene load_steps=10 format=3 uid="uid://35doo33k56pf"]
 
 [ext_resource type="Script" uid="uid://cgq0j36j20r6c" path="res://rigid_body_2d.gd" id="1_xnhy2"]
+[ext_resource type="Texture2D" uid="uid://d0kpab3oqqfox" path="res://assets/blocks3.png" id="2_8yvvm"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="3_p5yso"]
+[ext_resource type="Texture2D" uid="uid://brtjidrm0jx83" path="res://assets/icons/crosshair.png" id="3_quxkg"]
+
+[sub_resource type="GDScript" id="GDScript_8yvvm"]
+script/source = "extends RigidBody2D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _physics_process(delta):
+	apply_force(Vector2.RIGHT * 0)
+"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnhy2"]
-size = Vector2(100, 100)
+size = Vector2(96, 96)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8yvvm"]
+size = Vector2(64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tdbmg"]
+atlas = ExtResource("3_p5yso")
+region = Rect2(144, 64, 48, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_quxkg"]
+size = Vector2(16, 16)
 
 [node name="123" type="Node2D"]
 
-[node name="RigidBody2D" type="RigidBody2D" parent="."]
-position = Vector2(166, 118)
-script = ExtResource("1_xnhy2")
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(48, 48)
+texture = ExtResource("2_8yvvm")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D"]
+[node name="hull" type="RigidBody2D" parent="."]
+script = SubResource("GDScript_8yvvm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="hull"]
 shape = SubResource("RectangleShape2D_xnhy2")
 
-[node name="RigidBody2D2" type="RigidBody2D" parent="."]
-position = Vector2(146, 118)
+[node name="PinJoint2D" type="PinJoint2D" parent="hull"]
+node_a = NodePath("..")
+node_b = NodePath("../../basket")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D2"]
+[node name="basket" type="RigidBody2D" parent="."]
+script = ExtResource("1_xnhy2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="basket"]
+shape = SubResource("RectangleShape2D_8yvvm")
+
+[node name="Sprite2D" type="Sprite2D" parent="basket"]
+texture = SubResource("AtlasTexture_tdbmg")
+
+[node name="PinJoint2D" type="PinJoint2D" parent="basket"]
+position = Vector2(24, 24)
+node_a = NodePath("..")
+node_b = NodePath("../../block")
+
+[node name="PinJoint2D2" type="PinJoint2D" parent="basket"]
+position = Vector2(-24, 24)
+node_a = NodePath("..")
+node_b = NodePath("../../block2")
+
+[node name="PinJoint2D3" type="PinJoint2D" parent="basket"]
+position = Vector2(24, -24)
+node_a = NodePath("..")
+node_b = NodePath("../../block3")
+
+[node name="PinJoint2D4" type="PinJoint2D" parent="basket"]
+position = Vector2(-24, -24)
+node_a = NodePath("..")
+node_b = NodePath("../../block4")
+
+[node name="block" type="RigidBody2D" parent="."]
+position = Vector2(24, 24)
+collision_layer = 2
+collision_mask = 2
+can_sleep = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="block"]
 shape = SubResource("RectangleShape2D_quxkg")
+
+[node name="Sprite2D" type="Sprite2D" parent="block"]
+texture = ExtResource("3_quxkg")
+
+[node name="block2" type="RigidBody2D" parent="."]
+position = Vector2(-24, 24)
+collision_layer = 2
+collision_mask = 2
+can_sleep = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="block2"]
+shape = SubResource("RectangleShape2D_quxkg")
+
+[node name="Sprite2D" type="Sprite2D" parent="block2"]
+texture = ExtResource("3_quxkg")
+
+[node name="block3" type="RigidBody2D" parent="."]
+position = Vector2(24, -24)
+collision_layer = 2
+collision_mask = 2
+can_sleep = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="block3"]
+shape = SubResource("RectangleShape2D_quxkg")
+
+[node name="Sprite2D" type="Sprite2D" parent="block3"]
+texture = ExtResource("3_quxkg")
+
+[node name="block4" type="RigidBody2D" parent="."]
+position = Vector2(-24, -24)
+collision_layer = 2
+collision_mask = 2
+can_sleep = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="block4"]
+shape = SubResource("RectangleShape2D_quxkg")
+
+[node name="Sprite2D" type="Sprite2D" parent="block4"]
+texture = ExtResource("3_quxkg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2, 2)

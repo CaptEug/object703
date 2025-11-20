@@ -58,17 +58,6 @@
 		"14": {
 			"base_pos": [
 				2,
-				0
-			],
-			"name": "122mm D-52S cannon",
-			"path": "res://blocks/firepower/d_52s.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"14": {
-			"base_pos": [
-				2,
 				8
 			],
 			"name": "TurretRing1800mm",
@@ -81,21 +70,43 @@
 					"1": {
 						"base_pos": [
 							2,
-							-3
+							2
 						],
-						"name": "122mm D-52T cannon",
-						"path": "res://blocks/firepower/d_52t.tscn",
+						"name": "armor",
+						"path": "res://blocks/structual/armor.tscn",
 						"rotation": [
 							0
 						]
 					},
 					"2": {
 						"base_pos": [
-							0,
-							-3
+							2,
+							0
 						],
-						"name": "122mm D-52T cannon",
-						"path": "res://blocks/firepower/d_52t.tscn",
+						"name": "armor",
+						"path": "res://blocks/structual/armor.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"3": {
+						"base_pos": [
+							0,
+							0
+						],
+						"name": "armor",
+						"path": "res://blocks/structual/armor.tscn",
+						"rotation": [
+							0
+						]
+					},
+					"4": {
+						"base_pos": [
+							0,
+							2
+						],
+						"name": "armor",
+						"path": "res://blocks/structual/armor.tscn",
 						"rotation": [
 							0
 						]
@@ -103,11 +114,11 @@
 				},
 				"grid_size": [
 					3,
-					8
+					3
 				]
 			}
 		},
-		"14": {
+		"15": {
 			"base_pos": [
 				2,
 				11
