@@ -127,7 +127,7 @@ libraries = {
 }
 
 [node name="Muzzle" type="Marker2D" parent="."]
-position = Vector2(0, -72)
+position = Vector2(0, -52)
 
 [node name="GunFireSound" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("4_tauxs")

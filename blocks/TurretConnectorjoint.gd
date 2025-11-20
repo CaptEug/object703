@@ -4,11 +4,8 @@ extends PinJoint2D
 @export var connection_strength: float = 1.0
 @export var lock_rotation: bool = true
 @export var maintain_position: bool = true
-@export var rotation_stiffness: float = 1.0 
-@export var rotation_damping: float = 2.0  
-@export var position_stiffness: float = 5.0
-@export var position_damping: float = 1.0
-@export var max_pull_force: float = 1000.0
+@export var rotation_stiffness: float = 1000
+@export var rotation_damping: float = 200
 
 var block: Block
 var target_body: RigidBody2D
@@ -69,8 +66,8 @@ func apply_rotation_constraint(delta: float):
 	var target_angular_velocity = target_body.angular_velocity
 	var angular_velocity_diff = target_angular_velocity - block.angular_velocity
 	
-	var restoration_torque = rotation_diff * rotation_stiffness * 1000.0 * actual_inertia
-	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia * 100
+	var restoration_torque = rotation_diff * rotation_stiffness * actual_inertia
+	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia 
 	var total_torque = restoration_torque + damping_torque
 	
 	block.apply_torque(total_torque / 10)

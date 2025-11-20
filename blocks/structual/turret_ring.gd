@@ -6,8 +6,7 @@ var turret_basket:RigidBody2D
 var joint:PinJoint2D
 var traverse:Array
 var max_torque:float
-var rotation_damping: float = 1000
-var rotation_stiffness: float = 200.0
+var damping_ratio: float = 1
 
 # 炮塔专用的grid系统
 var turret_grid := {}
@@ -41,6 +40,7 @@ func connect_aready():
 func _physics_process(delta):
 	## 只有在启用时才进行瞄准
 	if parent_vehicle and is_turret_rotation_enabled:
+		#apply_turret_sync_torque(delta)
 		aim(delta, get_global_mouse_position())
 	else:
 		if turret_basket:
@@ -53,22 +53,20 @@ func aim(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	# 计算需要的扭矩
-	var torque = 0.0
-	
+	var torque = angle_diff * max_torque
+	var turret_inertia = 380
 	# 只在需要旋转时施加力
 	if abs(angle_diff) > deg_to_rad(1):
-		var base_torque = angle_diff * rotation_stiffness * 100
-		var damping_torque = -turret_basket.angular_velocity * rotation_damping * 10
-		torque = base_torque + damping_torque + calculate_turret_target_torque(delta)
-	
-	# 应用扭矩
-	if abs(torque) > 0.01:
+		# apply damping ONLY if current rel_vel is toward the target
+		if sign(turret_basket.angular_velocity) == sign(angle_diff):
+			var damping_factor = 2 * sqrt(turret_inertia * max_torque)
+			torque -= turret_basket.angular_velocity * damping_factor
 		turret_basket.apply_torque(torque)
 	
 	# 返回是否瞄准
 	return abs(angle_diff) < deg_to_rad(1)
 
-func calculate_turret_target_torque(delta: float) -> float:
+func apply_turret_sync_torque(delta: float):
 	var now_t_v = angular_velocity
 	
 	var angular_acceleration = (now_t_v - old_t_v) / delta
@@ -82,19 +80,16 @@ func calculate_turret_target_torque(delta: float) -> float:
 				var moment_of_inertia = 1.0 / inverse_inertia
 				
 				for block:Block in turret_blocks:
-					var inertia_self = 1.0 / PhysicsServer2D.body_get_direct_state(block.get_rid()).inverse_inertia
 					moment_of_inertia += turret_basket.to_local(block.to_global(Vector2.ZERO)).length_squared() * block.mass
 				
 				# 扭矩 = 角加速度 × 转动惯量
 				var torque = angular_acceleration * moment_of_inertia
-				
+				turret_basket.apply_torque(torque)
 				# 保存当前角速度供下一帧使用
 				old_t_v = now_t_v
 				
 				return torque
-	
-	old_t_v = now_t_v
-	return 0.0
+
 
 
 ###################### 炮塔Grid系统 ######################

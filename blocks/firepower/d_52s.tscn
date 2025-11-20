@@ -103,7 +103,7 @@ texture = SubResource("AtlasTexture_0dhif")
 offset = Vector2(0, -40)
 
 [node name="Muzzle" type="Marker2D" parent="Turret"]
-position = Vector2(0, -72)
+position = Vector2(0, -84)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Turret"]
 libraries = {
