@@ -52,6 +52,8 @@ func finalize_changes():
 
 func add_item(id: String, count: int) -> bool:
 	
+	if ItemDB.get_item(id)["tag"] not in self.ACCEPT and "ALL" not in self.ACCEPT:
+		return false 
 	for i in range(len(inventory)):
 		if inventory[i].is_empty():
 			continue

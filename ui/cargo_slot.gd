@@ -127,7 +127,7 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	drag_preview.z_index = 999
-	
+	label.add_theme_color_override("font_color", Color.WHITE)
 	label.anchor_right = 1.0
 	label.anchor_bottom = 1.0
 	drag_preview.add_child(label)
@@ -187,7 +187,7 @@ func _perform_drop(target_slot: Node) -> void:
 	var target_item = target_slot.item_data if target_slot.item_data != null else {}
 	var target_item_tag = ItemDB.get_item(target_item["id"])["tag"] if target_item != {} else source_item_tag
 
-	if source_item_tag in target_slot.accept:
+	if source_item_tag in target_slot.accept or "ALL" in target_slot.accept:
 		# 目标为空 → 直接放入
 		if (target_item == {} or target_item.is_empty()):
 			# 如果拖拽物来自拆分（drag_is_split），只需把 source_item 放入目标，

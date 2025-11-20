@@ -134,7 +134,7 @@ func draw_grid():
 				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 
 func _input(event: InputEvent) -> void:
-	if Input.is_action_just_pressed("Cargo") and visible:
+	if Input.is_action_just_pressed("Cargo") and visible and is_frontmost():
 		toggle_inventory()
 
 func has_commend_class_exact(check_blocks):
