@@ -40,7 +40,6 @@ bias = 0.9
 z_index = 1
 collision_layer = 0
 collision_mask = 4
-inertia = 300.0
 script = ExtResource("3_4dn0s")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="TurretBasket"]

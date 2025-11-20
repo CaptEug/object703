@@ -461,8 +461,8 @@ func calculate_center_of_mass() -> Vector2:
 				var rid = get_block_grid(body)
 				var global_com:Vector2 = get_rectangle_corners(rid)
 				if body is TurretRing:
-					weighted_sum += global_com * body.block_mass
-					total_mass += body.block_mass
+					weighted_sum += global_com * body.total_mass
+					total_mass += body.total_mass
 				else:
 					weighted_sum += global_com * body.mass
 					total_mass += body.mass

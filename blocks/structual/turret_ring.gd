@@ -5,22 +5,16 @@ var load:float
 var turret_basket:RigidBody2D
 var joint:PinJoint2D
 var traverse:Array
-var rotation_speed:float
-var relative_rot:float = 0.0
+var max_torque:float
+var rotation_damping: float = 1000
+var rotation_stiffness: float = 200.0
 
 # 炮塔专用的grid系统
 var turret_grid := {}
 var turret_blocks := []
 var turret_size: Vector2i
 var total_mass:= 0.0
-var block_mass:= 0.0
-var old_t_v
-
-## 扭矩控制参数
-var rotation_stiffness: float = 200.0    
-var rotation_damping: float = 30.0     
-var max_torque: float = 36000.0      
-
+var old_t_v         
 
 # 炮塔旋转控制
 var is_turret_rotation_enabled: bool = true
@@ -47,9 +41,7 @@ func connect_aready():
 func _physics_process(delta):
 	## 只有在启用时才进行瞄准
 	if parent_vehicle and is_turret_rotation_enabled:
-		#aim(delta, get_global_mouse_position())
-		#
-		turret_basket.apply_torque(calculate_turret_target_torque(delta)*100)
+		aim(delta, get_global_mouse_position())
 	else:
 		if turret_basket:
 			# 禁用时停止所有旋转
@@ -58,17 +50,16 @@ func _physics_process(delta):
 	pass
 
 func aim(delta, target_pos):
-	var target_angle = (target_pos - global_position).angle() + deg_to_rad(90)
+	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
-	
 	# 计算需要的扭矩
 	var torque = 0.0
 	
 	# 只在需要旋转时施加力
 	if abs(angle_diff) > deg_to_rad(1):
-		var base_torque = angle_diff * rotation_stiffness
-		var damping_torque = -turret_basket.angular_velocity * rotation_damping
-		torque = base_torque + damping_torque
+		var base_torque = angle_diff * rotation_stiffness * 100
+		var damping_torque = -turret_basket.angular_velocity * rotation_damping * 10
+		torque = base_torque + damping_torque + calculate_turret_target_torque(delta)
 	
 	# 应用扭矩
 	if abs(torque) > 0.01:
@@ -80,7 +71,6 @@ func aim(delta, target_pos):
 func calculate_turret_target_torque(delta: float) -> float:
 	var now_t_v = angular_velocity
 	
-	# 计算角加速度 (rad/s²)
 	var angular_acceleration = (now_t_v - old_t_v) / delta
 	
 	var body_rid = turret_basket.get_rid()
@@ -91,13 +81,12 @@ func calculate_turret_target_torque(delta: float) -> float:
 			if inverse_inertia > 0:
 				var moment_of_inertia = 1.0 / inverse_inertia
 				
+				for block:Block in turret_blocks:
+					var inertia_self = 1.0 / PhysicsServer2D.body_get_direct_state(block.get_rid()).inverse_inertia
+					moment_of_inertia += turret_basket.to_local(block.to_global(Vector2.ZERO)).length_squared() * block.mass
+				
 				# 扭矩 = 角加速度 × 转动惯量
 				var torque = angular_acceleration * moment_of_inertia
-				
-				print("角速度差: ", angular_acceleration)
-				print("转动惯量: ", moment_of_inertia)
-				print("需要扭矩: ", torque)
-
 				
 				# 保存当前角速度供下一帧使用
 				old_t_v = now_t_v
@@ -153,7 +142,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			var global_pos = block.global_position
 			var global_rot = block.global_rotation
 			parent_vehicle._add_block(block, global_pos, grid_positions)
-			print(block.get_parent())
 			block.global_position = global_pos  # 保持全局位置不变
 			block.global_rotation = global_rot  # 保持全局旋转不变
 			
@@ -267,10 +255,11 @@ func update_turret_size():
 func update_turret_physics():
 	"""更新炮塔的物理属性（质量、质心等）"""
 	total_mass = mass
-	block_mass = mass
 	for block:Block in turret_blocks:
 		if is_instance_valid(block):
 			total_mass += block.mass
+			block.linear_damp = 0
+			block.angular_damp = 0
 
 func get_turret_block_at_position(grid_pos: Vector2i) -> Block:
 	"""获取指定grid位置的block"""
