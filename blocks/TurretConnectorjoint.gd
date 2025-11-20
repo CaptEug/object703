@@ -6,23 +6,23 @@ extends PinJoint2D
 @export var maintain_position: bool = true
 @export var rotation_stiffness: float = 1.0 
 @export var rotation_damping: float = 2.0  
-# 新增：位置约束参数
-@export var position_stiffness: float = 5.0  # 位置刚度
-@export var position_damping: float = 1.0    # 位置阻尼
-@export var max_pull_force: float = 1000.0   # 最大拉力
+@export var position_stiffness: float = 5.0
+@export var position_damping: float = 1.0
+@export var max_pull_force: float = 1000.0
 
 var block: Block
 var target_body: RigidBody2D
 var initial_global_position: Vector2
 var connector: TurretConnector
-var initial_distance: float = 0.0  # 初始距离
+var initial_distance: float = 0.0
+var old_v
 
 func _ready():
 	setup_joint()
 
 func setup_joint():
 	softness = 0.01
-	bias = 0
+	bias = 1
 	disable_collision = true
 
 func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnector):
@@ -30,16 +30,13 @@ func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnecto
 	target_body = target
 	connector = connector_ref
 	
-	#if maintain_position:
-		#initial_global_position = block.global_position
-		## 计算初始距离
-		#initial_distance = block.global_position.distance_to(target.global_position)
-	
+	# 设置节点路径
 	node_a = block.get_path()
 	node_b = target.get_path()
 	
-	var local_connect_pos = block.to_local(connector.global_position)
-	position = local_connect_pos
+	# 计算连接点在target本地坐标系中的位置
+	var global_connect_pos = connector.global_position
+	position = target.to_local(global_connect_pos)
 	
 	if lock_rotation:
 		block.rotation = target.rotation + deg_to_rad(block.base_rotation_degree)
@@ -52,6 +49,8 @@ func _physics_process(delta):
 	#if lock_rotation and is_instance_valid(target_body):
 		#apply_rotation_constraint(delta)
 	
+	if not check_connection_strength():
+		return
 
 func apply_rotation_constraint(delta: float):
 	var body_rid = block.get_rid()
@@ -63,7 +62,6 @@ func apply_rotation_constraint(delta: float):
 		return
 	
 	var target_rotation = target_body.global_rotation + deg_to_rad(block.base_rotation_degree)
-	
 	var rotation_diff = wrapf(target_rotation - block.global_rotation, -PI, PI)
 	if abs(rotation_diff) < 0.001:
 		return
@@ -72,54 +70,12 @@ func apply_rotation_constraint(delta: float):
 	var angular_velocity_diff = target_angular_velocity - block.angular_velocity
 	
 	var restoration_torque = rotation_diff * rotation_stiffness * 1000.0 * actual_inertia
-	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia * 10
+	var damping_torque = angular_velocity_diff * rotation_damping * actual_inertia * 100
 	var total_torque = restoration_torque + damping_torque
 	
-	block.apply_torque(total_torque)
+	block.apply_torque(total_torque / 10)
 
-# 新增：位置约束函数
-#func apply_position_constraint(delta: float):
-	#if not maintain_position or initial_distance <= 0:
-		#return
-	#
-	## 计算当前距离和方向
-	#var current_distance = block.global_position.distance_to(target_body.global_position)
-	#var pull_distance = current_distance - initial_distance
-	#
-	## 如果被拉开的距离很小，忽略
-	#if abs(pull_distance) < 1:
-		#return
-	#
-	## 计算拉力方向（从block指向target）
-	#var pull_direction = (target_body.global_position - block.global_position).normalized()
-	#
-	## 计算恢复力（弹簧模型）
-	#var restoration_force = -pull_distance * position_stiffness * 100.0
-	#
-	## 计算相对速度阻尼
-	#var relative_velocity = target_body.linear_velocity - block.linear_velocity
-	#var velocity_in_pull_direction = relative_velocity.dot(pull_direction)
-	#var damping_force = -velocity_in_pull_direction * position_damping * 10.0
-	#
-	## 合力
-	#var total_force = restoration_force + damping_force
-	#
-	## 限制最大力
-	#total_force = clamp(total_force, -max_pull_force * 100, max_pull_force * 100)
-	#
-	## 应用力（根据距离决定施加在哪个物体上）
-	#if pull_distance > 0:
-		## block被拉开，向target方向拉block
-		#block.apply_central_force(-pull_direction * total_force)
-	#else:
-		## block被推近，向远离target方向推block
-		#block.apply_central_force(pull_direction * total_force)
-	#
-	## 调试信息（可选）
-	#if abs(pull_distance) > 1.0:  # 只有明显拉开时才打印
-		#print("位置约束: 距离变化=%.2f, 施加力=%.2f" % [pull_distance, total_force])
 
-# 新增：检查连接强度
 func check_connection_strength() -> bool:
 	if not maintain_position or initial_distance <= 0:
 		return true
@@ -127,7 +83,6 @@ func check_connection_strength() -> bool:
 	var current_distance = block.global_position.distance_to(target_body.global_position)
 	var stretch_ratio = current_distance / initial_distance
 	
-	# 如果拉伸超过阈值，断开连接
 	if stretch_ratio > (1.0 + connection_strength * 0.5):
 		print("连接断裂! 拉伸比例: ", stretch_ratio)
 		break_connection()
@@ -136,7 +91,6 @@ func check_connection_strength() -> bool:
 	return true
 
 func break_connection():
-	# 在断开前进行最后一次检查
 	if block and block.joint_connected_blocks.has(self):
 		block.joint_connected_blocks.erase(self)
 	
@@ -145,13 +99,25 @@ func break_connection():
 	
 	queue_free()
 
+# 保持原有参数不变的创建函数
 static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector_ref: TurretConnector, node_a_path: NodePath, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
 	var joint = TurretConnectorJoint.new()
 	joint.lock_rotation = lock_rot
 	joint.maintain_position = maintain_pos
+	#rigidbody.can_sleep = false
+	#block.can_sleep = false
+	## 先设置所有属性，再添加为子节点
+	joint.node_a = block.get_path()
+	joint.node_b = rigidbody.get_path()
 	joint.setup(block, rigidbody, connector_ref)
-	block.add_child(joint)
 	
+	# 最后添加为子节点
+	rigidbody.add_child(joint)
+
+	# 然后调用setup进行其他设置
+	
+	
+	# 保持原有的连接关系管理
 	var turretring = rigidbody.get_node(node_a_path)
 	if turretring is TurretRing:
 		if not block.joint_connected_blocks.has(turretring):
@@ -161,6 +127,7 @@ static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector
 	
 	return joint
 
+# 调试方法
 func print_rigidbody_state(body: RigidBody2D):
 	print("🎯 RigidBody2D 状态:")
 	print("  质量: %.2f" % body.mass)
@@ -177,10 +144,34 @@ func print_rigidbody_state(body: RigidBody2D):
 	print("  连续碰撞检测: %s" % body.continuous_cd)
 	print("  接触数量: %d" % body.get_contact_count())
 	
-	# 接触点信息
 	if body.get_contact_count() > 0:
 		print("  接触点:")
 		for i in range(body.get_contact_count()):
 			var point = body.get_contact_local_position(i)
 			var normal = body.get_contact_local_normal(i)
 			print("    %d: 位置%s 法线%s" % [i, point, normal])
+
+# 新增：验证连接状态
+func debug_joint_connection():
+	print("=== PinJoint连接状态 ===")
+	print("父节点:", get_parent().name if get_parent() else "无")
+	print("节点A路径:", node_a)
+	print("节点B路径:", node_b)
+	print("节点A存在:", get_node_or_null(node_a) != null)
+	print("节点B存在:", get_node_or_null(node_b) != null)
+	print("位置:", position)
+	print("软度:", softness)
+	print("偏置:", bias)
+	print("禁用碰撞:", disable_collision)
+	print("锁定旋转:", lock_rotation)
+	print("维持位置:", maintain_position)
+	print("连接强度:", connection_strength)
+	print("=========================")
+
+# 新增：简单连接验证
+func is_joint_valid() -> bool:
+	var node_a_valid = get_node_or_null(node_a) != null
+	var node_b_valid = get_node_or_null(node_b) != null
+	var parent_valid = is_instance_valid(get_parent())
+	
+	return node_a_valid and node_b_valid and parent_valid

@@ -4,7 +4,7 @@ const HITPOINT:float = 1600
 const WEIGHT:float = 2000
 const BLOCK_NAME:String = 'TurretRing1800mm'
 const SIZE:= Vector2(3, 3)
-const ROATAION_SPEED:float = deg_to_rad(3600)
+const ROATAION_SPEED:float = deg_to_rad(36000)
 const COST:= [{"metal": 10}]
 
 func _init():

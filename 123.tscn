@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://35doo33k56pf"]
+[gd_scene load_steps=11 format=3 uid="uid://35doo33k56pf"]
 
 [ext_resource type="Script" uid="uid://cgq0j36j20r6c" path="res://rigid_body_2d.gd" id="1_xnhy2"]
 [ext_resource type="Texture2D" uid="uid://d0kpab3oqqfox" path="res://assets/blocks3.png" id="2_8yvvm"]
@@ -32,6 +32,9 @@ region = Rect2(144, 64, 48, 48)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_quxkg"]
 size = Vector2(16, 16)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p5yso"]
+size = Vector2(32, 32)
+
 [node name="123" type="Node2D"]
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -49,6 +52,9 @@ node_a = NodePath("..")
 node_b = NodePath("../../basket")
 
 [node name="basket" type="RigidBody2D" parent="."]
+inertia = 10.0
+linear_damp_mode = 1
+angular_damp_mode = 1
 script = ExtResource("1_xnhy2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="basket"]
@@ -57,25 +63,24 @@ shape = SubResource("RectangleShape2D_8yvvm")
 [node name="Sprite2D" type="Sprite2D" parent="basket"]
 texture = SubResource("AtlasTexture_tdbmg")
 
-[node name="PinJoint2D" type="PinJoint2D" parent="basket"]
+[node name="PinJoint2D2" type="GrooveJoint2D" parent="basket"]
 position = Vector2(24, 24)
 node_a = NodePath("..")
 node_b = NodePath("../../block")
+length = 1.0
+initial_offset = 1.0
 
-[node name="PinJoint2D2" type="PinJoint2D" parent="basket"]
-position = Vector2(-24, 24)
-node_a = NodePath("..")
-node_b = NodePath("../../block2")
-
-[node name="PinJoint2D3" type="PinJoint2D" parent="basket"]
-position = Vector2(24, -24)
-node_a = NodePath("..")
-node_b = NodePath("../../block3")
-
-[node name="PinJoint2D4" type="PinJoint2D" parent="basket"]
+[node name="PinJoint2D3" type="GrooveJoint2D" parent="basket"]
 position = Vector2(-24, -24)
 node_a = NodePath("..")
 node_b = NodePath("../../block4")
+length = 1.0
+initial_offset = 1.0
+
+[node name="PinJoint2D4" type="PinJoint2D" parent="basket"]
+position = Vector2(24, -24)
+node_a = NodePath("..")
+node_b = NodePath("../../block3")
 
 [node name="block" type="RigidBody2D" parent="."]
 position = Vector2(24, 24)
@@ -101,6 +106,10 @@ shape = SubResource("RectangleShape2D_quxkg")
 [node name="Sprite2D" type="Sprite2D" parent="block2"]
 texture = ExtResource("3_quxkg")
 
+[node name="PinJoint2D" type="PinJoint2D" parent="block2"]
+node_a = NodePath("../../basket")
+node_b = NodePath("..")
+
 [node name="block3" type="RigidBody2D" parent="."]
 position = Vector2(24, -24)
 collision_layer = 2
@@ -114,13 +123,13 @@ shape = SubResource("RectangleShape2D_quxkg")
 texture = ExtResource("3_quxkg")
 
 [node name="block4" type="RigidBody2D" parent="."]
-position = Vector2(-24, -24)
+position = Vector2(-24, -23)
 collision_layer = 2
 collision_mask = 2
 can_sleep = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="block4"]
-shape = SubResource("RectangleShape2D_quxkg")
+shape = SubResource("RectangleShape2D_p5yso")
 
 [node name="Sprite2D" type="Sprite2D" parent="block4"]
 texture = ExtResource("3_quxkg")
