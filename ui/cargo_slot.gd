@@ -127,7 +127,7 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	drag_preview.z_index = 999
-	
+	label.add_theme_color_override("font_color", Color.WHITE)
 	label.anchor_right = 1.0
 	label.anchor_bottom = 1.0
 	drag_preview.add_child(label)
