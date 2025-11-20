@@ -187,7 +187,7 @@ func _perform_drop(target_slot: Node) -> void:
 	var target_item = target_slot.item_data if target_slot.item_data != null else {}
 	var target_item_tag = ItemDB.get_item(target_item["id"])["tag"] if target_item != {} else source_item_tag
 
-	if source_item_tag in target_slot.accept:
+	if source_item_tag in target_slot.accept or "ALL" in target_slot.accept:
 		# 目标为空 → 直接放入
 		if (target_item == {} or target_item.is_empty()):
 			# 如果拖拽物来自拆分（drag_is_split），只需把 source_item 放入目标，
