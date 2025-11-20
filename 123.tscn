@@ -63,25 +63,6 @@ shape = SubResource("RectangleShape2D_8yvvm")
 [node name="Sprite2D" type="Sprite2D" parent="basket"]
 texture = SubResource("AtlasTexture_tdbmg")
 
-[node name="PinJoint2D2" type="GrooveJoint2D" parent="basket"]
-position = Vector2(24, 24)
-node_a = NodePath("..")
-node_b = NodePath("../../block")
-length = 1.0
-initial_offset = 1.0
-
-[node name="PinJoint2D3" type="GrooveJoint2D" parent="basket"]
-position = Vector2(-24, -24)
-node_a = NodePath("..")
-node_b = NodePath("../../block4")
-length = 1.0
-initial_offset = 1.0
-
-[node name="PinJoint2D4" type="PinJoint2D" parent="basket"]
-position = Vector2(24, -24)
-node_a = NodePath("..")
-node_b = NodePath("../../block3")
-
 [node name="block" type="RigidBody2D" parent="."]
 position = Vector2(24, 24)
 collision_layer = 2

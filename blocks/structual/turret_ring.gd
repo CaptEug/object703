@@ -16,15 +16,10 @@ var total_mass:= 0.0
 var block_mass:= 0.0
 var old_t_v
 
-# 扭矩控制参数
+## 扭矩控制参数
 var rotation_stiffness: float = 200.0    
 var rotation_damping: float = 30.0     
 var max_torque: float = 36000.0      
-var torque_ramp_up_speed: float = 5000.0   
-var torque_ramp_down_speed: float = 8000.0
-var current_torque: float = 0.0      
-var last_angle_diff: float = 0.0    
-var angular_acceleration: float = 0.0    
 
 
 # 炮塔旋转控制
@@ -53,7 +48,8 @@ func _physics_process(delta):
 	## 只有在启用时才进行瞄准
 	if parent_vehicle and is_turret_rotation_enabled:
 		#aim(delta, get_global_mouse_position())
-		calculate_turret_target_torque(delta)
+		#
+		turret_basket.apply_torque(calculate_turret_target_torque(delta)*100)
 	else:
 		if turret_basket:
 			# 禁用时停止所有旋转
@@ -111,150 +107,6 @@ func calculate_turret_target_torque(delta: float) -> float:
 	old_t_v = now_t_v
 	return 0.0
 
-# 计算目标角速度
-func calculate_target_angular_velocity(angle_diff: float, delta: float) -> float:
-	if abs(angle_diff) < deg_to_rad(0.5):
-		return 0.0
-	
-	# 基于角度差计算理想角速度（带平滑）
-	var max_allowed_speed = rotation_speed
-	var speed_factor = clamp(abs(angle_diff) / deg_to_rad(30), 0.1, 1.0)
-	var ideal_speed = rotation_speed * speed_factor * sign(angle_diff)
-	
-	# 考虑角加速度限制
-	var max_acceleration = max_torque / get_effective_inertia()
-	var speed_change_limit = max_acceleration * delta
-	
-	return clamp(ideal_speed, 
-		turret_basket.angular_velocity - speed_change_limit, 
-		turret_basket.angular_velocity + speed_change_limit)
-
-# 计算理想扭矩
-func calculate_ideal_torque(angle_diff: float, angular_velocity_diff: float) -> float:
-	# PD控制器：比例项 + 微分项
-	var p_term = angle_diff * rotation_stiffness
-	var d_term = angular_velocity_diff * rotation_damping
-	
-	var ideal_torque = p_term + d_term
-	
-	# 非线性刚度（小角度时降低刚度避免振荡）
-	if abs(angle_diff) < deg_to_rad(5):
-		var factor = abs(angle_diff) / deg_to_rad(5)
-		ideal_torque *= factor * factor  # 二次曲线平滑
-	
-	# 扭矩限制
-	return clamp(ideal_torque, -max_torque, max_torque)
-
-# 应用扭矩平滑
-func apply_torque_smoothing(target_torque: float, current_torque: float, delta: float) -> float:
-	var torque_diff = target_torque - current_torque
-	var ramp_speed = torque_ramp_up_speed if abs(torque_diff) > 0 else torque_ramp_down_speed
-	var max_change = ramp_speed * delta
-	
-	if abs(torque_diff) <= max_change:
-		return target_torque
-	else:
-		return current_torque + clamp(torque_diff, -max_change, max_change)
-
-# 计算有效扭矩（考虑转动惯量）
-func calculate_effective_torque(torque: float) -> float:
-	var inertia = get_effective_inertia()
-	
-	# 如果转动惯量很小，限制最小扭矩以避免过度敏感
-	var min_effective_torque = 0.1
-	if abs(torque) < min_effective_torque and inertia < 1.0:
-		return 0.0
-	
-	return torque
-
-# 获取有效转动惯量
-func get_effective_inertia() -> float:
-	# 尝试从物理服务器获取真实的转动惯量
-	var body_rid = turret_basket.get_rid()
-	if body_rid.is_valid():
-		var body_state = PhysicsServer2D.body_get_direct_state(body_rid)
-		if body_state:
-			var inverse_inertia = body_state.inverse_inertia
-			if inverse_inertia > 0:
-				return 1.0 / inverse_inertia
-	
-	# 备用方案：使用质量估算
-	return turret_basket.mass * 2.0  # 简化估算
-
-# 更新旋转状态
-func update_rotation_state(delta: float):
-	# 基于实际物理模拟更新相对旋转
-	var actual_angular_velocity = turret_basket.angular_velocity
-	
-	# 积分得到相对旋转（考虑角加速度）
-	angular_acceleration = actual_angular_velocity - (relative_rot - turret_basket.rotation + rotation) / delta
-	relative_rot += actual_angular_velocity * delta + 0.5 * angular_acceleration * delta * delta
-	
-	# 更新炮塔篮子的旋转
-	turret_basket.rotation = relative_rot + rotation
-
-# 应用旋转限制
-func apply_rotation_limits(delta: float):
-	if not traverse:
-		return
-	
-	var min_angle = deg_to_rad(traverse[0])
-	var max_angle = deg_to_rad(traverse[1])
-	
-	# 检查是否接近限制
-	var near_min = relative_rot < min_angle + deg_to_rad(5)
-	var near_max = relative_rot > max_angle - deg_to_rad(5)
-	
-	if near_min or near_max:
-		# 计算限制扭矩
-		var limit_torque = calculate_limit_torque(min_angle, max_angle, delta)
-		if abs(limit_torque) > 0.001:
-			turret_basket.apply_torque(limit_torque)
-		
-		# 硬限制
-		relative_rot = clamp(relative_rot, min_angle, max_angle)
-
-# 计算限制区域扭矩
-func calculate_limit_torque(min_angle: float, max_angle: float, delta: float) -> float:
-	var limit_torque = 0.0
-	var overshoot = 0.0
-	
-	if relative_rot < min_angle:
-		overshoot = min_angle - relative_rot
-		# 强恢复力 + 阻尼
-		limit_torque = overshoot * rotation_stiffness * 5.0 - turret_basket.angular_velocity * rotation_damping * 3.0
-	elif relative_rot > max_angle:
-		overshoot = relative_rot - max_angle
-		limit_torque = -overshoot * rotation_stiffness * 5.0 - turret_basket.angular_velocity * rotation_damping * 3.0
-	
-	return clamp(limit_torque, -max_torque * 2.0, max_torque * 2.0)
-
-# 检查是否已瞄准
-func is_aimed(angle_diff: float) -> bool:
-	# 考虑角速度的瞄准判断
-	var angular_velocity_threshold = deg_to_rad(0.5)
-	var is_slow_enough = abs(turret_basket.angular_velocity) < angular_velocity_threshold
-	var is_close_enough = abs(angle_diff) < deg_to_rad(1)
-	
-	return is_close_enough and is_slow_enough
-
-# 更新调试信息
-func update_debug_info(angle_diff: float, torque: float, delta: float):
-	if Input.is_action_pressed("ui_accept"):
-		print("=== 炮塔控制系统 ===")
-		print("角度差: %.2f°" % rad_to_deg(angle_diff))
-		print("角速度: %.2f rad/s" % turret_basket.angular_velocity)
-		print("当前扭矩: %.2f N·m" % torque)
-		print("相对旋转: %.2f°" % rad_to_deg(relative_rot))
-		print("转动惯量: %.2f" % get_effective_inertia())
-		print("角加速度: %.2f rad/s²" % angular_acceleration)
-		print("==================")
-
-# 重置控制系统
-func reset_control_system():
-	current_torque = 0.0
-	last_angle_diff = 0.0
-	angular_acceleration = 0.0
 
 ###################### 炮塔Grid系统 ######################
 

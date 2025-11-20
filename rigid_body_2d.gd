@@ -11,4 +11,5 @@ func aim(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - global_rotation, -PI, PI)
 	var rotation_step = rotation_speed * delta
-	apply_torque(clamp(angle_diff, -rotation_step, rotation_step)* 1000000) 
+	apply_torque(clamp(angle_diff, -rotation_step, rotation_step)* 10) 
+	print(clamp(angle_diff, -rotation_step, rotation_step)* 10/10)
