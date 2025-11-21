@@ -20,8 +20,8 @@ func _ready():
 # ============================================================
 func initialize_inventory():
 	inventory.resize(slot_count)
-	for i in range(slot_count):
-		inventory[i] = {}
+	for item_index in range(slot_count):
+		inventory[item_index] = {}
 	add_item("57mmAP", 10)
 	add_item("PZGR75", 10)
 	add_item("122mmAPHE", 10)
@@ -51,20 +51,20 @@ func finalize_changes():
 # 物品交互接口（供 UI 调用）
 
 func add_item(id: String, count: int) -> bool:
-	
 	if ItemDB.get_item(id)["tag"] not in self.ACCEPT and "ALL" not in self.ACCEPT:
 		return false 
-	for i in range(len(inventory)):
-		if inventory[i].is_empty():
-			continue
-		if inventory[i]["id"] == id:
-			inventory[i]["count"] += count
-			return true
 	
 	var item_data = {"id": id, "count": count}
-	for i in range(len(inventory)):
-		if inventory[i].is_empty():
-			return place_item(i, item_data)
+	
+	for item_index in range(len(inventory)):
+		if inventory[item_index].is_empty():
+			inventory[item_index] = item_data
+			emit_signal("inventory_changed", self)
+			return true
+		elif inventory[item_index]["id"] == id:
+			inventory[item_index]["count"] += count
+			emit_signal("inventory_changed", self)
+			return true
 	
 	return false
 
@@ -73,44 +73,30 @@ func take_item(id: String, count: int) -> bool:
 	var total_item_stored:int = 0
 	var count_remain = count
 	#Check total numer in inventory
-	for i in range(len(inventory)):
-		if inventory[i].is_empty():
+	for item_index in range(len(inventory)):
+		if inventory[item_index].is_empty():
 			continue
-		elif inventory[i]["id"] == id:
-			total_item_stored += inventory[i]["count"]
+		elif inventory[item_index]["id"] == id:
+			total_item_stored += inventory[item_index]["count"]
 	if total_item_stored < count:
 		return false
 	
-	for i in range(len(inventory)):
-		if inventory[i].is_empty():
+	for item_index in range(len(inventory)):
+		if inventory[item_index].is_empty():
 			continue
-		elif inventory[i]["id"] == id:
-			if inventory[i]["count"] >= count_remain:
-				inventory[i]["count"] -= count_remain
-				if inventory[i]["count"] == 0:
-					inventory[i] = {}
+		elif inventory[item_index]["id"] == id:
+			if inventory[item_index]["count"] >= count_remain:
+				inventory[item_index]["count"] -= count_remain
+				if inventory[item_index]["count"] == 0:
+					inventory[item_index] = {}
 				emit_signal("inventory_changed", self)
 				return true
 			else:
-				count_remain -= inventory[i]["count"]
-				inventory[i] = {}
+				count_remain -= inventory[item_index]["count"]
+				inventory[item_index] = {}
 				emit_signal("inventory_changed", self)
 	
 	return false
-
-func place_item(slot_index: int, item: Dictionary) -> bool:
-	if slot_index < 0 or slot_index >= slot_count:
-		return false
-	if inventory[slot_index].is_empty():
-		inventory[slot_index] = item
-	else:
-		# 可堆叠：相同id则叠加数量
-		if inventory[slot_index].get("id", "") == item.get("id", ""):
-			inventory[slot_index]["count"] += item.get("count", 1)
-		else:
-			return false
-	emit_signal("inventory_changed", self)
-	return true
 
 func split_item(slot_index: int) -> Dictionary:
 	var item = get_item(slot_index)
@@ -126,8 +112,8 @@ func split_item(slot_index: int) -> Dictionary:
 
 
 func clear_all():
-	for i in range(slot_count):
-		inventory[i] = {}
+	for item_index in range(slot_count):
+		inventory[item_index] = {}
 	emit_signal("inventory_changed", self)
 
 # ============================================================
@@ -147,7 +133,7 @@ func check_overload() -> bool:
 # ============================================================
 func calculate_total_weight() -> float:
 	var total_weight = 0
-	for i in inventory:
-		total_weight += i.count * i.weight
+	for item_index in inventory:
+		total_weight += item_index.count * item_index.weight
 	return total_weight
 	
