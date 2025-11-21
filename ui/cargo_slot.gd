@@ -43,8 +43,6 @@ func _ready():
 # 显示逻辑
 # ============================================================
 func set_item(item: Dictionary) -> void:
-	print("⚡ set_item called on", self)
-	print("item:", item)
 	item_data = item
 	update_slot_display()
 
@@ -57,23 +55,19 @@ func update_slot_display() -> void:
 
 		var count = item_data.get("count", 1)
 		count_label.text = str(count)
-		count_label.visible = count > 1
+		count_label.visible = count > 0
 
 
 # ============================================================
 # 拖放交互
 # ============================================================
 func _gui_input(event: InputEvent) -> void:
-	# =============================
 	# 鼠标按键事件
-	# =============================
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 
-				# =====================================
 				# Ctrl + 左键 → 拆分物品（split half）
-				# =====================================
 				if Input.is_key_pressed(KEY_CTRL):
 					_split_item_half()
 					return  # 不继续执行拖拽
@@ -87,9 +81,7 @@ func _gui_input(event: InputEvent) -> void:
 				if is_dragging:
 					_end_drag()
 
-	# =============================
 	# 鼠标移动事件：拖拽更新
-	# =============================
 	elif event is InputEventMouseMotion and is_dragging:
 		_update_drag()
 
@@ -185,8 +177,8 @@ func _perform_drop(target_slot: Node) -> void:
 	var source_item = drag_source_item
 	var source_item_tag = ItemDB.get_item(source_item["id"])["tag"]
 	var target_item = target_slot.item_data if target_slot.item_data != null else {}
-	var target_item_tag = ItemDB.get_item(target_item["id"])["tag"] if target_item != {} else source_item_tag
 
+	#检查item是否能放入
 	if source_item_tag in target_slot.accept or "ALL" in target_slot.accept:
 		# 目标为空 → 直接放入
 		if (target_item == {} or target_item.is_empty()):
@@ -269,10 +261,9 @@ func _perform_drop(target_slot: Node) -> void:
 			else:
 				# already handled
 				pass
+	#不能放入，如果split需返还item
 	elif drag_is_split:
 		_return_item()
-
-
 
 func hide_current_icon() -> void:
 	item_icon.visible = false
