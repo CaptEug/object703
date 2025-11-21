@@ -439,9 +439,9 @@ func get_connection_point_by_index(index: int) -> Connector:
 		return available_points[index]
 	return null
 
-func attach_to_rigidbody(rigidbody: RigidBody2D, connector: TurretConnector = null, maintain_rotation: bool = true) -> TurretConnectorJoint:
+func attach_to_staticbody(rigidbody: StaticBody2D, connector: TurretConnector = null, maintain_rotation: bool = true) -> TurretConnectorJoint:
 	var connect_pos = connector.position if connector else Vector2.ZERO
-	return TurretConnectorJoint.connect_to_rigidbody(self, rigidbody, connect_pos, rigidbody.joint.node_a)
+	return TurretConnectorJoint.connect_to_staticbody(self, rigidbody, connect_pos, rigidbody.joint.node_a)
 
 # 断开所有与RigidBody的连接
 func detach_from_rigidbodies():

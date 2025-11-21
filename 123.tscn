@@ -5,6 +5,13 @@
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="3_p5yso"]
 [ext_resource type="Texture2D" uid="uid://brtjidrm0jx83" path="res://assets/icons/crosshair.png" id="3_quxkg"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8yvvm"]
+size = Vector2(64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tdbmg"]
+atlas = ExtResource("3_p5yso")
+region = Rect2(144, 64, 48, 48)
+
 [sub_resource type="GDScript" id="GDScript_8yvvm"]
 script/source = "extends RigidBody2D
 
@@ -22,13 +29,6 @@ func _physics_process(delta):
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xnhy2"]
 size = Vector2(96, 96)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8yvvm"]
-size = Vector2(64, 64)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_tdbmg"]
-atlas = ExtResource("3_p5yso")
-region = Rect2(144, 64, 48, 48)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_quxkg"]
 size = Vector2(16, 16)
 
@@ -41,20 +41,7 @@ size = Vector2(32, 32)
 position = Vector2(48, 48)
 texture = ExtResource("2_8yvvm")
 
-[node name="hull" type="RigidBody2D" parent="."]
-script = SubResource("GDScript_8yvvm")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="hull"]
-shape = SubResource("RectangleShape2D_xnhy2")
-
-[node name="PinJoint2D" type="PinJoint2D" parent="hull"]
-node_a = NodePath("..")
-node_b = NodePath("../../basket")
-
 [node name="basket" type="RigidBody2D" parent="."]
-inertia = 10.0
-linear_damp_mode = 1
-angular_damp_mode = 1
 script = ExtResource("1_xnhy2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="basket"]
@@ -62,6 +49,17 @@ shape = SubResource("RectangleShape2D_8yvvm")
 
 [node name="Sprite2D" type="Sprite2D" parent="basket"]
 texture = SubResource("AtlasTexture_tdbmg")
+
+[node name="hull" type="RigidBody2D" parent="basket"]
+collision_layer = 0
+collision_mask = 0
+script = SubResource("GDScript_8yvvm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="basket/hull"]
+shape = SubResource("RectangleShape2D_xnhy2")
+
+[node name="PinJoint2D" type="PinJoint2D" parent="basket/hull"]
+node_b = NodePath("../..")
 
 [node name="block" type="RigidBody2D" parent="."]
 position = Vector2(24, 24)
@@ -74,6 +72,9 @@ shape = SubResource("RectangleShape2D_quxkg")
 
 [node name="Sprite2D" type="Sprite2D" parent="block"]
 texture = ExtResource("3_quxkg")
+
+[node name="PinJoint2D" type="PinJoint2D" parent="block"]
+node_b = NodePath("..")
 
 [node name="block2" type="RigidBody2D" parent="."]
 position = Vector2(-24, 24)
@@ -88,7 +89,6 @@ shape = SubResource("RectangleShape2D_quxkg")
 texture = ExtResource("3_quxkg")
 
 [node name="PinJoint2D" type="PinJoint2D" parent="block2"]
-node_a = NodePath("../../basket")
 node_b = NodePath("..")
 
 [node name="block3" type="RigidBody2D" parent="."]
@@ -103,6 +103,9 @@ shape = SubResource("RectangleShape2D_quxkg")
 [node name="Sprite2D" type="Sprite2D" parent="block3"]
 texture = ExtResource("3_quxkg")
 
+[node name="PinJoint2D" type="PinJoint2D" parent="block3"]
+node_b = NodePath("..")
+
 [node name="block4" type="RigidBody2D" parent="."]
 position = Vector2(-24, -23)
 collision_layer = 2
@@ -114,6 +117,9 @@ shape = SubResource("RectangleShape2D_p5yso")
 
 [node name="Sprite2D" type="Sprite2D" parent="block4"]
 texture = ExtResource("3_quxkg")
+
+[node name="PinJoint2D" type="PinJoint2D" parent="block4"]
+node_b = NodePath("..")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(2, 2)

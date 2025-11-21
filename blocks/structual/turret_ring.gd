@@ -6,14 +6,16 @@ var turret_basket:RigidBody2D
 var joint:PinJoint2D
 var traverse:Array
 var max_torque:float
-var damping_ratio: float = 1
+var damping_ratio:float = 1
+var turret_inertia:float
 
 # 炮塔专用的grid系统
 var turret_grid := {}
 var turret_blocks := []
 var turret_size: Vector2i
 var total_mass:= 0.0
-var old_t_v         
+var old_t_v:float
+   
 
 # 炮塔旋转控制
 var is_turret_rotation_enabled: bool = true
@@ -36,61 +38,48 @@ func connect_aready():
 		joint.node_a = get_path()
 		joint.node_b = turret_basket.get_path()
 		turret_basket.joint = joint
+		turret_basket.turret_ring = self
 
 func _physics_process(delta):
-	## 只有在启用时才进行瞄准
-	if parent_vehicle and is_turret_rotation_enabled:
-		apply_turret_sync_torque(delta)
-		aim(delta, get_global_mouse_position())
-	else:
-		if turret_basket:
-			# 禁用时停止所有旋转
-			turret_basket.angular_velocity = 0
-			turret_basket.rotation = rotation
-	pass
+	if not parent_vehicle:
+		return
+	
+	turret_inertia = 1.0 / PhysicsServer2D.body_get_direct_state(turret_basket.get_rid()).inverse_inertia
+	
+	if is_finite(turret_inertia):
+		if is_turret_rotation_enabled:
+			apply_aim_torque(delta, get_global_mouse_position())
+		apply_sync_torque(delta)
 
-func aim(delta, target_pos):
+
+func apply_aim_torque(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
+	var rev_angvel = turret_basket.angular_velocity - angular_velocity
 	# 计算需要的扭矩
 	var torque = angle_diff * max_torque
-	var turret_inertia = 380
 	# 只在需要旋转时施加力
 	if abs(angle_diff) > deg_to_rad(1):
-		# apply damping ONLY if current rel_vel is toward the target
-		if sign(turret_basket.angular_velocity) == sign(angle_diff):
-			var damping_factor = 2 * sqrt(turret_inertia * max_torque)
-			torque -= turret_basket.angular_velocity * damping_factor
+		var damping_factor = 2 * sqrt(turret_inertia * max_torque)
+		torque -= rev_angvel * damping_factor
 		turret_basket.apply_torque(torque)
-	
-	# 返回是否瞄准
-	return abs(angle_diff) < deg_to_rad(1)
+	return torque
 
-func apply_turret_sync_torque(delta: float):
+func apply_sync_torque(delta: float):
 	var now_t_v = angular_velocity
-	
 	var angular_acceleration = (now_t_v - old_t_v) / delta
-	
-	var body_rid = turret_basket.get_rid()
-	if body_rid.is_valid():
-		var body_state = PhysicsServer2D.body_get_direct_state(body_rid)
-		if body_state:
-			var inverse_inertia = body_state.inverse_inertia
-			if inverse_inertia > 0:
-				var moment_of_inertia = 1.0 / inverse_inertia
-				
-				for block:Block in turret_blocks:
-					moment_of_inertia += turret_basket.to_local(block.to_global(Vector2.ZERO)).length_squared() * block.mass
-				
-				# 扭矩 = 角加速度 × 转动惯量
-				var torque = angular_acceleration * moment_of_inertia
-				turret_basket.apply_torque(torque)
-				# 保存当前角速度供下一帧使用
-				old_t_v = now_t_v
-				
-				return torque
+	# 扭矩 = 角加速度 × 转动惯量
+	var torque = angular_acceleration * turret_inertia
+	turret_basket.apply_torque(torque)
+	# 保存当前角速度供下一帧使用
+	old_t_v = now_t_v
+	return torque
 
 
+func get_turret_sync_velocity(delta):
+	var rid = turret_basket.get_rid()
+	#PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_ANGULAR_VELOCITY, angular_velocity)
+	turret_basket.hull_angvel = angular_velocity
 
 ###################### 炮塔Grid系统 ######################
 

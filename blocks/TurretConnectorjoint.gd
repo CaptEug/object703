@@ -8,7 +8,7 @@ extends PinJoint2D
 @export var rotation_damping: float = 200
 
 var block: Block
-var target_body: RigidBody2D
+var target_body: StaticBody2D
 var initial_global_position: Vector2
 var connector: TurretConnector
 var initial_distance: float = 0.0
@@ -22,7 +22,7 @@ func setup_joint():
 	bias = 1
 	disable_collision = true
 
-func setup(block_node: Block, target: RigidBody2D, connector_ref: TurretConnector):
+func setup(block_node: Block, target: StaticBody2D, connector_ref: TurretConnector):
 	block = block_node
 	target_body = target
 	connector = connector_ref
@@ -63,7 +63,7 @@ func apply_rotation_constraint(delta: float):
 	if abs(rotation_diff) < 0.001:
 		return
 	
-	var target_angular_velocity = target_body.angular_velocity
+	var target_angular_velocity = target_body.get_parent().angular_velocity
 	var angular_velocity_diff = target_angular_velocity - block.angular_velocity
 	
 	var restoration_torque = rotation_diff * rotation_stiffness * actual_inertia
@@ -97,24 +97,23 @@ func break_connection():
 	queue_free()
 
 # 保持原有参数不变的创建函数
-static func connect_to_rigidbody(block: Block, rigidbody: RigidBody2D, connector_ref: TurretConnector, node_a_path: NodePath, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
+static func connect_to_staticbody(block: Block, staticbody: StaticBody2D, connector_ref: TurretConnector, turret_ring: TurretRing, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
 	var joint = TurretConnectorJoint.new()
 	joint.lock_rotation = lock_rot
 	joint.maintain_position = maintain_pos
 	## 先设置所有属性，再添加为子节点
 	joint.node_a = block.get_path()
-	joint.node_b = rigidbody.get_path()
-	joint.setup(block, rigidbody, connector_ref)
+	joint.node_b = staticbody.get_path()
+	joint.setup(block, staticbody, connector_ref)
 	
 	# 最后添加为子节点
-	rigidbody.add_child(joint)
+	staticbody.add_child(joint)
 	
 	# 保持原有的连接关系管理
-	var turretring = rigidbody.get_node(node_a_path)
-	if turretring is TurretRing:
-		if not block.joint_connected_blocks.has(turretring):
-			block.joint_connected_blocks[joint] = turretring
-		if not turretring.joint_connected_blocks.has(block):
-			turretring.joint_connected_blocks[joint] = block
+	if turret_ring is TurretRing:
+		if not block.joint_connected_blocks.has(turret_ring):
+			block.joint_connected_blocks[joint] = turret_ring
+		if not turret_ring.joint_connected_blocks.has(block):
+			turret_ring.joint_connected_blocks[joint] = block
 	
 	return joint

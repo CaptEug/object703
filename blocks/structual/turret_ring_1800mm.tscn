@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://saiofmomjqe0"]
+[gd_scene load_steps=11 format=3 uid="uid://saiofmomjqe0"]
 
 [ext_resource type="Script" uid="uid://v4op8dl1ftml" path="res://blocks/structual/turret_ring_1800_mm.gd" id="1_pmo8s"]
 [ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_mo4t2"]
@@ -13,12 +13,14 @@ size = Vector2(48, 48)
 atlas = ExtResource("2_mo4t2")
 region = Rect2(96, 64, 48, 48)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wsjul"]
-size = Vector2(48, 48)
+[sub_resource type="CircleShape2D" id="CircleShape2D_txfcf"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_mo4t2"]
 atlas = ExtResource("2_mo4t2")
 region = Rect2(144, 64, 48, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4dn0s"]
+size = Vector2(48, 48)
 
 [node name="TurretRing1800mm" type="RigidBody2D"]
 center_of_mass_mode = 1
@@ -43,42 +45,49 @@ collision_mask = 4
 script = ExtResource("3_4dn0s")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="TurretBasket"]
-shape = SubResource("RectangleShape2D_wsjul")
+shape = SubResource("CircleShape2D_txfcf")
 
 [node name="Sprite2D" type="Sprite2D" parent="TurretBasket"]
 texture = SubResource("AtlasTexture_mo4t2")
 
-[node name="TurretConnector" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="StaticBody2D" type="StaticBody2D" parent="TurretBasket"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TurretBasket/StaticBody2D"]
+shape = SubResource("RectangleShape2D_4dn0s")
+
+[node name="TurretConnector" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(0, -16)
 location = Vector2i(1, 0)
 
-[node name="TurretConnector2" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector2" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(16, -16)
 location = Vector2i(2, 0)
 
-[node name="TurretConnector3" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector3" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(-16, 0)
 location = Vector2i(0, 1)
 
-[node name="TurretConnector4" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector4" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(-16, -16)
 
-[node name="TurretConnector5" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector5" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(0, 16)
 location = Vector2i(1, 2)
 
-[node name="TurretConnector6" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector6" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 location = Vector2i(1, 1)
 
-[node name="TurretConnector7" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector7" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(16, 0)
 location = Vector2i(2, 1)
 
-[node name="TurretConnector8" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector8" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(16, 16)
 location = Vector2i(2, 2)
 
-[node name="TurretConnector9" parent="TurretBasket" instance=ExtResource("4_txfcf")]
+[node name="TurretConnector9" parent="TurretBasket/StaticBody2D" instance=ExtResource("4_txfcf")]
 position = Vector2(-16, 16)
 location = Vector2i(0, 2)
 

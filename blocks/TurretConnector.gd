@@ -159,7 +159,7 @@ func is_attached_to_block() -> bool:
 	return result
 
 func is_attached_to_rigidbody() -> bool:
-	var rigidbody = get_parent_rigidbody()
+	var rigidbody = get_parent_staticbody()
 	var result = rigidbody != null
 	return result
 
@@ -186,11 +186,11 @@ func find_parent_block() -> Block:
 		parent = parent.get_parent()
 	return null
 
-func get_parent_rigidbody() -> RigidBody2D:
+func get_parent_staticbody() -> StaticBody2D:
 	var parent = get_parent()
-	if parent is RigidBody2D:
+	if parent is StaticBody2D:
 		if not parent is Block: 
-			return parent as RigidBody2D
+			return parent as StaticBody2D
 	return null
 
 func try_connect(other_connector: TurretConnector) -> bool:
@@ -218,12 +218,12 @@ func try_connect(other_connector: TurretConnector) -> bool:
 		return false
 	
 	var block = block_connector.find_parent_block()
-	var rigidbody = rigidbody_connector.get_parent_rigidbody()
+	var body = rigidbody_connector.get_parent_staticbody()
 	
 	if not block:
 		return false
 	
-	if not rigidbody:
+	if not body:
 		return false
 	
 	# 移动逻辑
@@ -234,7 +234,7 @@ func try_connect(other_connector: TurretConnector) -> bool:
 	connected_to = other_connector
 	other_connector.connected_to = self
 	
-	joint = TurretConnectorJoint.connect_to_rigidbody(block, rigidbody, block_connector, rigidbody.joint.node_a)
+	joint = TurretConnectorJoint.connect_to_staticbody(block, body, block_connector, body.get_parent().turret_ring)
 	
 	if joint:
 		other_connector.joint = joint
