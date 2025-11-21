@@ -68,9 +68,8 @@ func add_item(id: String, count: int) -> bool:
 	
 	return false
 
-
 func take_item(id: String, count: int) -> bool:
-	var total_item_stored:int = 0
+	var total_item_stored = 0
 	var count_remain = count
 	#Check total numer in inventory
 	for item_index in range(len(inventory)):
@@ -82,9 +81,7 @@ func take_item(id: String, count: int) -> bool:
 		return false
 	
 	for item_index in range(len(inventory)):
-		if inventory[item_index].is_empty():
-			continue
-		elif inventory[item_index]["id"] == id:
+		if inventory[item_index]["id"] == id:
 			if inventory[item_index]["count"] >= count_remain:
 				inventory[item_index]["count"] -= count_remain
 				if inventory[item_index]["count"] == 0:
@@ -102,14 +99,15 @@ func split_item(slot_index: int) -> Dictionary:
 	var item = get_item(slot_index)
 	if item.is_empty() or item.get("count", 1) <= 1:
 		return {}
+		
 	var half = int(item["count"] / 2)
 	item["count"] -= half
+	
 	var new_item = item.duplicate()
 	new_item["count"] = half
+	
 	emit_signal("inventory_changed", self)
 	return new_item
-	
-
 
 func clear_all():
 	for item_index in range(slot_count):
