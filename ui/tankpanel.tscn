@@ -45,7 +45,7 @@ script = ExtResource("2_b7f80")
 health_gradient = SubResource("Gradient_6e8cr")
 
 [node name="Marker2D" type="Marker2D" parent="."]
-position = Vector2(128, 128)
+position = Vector2(160, 160)
 
 [node name="CloseButton" type="TextureButton" parent="."]
 layout_mode = 0

@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://dawkb0e8tm4e8"]
+[gd_scene load_steps=10 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
 [ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/Editor/editormode.tscn" id="2_hie3q"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="3_hie3q"]
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_m5lm4"]
+[ext_resource type="PackedScene" uid="uid://bvbnqq014m5ku" path="res://ui/tankdex.tscn" id="4_iwiij"]
 [ext_resource type="PackedScene" uid="uid://bl2tikk55bsp1" path="res://vehicles/object2.tscn" id="7_hie3q"]
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scenes/day&night.gd" id="7_iwiij"]
 
@@ -30,6 +31,20 @@ grow_vertical = 0
 visible = false
 
 [node name="Hud" parent="CanvasLayer" instance=ExtResource("3_hie3q")]
+
+[node name="TankDex" parent="CanvasLayer" instance=ExtResource("4_iwiij")]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -280.0
+offset_right = 320.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")

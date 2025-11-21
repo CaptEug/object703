@@ -1,4 +1,4 @@
-extends Control
+extends FloatingPanel
 
 const BLOCK_PATHS = {
 	"Auxiliary": "res://blocks/auxiliary/",
@@ -9,7 +9,7 @@ const BLOCK_PATHS = {
 }
 
 @onready var tree = $Tree
-@onready var description_textbox = $Panel/RichTextLabel
+@onready var description_textbox = $RichTextLabel
 var selected_item:TreeItem
 var selected_block:Block
 
@@ -36,7 +36,7 @@ func prepare_data():
 		for scene in get_scenes_from_folder(BLOCK_PATHS[category]):
 			var block = scene.instantiate()
 			if block is Block:
-				#block.init()
+				block.freeze = true
 				var item = tree.create_item(category_nodes[category])
 				item.set_text(0, block.block_name)
 				#item.set_icon(0, load(block.icons["normal"]))
@@ -57,9 +57,9 @@ func _on_tree_item_selected():
 	
 	if selected.get_metadata(0) is Block:
 		if selected_block:
-			$Panel/Marker2D.remove_child(selected_block)
+			$Marker2D.remove_child(selected_block)
 		selected_block = selected.get_metadata(0)
-		$Panel/Marker2D.add_child(selected_block)
+		$Marker2D.add_child(selected_block)
 		selected_item = tree.get_selected()
 		
 		description_textbox.clear()
@@ -72,3 +72,7 @@ func _on_tree_item_selected():
 		
 		if selected_block is Powerpack:
 			description_textbox.append_text("POWER: "+str(selected_block.MAX_POWER)+"hp\n")
+
+
+func _on_close_button_pressed():
+	visible = false

@@ -40,7 +40,7 @@ func connect_aready():
 func _physics_process(delta):
 	## 只有在启用时才进行瞄准
 	if parent_vehicle and is_turret_rotation_enabled:
-		#apply_turret_sync_torque(delta)
+		apply_turret_sync_torque(delta)
 		aim(delta, get_global_mouse_position())
 	else:
 		if turret_basket:

@@ -1,11 +1,21 @@
-[gd_resource type="Theme" load_steps=42 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=40 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="3_vwcpp"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4w2ry"]
-bg_color = Color(0.6, 0.6, 0.6, 0)
+[sub_resource type="AtlasTexture" id="AtlasTexture_edc7y"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_rxu7l"]
+texture = SubResource("AtlasTexture_edc7y")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cet5l"]
 
@@ -178,25 +188,8 @@ region = Rect2(224, 16, 16, 16)
 atlas = ExtResource("3_vwcpp")
 region = Rect2(240, 16, 16, 16)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_we4p1"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(96, 0, 48, 48)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6vqaq"]
-texture = SubResource("AtlasTexture_we4p1")
-texture_margin_left = 16.0
-texture_margin_top = 16.0
-texture_margin_right = 16.0
-texture_margin_bottom = 6.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_p64gu"]
-atlas = ExtResource("1_4w2ry")
-region = Rect2(48, 0, 48, 48)
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4w2ry"]
-texture = SubResource("AtlasTexture_p64gu")
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i6524"]
+texture = SubResource("AtlasTexture_edc7y")
 texture_margin_left = 16.0
 texture_margin_top = 16.0
 texture_margin_right = 16.0
@@ -238,7 +231,7 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
 [resource]
-AcceptDialog/styles/panel = SubResource("StyleBoxFlat_4w2ry")
+AcceptDialog/styles/panel = SubResource("StyleBoxTexture_rxu7l")
 Button/fonts/font = ExtResource("3_4w2ry")
 Button/styles/focus = SubResource("StyleBoxTexture_cet5l")
 Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
@@ -277,8 +270,7 @@ Tree/colors/guide_color = Color(0, 0.701961, 0, 0)
 Tree/fonts/font = ExtResource("3_4w2ry")
 Tree/icons/arrow = SubResource("AtlasTexture_6vqaq")
 Tree/icons/arrow_collapsed = SubResource("AtlasTexture_2u1il")
-Tree/styles/hovered = SubResource("StyleBoxTexture_6vqaq")
-Tree/styles/panel = SubResource("StyleBoxTexture_4w2ry")
+Tree/styles/panel = SubResource("StyleBoxTexture_i6524")
 Tree/styles/selected_focus = SubResource("StyleBoxFlat_vwcpp")
 Window/colors/title_color = Color(0.129412, 0.258824, 0.376471, 1)
 Window/fonts/title_font = ExtResource("3_4w2ry")
