@@ -47,85 +47,19 @@
 				"blocks": {
 					"1": {
 						"base_pos": [
-							2,
-							2
-						],
-						"name": "armor",
-						"path": "res://blocks/structual/armor.tscn",
-						"rotation": [
-							0.0
-						]
-					},
-					"2": {
-						"base_pos": [
-							2,
-							0
-						],
-						"name": "armor",
-						"path": "res://blocks/structual/armor.tscn",
-						"rotation": [
-							0.0
-						]
-					},
-					"3": {
-						"base_pos": [
 							0,
-							0
-						],
-						"name": "armor",
-						"path": "res://blocks/structual/armor.tscn",
-						"rotation": [
-							0.0
-						]
-					},
-					"4": {
-						"base_pos": [
-							0,
-							2
-						],
-						"name": "armor",
-						"path": "res://blocks/structual/armor.tscn",
-						"rotation": [
-							0.0
-						]
-					},
-					"5": {
-						"base_pos": [
-							2,
-							1
-						],
-						"name": "armor",
-						"path": "res://blocks/structual/armor.tscn",
-						"rotation": [
-							0
-						]
-					},
-					"6": {
-						"base_pos": [
-							0,
-							1
-						],
-						"name": "armor",
-						"path": "res://blocks/structual/armor.tscn",
-						"rotation": [
-							0
-						]
-					},
-					"7": {
-						"base_pos": [
-							1,
-							-5
+							7
 						],
 						"name": "122mm D-52T cannon",
 						"path": "res://blocks/firepower/d_52t.tscn",
 						"rotation": [
-							0
+							180
 						]
 					}
 				},
 				"grid_size": [
-					3,
-					8
+					8,
+					1
 				]
 			}
 		},

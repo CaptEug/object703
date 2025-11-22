@@ -135,6 +135,13 @@ func shoot(muz:Marker2D, shell_picked:PackedScene):
 	shell.apply_impulse(dir * muzzle_energy)
 	#To simulate recoil force
 	apply_impulse(Vector2.DOWN.rotated(gun_rotation) * muzzle_energy * 10)
+	if on_turret:
+		var block_grid = on_turret.get_turret_block_grid(self)
+		var pos = (on_turret.calculate_block_center(block_grid) - Vector2(on_turret.size) * 8).rotated(on_turret.turret_basket.global_rotation)
+		var t_dir = Vector2.DOWN.rotated(gun_rotation)
+		print("inpluse pos: " + str(pos))
+		print("inpluse dir: " + str(Vector2.DOWN.rotated(gun_rotation)))
+		on_turret.turret_basket.apply_impulse(t_dir * muzzle_energy * 1000, pos)
 
 func start_reload():
 	loading = true

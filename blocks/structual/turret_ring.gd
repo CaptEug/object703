@@ -76,10 +76,6 @@ func apply_sync_torque(delta: float):
 	return torque
 
 
-func get_turret_sync_velocity(delta):
-	var rid = turret_basket.get_rid()
-	#PhysicsServer2D.body_set_state(rid, PhysicsServer2D.BODY_STATE_ANGULAR_VELOCITY, angular_velocity)
-	turret_basket.hull_angvel = angular_velocity
 
 ###################### 炮塔Grid系统 ######################
 
@@ -126,6 +122,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			var global_pos = block.global_position
 			var global_rot = block.global_rotation
 			parent_vehicle._add_block(block, global_pos, grid_positions)
+			block.on_turret = self
 			block.global_position = global_pos  # 保持全局位置不变
 			block.global_rotation = global_rot  # 保持全局旋转不变
 			
@@ -346,8 +343,7 @@ func reset_turret_rotation():
 	"""炮塔回正"""
 	if turret_basket and is_instance_valid(turret_basket):
 		# 确保炮塔回正到0度
-		if turret_basket:
-			turret_basket.rotation = 0
+		turret_basket.rotation = 0
 		# 如果有基础旋转角度，也重置
 		if has_method("set_base_rotation_degree"):
 			turret_basket.base_rotation_degree = 0

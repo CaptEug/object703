@@ -14,7 +14,7 @@ var global_grid_pos
 var mouse_inside:bool
 var base_rotation_degree = 0
 var cost:Dictionary = {}
-var turret_compatible:bool
+var on_turret:TurretRing
 var functioning:bool = true
 var destroyed:bool
 var sprite:Sprite2D

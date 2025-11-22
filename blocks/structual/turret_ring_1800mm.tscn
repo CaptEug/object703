@@ -14,6 +14,7 @@ atlas = ExtResource("2_mo4t2")
 region = Rect2(96, 64, 48, 48)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_txfcf"]
+radius = 16.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_mo4t2"]
 atlas = ExtResource("2_mo4t2")

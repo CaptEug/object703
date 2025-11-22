@@ -130,22 +130,21 @@ func _add_block(block: Block,local_pos = null, grid_positions = null):
 		# 添加方块到车辆
 		blocks.append(block)
 		total_blocks.append(block)
-		block.global_grid_pos = get_rectangle_corners(grid_positions)
+		block.global_grid_pos = get_rectangle_center(grid_positions)
 		
 		if block is Track:
 			tracks.append(block)
 			track_target_forces[block] = 0.0
 			track_current_forces[block] = 0.0
-		elif block is Powerpack:
+		if block is Powerpack:
 			powerpacks.append(block)
-		elif block is Command:
+		if block is Command:
 			commands.append(block)
-		elif block is Ammorack:
+		if block is Ammorack:
 			ammoracks.append(block)
-			emit_signal("cargo_changed")
-		elif block is Fueltank:
+		if block is Fueltank:
 			fueltanks.append(block)
-		elif block is Cargo:
+		if block is Cargo:
 			cargos.append(block)
 			emit_signal("cargo_changed")
 		for pos in grid_positions:
@@ -182,7 +181,6 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		commands.erase(block)
 	if block in ammoracks:
 		ammoracks.erase(block)
-		emit_signal("cargo_changed")
 	if block in fueltanks:
 		fueltanks.erase(block)
 	if block in cargos:
@@ -315,7 +313,7 @@ func load_from_blueprint(bp: Dictionary):
 					else:
 						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
 					target_grid.append(grid_pos)
-			var local_pos = get_rectangle_corners(target_grid)
+			var local_pos = get_rectangle_center(target_grid)
 			await _add_block(block, local_pos, target_grid)
 			loaded_blocks[block_id] = block
 	
@@ -371,7 +369,7 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 							local_pos = local_base_pos + Vector2i(x, y)
 					turret_local_positions.append(local_pos)
 			
-			var turretblock_pos = get_rectangle_corners(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
+			var turretblock_pos = get_rectangle_center(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
 			# 将块添加到炮塔
 			var world_pos = turret.to_global(turretblock_pos)
 			# 设置块的位置和旋转
@@ -386,7 +384,7 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 	update_vehicle()
 
 
-func get_rectangle_corners(grid_data):
+func get_rectangle_center(grid_data):
 	if grid_data.is_empty():
 		return []
 	
@@ -409,9 +407,9 @@ func get_rectangle_corners(grid_data):
 	var vc_1 = Vector2(min_x * GRID_SIZE, min_y * GRID_SIZE)
 	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE, max_y * GRID_SIZE + GRID_SIZE)
 	
-	var pos = (vc_1 + vc_2)/2
+	var center = (vc_1 + vc_2)/2
 	
-	return pos
+	return center
 
 
 func get_rotation_angle(dir: String) -> float:
@@ -459,7 +457,7 @@ func calculate_center_of_mass() -> Vector2:
 				if has_calculated.get(body.get_instance_id(), false):
 					continue
 				var rid = get_block_grid(body)
-				var global_com:Vector2 = get_rectangle_corners(rid)
+				var global_com:Vector2 = get_rectangle_center(rid)
 				if body is TurretRing:
 					weighted_sum += global_com * body.total_mass
 					total_mass += body.total_mass
@@ -484,7 +482,7 @@ func get_global_mass_center() ->Vector2:
 	if first_block is Block:
 		var first_rotation = deg_to_rad(rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree)
 			
-		var first_position = get_rectangle_corners(first_gird)
+		var first_position = get_rectangle_center(first_gird)
 	
 		if first_block:
 				
@@ -498,26 +496,6 @@ func get_global_mass_center() ->Vector2:
 	
 	return global_center_of_mass
 
-func calculate_center_of_mass_() -> Vector2:
-	var total_mass := 0.0
-	var weighted_sum := Vector2.ZERO
-	var has_calculated := {}
-	for grid_pos in grid:
-		if  grid[grid_pos] != null:
-			var body: RigidBody2D = grid[grid_pos]
-			if blocks.has(body):
-				if has_calculated.get(body.get_instance_id(), false):
-					continue
-				var rid = get_block_grid(body)
-				var global_com:Vector2 = get_rectangle_corners(rid)
-				if body is TurretRing:
-					weighted_sum += global_com * body.total_mass
-					total_mass += body.total_mass
-				else:
-					weighted_sum += global_com * body.mass
-					total_mass += body.mass
-				has_calculated[body.get_instance_id()] = true
-	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
@@ -530,7 +508,7 @@ func calculate_balanced_forces():
 			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
 			var positions_grid = get_block_grid(track)
 			thrust_points.append({
-				"position": get_rectangle_corners(positions_grid), # 相对位置
+				"position": get_rectangle_center(positions_grid), # 相对位置
 				"direction": dir,
 				"track": track
 			})
@@ -614,7 +592,7 @@ func calculate_rotation_forces():
 			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
 			var positions_grid = get_block_grid(track)
 			thrust_points.append({
-				"position": get_rectangle_corners(positions_grid),
+				"position": get_rectangle_center(positions_grid),
 				"direction": dir,
 				"track": track
 			})
@@ -964,7 +942,7 @@ func _process_block_connections_first(block: Block, local_pos, target_grid):
 	# 先将block添加到场景（但不添加到vehicle的blocks数组）
 	add_child(block)
 	block.position = local_pos
-	block.global_grid_pos = get_rectangle_corners(target_grid)
+	block.global_grid_pos = get_rectangle_center(target_grid)
 	
 	# 等待连接处理完成
 	await block.connections_processed
