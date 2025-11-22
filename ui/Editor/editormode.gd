@@ -1,3 +1,4 @@
+class_name TankEditor
 extends Control
 
 # === 颜色配置变量 ===
@@ -14,8 +15,7 @@ extends Control
 @onready var name_input = $Panel/NameInput
 @onready var error_label = $SaveDialog/ErrorLabel
 @onready var recycle_button = $Panel/DismantleButton
-@onready var load_button = $Panel/LoadButton
-@onready var repair_buttom = $Panel/RepairButton
+@onready var repair_button = $Panel/RepairButton
 @onready var mode_button = $Panel/ModeButton
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
@@ -35,9 +35,7 @@ const BLOCK_PATHS = {
 	"Auxiliary": "res://blocks/auxiliary/"
 }
 
-const BLUEPRINT = {
-	"BLUEPRINT":"res://vehicles/blueprint/"
-}
+const BLUEPRINT_PATH = "res://vehicles/blueprint/"
 
 # 编辑系统实例
 var hull_editing_system: HullEditingSystem
@@ -45,7 +43,6 @@ var turret_editing_system: TurretEditingSystem
 
 # UI数据
 var item_lists = {}
-var original_tab_names := []
 var is_ui_interaction: bool = false
 
 # 编辑器状态变量
@@ -83,23 +80,17 @@ func _ready():
 	save_dialog.close_requested.connect(_on_save_canceled)
 	name_input.text_changed.connect(_on_name_input_changed)
 	recycle_button.pressed.connect(_on_recycle_button_pressed)
-	repair_buttom.pressed.connect(_on_repair_button_pressed)
+	repair_button.pressed.connect(_on_repair_button_pressed)
 	mode_button.pressed.connect(_on_mode_button_pressed)
 	create_tabs()
 	
 	save_dialog.hide()
 	error_label.hide()
 	
-	var connect_result = vehicle_saved.connect(_on_vehicle_saved)
-	if connect_result == OK:
-		print("✅ vehicle_saved Signal connected successfully")
-	else:
-		print("❌ vehicle_saved 信号连接失败，错误代码:", connect_result)
-	
+	vehicle_saved.connect(_on_vehicle_saved)
 	update_recycle_button()
 	load_all_blocks()
 	_create_com_marker()
-	call_deferred("initialize_editor")
 	update_vehicle_info_display()
 
 # === UI管理 ===
@@ -125,10 +116,6 @@ func create_tabs():
 	
 	for tab_name in item_lists:
 		item_lists[tab_name].item_selected.connect(_on_item_selected.bind(tab_name))
-	
-	original_tab_names = []
-	for i in range(tab_container.get_tab_count()):
-		original_tab_names.append(tab_container.get_tab_title(i))
 
 func create_tab_with_itemlist(tab_name: String):
 	var item_list = ItemList.new()
@@ -151,7 +138,6 @@ func _create_com_marker():
 	
 	com_marker = Sprite2D.new()
 	
-	# 设置纹理
 	if com_texture:
 		if com_marker_region != Rect2(0, 0, 0, 0):
 			var atlas_texture = AtlasTexture.new()
@@ -170,28 +156,17 @@ func _create_com_marker():
 func _update_com_marker():
 	if is_editing and selected_vehicle and show_center_of_mass:
 		com_marker.visible = true
-		# 获取车辆的世界重心坐标
-		com_marker.global_position = pos_to_UI(selected_vehicle)
+		com_marker.global_position = _get_com_ui_position()
 	else:
 		com_marker.visible = false
 
-func pos_to_UI(vehicle: Vehicle) -> Vector2:
-	if not vehicle or not camera:
-		return Vector2.ZERO
-	
-	# 获取车辆质心的全局世界坐标
-	var world_com: Vector2 = vehicle.get_global_mass_center()
-	
+func _get_com_ui_position() -> Vector2:
+	var world_com: Vector2 = selected_vehicle.get_global_mass_center()
 	var camera_global_xform: Transform2D = camera.get_global_transform()
-	
 	var relative_to_camera: Vector2 = camera_global_xform.affine_inverse() * world_com
-	
 	relative_to_camera *= camera.zoom
-	
 	var viewport_center: Vector2 = get_viewport().size / 2
-	var target_pos: Vector2 = viewport_center + relative_to_camera
-	return target_pos
-
+	return viewport_center + relative_to_camera
 
 func load_all_blocks():
 	var all_blocks = []
@@ -253,11 +228,7 @@ func update_description(scene_path: String):
 	var scene = load(scene_path)
 	var block = scene.instantiate()
 	if block:
-		description_label.add_theme_font_size_override("normal_font_size", 16)
-		description_label.add_theme_font_size_override("bold_font_size", 16)
-		description_label.add_theme_font_size_override("italics_font_size", 16)
-		description_label.add_theme_font_size_override("bold_italics_font_size", 16)
-		description_label.add_theme_font_size_override("mono_font_size", 16)
+		_set_font_sizes(16)
 		
 		description_label.clear()
 		description_label.append_text("[b]%s[/b]\n\n" % block.block_name)
@@ -267,53 +238,47 @@ func update_description(scene_path: String):
 			description_label.append_text("DESCRIPTION: %s\n" % block.get_description())
 		block.queue_free()
 
+func _set_font_sizes(size: int):
+	var font_sizes = ["normal_font_size", "bold_font_size", "italics_font_size", "bold_italics_font_size", "mono_font_size"]
+	for font_size in font_sizes:
+		description_label.add_theme_font_size_override(font_size, size)
+
 # === 车辆信息显示 ===
 func update_vehicle_info_display():
 	if not is_editing or not selected_vehicle:
 		show_editor_info()
 		return
 	
-	description_label.add_theme_font_size_override("normal_font_size", 8)
-	description_label.add_theme_font_size_override("bold_font_size", 8)
-	description_label.add_theme_font_size_override("italics_font_size", 8)
-	description_label.add_theme_font_size_override("bold_italics_font_size", 8)
-	description_label.add_theme_font_size_override("mono_font_size", 8)
+	_set_font_sizes(8)
 	
-	var stats = calculate_vehicle_stats()
+	var stats = _calculate_vehicle_stats()
 	
 	description_label.clear()
 	description_label.append_text("Name: %s\n" % (selected_vehicle.vehicle_name if selected_vehicle.vehicle_name else "Unnamed"))
 	description_label.append_text("ID: %s\n\n" % selected_vehicle.name)
 	description_label.append_text("Weight: %.1f T\n\n" % stats.total_weight)
-	description_label.append_text("MAX Engne Power: %.1f kN\n\n" % stats.total_engine_power)
+	description_label.append_text("MAX Engine Power: %.1f kN\n\n" % stats.total_engine_power)
 	description_label.append_text("Power/Weight: %.2f kN/T\n\n" % stats.power_to_weight_ratio)
 
-func calculate_vehicle_stats() -> Dictionary:
+func _calculate_vehicle_stats() -> Dictionary:
 	if not selected_vehicle:
 		return {}
 	
 	var total_weight := 0.0
 	var total_engine_power := 0.0
-	var total_resource_consumption := {}
 	
 	for block in selected_vehicle.blocks:
 		if is_instance_valid(block):
 			total_weight += block.mass
 			if block is Powerpack:
 				total_engine_power += block.max_power
-			total_resource_consumption = block.cost
 	
-	var power_to_weight_ratio = 0.0
-	if total_weight > 0:
-		power_to_weight_ratio = total_engine_power / total_weight
+	var power_to_weight_ratio = total_engine_power / total_weight if total_weight > 0 else 0.0
 	
 	return {
 		"total_weight": total_weight,
 		"total_engine_power": total_engine_power,
-		"power_to_weight_ratio": power_to_weight_ratio,
-		"resource_consumption": total_resource_consumption,
-		"fuel_capacity": selected_vehicle.total_fuel_cap,
-		"current_fuel": selected_vehicle.total_fuel
+		"power_to_weight_ratio": power_to_weight_ratio
 	}
 
 func show_editor_info():
@@ -338,86 +303,82 @@ func show_editor_info():
 
 # === 输入处理 ===
 func _input(event):
-	# B键切换编辑模式
-	if event is InputEventKey and event.pressed and event.keycode == KEY_B:
-		if is_editing:
-			exit_editor_mode()
-			if turret_editing_system.current_ghost_block:
-				turret_editing_system.cancel_placement()
-			if hull_editing_system.current_ghost_block:
-				hull_editing_system.cancel_placement()
-		else:
-			if selected_vehicle == null:
-				find_and_select_vehicle()
-			if selected_vehicle:
-				enter_editor_mode(selected_vehicle)
-			else:
-				print("错误: 未找到可编辑的车辆")
+	if event is InputEventKey and event.pressed:
+		_handle_key_input(event)
+	elif event is InputEventMouseButton and event.pressed:
+		_handle_mouse_input(event)
+
+func _handle_key_input(event: InputEventKey):
+	match event.keycode:
+		KEY_B:
+			_toggle_edit_mode()
+		KEY_ESCAPE:
+			_handle_escape_key()
+		KEY_R:
+			_rotate_ghost_block()
+		KEY_X:
+			_toggle_recycle_mode()
+		KEY_T:
+			if is_editing and selected_vehicle:
+				toggle_blueprint_display()
+		KEY_N:
+			if not is_editing:
+				create_new_vehicle()
+		KEY_F:
+			if is_editing and selected_vehicle and is_showing_blueprint:
+				repair_blueprint_missing_blocks()
+
+func _handle_mouse_input(event: InputEventMouseButton):
+	match event.button_index:
+		MOUSE_BUTTON_LEFT:
+			_handle_left_click()
+		MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE:
+			_handle_right_click()
+
+func _handle_left_click():
+	if is_ui_interaction or get_viewport().gui_get_hovered_control():
 		return
 	
-	# ESC键取消操作
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		if turret_editing_system.is_turret_editing_mode:
-			turret_editing_system.exit_turret_editing_mode()
-			return
-		hull_editing_system.cancel_placement()
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	var clicked_block = get_block_at_position(global_mouse_pos)
 	
-	# 其他快捷键处理
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_R:
-				if hull_editing_system.current_ghost_block:
-					hull_editing_system.rotate_ghost_connection()
-				elif turret_editing_system.current_ghost_block:
-					turret_editing_system.rotate_ghost_connection()
-			KEY_X:
-				if is_recycle_mode:
-					exit_recycle_mode()
-				else:
-					enter_recycle_mode()
-			KEY_T:
-				if is_editing and selected_vehicle:
-					toggle_blueprint_display()
-			KEY_N:
-				if not is_editing:
-					create_new_vehicle()
-			KEY_F:
-				if is_editing and selected_vehicle and is_showing_blueprint:
-					repair_blueprint_missing_blocks()
+	if clicked_block is TurretRing and not is_recycle_mode:
+		_handle_turret_click(clicked_block)
+	elif not turret_editing_system.is_turret_editing_mode:
+		hull_editing_system.handle_left_click()
+	else:
+		turret_editing_system.handle_left_click()
 
-	# 鼠标按键处理
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				MOUSE_BUTTON_LEFT:
-					var mouse_pos = get_viewport().get_mouse_position()  # 使用 get_viewport()
-					var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-					var clik_block = get_block_at_position(global_mouse_pos)
-					if clik_block is TurretRing and not is_recycle_mode:
-						if turret_editing_system.current_editing_turret == null:
-							turret_editing_system.current_editing_turret = clik_block
-							switch_to_turret_mode()
-						elif clik_block != turret_editing_system.current_editing_turret and turret_editing_system.current_ghost_block == null:
-							switch_to_vehicle_mode()
-							turret_editing_system.current_editing_turret = clik_block
-							switch_to_turret_mode()
-					if not turret_editing_system.is_turret_editing_mode:
-						if is_ui_interaction or get_viewport().gui_get_hovered_control():
-							return
-						hull_editing_system.handle_left_click()
-					else:
-						turret_editing_system.handle_left_click()
-				MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE:
-					if is_recycle_mode:
-						exit_recycle_mode()
-					else:
-						if turret_editing_system.is_turret_editing_mode and turret_editing_system.current_ghost_block == null:
-							turret_editing_system.exit_turret_editing_mode()
-						elif not turret_editing_system.current_ghost_block == null:
-								if turret_editing_system.is_turret_editing_mode:
-									turret_editing_system.cancel_placement()
-						else:
-							hull_editing_system.cancel_placement()
+func _handle_turret_click(turret: TurretRing):
+	if turret_editing_system.current_editing_turret == null:
+		turret_editing_system.current_editing_turret = turret
+		switch_to_turret_mode()
+	elif turret != turret_editing_system.current_editing_turret and turret_editing_system.current_ghost_block == null:
+		switch_to_vehicle_mode()
+		turret_editing_system.current_editing_turret = turret
+		switch_to_turret_mode()
+
+func _handle_right_click():
+	if turret_editing_system.is_turret_editing_mode and turret_editing_system.current_ghost_block == null:
+		turret_editing_system.exit_turret_editing_mode()
+	elif turret_editing_system.current_ghost_block != null:
+		if turret_editing_system.is_turret_editing_mode:
+			turret_editing_system.cancel_placement()
+	else:
+		hull_editing_system.cancel_placement()
+
+func _handle_escape_key():
+	if turret_editing_system.is_turret_editing_mode:
+		turret_editing_system.exit_turret_editing_mode()
+		return
+	hull_editing_system.cancel_placement()
+
+func _rotate_ghost_block():
+	if hull_editing_system.current_ghost_block:
+		hull_editing_system.rotate_ghost_connection()
+	elif turret_editing_system.current_ghost_block:
+		turret_editing_system.rotate_ghost_connection()
 
 func _process(delta):
 	if is_editing and selected_vehicle:
@@ -447,46 +408,32 @@ func switch_to_turret_mode():
 	if not is_editing or not selected_vehicle:
 		return
 	
-	print("=== 切换到炮塔模式 ===")
-	
 	if is_recycle_mode:
 		exit_recycle_mode()
 	
-	if hull_editing_system.current_ghost_block:
-		hull_editing_system.current_ghost_block.queue_free()
-		hull_editing_system.current_ghost_block = null
+	hull_editing_system.cancel_placement()
 	
 	is_vehicle_mode = false
-	print("is_vehicle_mode 设置为: ", is_vehicle_mode)
 	
 	var turrets = get_turret_blocks()
 	if turrets.is_empty():
-		print("❌ 车辆上没有找到炮塔，无法进入炮塔编辑模式")
 		is_vehicle_mode = true
 		update_mode_button_display()
 		return
 	
 	var first_turret = turrets[0]
-	print("🎯 找到炮塔，进入编辑模式:", first_turret.block_name)
 	turret_editing_system.enter_turret_editing_mode(first_turret)
-	
-	print("切换到炮塔编辑模式完成")
+	update_mode_button_display()
 
 func switch_to_vehicle_mode():
 	if not is_editing:
 		return
 	
-	print("=== 切换回车体模式 ===")
-	
 	if turret_editing_system.is_turret_editing_mode:
 		turret_editing_system.exit_turret_editing_mode()
 	
 	is_vehicle_mode = true
-	print("is_vehicle_mode 设置为: ", is_vehicle_mode)
-	
 	update_mode_button_display()
-	
-	print("切换回车体模式完成")
 
 func update_mode_button_display():
 	if not mode_button:
@@ -499,6 +446,9 @@ func update_mode_button_display():
 
 # === 删除模式 ===
 func _on_recycle_button_pressed():
+	_toggle_recycle_mode()
+
+func _toggle_recycle_mode():
 	if is_recycle_mode:
 		exit_recycle_mode()
 	else:
@@ -572,18 +522,15 @@ func update_recycle_button():
 		recycle_button.remove_theme_color_override("font_color")
 
 # === 编辑器模式功能 ===
-func initialize_editor():
-	pass
-
 func find_and_select_vehicle():
 	var testground = get_tree().current_scene
 	if testground:
 		var canvas_layer = testground.find_child("CanvasLayer", false, false)
 		if canvas_layer:
 			var panels = canvas_layer.get_children()
-			for item in range(panels.size() - 1, -1, -1):
-				if panels[item] is FloatingPanel and panels[item].selected_vehicle != null and panels[item].visible == true:
-					panel_instance = panels[item]
+			for i in range(panels.size() - 1, -1, -1):
+				if panels[i] is FloatingPanel and panels[i].selected_vehicle != null and panels[i].visible == true:
+					panel_instance = panels[i]
 					break
 	if testground and panel_instance:
 		if panel_instance.selected_vehicle:
@@ -602,17 +549,7 @@ func enter_editor_mode(vehicle: Vehicle):
 	if not hull_editing_system.is_new_vehicle:
 		hull_editing_system.is_first_block = false
 	
-	# 清理无效块
-	for block in selected_vehicle.get_children():
-		if block is Block:
-			if block.collision_layer != 1:
-				continue
-			var have_com = false
-			for connect_block in block.get_all_connected_blocks():
-				if connect_block is Command or block is Command:
-					have_com = true
-			if have_com == false:
-				selected_vehicle.remove_block(block, true)
+	_cleanup_invalid_blocks()
 	
 	camera.focus_on_vehicle(selected_vehicle)
 	camera.sync_rotation_to_vehicle(selected_vehicle)
@@ -630,6 +567,27 @@ func enter_editor_mode(vehicle: Vehicle):
 	toggle_blueprint_display()
 	update_vehicle_info_display()
 
+func _cleanup_invalid_blocks():
+	for block in selected_vehicle.get_children():
+		if block is Block and block.collision_layer == 1:
+			var has_command = false
+			for connected_block in block.get_all_connected_blocks():
+				if connected_block is Command or block is Command:
+					has_command = true
+			if not has_command:
+				selected_vehicle.remove_block(block, true)
+
+func _toggle_edit_mode():
+	if is_editing:
+		exit_editor_mode()
+		hull_editing_system.cancel_placement()
+		turret_editing_system.cancel_placement()
+	else:
+		if selected_vehicle == null:
+			find_and_select_vehicle()
+		if selected_vehicle:
+			enter_editor_mode(selected_vehicle)
+
 func exit_editor_mode():
 	if not is_editing:
 		return
@@ -641,17 +599,7 @@ func exit_editor_mode():
 		turret_editing_system.exit_turret_editing_mode()
 	
 	if selected_vehicle.check_and_regroup_disconnected_blocks() or selected_vehicle.commands.size() == 0:
-		error_label.show()
-		if selected_vehicle.check_and_regroup_disconnected_blocks():
-			if selected_vehicle.commands.size() == 0:
-				error_label.text = "Unconnected Block & No Command"
-			else:
-				error_label.text = "Unconnected Block"
-		else:
-			error_label.text = "No Command"
-		save_dialog.show()
-		save_dialog.title = "Error"
-		save_dialog.popup_centered()
+		_show_exit_error_dialog()
 		return
 	
 	for block:Block in selected_vehicle.blocks:
@@ -666,9 +614,7 @@ func exit_editor_mode():
  	
 	hull_editing_system.restore_original_connections()
 	
-	if hull_editing_system.current_ghost_block:
-		hull_editing_system.current_ghost_block.queue_free()
-		hull_editing_system.current_ghost_block = null
+	hull_editing_system.cancel_placement()
 	
 	clear_blueprint_ghosts()
 	
@@ -683,6 +629,19 @@ func exit_editor_mode():
 	selected_vehicle = null
 	update_vehicle_info_display()
 
+func _show_exit_error_dialog():
+	error_label.show()
+	if selected_vehicle.check_and_regroup_disconnected_blocks():
+		if selected_vehicle.commands.size() == 0:
+			error_label.text = "Unconnected Block & No Command"
+		else:
+			error_label.text = "Unconnected Block"
+	else:
+		error_label.text = "No Command"
+	save_dialog.show()
+	save_dialog.title = "Error"
+	save_dialog.popup_centered()
+
 # === 蓝图功能 ===
 func toggle_blueprint_display():
 	if is_editing and selected_vehicle:
@@ -695,11 +654,7 @@ func toggle_blueprint_display():
 				load_blueprint_from_file(selected_vehicle.blueprint)
 
 func show_blueprint_ghosts(blueprint: Dictionary):
-	if not selected_vehicle:
-		print("错误: 没有选中的车辆")
-		return
-	
-	if blueprint.size() == 0:
+	if not selected_vehicle or blueprint.size() == 0:
 		return
 	
 	clear_blueprint_ghosts()
@@ -707,19 +662,10 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 	blueprint_data = blueprint
 	is_showing_blueprint = true
 	
-	var current_block_positions = {}
-	
-	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			var block_grid_positions = get_block_grid_positions(block)
-			for grid_pos in block_grid_positions:
-				current_block_positions[grid_pos] = block
-	
+	var current_block_positions = _get_current_block_positions()
 	var created_ghosts = 0
-	var total_blueprint_blocks = 0
 	
 	for block_id in blueprint["blocks"]:
-		total_blueprint_blocks += 1
 		var block_data = blueprint["blocks"][block_id]
 		var scene_path = block_data["path"]
 		var base_pos = Vector2i(block_data["base_pos"][0], block_data["base_pos"][1])
@@ -737,20 +683,21 @@ func show_blueprint_ghosts(blueprint: Dictionary):
 			create_ghost_block_with_data(scene_path, rotation_deg, ghost_grid_positions)
 			created_ghosts += 1
 
+func _get_current_block_positions() -> Dictionary:
+	var positions = {}
+	for grid_pos in selected_vehicle.grid:
+		positions[grid_pos] = selected_vehicle.grid[grid_pos]
+	return positions
+
 func calculate_ghost_grid_positions(base_pos: Vector2i, rotation_deg: float, scene_path: String) -> Array:
 	var scene = load(scene_path)
 	if not scene:
-		print("错误: 无法加载场景 ", scene_path)
 		return []
 	
 	var temp_block = scene.instantiate()
 	var block_size = Vector2i(1, 1)
 	if temp_block is Block:
 		block_size = temp_block.size
-	else:
-		temp_block.queue_free()
-		return []
-	
 	temp_block.queue_free()
 	
 	var grid_positions = []
@@ -775,19 +722,9 @@ func calculate_ghost_grid_positions(base_pos: Vector2i, rotation_deg: float, sce
 	
 	return grid_positions
 
-func get_block_grid_positions(block: Block) -> Array:
-	var grid_positions = []
-	
-	for grid_pos in selected_vehicle.grid:
-		if selected_vehicle.grid[grid_pos] == block:
-			grid_positions.append(grid_pos)
-	
-	return grid_positions
-
 func create_ghost_block_with_data(scene_path: String, rotation_deg: float, grid_positions: Array):
 	var scene = load(scene_path)
 	if not scene:
-		print("错误: 无法加载块场景: ", scene_path)
 		return
 	
 	var ghost = scene.instantiate()
@@ -815,32 +752,27 @@ func create_ghost_block_with_data(scene_path: String, rotation_deg: float, grid_
 
 func calculate_ghost_world_position_precise(grid_positions: Array):
 	if grid_positions.is_empty():
-		return Vector2.ZERO
+		return [Vector2.ZERO, 0.0]
 	
-	var local_position = get_rectangle_corners_arry(grid_positions)
+	var local_position = get_rectangle_corners(grid_positions)
 	
 	if not selected_vehicle.grid.is_empty():
 		var first_grid_pos = selected_vehicle.grid.keys()[0]
 		var first_block = selected_vehicle.grid[first_grid_pos]
-		var first_gird = []
+		var first_grid = []
 		for key in selected_vehicle.grid.keys():
-			if selected_vehicle.grid[key] == first_block:
-				if not first_gird.has(key):
-					first_gird.append(key)
+			if selected_vehicle.grid[key] == first_block and not first_grid.has(key):
+				first_grid.append(key)
 		if first_block is Block:
 			var first_rotation = deg_to_rad(rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree)
-			
-			var first_position = get_rectangle_corners_arry(first_gird)
+			var first_position = get_rectangle_corners(first_grid)
 			
 			if first_block:
-				
 				var local_offset = local_position - first_position
-				
 				var rotated_offset = local_offset.rotated(first_rotation)
-				
 				return [first_block.global_position + rotated_offset, first_rotation]
-		
-	return calculate_ghost_world_position_simple(grid_positions)
+	
+	return [calculate_ghost_world_position_simple(grid_positions), 0.0]
 
 func calculate_ghost_world_position_simple(grid_positions: Array) -> Vector2:
 	if grid_positions.is_empty():
@@ -853,13 +785,12 @@ func calculate_ghost_world_position_simple(grid_positions: Array) -> Vector2:
 		sum_y += pos.y
 	
 	var center_grid = Vector2(sum_x / float(grid_positions.size()), sum_y / float(grid_positions.size()))
-	
-	var grid_size = 16
-	var local_center = Vector2(center_grid.x * grid_size, center_grid.y * grid_size)
+	var local_center = Vector2(center_grid.x * GRID_SIZE, center_grid.y * GRID_SIZE)
 	
 	return selected_vehicle.to_global(local_center)
 
 func setup_blueprint_ghost_collision(ghost: Node2D):
+	# 禁用碰撞
 	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
 	for shape in collision_shapes:
 		shape.disabled = true
@@ -908,9 +839,9 @@ func update_blueprint_ghosts():
 	if is_showing_blueprint and selected_vehicle and blueprint_data:
 		show_blueprint_ghosts(blueprint_data)
 
-func get_rectangle_corners_arry(grid_data):
+func get_rectangle_corners(grid_data):
 	if grid_data.is_empty():
-		return []
+		return Vector2.ZERO
 	
 	var x_coords = []
 	var y_coords = []
@@ -930,9 +861,7 @@ func get_rectangle_corners_arry(grid_data):
 	var vc_1 = Vector2(min_x * GRID_SIZE , min_y * GRID_SIZE)
 	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE, max_y * GRID_SIZE + GRID_SIZE)
 	
-	var pos = (vc_1 + vc_2)/2
-	
-	return pos
+	return (vc_1 + vc_2)/2
 
 # === 修复功能 ===
 func _on_repair_button_pressed():
@@ -942,20 +871,19 @@ func _on_repair_button_pressed():
 	repair_blueprint_missing_blocks()
 
 func repair_blueprint_missing_blocks():
-	for pos in selected_vehicle.grid.keys():
-		var block = selected_vehicle.grid[pos]
-		if block is Block:
-			if block.current_hp < block.max_hp:
-				block.current_hp = block.max_hp
+	# 修复车辆现有块的HP
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block) and block.current_hp < block.max_hp:
+			block.current_hp = block.max_hp
+	
 	if not blueprint_data or blueprint_ghosts.is_empty():
 		return
-	
-	var repaired_count = 0
-	var failed_count = 0
 	
 	var occupied_grid_positions = {}
 	for grid_pos in selected_vehicle.grid:
 		occupied_grid_positions[grid_pos] = true
+	
+	var repaired_count = 0
 	
 	for ghost in blueprint_ghosts:
 		if not is_instance_valid(ghost):
@@ -971,13 +899,10 @@ func repair_blueprint_missing_blocks():
 				can_place = false
 				break
 		
-		if can_place:
-			if try_place_ghost_block(ghost, ghost_data):
-				repaired_count += 1
-				for grid_pos in ghost_data.grid_positions:
-					occupied_grid_positions[grid_pos] = true
-			else:
-				failed_count += 1
+		if can_place and try_place_ghost_block(ghost, ghost_data):
+			repaired_count += 1
+			for grid_pos in ghost_data.grid_positions:
+				occupied_grid_positions[grid_pos] = true
 	
 	if repaired_count > 0:
 		update_blueprint_ghosts()
@@ -1003,67 +928,8 @@ func try_place_ghost_block(ghost: Node2D, ghost_data: GhostData) -> bool:
 	selected_vehicle.control = control
 	return true
 
-func load_blueprint_vehicles():
-	var blueprint_dir = DirAccess.open(BLUEPRINT["BLUEPRINT"])
-	if not blueprint_dir:
-		print("错误: 无法打开蓝图目录 ", BLUEPRINT["BLUEPRINT"])
-		return
-	
-	blueprint_dir.list_dir_begin()
-	var file_name = blueprint_dir.get_next()
-	var vehicle_names = []
-	
-	while file_name != "":
-		if file_name.ends_with(".json"):
-			var vehicle_name = file_name.get_basename()
-			vehicle_names.append(vehicle_name)
-		file_name = blueprint_dir.get_next()
-	
-	blueprint_dir.list_dir_end()
-	
-	vehicle_names.sort()
-	
-	for tab_name in item_lists:
-		var item_list = item_lists[tab_name]
-		item_list.clear()
-		
-		var tab_index = tab_container.get_tab_count() - 1
-		for i in range(tab_container.get_tab_count()):
-			if tab_container.get_tab_control(i) == item_list:
-				tab_index = i
-				break
-		
-		if tab_name == "All":
-			tab_container.set_tab_title(tab_index, "Vehicles")
-		else:
-			tab_container.set_tab_title(tab_index, "")
-		
-		for vehicle_name in vehicle_names:
-			var _idx = item_list.add_item(vehicle_name)
-
-func load_selected_vehicle(vehicle_name: String):
-	
-	var blueprint_path = BLUEPRINT["BLUEPRINT"] + vehicle_name + ".json"
-	var file = FileAccess.open(blueprint_path, FileAccess.READ)
-	
-	if file:
-		var json_string = file.get_as_text()
-		file.close()
-		
-		var json = JSON.new()
-		var parse_result = json.parse(json_string)
-		
-		if parse_result == OK:
-			var blueprint_data_ghost = json.data
-			show_blueprint_ghosts(blueprint_data_ghost)
-			
-		else:
-			print("错误: 无法解析JSON文件 ", blueprint_path)
-	else:
-		print("错误: 无法打开文件 ", blueprint_path)
-
 func load_blueprint_from_file(blueprint_name: String):
-	var blueprint_path = BLUEPRINT["BLUEPRINT"] + blueprint_name + ".json"
+	var blueprint_path = BLUEPRINT_PATH + blueprint_name + ".json"
 	var file = FileAccess.open(blueprint_path, FileAccess.READ)
 	if file:
 		var json_string = file.get_as_text()
@@ -1211,18 +1077,16 @@ func create_turret_grid_data(turret: TurretRing) -> Dictionary:
 		var turret_block = turret.turret_grid[turret_grid_pos]
 		
 		# 跳过炮塔座圈本身，只存储附加的块
-		if turret_block and turret_block != turret:
-			# 如果这个块还没有被处理过
-			if not processed_turret_blocks.has(turret_block):
-				var relative_pos = turret_grid_pos
-				turret_grid_data["blocks"][str(turret_block_counter)] = {
-					"name": turret_block.block_name,
-					"path": turret_block.scene_file_path,
-					"base_pos": [relative_pos.x, relative_pos.y],
-					"rotation": [turret_block.base_rotation_degree],
-				}
-				processed_turret_blocks[turret_block] = str(turret_block_counter)
-				turret_block_counter += 1
+		if turret_block and turret_block != turret and not processed_turret_blocks.has(turret_block):
+			var relative_pos = turret_grid_pos
+			turret_grid_data["blocks"][str(turret_block_counter)] = {
+				"name": turret_block.block_name,
+				"path": turret_block.scene_file_path,
+				"base_pos": [relative_pos.x, relative_pos.y],
+				"rotation": [turret_block.base_rotation_degree],
+			}
+			processed_turret_blocks[turret_block] = str(turret_block_counter)
+			turret_block_counter += 1
 	
 	turret_grid_data["grid_size"] = [max_x - min_x + 1, max_y - min_y + 1]
 	return turret_grid_data
@@ -1269,11 +1133,8 @@ func get_turret_blocks() -> Array:
 		return turrets
 	
 	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			if block is TurretRing:
-				turrets.append(block)
-			elif block.get_script() and "TurretRing" in block.get_script().resource_path:
-				turrets.append(block)
+		if is_instance_valid(block) and block is TurretRing:
+			turrets.append(block)
 	
 	return turrets
 
