@@ -15,10 +15,14 @@ var turret_blocks := []
 var turret_size: Vector2i
 var total_mass:= 0.0
 var old_t_v:float
-   
 
 # 炮塔旋转控制
 var is_turret_rotation_enabled: bool = true
+
+# 缓存优化
+var cached_turret_bounds: Dictionary
+var bounds_dirty: bool = true
+
 
 func _ready():
 	super._ready()
@@ -51,14 +55,12 @@ func _physics_process(delta):
 			apply_aim_torque(delta, get_global_mouse_position())
 		apply_sync_torque(delta)
 
-
 func apply_aim_torque(delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	var rev_angvel = turret_basket.angular_velocity - angular_velocity
-	# 计算需要的扭矩
+	
 	var torque = angle_diff * max_torque
-	# 只在需要旋转时施加力
 	if abs(angle_diff) > deg_to_rad(1):
 		var damping_factor = 2 * sqrt(turret_inertia * max_torque)
 		torque -= rev_angvel * damping_factor
@@ -68,14 +70,10 @@ func apply_aim_torque(delta, target_pos):
 func apply_sync_torque(delta: float):
 	var now_t_v = angular_velocity
 	var angular_acceleration = (now_t_v - old_t_v) / delta
-	# 扭矩 = 角加速度 × 转动惯量
 	var torque = angular_acceleration * turret_inertia
 	turret_basket.apply_torque(torque)
-	# 保存当前角速度供下一帧使用
 	old_t_v = now_t_v
 	return torque
-
-
 
 ###################### 炮塔Grid系统 ######################
 
@@ -84,7 +82,6 @@ func initialize_turret_grid():
 	turret_grid.clear()
 	turret_blocks.clear()
 	
-	# 查找炮塔上已有的block（比如装甲块）
 	for child in turret_basket.get_children():
 		if child is Block and child != self:
 			add_block_to_turret(child)
@@ -92,7 +89,46 @@ func initialize_turret_grid():
 func add_block_to_turret(block: Block, grid_positions: Array = []):
 	"""添加block到炮塔grid系统"""
 	if parent_vehicle:
-		parent_vehicle.blocks.append(block)
+		update_parent_vehicle_blocks(block, true)
+	
+	if block not in turret_blocks:
+		turret_blocks.append(block)
+		block.z_index = 100
+		
+		if grid_positions.is_empty():
+			grid_positions = calculate_block_grid_positions(block)
+		
+		for pos in grid_positions:
+			turret_grid[pos] = block
+		
+		if block.get_parent() != turret_basket:
+			reparent_block_to_turret(block, grid_positions)
+		
+		if block is CollisionObject2D:
+			block.collision_layer = 2
+			block.collision_mask = 2
+		
+		update_turret_properties()
+
+func reparent_block_to_turret(block: Block, grid_positions: Array):
+	"""将块重新父级到炮塔"""
+	var old_parent = block.get_parent()
+	if old_parent and old_parent.has_method("remove_block"):
+		old_parent.remove_block(block, false)
+	
+	var global_pos = block.global_position
+	var global_rot = block.global_rotation
+	parent_vehicle._add_block(block, global_pos, grid_positions)
+	block.on_turret = self
+	block.global_position = global_pos
+	block.global_rotation = global_rot
+
+func update_parent_vehicle_blocks(block: Block, add: bool):
+	"""更新父车辆中的块列表"""
+	if add:
+		if block not in parent_vehicle.blocks:
+			parent_vehicle.blocks.append(block)
+		
 		if block is Powerpack and block not in parent_vehicle.powerpacks:
 			parent_vehicle.powerpacks.append(block)
 		elif block is Command and block not in parent_vehicle.commands:
@@ -101,59 +137,25 @@ func add_block_to_turret(block: Block, grid_positions: Array = []):
 			parent_vehicle.ammoracks.append(block)
 		elif block is Fueltank and block not in parent_vehicle.fueltanks:
 			parent_vehicle.fueltanks.append(block)
-	if block not in turret_blocks:
-		turret_blocks.append(block)
-		block.z_index = 100
-		# 如果没有指定grid位置，自动计算
-		if grid_positions.is_empty():
-			grid_positions = calculate_block_grid_positions(block)
-		
-		# 添加到grid
-		for pos in grid_positions:
-			turret_grid[pos] = block
-		
-		# 设置block为炮塔的子节点
-		if block.get_parent() != turret_basket:
-			var old_parent = block.get_parent()
-			if old_parent and old_parent.has_method("remove_block"):
-				old_parent.remove_block(block, false)
-			
-			# 在添加到炮塔之前，需要将全局坐标转换为炮塔局部坐标
-			var global_pos = block.global_position
-			var global_rot = block.global_rotation
-			parent_vehicle._add_block(block, global_pos, grid_positions)
-			block.on_turret = self
-			block.global_position = global_pos  # 保持全局位置不变
-			block.global_rotation = global_rot  # 保持全局旋转不变
-			
-		# 确保块的碰撞层设置为2
-		if block is CollisionObject2D:
-			block.collision_layer = 2
-			block.collision_mask = 2
-		
-		# 更新炮塔物理属性
-		update_turret_physics()
-		parent_vehicle.update_vehicle()
-		# 更新炮塔大小
-		update_turret_size()
+	else:
+		parent_vehicle.blocks.erase(block)
+		if block is Powerpack:
+			parent_vehicle.powerpacks.erase(block)
+		elif block is Command:
+			parent_vehicle.commands.erase(block)
+		elif block is Ammorack:
+			parent_vehicle.ammoracks.erase(block)
+		elif block is Fueltank:
+			parent_vehicle.fueltanks.erase(block)
 
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
 	if parent_vehicle:
-		parent_vehicle.blocks.erase(block)
-		if block is Powerpack and block in parent_vehicle.powerpacks:
-			parent_vehicle.powerpacks.erase(block)
-		elif block is Command and block in parent_vehicle.commands:
-			parent_vehicle.commands.erase(block)
-		elif block is Ammorack and block in parent_vehicle.ammoracks:
-			parent_vehicle.ammoracks.erase(block)
-		elif block is Fueltank and block in parent_vehicle.fueltanks:
-			parent_vehicle.fueltanks.erase(block)
+		update_parent_vehicle_blocks(block, false)
 	
 	if block in turret_blocks:
 		turret_blocks.erase(block)
 		
-		# 从grid中移除
 		var keys_to_erase = []
 		for pos in turret_grid:
 			if turret_grid[pos] == block:
@@ -161,42 +163,25 @@ func remove_block_from_turret(block: Block):
 		for pos in keys_to_erase:
 			turret_grid.erase(pos)
 		
-		# 从场景中移除
 		parent_vehicle.remove_block(block, true)
 		block.queue_free()
 		
-		# 更新炮塔物理属性
-		update_turret_physics()
-		parent_vehicle.update_vehicle()
-		# 更新炮塔大小
-		update_turret_size()
+		update_turret_properties()
 
 func calculate_block_grid_positions(block: Block) -> Array:
-	"""计算block在炮塔grid中的位置 - 使用连接点location"""
+	"""计算block在炮塔grid中的位置"""
 	var positions = []
-	
-	# 这里需要获取块是通过哪个连接点连接的
-	# 暂时使用块的局部位置，但理想情况下应该从连接信息中获取
 	var block_position = block.position
 	
-	# 从块的本地位置计算基础网格位置
 	var base_pos = Vector2i(
 		floor(block_position.x / 16),
 		floor(block_position.y / 16)
 	)
 	
-	print("炮塔网格计算:")
-	print("  块局部位置: ", block_position)
-	print("  基础网格位置: ", base_pos)
-	print("  块大小: ", block.size)
-	print("  块基础旋转: ", block.base_rotation_degree)
-	
-	# 根据block的大小和旋转计算所有网格位置
 	for x in range(block.size.x):
 		for y in range(block.size.y):
 			var grid_pos: Vector2i
 			
-			# 考虑block的旋转
 			match int(block.base_rotation_degree):
 				0:
 					grid_pos = base_pos + Vector2i(x, y)
@@ -211,8 +196,15 @@ func calculate_block_grid_positions(block: Block) -> Array:
 			
 			positions.append(grid_pos)
 	
-	print("  最终网格位置: ", positions)
 	return positions
+
+func update_turret_properties():
+	"""更新炮塔所有属性"""
+	update_turret_physics()
+	update_turret_size()
+	if parent_vehicle:
+		parent_vehicle.update_vehicle()
+	bounds_dirty = true
 
 func update_turret_size():
 	"""更新炮塔的尺寸"""
@@ -220,21 +212,11 @@ func update_turret_size():
 		turret_size = Vector2i.ZERO
 		return
 	
-	var min_x: int = turret_grid.keys()[0].x
-	var min_y: int = turret_grid.keys()[0].y
-	var max_x: int = turret_grid.keys()[0].x
-	var max_y: int = turret_grid.keys()[0].y
-	
-	for grid_pos in turret_grid:
-		min_x = min(min_x, grid_pos.x)
-		min_y = min(min_y, grid_pos.y)
-		max_x = max(max_x, grid_pos.x)
-		max_y = max(max_y, grid_pos.y)
-	
-	turret_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
+	var bounds = get_turret_grid_bounds()
+	turret_size = Vector2i(bounds.width, bounds.height)
 
 func update_turret_physics():
-	"""更新炮塔的物理属性（质量、质心等）"""
+	"""更新炮塔的物理属性"""
 	total_mass = mass
 	for block:Block in turret_blocks:
 		if is_instance_valid(block):
@@ -262,13 +244,11 @@ func get_available_connection_points() -> Array[Connector]:
 	"""获取炮塔上可用的连接点"""
 	var points: Array[Connector] = []
 	
-	# 获取炮塔底座上的连接点
 	var base_points = find_children("*", "Connector")
 	for point in base_points:
 		if point is Connector and not point.connected_to:
 			points.append(point)
 	
-	# 获取炮塔上已有块的连接点
 	for block in turret_blocks:
 		if is_instance_valid(block):
 			var block_points = block.find_children("*", "Connector")
@@ -278,7 +258,7 @@ func get_available_connection_points() -> Array[Connector]:
 	
 	return points
 
-###################### 新增方法 - 修复编辑器错误 ######################
+###################### 炮塔块管理方法 ######################
 
 func get_attached_blocks() -> Array:
 	"""获取炮塔上附加的所有块 - 用于编辑器"""
@@ -290,29 +270,13 @@ func get_turret_blocks() -> Array:
 
 func get_all_blocks() -> Array:
 	"""获取所有块（包括炮塔本身）"""
-	var all_blocks = [self]  # 包括炮塔本身
+	var all_blocks = [self]
 	all_blocks.append_array(turret_blocks)
 	return all_blocks
 
 func get_turret_connectors() -> Array[TurretConnector]:
 	"""获取炮塔上的所有TurretConnector"""
-	var connectors: Array[TurretConnector] = []
-	
-	# 获取炮塔底座上的连接器
-	var base_connectors = find_children("*", "TurretConnector")
-	for connector in base_connectors:
-		if connector is TurretConnector and connector.is_connection_enabled and connector.connected_to == null:
-			connectors.append(connector)
-	
-	# 获取炮塔上已有块的连接器
-	for block in turret_blocks:
-		if is_instance_valid(block):
-			var block_connectors = block.find_children("*", "TurretConnector")
-			for connector in block_connectors:
-				if connector is TurretConnector and connector.is_connection_enabled and connector.connected_to == null:
-					connectors.append(connector)
-	
-	return connectors
+	return get_connectors_of_type("TurretConnector")
 
 func get_available_turret_connectors() -> Array[TurretConnector]:
 	"""获取可用的炮塔连接器"""
@@ -324,52 +288,45 @@ func get_available_turret_connectors() -> Array[TurretConnector]:
 	
 	return connectors
 
+func get_connectors_of_type(connector_type: String) -> Array:
+	"""通用方法：获取指定类型的连接器"""
+	var connectors = []
+	
+	var base_connectors = find_children("*", connector_type)
+	for connector in base_connectors:
+		if connector.is_connection_enabled and connector.connected_to == null:
+			connectors.append(connector)
+	
+	for block in turret_blocks:
+		if is_instance_valid(block):
+			var block_connectors = block.find_children("*", connector_type)
+			for connector in block_connectors:
+				if connector.is_connection_enabled and connector.connected_to == null:
+					connectors.append(connector)
+	
+	return connectors
+
 ###################### 炮塔编辑模式相关方法 ######################
 
-func enable_turret_rotation():
-	"""启用炮塔旋转"""
-	is_turret_rotation_enabled = true
-
-func disable_turret_rotation():
-	"""禁用炮塔旋转"""
-	is_turret_rotation_enabled = false
-	
-	# 停止所有旋转力
-	if turret_basket:
-		turret_basket.angular_velocity = 0
-		turret_basket.rotation = rotation
-
-func reset_turret_rotation():
-	"""炮塔回正"""
-	if turret_basket and is_instance_valid(turret_basket):
-		# 确保炮塔回正到0度
-		turret_basket.rotation = 0
-		# 如果有基础旋转角度，也重置
-		if has_method("set_base_rotation_degree"):
-			turret_basket.base_rotation_degree = 0
 
 func lock_turret_rotation():
 	"""锁定炮塔旋转（完全停止）"""
-	disable_turret_rotation()
-	reset_turret_rotation()
 	is_turret_rotation_enabled = false
-	# 额外确保停止所有物理运动
-	if turret_basket:
-		turret_basket.angular_velocity = 0
-		turret_basket.rotation = 0
-		print("锁定炮塔旋转: ", block_name, turret_basket.rotation)
+	turret_basket.angular_velocity = angular_velocity
+	turret_basket.global_rotation = global_rotation
 
 func unlock_turret_rotation():
 	"""解锁炮塔旋转"""
-	if turret_basket:
-		turret_basket.freeze = false
-	enable_turret_rotation()
 	is_turret_rotation_enabled = true
 
 func get_turret_grid_bounds() -> Dictionary:
 	"""获取炮塔网格的边界"""
+	if not bounds_dirty and not cached_turret_bounds.is_empty():
+		return cached_turret_bounds
+	
 	if turret_grid.is_empty():
-		return {"min_x": 0, "min_y": 0, "max_x": 0, "max_y": 0}
+		cached_turret_bounds = {"min_x": 0, "min_y": 0, "max_x": 0, "max_y": 0, "width": 0, "height": 0}
+		return cached_turret_bounds
 	
 	var min_x: int = turret_grid.keys()[0].x
 	var min_y: int = turret_grid.keys()[0].y
@@ -382,7 +339,7 @@ func get_turret_grid_bounds() -> Dictionary:
 		max_x = max(max_x, grid_pos.x)
 		max_y = max(max_y, grid_pos.y)
 	
-	return {
+	cached_turret_bounds = {
 		"min_x": min_x,
 		"min_y": min_y,
 		"max_x": max_x,
@@ -390,9 +347,11 @@ func get_turret_grid_bounds() -> Dictionary:
 		"width": max_x - min_x + 1,
 		"height": max_y - min_y + 1
 	}
+	bounds_dirty = false
+	return cached_turret_bounds
 
 func calculate_block_center(positions: Array) -> Vector2:
-	"""计算一组grid位置的中心点（转换为局部坐标）"""
+	"""计算一组grid位置的中心点"""
 	if positions.is_empty():
 		return Vector2.ZERO
 	
@@ -407,7 +366,6 @@ func calculate_block_center(positions: Array) -> Vector2:
 		max_x = max(max_x, pos.x)
 		max_y = max(max_y, pos.y)
 	
-	# 转换为局部坐标（假设每个grid单元大小为16）
-	var center_x = (min_x + max_x + 1) * 8  # 16/2 = 8
+	var center_x = (min_x + max_x + 1) * 8
 	var center_y = (min_y + max_y + 1) * 8
 	return Vector2(center_x, center_y)

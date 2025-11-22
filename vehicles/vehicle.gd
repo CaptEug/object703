@@ -42,24 +42,19 @@ var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
 var ready_connect = true
 
+# 缓存优化
+var cached_center_of_mass: Vector2
+var cached_center_of_mass_dirty: bool = true
+var targets_dirty: bool = true
+
 
 func _ready():
-	
 	if blueprint:
-		Get_ready_again()
+		load_blueprint()
 	else:
-		# 空车辆的初始化
-		vehicle_name = "Unnamed_Vehicle"
-		blocks = []
-		total_blocks = []
-		grid = {}
-		tracks = []
-		powerpacks = []
-		commands = []
-		ammoracks = []
-		fueltanks = []
+		initialize_empty_vehicle()
 
-func Get_ready_again():
+func load_blueprint():
 	if blueprint is String:
 		load_from_file(blueprint)
 	elif blueprint is Dictionary:
@@ -68,23 +63,39 @@ func Get_ready_again():
 		push_error("Invalid blueprint format")
 	update_vehicle()
 
+func initialize_empty_vehicle():
+	vehicle_name = "Unnamed_Vehicle"
+	blocks = []
+	total_blocks = []
+	grid = {}
+	tracks = []
+	powerpacks = []
+	commands = []
+	ammoracks = []
+	fueltanks = []
 
 func _process(delta):
-	if ready_connect == false:
-		for block:Block in blocks:
-			if block.joint_connected_blocks.size() != 0:
-				block.set_connection_enabled(false)
-				ready_connect = true
-	
+	handle_delayed_connections()
 	
 	if control:
 		update_tracks_state(control.call(), delta)
-	#updating targets
-	var current_targets = []
-	for block in commands:
-		current_targets += block.targets
-	targets = current_targets
+	
+	update_targets_if_needed()
 
+func handle_delayed_connections():
+	if not ready_connect:
+		for block:Block in blocks:
+			if block.joint_connected_blocks.size() != 0:
+				block.set_connection_enabled(false)
+		ready_connect = true
+
+func update_targets_if_needed():
+	if targets_dirty:
+		var current_targets = []
+		for block in commands:
+			current_targets += block.targets
+		targets = current_targets
+		targets_dirty = false
 
 func update_vehicle():
 	#Check block connectivity
@@ -119,46 +130,50 @@ func update_vehicle():
 
 ###################### BLOCK MANAGEMENT ######################
 
-func _add_block(block: Block,local_pos = null, grid_positions = null):
+func _add_block(block: Block, local_pos = null, grid_positions = null):
 	if not local_pos == null and not grid_positions == null:
 		if block.parent_vehicle == null:
 			add_child(block)
 			block.parent_vehicle = self
 		block.position = local_pos
 		await block.connect_aready()
+	
 	if block not in blocks:
-		# 添加方块到车辆
 		blocks.append(block)
 		total_blocks.append(block)
-		block.global_grid_pos = get_rectangle_center(grid_positions)
+		block.global_grid_pos = get_rectangle_corners(grid_positions)
 		
 		if block is Track:
 			tracks.append(block)
 			track_target_forces[block] = 0.0
 			track_current_forces[block] = 0.0
-		if block is Powerpack:
+		elif block is Powerpack:
 			powerpacks.append(block)
-		if block is Command:
+		elif block is Command:
 			commands.append(block)
-		if block is Ammorack:
+		elif block is Ammorack:
 			ammoracks.append(block)
-		if block is Fueltank:
+			emit_signal("cargo_changed")
+		elif block is Fueltank:
 			fueltanks.append(block)
-		if block is Cargo:
+		elif block is Cargo:
 			cargos.append(block)
 			emit_signal("cargo_changed")
+		
 		for pos in grid_positions:
 			grid[pos] = block
+		
 		block.set_connection_enabled(true)
+	
+	cached_center_of_mass_dirty = true
+	targets_dirty = true
 	update_vehicle()
 
 func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
-	# 正常移除逻辑
 	blocks.erase(block)
 	if imd:
 		if block is TurretRing:
 			for turret_block in block.turret_basket.get_children():
-				print(turret_block)
 				if turret_block is Block:
 					block.remove_block_from_turret(turret_block)
 				else:
@@ -181,30 +196,22 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		commands.erase(block)
 	if block in ammoracks:
 		ammoracks.erase(block)
+		emit_signal("cargo_changed")
 	if block in fueltanks:
 		fueltanks.erase(block)
 	if block in cargos:
 		cargos.erase(block)
 		emit_signal("cargo_changed")
 	
+	cached_center_of_mass_dirty = true
+	targets_dirty = true
 	update_vehicle()
 
 func has_block(block_name:String):
 	for block in blocks:
 		if block.block_name == block_name:
 			return block
-
-func find_pos(Dic: Dictionary, block:Block):
-	var positions = []
-	for pos in Dic:
-		if Dic[pos] == block:
-			positions.append(pos)
-	var top_left = positions[0]
-	for v in positions:
-		if v.x < top_left.x or (v.x == top_left.x and v.y < top_left.y):
-			top_left = v
-	return top_left
-
+	return null
 
 ##################### VEHICLE PARAMETER MANAGEMENT #####################
 
@@ -224,12 +231,12 @@ func get_max_engine_power() -> float:
 	return max_power
 
 func get_current_engine_power() -> float:
-	var currunt_power := 0.0
+	var current_power := 0.0
 	for engine in powerpacks:
 		if engine.is_inside_tree() and is_instance_valid(engine):
-			currunt_power += engine.power
-	current_engine_power = currunt_power
-	return currunt_power
+			current_power += engine.power
+	current_engine_power = current_power
+	return current_power
 
 func get_fuel_cap():
 	var fuel_cap := 0.0
@@ -240,16 +247,16 @@ func get_fuel_cap():
 	return fuel_cap
 
 func get_current_fuel():
-	var currunt_fuel := 0.0
+	var current_fuel := 0.0
 	for fueltank in fueltanks:
 		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			currunt_fuel += fueltank.fuel_storage
-	total_fuel = currunt_fuel
-	return currunt_fuel
+			current_fuel += fueltank.fuel_storage
+	total_fuel = current_fuel
+	return current_fuel
 
 ########################## VEHICLE LOADING ###########################
 
-func load_from_file(identifier):  # 允许接收多种类型参数
+func load_from_file(identifier):
 	var path: String
 	if identifier is String:
 		if not identifier.ends_with(".json"):
@@ -261,6 +268,7 @@ func load_from_file(identifier):  # 允许接收多种类型参数
 	else:
 		push_error("Invalid file identifier type: ", typeof(identifier))
 		return
+	
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file:
 		var json = JSON.new()
@@ -275,11 +283,13 @@ func load_from_file(identifier):  # 允许接收多种类型参数
 func load_from_blueprint(bp: Dictionary):
 	ready_connect = false
 	clear_existing_blocks()
-	# 按数字键排序以保证加载顺序一致
-	var block_ids = bp["blocks"].keys()
+	
 	var _name = bp["name"]
 	vehicle_name = _name
 	vehicle_size = Vector2i(bp["vehicle_size"][0], bp["vehicle_size"][1])
+	
+	# 按数字键排序以保证加载顺序一致
+	var block_ids = bp["blocks"].keys()
 	block_ids.sort_custom(func(a, b):
 		var pos_a = Vector2i(bp["blocks"][a]["base_pos"][0], bp["blocks"][a]["base_pos"][1])
 		var pos_b = Vector2i(bp["blocks"][b]["base_pos"][0], bp["blocks"][b]["base_pos"][1])
@@ -289,7 +299,7 @@ func load_from_blueprint(bp: Dictionary):
 	)
 	
 	# 第一遍：加载所有主块（包括炮塔座圈）
-	var loaded_blocks = {}  # 存储已加载的块，key: block_id, value: Block实例
+	var loaded_blocks = {}
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
 		var block_scene = load(block_data["path"])
@@ -299,21 +309,10 @@ func load_from_blueprint(bp: Dictionary):
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = deg_to_rad(block_data["rotation"][0])
 			block.base_rotation_degree = block_data["rotation"][0]
-			var target_grid = []
-			# 记录所有网格位置
-			for x in block.size.x:
-				for y in block.size.y:
-					var grid_pos
-					if block.base_rotation_degree == 0:
-						grid_pos = Vector2i(base_pos) + Vector2i(x, y)
-					elif block.base_rotation_degree == 90:
-						grid_pos = Vector2i(base_pos) + Vector2i(-y, x)
-					elif block.base_rotation_degree == -90:
-						grid_pos = Vector2i(base_pos) + Vector2i(y, -x)
-					else:
-						grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
-					target_grid.append(grid_pos)
-			var local_pos = get_rectangle_center(target_grid)
+			
+			var target_grid = calculate_block_grid_positions(block, base_pos)
+			var local_pos = get_rectangle_corners(target_grid)
+			
 			await _add_block(block, local_pos, target_grid)
 			loaded_blocks[block_id] = block
 	
@@ -325,22 +324,35 @@ func load_from_blueprint(bp: Dictionary):
 			if turret_block is TurretRing:
 				await turret_block.lock_turret_rotation()
 				for point in turret_block.turret_basket.get_children():
-					if point is TurretConnector:
-						if point.connected_to == null:
-							point.is_connection_enabled = true
-							
+					if point is TurretConnector and point.connected_to == null:
+						point.is_connection_enabled = true
+				
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
 				turret_block.unlock_turret_rotation()
 
+func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
+	var target_grid = []
+	for x in block.size.x:
+		for y in block.size.y:
+			var grid_pos: Vector2i
+			match int(block.base_rotation_degree):
+				0:
+					grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+				90:
+					grid_pos = Vector2i(base_pos) + Vector2i(-y, x)
+				-90:
+					grid_pos = Vector2i(base_pos) + Vector2i(y, -x)
+				180, -180:
+					grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
+				_:
+					grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+			target_grid.append(grid_pos)
+	return target_grid
+
 func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded_blocks: Dictionary):
-	"""加载炮塔上的块"""
 	if not turret_grid_data.has("blocks"):
 		return
 	
-	# 获取炮塔在车辆网格中的位置
-	var turret_vehicle_pos = Vector2i.ZERO
-
-	# 加载炮塔上的每个块
 	for block_id in turret_grid_data["blocks"]:
 		var block_data = turret_grid_data["blocks"][block_id]
 		var block_scene = load(block_data["path"])
@@ -351,42 +363,24 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 			block.base_rotation_degree = block_data["rotation"][0]
 			block.collision_layer = 2
 			block.collision_mask = 2
-			# 计算块在炮塔局部坐标系中的所有网格位置
-			var turret_local_positions = []
-			for x in block.size.x:
-				for y in block.size.y:
-					var local_pos: Vector2i
-					match int(block.base_rotation_degree):
-						0:
-							local_pos = local_base_pos + Vector2i(x, y)
-						90:
-							local_pos = local_base_pos + Vector2i(-y, x)
-						-90:
-							local_pos = local_base_pos + Vector2i(y, -x)
-						180, -180:
-							local_pos = local_base_pos + Vector2i(-x, -y)
-						_:
-							local_pos = local_base_pos + Vector2i(x, y)
-					turret_local_positions.append(local_pos)
 			
-			var turretblock_pos = get_rectangle_center(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
-			# 将块添加到炮塔
+			var turret_local_positions = calculate_block_grid_positions(block, local_base_pos)
+			var turretblock_pos = get_rectangle_corners(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
+			
 			var world_pos = turret.to_global(turretblock_pos)
-			# 设置块的位置和旋转
 			block.global_position = world_pos
 			turret.add_block_to_turret(block, turret_local_positions)
 			block.rotation_degrees = block.base_rotation_degree
-			# 将块添加到车辆的总块列表中
+			
 			if block not in total_blocks:
 				total_blocks.append(block)
 			await block.connect_aready()
-	# 更新车辆状态
+	
 	update_vehicle()
 
-
-func get_rectangle_center(grid_data):
+func get_rectangle_corners(grid_data):
 	if grid_data.is_empty():
-		return []
+		return Vector2.ZERO
 	
 	var x_coords = []
 	var y_coords = []
@@ -402,23 +396,11 @@ func get_rectangle_center(grid_data):
 	var max_x = x_coords[x_coords.size() - 1]
 	var min_y = y_coords[0]
 	var max_y = y_coords[y_coords.size() - 1]
-
 	
 	var vc_1 = Vector2(min_x * GRID_SIZE, min_y * GRID_SIZE)
 	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE, max_y * GRID_SIZE + GRID_SIZE)
 	
-	var center = (vc_1 + vc_2)/2
-	
-	return center
-
-
-func get_rotation_angle(dir: String) -> float:
-	match dir:
-		"left":    return -PI/2
-		"up": return 0
-		"right":  return PI/2
-		"down":  return PI
-		_:       return 0
+	return (vc_1 + vc_2) / 2
 
 func clear_existing_blocks():
 	for block in blocks:
@@ -440,102 +422,91 @@ func get_blueprint_path() -> String:
 ########################## VEHICLE PHYSICS PROCESSING #######################
 
 func get_block_grid(block:Block) -> Array:
-	var getpositions:Array
+	var positions:Array
 	for pos in grid.keys():
-		if grid[pos] == block and not getpositions.has(pos):
-			getpositions.append(pos)
-	return getpositions
+		if grid[pos] == block and not positions.has(pos):
+			positions.append(pos)
+	return positions
 
 func calculate_center_of_mass() -> Vector2:
+	if not cached_center_of_mass_dirty:
+		return cached_center_of_mass
+	
 	var total_mass := 0.0
 	var weighted_sum := Vector2.ZERO
 	var has_calculated := {}
+	
 	for grid_pos in grid:
-		if  grid[grid_pos] != null:
+		if grid[grid_pos] != null:
 			var body: RigidBody2D = grid[grid_pos]
 			if blocks.has(body):
 				if has_calculated.get(body.get_instance_id(), false):
 					continue
+				
 				var rid = get_block_grid(body)
-				var global_com:Vector2 = get_rectangle_center(rid)
-				if body is TurretRing:
-					weighted_sum += global_com * body.total_mass
-					total_mass += body.total_mass
-				else:
-					weighted_sum += global_com * body.mass
-					total_mass += body.mass
+				var global_com:Vector2 = get_rectangle_corners(rid)
+				var mass = body.total_mass if body is TurretRing else body.mass
+				
+				weighted_sum += global_com * mass
+				total_mass += mass
 				has_calculated[body.get_instance_id()] = true
-	return weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
+	
+	cached_center_of_mass = weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
+	cached_center_of_mass_dirty = false
+	return cached_center_of_mass
 
-func get_global_mass_center() ->Vector2:
+func get_global_mass_center() -> Vector2:
 	var com = calculate_center_of_mass()
-	var global_center_of_mass = Vector2.ZERO
-	if grid.keys().size() == 0:
-		return global_center_of_mass
+	if grid.is_empty():
+		return Vector2.ZERO
+	
 	var first_grid_pos = grid.keys()[0]
 	var first_block = grid[first_grid_pos]
-	var first_gird = []
-	for key in grid.keys():
-		if grid[key] == first_block:
-			if not first_gird.has(key):
-				first_gird.append(key)
+	var first_grid_positions = get_block_grid(first_block)
+	
 	if first_block is Block:
 		var first_rotation = deg_to_rad(rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree)
-			
-		var first_position = get_rectangle_center(first_gird)
+		var first_position = get_rectangle_corners(first_grid_positions)
+		var local_offset = com - first_position
+		var rotated_offset = local_offset.rotated(first_rotation)
+		return first_block.global_position + rotated_offset
 	
-		if first_block:
-				
-			var local_offset = com - first_position
-				
-				# 将局部偏移旋转到车辆的方向
-			var rotated_offset = local_offset.rotated(first_rotation)
-				
-				# 返回世界坐标
-			return first_block.global_position + rotated_offset
-	
-	return global_center_of_mass
-
+	return Vector2.ZERO
 
 func calculate_balanced_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
 	
-	# 准备推力点数据
 	var thrust_points = []
 	for track:Track in active_tracks:
-		if track.functioning == true and track.parent_vehicle == self:
+		if track.functioning and track.parent_vehicle == self:
 			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
 			var positions_grid = get_block_grid(track)
 			thrust_points.append({
-				"position": get_rectangle_center(positions_grid), # 相对位置
+				"position": get_rectangle_corners(positions_grid),
 				"direction": dir,
 				"track": track
 			})
-	# 计算各点出力
+	
 	var thrusts = calculate_thrust_distribution(
 		thrust_points,
 		com, 
 		1,
-		direction # 目标方向
+		direction
 	)
-	balanced_forces = {}
-	# 分配结果
-	for point in thrust_points:
-		balanced_forces[point.track] = thrusts[point.track]
+	
+	balanced_forces = thrusts
 	return balanced_forces
 
-# 最小二乘解法计算推力分布
 func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float, target_dir: Vector2) -> Dictionary:
 	var num_points = thrust_points.size()
 	if num_points == 0:
 		return {}
 	
-	# 构建矩阵A和向量b
 	var A = []
 	var b = []
 	
-	# 1. 合力方程 (x和y方向)
+	# 合力方程
 	var eq_force_x = []
 	var eq_force_y = []
 	for point in thrust_points:
@@ -546,65 +517,58 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 	A.append(eq_force_y)
 	b.append(total_thrust * target_dir.y)
 	
-	# 2. 扭矩平衡方程
+	# 扭矩平衡方程
 	var eq_torque = []
 	for point in thrust_points:
 		var r = point.position - com
 		var torque_coeff = r.x * point.direction.y - r.y * point.direction.x
 		eq_torque.append(torque_coeff)
 	A.append(eq_torque)
-	b.append(0.0)  # 目标扭矩为零
+	b.append(0.0)
 	
-	# 3. 添加最小能量约束 (防止过度分配)
+	# 最小能量约束
 	for i in range(num_points):
-		var eq_energy = array_zero(num_points)
+		var eq_energy = []
+		eq_energy.resize(num_points)
+		for j in range(num_points):
+			eq_energy[j] = 0.0
 		eq_energy[i] = 1.0
 		A.append(eq_energy)
-		b.append(0.0)  # 偏好小出力
+		b.append(0.0)
 	
-	# 4. 解最小二乘问题 (使用伪逆)
 	var x = least_squares_solve(A, b)
 	
-	# 5. 收集结果并标准化
 	var results = {}
 	var total = 0.0
 	for i in range(num_points):
-		var thrust = x[i] # 确保非负
+		var thrust = x[i]
 		results[thrust_points[i].track] = thrust
 		total += abs(thrust)
 	
-	# 标准化到总功率
 	if total > 0:
-		var currunt_scale = total_thrust / total
+		var current_scale = total_thrust / total
 		for track in results:
-			results[track] *= currunt_scale
+			results[track] *= current_scale
 	
 	return results
-	
+
 func calculate_rotation_forces():
 	var com = calculate_center_of_mass()
 	var active_tracks = tracks
 	
-	# 准备推力点数据
 	var thrust_points = []
 	for track:Track in active_tracks:
-		if track.functioning == true and track.parent_vehicle == self:
+		if track.functioning and track.parent_vehicle == self:
 			var dir = Vector2.UP.rotated(deg_to_rad(track.base_rotation_degree))
 			var positions_grid = get_block_grid(track)
 			thrust_points.append({
-				"position": get_rectangle_center(positions_grid),
+				"position": get_rectangle_corners(positions_grid),
 				"direction": dir,
 				"track": track
 			})
 	
-	# 计算各点出力 - 纯旋转
-	var thrusts = calculate_rotation_thrust_distribution(
-		thrust_points,
-		com, # 相对质心
-		1 # 总功率
-	)
+	var thrusts = calculate_rotation_thrust_distribution(thrust_points, com, 1)
 	
-	# 分配结果
 	for point in thrust_points:
 		if direction.y > 0:
 			rotation_forces[point.track] = -thrusts[point.track]
@@ -612,26 +576,24 @@ func calculate_rotation_forces():
 			rotation_forces[point.track] = thrusts[point.track]
 	return rotation_forces
 
-# 计算纯旋转时的推力分布
 func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, total_thrust: float) -> Dictionary:
 	var num_points = thrust_points.size()
 	if num_points == 0:
 		return {}
 	
-	# 构建矩阵A和向量b
 	var A = []
 	var b = []
 	
-	# 1. 扭矩平衡方程 (产生最大扭矩)
+	# 扭矩平衡方程
 	var eq_torque = []
 	for point in thrust_points:
 		var r = point.position - com
 		var torque_coeff = r.x * point.direction.y - r.y * point.direction.x
 		eq_torque.append(torque_coeff)
 	A.append(eq_torque)
-	b.append(total_thrust)  # 目标扭矩最大化
+	b.append(total_thrust)
 	
-	# 2. 合力平衡方程 (x和y方向应该为零)
+	# 合力平衡方程
 	var eq_force_x = []
 	var eq_force_y = []
 	for point in thrust_points:
@@ -642,38 +604,36 @@ func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, 
 	A.append(eq_force_y)
 	b.append(0.0)
 	
-	# 3. 添加最小能量约束
+	# 最小能量约束
 	for i in range(num_points):
-		var eq_energy = array_zero(num_points)
+		var eq_energy = []
+		eq_energy.resize(num_points)
+		for j in range(num_points):
+			eq_energy[j] = 0.0
 		eq_energy[i] = 1.0
 		A.append(eq_energy)
 		b.append(0.0)
 	
-	# 4. 解最小二乘问题
 	var x = least_squares_solve(A, b)
 	
-	# 5. 收集结果并标准化
 	var results = {}
 	var total = 0.0
 	for i in range(num_points):
 		results[thrust_points[i].track] = x[i]
 		total += abs(x[i])
 	
-	# 标准化到总功率
 	if total > 0:
-		var currunt_scale = total_thrust / total
+		var current_scale = total_thrust / total
 		for track in results:
-			results[track] *= currunt_scale
+			results[track] *= current_scale
 	
 	return results
 
-# 辅助函数：最小二乘求解
 func least_squares_solve(A: Array, b: Array) -> Array:
 	var At = transpose(A)
 	var AtA = multiply(At, A)
 	
-	# 添加正则化项 (Tikhonov 正则化)
-	var lambda = 0.01  # 正则化参数
+	var lambda = 0.01
 	var n = AtA.size()
 	for i in range(n):
 		AtA[i][i] += lambda
@@ -681,7 +641,6 @@ func least_squares_solve(A: Array, b: Array) -> Array:
 	var Atb = multiply_vector(At, b)
 	return solve(AtA, Atb)
 
-# 矩阵转置
 func transpose(m: Array) -> Array:
 	var result = []
 	for j in range(m[0].size()):
@@ -690,7 +649,6 @@ func transpose(m: Array) -> Array:
 			result[j].append(m[i][j])
 	return result
 
-# 矩阵乘法
 func multiply(a: Array, b: Array) -> Array:
 	var result = []
 	for i in range(a.size()):
@@ -702,7 +660,6 @@ func multiply(a: Array, b: Array) -> Array:
 			result[i].append(sum)
 	return result
 
-# 矩阵向量乘法
 func multiply_vector(m: Array, v: Array) -> Array:
 	var result = []
 	for i in range(m.size()):
@@ -717,16 +674,13 @@ func solve(A: Array, b: Array) -> Array:
 	if n == 0:
 		return []
 	
-	# 复制矩阵，避免修改原数据
 	var A_copy = []
 	var b_copy = []
 	for i in range(n):
 		A_copy.append(A[i].duplicate())
 		b_copy.append(b[i])
 	
-	# 高斯消元
 	for i in range(n):
-		# 部分主元选择
 		var max_row = i
 		var max_val = abs(A_copy[i][i])
 		for k in range(i+1, n):
@@ -734,13 +688,9 @@ func solve(A: Array, b: Array) -> Array:
 				max_val = abs(A_copy[k][i])
 				max_row = k
 		
-		# 如果主元接近0，说明矩阵奇异
 		if abs(A_copy[max_row][i]) < 1e-10:
-			print("警告: 矩阵接近奇异，主元值: ", A_copy[max_row][i])
-			# 返回零解
 			return array_zero(n)
 		
-		# 交换行
 		if max_row != i:
 			var tmp_row = A_copy[i]
 			A_copy[i] = A_copy[max_row]
@@ -750,7 +700,6 @@ func solve(A: Array, b: Array) -> Array:
 			b_copy[i] = b_copy[max_row]
 			b_copy[max_row] = tmp_b
 		
-		# 消元
 		var pivot = A_copy[i][i]
 		for k in range(i+1, n):
 			var factor = A_copy[k][i] / pivot
@@ -758,7 +707,6 @@ func solve(A: Array, b: Array) -> Array:
 				A_copy[k][j] -= factor * A_copy[i][j]
 			b_copy[k] -= factor * b_copy[i]
 	
-	# 回代
 	var x = array_zero(n)
 	for i in range(n-1, -1, -1):
 		x[i] = b_copy[i]
@@ -787,72 +735,55 @@ func update_tracks_state(control_input:Array, delta):
 			engine.state["rotate"] = false
 	else:
 		move_state = 'move'
-		if forward_input != 0:
-			for engine:Powerpack in powerpacks:
-				engine.state["move"] = true
-		else:
-			for engine:Powerpack in powerpacks:
-				engine.state["move"] = false
-		if turn_input != 0:
-			for engine:Powerpack in powerpacks:
-				engine.state["rotate"] = true
-		else:
-			for engine:Powerpack in powerpacks:
-				engine.state["rotate"] = false
-	if get_track_forces(forward_input, turn_input) != null:
+		for engine:Powerpack in powerpacks:
+			engine.state["move"] = (forward_input != 0)
+			engine.state["rotate"] = (turn_input != 0)
+	
+	var track_forces = get_track_forces(forward_input, turn_input)
+	if track_forces != null:
 		get_current_engine_power()
-		track_target_forces = get_track_forces(forward_input, turn_input)
-	apply_smooth_track_forces(delta)
+		track_target_forces = track_forces
+		apply_smooth_track_forces(delta)
 
 func get_track_forces(forward_input, turn_input):
-	var most_power = null
+	var combined_power = null
 	for engine:Powerpack in powerpacks:
 		engine.calculate_power_distribution(forward_input, turn_input)
-		if most_power == null:
-			most_power = engine.track_power_target
+		if combined_power == null:
+			combined_power = engine.track_power_target.duplicate()
 		else:
-			for track in most_power:
-				most_power[track] += engine.track_power_target[track]
-	return most_power
-	
+			for track in engine.track_power_target:
+				combined_power[track] += engine.track_power_target[track]
+	return combined_power
 
 func apply_smooth_track_forces(_delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
-		var new_force = target
 		if tracks.has(track) and current_engine_power != 0:
-			if abs(new_force) > 0:
-				track.set_state_force(move_state, new_force)
-				track_current_forces[track] = new_force
+			if abs(target) > 0:
+				track.set_state_force(move_state, target)
+				track_current_forces[track] = target
 			else:
 				track.set_state_force('idle', 0)
 
 func update_vehicle_size():
-	var min_x:int
-	var min_y:int
-	var max_x:int
-	var max_y:int
+	if grid.is_empty():
+		vehicle_size = Vector2i.ZERO
+		return
+	
+	var min_x = grid.keys()[0].x
+	var min_y = grid.keys()[0].y
+	var max_x = min_x
+	var max_y = min_y
 	
 	for grid_pos in grid:
-		min_x = grid_pos.x
-		min_y = grid_pos.y
-		max_x = grid_pos.x
-		max_y = grid_pos.y
-		break
-	
-	for grid_pos in grid:
-		if min_x > grid_pos.x:
-			min_x = grid_pos.x
-		if min_y > grid_pos.y:
-			min_y = grid_pos.y
-		if max_x < grid_pos.x:
-			max_x = grid_pos.x
-		if max_y < grid_pos.y:
-			max_y = grid_pos.y
+		min_x = min(min_x, grid_pos.x)
+		min_y = min(min_y, grid_pos.y)
+		max_x = max(max_x, grid_pos.x)
+		max_y = max(max_y, grid_pos.y)
 	
 	vehicle_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
 
-# 获取距离某个位置一定范围内的可用连接点
 func get_available_points_near_position(_position: Vector2, max_distance: float = 30.0) -> Array[Connector]:
 	var temp_points = []
 	var max_distance_squared = max_distance * max_distance
@@ -866,14 +797,12 @@ func get_available_points_near_position(_position: Vector2, max_distance: float 
 				if distance_squared <= max_distance_squared:
 					temp_points.append(point)
 	
-	# 显式转换类型
 	var available_points: Array[Connector] = []
 	for point in temp_points:
 		if point is Connector:
 			available_points.append(point)
 	
 	return available_points
-
 
 func open_vehicle_panel():
 	if vehicle_panel:
@@ -895,11 +824,9 @@ func check_and_regroup_disconnected_blocks():
 			valid_blocks.append(block)
 	if valid_blocks.is_empty():
 		return false
+	
 	var components = find_connected_components_dfs(valid_blocks)
-	if components.size() <= 1:
-		return false
-	else:
-		return true
+	return components.size() > 1
 
 func find_connected_components_dfs(all_blocks: Array) -> Array:
 	var visited = {}
@@ -922,14 +849,12 @@ func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Arra
 	visited[block_id] = true
 	component.append(block)
 	
-	# 遍历所有连接的块
 	for connected_block in block.joint_connected_blocks:
 		if is_instance_valid(connected_block) and connected_block.get_parent() == self:
 			var connected_id = connected_block.get_instance_id()
 			if not visited.get(connected_id, false):
 				dfs_traverse(connected_block, visited, component, all_blocks)
 	
-	# 同时检查物理连接（通过连接点）
 	for connection_point in block.connection_points:
 		if connection_point.connected_to and is_instance_valid(connection_point.connected_to):
 			var connected_block = connection_point.connected_to.find_parent_block()
@@ -937,38 +862,3 @@ func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Arra
 				var connected_id = connected_block.get_instance_id()
 				if not visited.get(connected_id, false):
 					dfs_traverse(connected_block, visited, component, all_blocks)
-
-func _process_block_connections_first(block: Block, local_pos, target_grid):
-	# 先将block添加到场景（但不添加到vehicle的blocks数组）
-	add_child(block)
-	block.position = local_pos
-	block.global_grid_pos = get_rectangle_center(target_grid)
-	
-	# 等待连接处理完成
-	await block.connections_processed
-	
-	# 连接处理完成后，正式添加到vehicle
-	_finalize_block_addition(block, target_grid)
-
-func _finalize_block_addition(block: Block, target_grid):
-	# 现在将block正式添加到vehicle的各种数组中
-	blocks.append(block)
-	total_blocks.append(block)
-	
-	if block is Track:
-		tracks.append(block)
-		track_target_forces[block] = 0.0
-		track_current_forces[block] = 0.0
-	elif block is Powerpack:
-		powerpacks.append(block)
-	elif block is Command:
-		commands.append(block)
-	elif block is Ammorack:
-		ammoracks.append(block)
-	elif block is Fueltank:
-		fueltanks.append(block)
-	
-	for pos in target_grid:
-		grid[pos] = block
-	
-	block.set_connection_enabled(true)
