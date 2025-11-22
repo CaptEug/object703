@@ -81,7 +81,9 @@ func take_item(id: String, count: int) -> bool:
 		return false
 	
 	for item_index in range(len(inventory)):
-		if inventory[item_index]["id"] == id:
+		if inventory[item_index].is_empty():
+			continue
+		elif inventory[item_index]["id"] == id:
 			if inventory[item_index]["count"] >= count_remain:
 				inventory[item_index]["count"] -= count_remain
 				if inventory[item_index]["count"] == 0:
