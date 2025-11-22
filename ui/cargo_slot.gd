@@ -52,10 +52,10 @@ func update_slot_display() -> void:
 	else:
 		item_icon.texture = ItemDB.get_item(item_data.get("id")).get("icon")
 		item_icon.visible = true
-
 		var count = item_data.get("count", 1)
 		count_label.text = str(count)
 		count_label.visible = count > 0
+		show_current_icon()
 
 
 # ============================================================
@@ -126,6 +126,8 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 
 	# 放到最顶层（挂到 root，保证可见）
 	get_node("/root/Testground/CanvasLayer/Tankpanel").add_child(drag_preview)
+	if not drag_is_split:
+		hide_current_icon()
 	_update_drag()
 
 func _update_drag() -> void:
@@ -264,18 +266,22 @@ func _perform_drop(target_slot: Node) -> void:
 	#不能放入，如果split需返还item
 	elif drag_is_split:
 		_return_item()
+	else:
+		show_current_icon()
 
 func hide_current_icon() -> void:
-	item_icon.visible = false
-	count_label.visible = false
+	item_icon.modulate.a = 0.0
+	count_label.modulate.a = 0.0
+
 
 func show_current_icon() -> void:
-	item_icon.visible = true
-	count_label.visible = true
+	item_icon.modulate.a = 1.0
+	count_label.modulate.a = 1.0
 
 func _return_item() -> void:
 	if drag_is_split:
 		item_data["count"] += drag_source_item["count"]
+	show_current_icon()
 	update_slot_display()
 
 func _split_item_half() -> void:
