@@ -19,6 +19,8 @@ glow_hdr_scale = 1.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
+[node name="Hud" parent="CanvasLayer" instance=ExtResource("3_hie3q")]
+
 [node name="Editorui" parent="CanvasLayer" instance=ExtResource("2_hie3q")]
 visible = false
 anchors_preset = 2

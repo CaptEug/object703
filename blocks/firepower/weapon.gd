@@ -139,8 +139,6 @@ func shoot(muz:Marker2D, shell_picked:PackedScene):
 		var block_grid = on_turret.get_turret_block_grid(self)
 		var pos = (on_turret.calculate_block_center(block_grid) - Vector2(on_turret.size) * 8).rotated(on_turret.turret_basket.global_rotation)
 		var t_dir = Vector2.DOWN.rotated(gun_rotation)
-		print("inpluse pos: " + str(pos))
-		print("inpluse dir: " + str(Vector2.DOWN.rotated(gun_rotation)))
 		on_turret.turret_basket.apply_impulse(t_dir * muzzle_energy * 1000, pos)
 
 func start_reload():
