@@ -31,31 +31,7 @@ grow_vertical = 0
 [node name="Tooltip" parent="CanvasLayer" instance=ExtResource("3_m5lm4")]
 visible = false
 
-[node name="Hud" parent="CanvasLayer" instance=ExtResource("3_hie3q")]
-
-[node name="TankDex" parent="CanvasLayer"]
-_import_path = NodePath("")
-unique_name_in_owner = false
-process_mode = 0
-process_priority = 0
-process_physics_priority = 0
-process_thread_group = 0
-physics_interpolation_mode = 0
-auto_translate_mode = 0
-editor_description = ""
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -280.0
-offset_right = 320.0
-offset_bottom = 280.0
-grow_horizontal = 2
-grow_vertical = 2
-script = null
+[node name="Hud2" parent="CanvasLayer" instance=ExtResource("3_hie3q")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
