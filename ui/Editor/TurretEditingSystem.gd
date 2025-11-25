@@ -18,6 +18,8 @@ var available_block_connectors: Array[TurretConnector] = []
 var turret_snap_config: Dictionary = {}
 
 const GRID_SIZE = 16
+const MAX_SNAP_DISTANCE = 100.0  # 最大吸附距离
+const TURRET_SNAP_RADIUS_MULTIPLIER = 4.0  # 炮塔吸附半径倍数
 
 func get_viewport():
 	return editor.get_viewport()
@@ -65,9 +67,6 @@ func enter_turret_editing_mode(turret: TurretRing):
 	if is_turret_editing_mode:
 		exit_turret_editing_mode()
 	
-	print("=== 进入炮塔编辑模式 ===")
-	print("   目标炮塔:", turret.block_name if turret else "null")
-	
 	is_turret_editing_mode = true
 	current_editing_turret = turret
 	
@@ -77,7 +76,6 @@ func enter_turret_editing_mode(turret: TurretRing):
 			for point in body.get_children():
 				if point is TurretConnector and point.connected_to == null:
 					point.is_connection_enabled = true
-					print(point)
 	
 	turret.lock_turret_rotation()
 	
@@ -89,17 +87,12 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	if editor.is_recycle_mode:
 		Input.set_custom_mouse_cursor(editor.saw_cursor)
-		print("炮塔编辑模式：删除功能已切换到炮塔专用")
 	
 	editor.clear_tab_container_selection()
-	
-	print("炮塔编辑模式进入完成")
 
 func exit_turret_editing_mode():
 	if not is_turret_editing_mode:
 		return
-	
-	print("=== 退出炮塔编辑模式 ===")
 	
 	is_turret_editing_mode = false
 	
@@ -125,8 +118,6 @@ func exit_turret_editing_mode():
 		current_ghost_block.visible = true
 	
 	current_editing_turret = null
-	
-	print("炮塔编辑模式退出完成")
 
 # === 颜色处理函数 ===
 func handle_block_colors_in_turret_mode(block: Block):
@@ -177,7 +168,7 @@ func start_block_placement(scene_path: String):
 	current_ghost_block = current_block_scene.instantiate()
 	get_tree().current_scene.add_child(current_ghost_block)
 	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
-	current_ghost_block.z_index = 100
+	current_ghost_block.z_index = 1000
 	current_ghost_block.do_connect = false
 	
 	# 在炮塔编辑模式下设置碰撞层
@@ -214,9 +205,10 @@ func rotate_ghost_connection():
 	current_ghost_block.base_rotation_degree = fmod(current_ghost_block.base_rotation_degree + 90, 360)
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
+	# 旋转后重新计算吸附
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	update_turret_placement_feedback()
+	update_turret_editing_snap_system(global_mouse_pos)
 
 func cancel_placement():
 	if current_ghost_block:
@@ -242,100 +234,213 @@ func update_turret_editing_snap_system(mouse_position: Vector2):
 		set_ghost_free_position(mouse_position)
 		return
 	
-	if is_position_in_turret_range_for_ghost(mouse_position):
-		update_turret_range_placement(mouse_position)
-	else:
-		update_outside_turret_placement(mouse_position)
+	# 检查鼠标是否离炮塔太远
+	if is_mouse_too_far_from_turret(mouse_position):
+		turret_snap_config = {}
+		current_ghost_block.global_position = mouse_position
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+		current_ghost_block.modulate = editor.GHOST_FREE_COLOR
+		return
+	
+	# 重置吸附配置
+	turret_snap_config = {}
+	
+	# 先尝试炮塔内吸附（与炮塔篮筐的连接点吸附）
+	var turret_snap = try_turret_internal_snap(mouse_position)
+	if turret_snap and not turret_snap.is_empty():
+		# 炮塔内吸附成功
+		turret_snap_config = turret_snap
+		current_ghost_block.global_position = turret_snap_config.ghost_position
+		if turret_snap_config.has("ghost_rotation"):
+			current_ghost_block.global_rotation = turret_snap_config.ghost_rotation
+		current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
+		return
+	
+	# 再尝试炮塔外吸附（与炮塔上已有方块的连接点吸附）
+	var external_snap = try_turret_external_snap(mouse_position)
+	if external_snap and not external_snap.is_empty():
+		# 炮塔外吸附成功
+		turret_snap_config = external_snap
+		current_ghost_block.global_position = turret_snap_config.ghost_position
+		if turret_snap_config.has("ghost_rotation"):
+			current_ghost_block.global_rotation = turret_snap_config.ghost_rotation
+		current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
+		return
+	
+	# 都不能吸附，显示为不能放置
+	turret_snap_config = {}
+	current_ghost_block.global_position = mouse_position
+	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+	current_ghost_block.modulate = editor.GHOST_FREE_COLOR
 
-func is_position_in_turret_range_for_ghost(mouse_position: Vector2) -> bool:
-	if not current_editing_turret or not current_ghost_block:
-		return false
-	
-	var turret_use = current_editing_turret.turret_basket
-	var local_mouse_pos = turret_use.to_local(mouse_position)
-	
-	var turret_width = current_editing_turret.size.x * GRID_SIZE
-	var turret_height = current_editing_turret.size.y * GRID_SIZE
-	var turret_half_width = turret_width / 2.0
-	var turret_half_height = turret_height / 2.0
-	
-	var is_in_turret_area = (
-		local_mouse_pos.x >= -turret_half_width and 
-		local_mouse_pos.x <= turret_half_width and 
-		local_mouse_pos.y >= -turret_half_height and 
-		local_mouse_pos.y <= turret_half_height
-	)
-	
-	if not is_in_turret_area:
-		return false
-	
-	var grid_x = int(floor(local_mouse_pos.x / GRID_SIZE))
-	var grid_y = int(floor(local_mouse_pos.y / GRID_SIZE))
-	
-	var ghost_grid_positions = calculate_ghost_grid_positions_for_turret(
-		Vector2i(grid_x, grid_y), 
-		current_ghost_block.base_rotation_degree
-	)
-	
-	for pos in ghost_grid_positions:
-		if not current_editing_turret.is_position_available(pos):
-			return false
-	
-	return true
-
-func calculate_ghost_grid_positions_for_turret(base_pos: Vector2i, rotation_deg: float) -> Array:
-	var grid_positions = []
-	var block_size = current_ghost_block.size
-	
-	for x in range(block_size.x):
-		for y in range(block_size.y):
-			var grid_pos: Vector2i
-			
-			match int(rotation_deg):
-				0:
-					grid_pos = base_pos + Vector2i(x, y)
-				90:
-					grid_pos = base_pos + Vector2i(-y, x)
-				-90, 270:
-					grid_pos = base_pos + Vector2i(y, -x)
-				180, -180:
-					grid_pos = base_pos + Vector2i(-x, -y)
-				_:
-					grid_pos = base_pos + Vector2i(x, y)
-			
-			grid_positions.append(grid_pos)
-	
-	return grid_positions
-
-func update_turret_range_placement(mouse_position: Vector2):
+func try_turret_internal_snap(mouse_position: Vector2) -> Dictionary:
+	# 尝试炮塔内吸附（与炮塔篮筐的连接点吸附）
 	var available_turret_points = get_turret_platform_connectors()
 	var available_ghost_points = get_ghost_block_rigidbody_connectors()
 	
 	if available_turret_points.is_empty() or available_ghost_points.is_empty():
-		set_ghost_free_position(mouse_position)
-		return
-		
-	var best_snap = find_best_rigidbody_snap_config(mouse_position, available_turret_points, available_ghost_points)
+		return {}
+	
+	# 使用新的吸附逻辑
+	var best_snap = find_valid_rigidbody_snap(mouse_position, available_turret_points, available_ghost_points)
 	
 	if best_snap and not best_snap.is_empty():
-		apply_turret_snap_config(best_snap)
-	else:
-		set_ghost_free_position(mouse_position)
+		return best_snap
+	
+	return {}
 
-func update_outside_turret_placement(mouse_position: Vector2):
+func try_turret_external_snap(mouse_position: Vector2) -> Dictionary:
+	# 尝试炮塔外吸附（与炮塔上已有方块的连接点吸附）
 	var available_block_points = get_turret_block_connection_points()
 	var available_ghost_points = get_ghost_block_connection_points()
 	
-	if available_block_points.is_empty() or available_ghost_points.is_empty():
-		set_ghost_free_position(mouse_position)
-		return
+	print("=== 外部吸附调试 ===")
+	print("可用块连接点数量: ", available_block_points.size())
+	print("可用虚影连接点数量: ", available_ghost_points.size())
 	
-	var best_snap = find_best_regular_snap_config_for_turret(mouse_position, available_block_points, available_ghost_points)
+	if available_block_points.is_empty():
+		print("外部吸附失败: 没有可用的块连接点")
+		return {}
+	
+	if available_ghost_points.is_empty():
+		print("外部吸附失败: 没有可用的虚影连接点")
+		return {}
+	
+	# 打印一些连接点信息用于调试
+	for i in range(min(3, available_block_points.size())):
+		var point = available_block_points[i]
+		var block = point.find_parent_block()
+		print("块连接点 ", i, ": ", point.name, " 在块 ", block.name if block else "未知", " 位置: ", point.global_position)
+	
+	for i in range(min(3, available_ghost_points.size())):
+		var point = available_ghost_points[i]
+		print("虚影连接点 ", i, ": ", point.name, " 位置: ", point.global_position)
+	
+	# 使用新的吸附逻辑
+	var best_snap = find_valid_regular_snap(mouse_position, available_block_points, available_ghost_points)
 	
 	if best_snap and not best_snap.is_empty():
-		apply_turret_snap_config(best_snap)
+		print("炮塔外吸附成功，网格位置: ", best_snap.get("grid_positions", []))
+		return best_snap
+	
+	print("外部吸附失败: 未找到有效吸附")
+	return {}
+
+# === 新的吸附检测函数 ===
+func find_valid_rigidbody_snap(mouse_position: Vector2, turret_points: Array[TurretConnector], ghost_points: Array[TurretConnector]) -> Dictionary:
+	var best_config = {}
+	var min_mouse_distance = INF
+	var SNAP_DISTANCE = 32.0  # 吸附距离阈值
+	
+	for turret_point in turret_points:
+		var turret_global_pos = turret_point.global_position
+		
+		for ghost_point in ghost_points:
+			if not can_rigidbody_connectors_connect(turret_point, ghost_point):
+				continue
+			
+			var ghost_global_pos = ghost_point.global_position
+			var connector_distance = turret_global_pos.distance_to(ghost_global_pos)
+			
+			if connector_distance > SNAP_DISTANCE:
+				continue
+			
+			# 计算吸附配置
+			var snap_config = calculate_rigidbody_snap_config(turret_point, ghost_point)
+			if snap_config.is_empty():
+				continue
+			
+			# 检查网格位置是否可用
+			var grid_positions = snap_config.get("grid_positions", [])
+			if not are_turret_grid_positions_available(grid_positions, current_editing_turret):
+				print("内部吸附 - 网格位置被占用: ", grid_positions)
+				continue
+			
+			var snap_position = snap_config.get("ghost_position", Vector2.ZERO)
+			var mouse_distance = mouse_position.distance_to(snap_position)
+			if mouse_distance < min_mouse_distance:
+				min_mouse_distance = mouse_distance
+				best_config = snap_config
+	
+	return best_config
+
+func find_valid_regular_snap(mouse_position: Vector2, block_points: Array[Connector], ghost_points: Array[Connector]) -> Dictionary:
+	var best_config = {}
+	var min_mouse_distance = INF
+	var SNAP_DISTANCE = 32.0  # 吸附距离阈值
+	
+	print("开始查找有效外部吸附，块连接点数量: ", block_points.size(), " 虚影连接点数量: ", ghost_points.size())
+	
+	var connection_tested = 0
+	var connection_valid = 0
+	
+	for block_point in block_points:
+		var block = block_point.find_parent_block()
+		if not block or block == current_editing_turret:
+			continue
+		
+		var block_point_global = get_turret_connection_point_global_position(block_point, block)
+		
+		for ghost_point in ghost_points:
+			connection_tested += 1
+			
+			# 检查连接点类型是否匹配
+			if block_point.connection_type != ghost_point.connection_type:
+				continue
+			
+			# 检查连接点方向
+			if not can_points_connect_with_rotation_for_turret(block_point, ghost_point, 0):
+				continue
+			
+			connection_valid += 1
+			
+			var ghost_global_pos = ghost_point.global_position
+			var connector_distance = block_point_global.distance_to(ghost_global_pos)
+			
+			print("连接点测试 - 块: ", block.name, " 距离: ", connector_distance)
+			
+			if connector_distance > SNAP_DISTANCE:
+				continue
+			
+			# 计算完整的吸附配置
+			var target_rotation = calculate_aligned_rotation_for_turret_block(block)
+			var positions = calculate_rotated_grid_positions_for_turret(block_point, ghost_point)
+			
+			if positions is bool or positions.is_empty():
+				print("网格位置计算失败")
+				continue
+			
+			# 检查网格位置是否可用
+			if not are_turret_grid_positions_available(positions, current_editing_turret):
+				print("外部吸附 - 网格位置被占用: ", positions)
+				continue
+			
+			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
+			var ghost_position = block_point_global - ghost_local_offset
+			
+			# 计算鼠标到吸附位置的距离
+			var mouse_distance = mouse_position.distance_to(ghost_position)
+			
+			if mouse_distance < min_mouse_distance:
+				min_mouse_distance = mouse_distance
+				
+				best_config = {
+					"vehicle_point": block_point,
+					"ghost_point": ghost_point,
+					"ghost_position": ghost_position,
+					"ghost_rotation": target_rotation,
+					"vehicle_block": block,
+					"grid_positions": positions
+				}
+	
+	print("外部吸附测试统计 - 总共测试: ", connection_tested, " 有效连接: ", connection_valid)
+	
+	if best_config.is_empty():
+		print("未找到有效外部吸附配置")
 	else:
-		set_ghost_free_position(mouse_position)
+		print("找到有效外部吸附配置，鼠标距离: ", min_mouse_distance)
+	
+	return best_config
 
 # === 删除模式功能 ===
 func try_remove_turret_block():
@@ -380,22 +485,33 @@ func is_block_on_turret(block: Block) -> bool:
 # === 炮塔放置功能 ===
 func try_place_turret_block():
 	if not is_turret_editing_mode or not current_editing_turret:
+		print("错误：不在炮塔编辑模式")
 		return
 	
 	if not current_block_scene:
+		print("错误：没有当前块场景")
 		return
 	
 	if not turret_snap_config or turret_snap_config.is_empty():
+		print("错误：没有吸附配置")
 		return
 	
 	if not turret_snap_config.has("ghost_position"):
+		print("错误：吸附配置缺少ghost_position")
 		return
 	
-	var grid_positions = turret_snap_config.get("grid_positions", turret_snap_config.get("positions", []))
+	# 使用加强验证
+	if not validate_snap_config_before_placement():
+		print("错误：放置前验证失败")
+		return
+	
+	var grid_positions = turret_snap_config.get("grid_positions", [])
 	
 	if not grid_positions or grid_positions.is_empty():
+		print("错误：没有网格位置")
 		return
 	
+	# 创建新块
 	var new_block: Block = current_block_scene.instantiate()
 	
 	if new_block is CollisionObject2D:
@@ -406,12 +522,19 @@ func try_place_turret_block():
 	new_block.global_rotation = turret_snap_config.ghost_rotation
 	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
 	
+	# 添加到炮塔
 	if turret_snap_config.has("grid_positions"):
-		current_editing_turret.add_block_to_turret(new_block, turret_snap_config.grid_positions)
+		var success = current_editing_turret.add_block_to_turret(new_block, turret_snap_config.grid_positions)
+		if not success:
+			print("错误：添加到炮塔失败")
+			new_block.queue_free()
+			return
 	else:
 		new_block.queue_free()
+		print("错误：吸附配置缺少grid_positions")
 		return
 	
+	# 异步操作
 	if new_block.has_method("connect_aready"):
 		await new_block.connect_aready()
 	else:
@@ -423,8 +546,10 @@ func try_place_turret_block():
 	# 更新块颜色
 	update_all_block_colors_in_turret_mode(current_editing_turret)
 	
-	# 重新开始放置以保持旋转状态
+	# 重新开始放置
 	start_block_placement_with_rotation(current_block_scene.resource_path)
+	
+	print("块放置成功")
 
 func start_block_placement_with_rotation(scene_path: String):
 	if not is_turret_editing_mode or not selected_vehicle:
@@ -444,7 +569,7 @@ func start_block_placement_with_rotation(scene_path: String):
 	current_ghost_block = current_block_scene.instantiate()
 	get_tree().current_scene.add_child(current_ghost_block)
 	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
-	current_ghost_block.z_index = 100
+	current_ghost_block.z_index = 1000
 	current_ghost_block.do_connect = false
 	
 	if current_ghost_block is CollisionObject2D:
@@ -457,6 +582,61 @@ func start_block_placement_with_rotation(scene_path: String):
 	setup_ghost_block_collision(current_ghost_block)
 	
 	turret_snap_config = {}
+
+# === 放置前验证函数 ===
+func validate_snap_config_before_placement() -> bool:
+	# 1. 检查吸附配置是否完整
+	if not turret_snap_config.has("ghost_position") or not turret_snap_config.has("grid_positions"):
+		print("吸附配置不完整")
+		return false
+	
+	# 2. 检查网格位置是否仍然可用
+	var grid_positions = turret_snap_config.get("grid_positions", [])
+	if not are_turret_grid_positions_available(grid_positions, current_editing_turret):
+		print("网格位置已被占用")
+		return false
+	
+	# 3. 检查连接点是否仍然可用
+	if turret_snap_config.has("turret_point") and turret_snap_config.has("ghost_point"):
+		var turret_point: TurretConnector = turret_snap_config.turret_point
+		var ghost_point: TurretConnector = turret_snap_config.ghost_point
+		
+		if not is_instance_valid(turret_point) or not is_instance_valid(ghost_point):
+			print("连接点无效")
+			return false
+		
+		if not can_rigidbody_connectors_connect(turret_point, ghost_point):
+			print("连接点无法连接")
+			return false
+	elif turret_snap_config.has("vehicle_point") and turret_snap_config.has("ghost_point"):
+		var vehicle_point: Connector = turret_snap_config.vehicle_point
+		var ghost_point: Connector = turret_snap_config.ghost_point
+		
+		if not is_instance_valid(vehicle_point) or not is_instance_valid(ghost_point):
+			print("连接点无效")
+			return false
+		
+		if not can_points_connect_with_rotation_for_turret(vehicle_point, ghost_point, 0):
+			print("连接点无法连接")
+			return false
+	
+	# 4. 检查块是否在炮塔范围内
+	var ghost_position = turret_snap_config.ghost_position
+	if is_position_too_far_from_turret(ghost_position):
+		print("位置离炮塔太远")
+		return false
+	
+	return true
+
+func is_position_too_far_from_turret(position: Vector2) -> bool:
+	if not current_editing_turret:
+		return true
+	
+	var turret_center = current_editing_turret.global_position
+	var distance = position.distance_to(turret_center)
+	var turret_radius = calculate_effective_turret_radius()
+	
+	return distance > turret_radius
 
 # === 炮塔检测功能 ===
 func get_turret_at_position(position: Vector2) -> TurretRing:
@@ -473,46 +653,6 @@ func get_turret_at_position(position: Vector2) -> TurretRing:
 	return null
 
 # === 吸附系统辅助函数 ===
-func find_best_regular_snap_config_for_turret(mouse_position: Vector2, block_points: Array[Connector], ghost_points: Array[Connector]) -> Dictionary:
-	var best_config = {}
-	var min_distance = INF
-	var SNAP_DISTANCE = 16.0
-	
-	for block_point in block_points:
-		var block = block_point.find_parent_block()
-		if not block or block == current_editing_turret:
-			continue
-		
-		var block_point_global = get_turret_connection_point_global_position(block_point, block)
-		
-		for ghost_point in ghost_points:
-			var target_rotation = calculate_aligned_rotation_for_turret_block(block)
-			#
-			if not can_points_connect_with_rotation_for_turret(block_point, ghost_point, target_rotation):
-				continue
-				
-			var positions = calculate_rotated_grid_positions_for_turret(block_point, ghost_point)
-			if positions is bool or positions.is_empty():
-				continue
-				
-			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
-			var ghost_position = block_point_global - ghost_local_offset
-			
-			var distance = mouse_position.distance_to(ghost_position)
-			
-			if distance < SNAP_DISTANCE and distance < min_distance:
-				min_distance = distance
-				best_config = {
-					"vehicle_point": block_point,
-					"ghost_point": ghost_point,
-					"ghost_position": ghost_position,
-					"ghost_rotation": target_rotation,
-					"vehicle_block": block,
-					"grid_positions": positions
-				}
-		
-	return best_config
-
 func get_turret_connection_point_global_position(point: Connector, block: Block) -> Vector2:
 	return block.global_position + point.position.rotated(block.global_rotation)
 
@@ -525,55 +665,139 @@ func calculate_aligned_rotation_for_turret_block(vehicle_block: Block) -> float:
 
 func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
 	if point_a.connection_type != point_b.connection_type:
+		print("连接点类型不匹配: ", point_a.connection_type, " vs ", point_b.connection_type)
 		return false
-	#if not point_a.is_connection_enabled or not point_b.is_connection_enabled:
-		#return false
 	
-	var ghost_point_direction = point_b.rotation + ghost_rotation
-	var vehicle_point_direction = point_a.global_rotation
+	# 使用角度差来判断，而不是点积
+	var ghost_point_direction = wrapf(point_b.rotation + ghost_rotation, -PI, PI)
+	var vehicle_point_direction = wrapf(point_a.global_rotation, -PI, PI)
 	
-	var dir1 = Vector2(cos(ghost_point_direction), sin(ghost_point_direction))
-	var dir2 = Vector2(cos(vehicle_point_direction), sin(vehicle_point_direction))
+	# 计算角度差
+	var angle_diff = abs(wrapf(vehicle_point_direction - ghost_point_direction, -PI, PI))
 	
-	return dir1.dot(dir2) < -0.9
+	print("方向检测 - 点A方向: ", rad_to_deg(vehicle_point_direction), " 点B方向: ", rad_to_deg(ghost_point_direction), " 角度差: ", rad_to_deg(angle_diff))
+	
+	# 允许更大的角度容差，比如165-195度范围内都认为是可连接的
+	return angle_diff > deg_to_rad(165) and angle_diff < deg_to_rad(195)
 
 func calculate_rotated_grid_positions_for_turret(turret_point: Connector, ghost_point: Connector):
 	if not current_editing_turret:
+		print("网格计算失败: 没有当前编辑的炮塔")
 		return []
 	
-	var location_v = turret_point.location
-	var rotation_b = turret_point.find_parent_block().base_rotation_degree
-	
-	# 找到父块的网格位置
-	var grid_b = {}
-	for key in current_editing_turret.turret_grid:
-		if current_editing_turret.turret_grid[key] == turret_point.find_parent_block():
-			grid_b[key] = current_editing_turret.turret_grid[key]
-	
-	var grid_b_pos = get_rectangle_corners(grid_b)
-	if grid_b_pos.is_empty():
+	# 获取父块的网格位置
+	var parent_block = turret_point.find_parent_block()
+	if not parent_block:
+		print("网格计算失败: 找不到父块")
 		return []
 	
-	# 计算连接点位置
-	var connect_pos_v
-	match int(rotation_b):
+	# 找到父块在炮塔网格中的位置
+	var parent_grid_positions = current_editing_turret.get_turret_block_grid(parent_block)
+	if parent_grid_positions.is_empty():
+		print("网格计算失败: 父块没有网格位置")
+		return []
+	
+	print("父块网格位置: ", parent_grid_positions)
+	
+	# 计算父块的边界
+	var bounds = calculate_grid_bounds(parent_grid_positions)
+	if not bounds:
+		print("网格计算失败: 无法计算边界")
+		return []
+	
+	# 计算连接点在父块中的局部位置
+	var local_connector_pos = turret_point.location
+	
+	# 计算连接点在炮塔网格中的位置
+	var connector_grid_pos = calculate_connector_grid_position(bounds, local_connector_pos, parent_block.base_rotation_degree)
+	print("连接点网格位置: ", connector_grid_pos)
+	
+	# 计算新块的网格位置
+	var new_block_positions = calculate_new_block_grid_positions(connector_grid_pos, ghost_point, current_ghost_block.size, current_ghost_block.base_rotation_degree)
+	
+	print("新块网格位置: ", new_block_positions)
+	
+	return new_block_positions
+
+func calculate_grid_bounds(grid_positions: Array) -> Dictionary:
+	if grid_positions.is_empty():
+		return {}
+	
+	var min_x = grid_positions[0].x
+	var min_y = grid_positions[0].y
+	var max_x = grid_positions[0].x
+	var max_y = grid_positions[0].y
+	
+	for pos in grid_positions:
+		min_x = min(min_x, pos.x)
+		min_y = min(min_y, pos.y)
+		max_x = max(max_x, pos.x)
+		max_y = max(max_y, pos.y)
+	
+	return {
+		"min_x": min_x,
+		"min_y": min_y,
+		"max_x": max_x,
+		"max_y": max_y,
+		"width": max_x - min_x + 1,
+		"height": max_y - min_y + 1
+	}
+
+func calculate_connector_grid_position(bounds: Dictionary, local_pos: Vector2i, rotation_degree: int) -> Vector2i:
+	var base_pos = Vector2i(bounds.min_x, bounds.min_y)
+	
+	match rotation_degree:
 		0:
-			connect_pos_v = Vector2i(grid_b_pos["1"].x + location_v.x, grid_b_pos["1"].y + location_v.y)
-		-90:
-			connect_pos_v = Vector2i(grid_b_pos["4"].x + location_v.y, grid_b_pos["4"].y - location_v.x)
-		-180, 180:
-			connect_pos_v = Vector2i(grid_b_pos["3"].x - location_v.x, grid_b_pos["3"].y - location_v.y)
+			return base_pos + local_pos
 		90:
-			connect_pos_v = Vector2i(grid_b_pos["2"].x - location_v.y, grid_b_pos["2"].y + location_v.x)
+			return base_pos + Vector2i(local_pos.y, bounds.height - 1 - local_pos.x)
+		-90, 270:
+			return base_pos + Vector2i(bounds.width - 1 - local_pos.y, local_pos.x)
+		180, -180:
+			return base_pos + Vector2i(bounds.width - 1 - local_pos.x, bounds.height - 1 - local_pos.y)
 		_:
-			return []
+			return base_pos + local_pos
+
+func calculate_new_block_grid_positions(connector_pos: Vector2i, ghost_point: Connector, block_size: Vector2i, rotation_degree: int) -> Array:
+	var positions = []
+	var local_connector_pos = ghost_point.location
 	
-	var grid_connect_g = get_connection_offset(connect_pos_v, turret_point.rotation, turret_point.find_parent_block().base_rotation_degree)
+	# 计算新块的基准位置
+	var base_pos = calculate_base_position(connector_pos, local_connector_pos, rotation_degree)
 	
-	if grid_connect_g == null:
-		return []
+	# 根据旋转计算所有网格位置
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			var pos = calculate_rotated_position(base_pos, Vector2i(x, y), block_size, rotation_degree)
+			positions.append(pos)
 	
-	return to_grid_array(grid_connect_g, ghost_point.find_parent_block().size, ghost_point.location)
+	return positions
+
+func calculate_base_position(connector_pos: Vector2i, local_connector_pos: Vector2i, rotation_degree: int) -> Vector2i:
+	match rotation_degree:
+		0:
+			return Vector2i(connector_pos.x - local_connector_pos.x, connector_pos.y - local_connector_pos.y)
+		90:
+			return Vector2i(connector_pos.x + local_connector_pos.y, connector_pos.y - local_connector_pos.x)
+		-90, 270:
+			return Vector2i(connector_pos.x - local_connector_pos.y, connector_pos.y + local_connector_pos.x)
+		180, -180:
+			return Vector2i(connector_pos.x + local_connector_pos.x, connector_pos.y + local_connector_pos.y)
+		_:
+			return Vector2i(connector_pos.x - local_connector_pos.x, connector_pos.y - local_connector_pos.y)
+
+func calculate_rotated_position(base_pos: Vector2i, local_pos: Vector2i, block_size: Vector2i, rotation_degree: int) -> Vector2i:
+	match rotation_degree:
+		0:
+			return Vector2i(base_pos.x + local_pos.x, base_pos.y + local_pos.y)
+		90:
+			return Vector2i(base_pos.x - local_pos.y, base_pos.y + local_pos.x)
+		-90, 270:
+			return Vector2i(base_pos.x + local_pos.y, base_pos.y - local_pos.x)
+		180, -180:
+			return Vector2i(base_pos.x - local_pos.x, base_pos.y - local_pos.y)
+		_:
+			return Vector2i(base_pos.x + local_pos.x, base_pos.y + local_pos.y)
 
 func get_rectangle_corners(grid_data: Dictionary) -> Dictionary:
 	if grid_data.is_empty():
@@ -635,7 +859,7 @@ func to_grid_array(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g
 				_:
 					var left_up = Vector2i(grid_connect_g.x - connect_pos_g.x, grid_connect_g.y - connect_pos_g.y)
 					pos = Vector2i(left_up.x + i, left_up.y + j)
-			
+	
 			grid_positions.append(pos)
 	
 	return grid_positions
@@ -647,11 +871,13 @@ func get_turret_platform_connectors() -> Array[TurretConnector]:
 	if not current_editing_turret:
 		return points
 	
-	for connector in current_editing_turret.turret_basket.get_children():
-		if (connector is TurretConnector and 
-			connector.is_connection_enabled and 
-			connector.connected_to == null):
-			points.append(connector)
+	for body in current_editing_turret.turret_basket.get_children():
+		if body is StaticBody2D:
+			for connector in body.get_children():
+				if (connector is TurretConnector and 
+					connector.is_connection_enabled and 
+					connector.connected_to == null):
+					points.append(connector)
 	
 	return points
 
@@ -659,15 +885,29 @@ func get_turret_block_connection_points() -> Array[Connector]:
 	var points: Array[Connector] = []
 	
 	if not current_editing_turret:
+		print("错误: 没有当前编辑的炮塔")
 		return points
 	
-	for block in current_editing_turret.get_attached_blocks():
+	var attached_blocks = current_editing_turret.get_attached_blocks()
+	print("炮塔上的块数量: ", attached_blocks.size())
+	
+	for block in attached_blocks:
 		if is_instance_valid(block) and block != current_editing_turret:
+			print("检查块: ", block.name, " 的连接点")
 			for point in block.connection_points:
 				if (point is Connector and 
 					point.is_connection_enabled and 
 					point.connected_to == null):
+					# 添加连接点详细信息
+					print("找到可用连接点: ", point.name, 
+						  " 在块: ", block.name,
+						  " 类型: ", point.connection_type,
+						  " 本地旋转: ", rad_to_deg(point.rotation),
+						  " 全局旋转: ", rad_to_deg(point.global_rotation),
+						  " 位置: ", point.location)
 					points.append(point)
+	
+	print("总共找到外部连接点: ", points.size())
 	return points
 
 func get_ghost_block_rigidbody_connectors() -> Array[TurretConnector]:
@@ -676,6 +916,7 @@ func get_ghost_block_rigidbody_connectors() -> Array[TurretConnector]:
 	if not current_ghost_block:
 		return points
 	
+	# 确保我们找到的是正确的连接点类型
 	for connector in current_ghost_block.find_children("*", "TurretConnector", true):
 		if (connector is TurretConnector and 
 			connector.is_connection_enabled and 
@@ -690,41 +931,26 @@ func get_ghost_block_connection_points() -> Array[Connector]:
 		var connection_points = current_ghost_block.get_available_connection_points()
 		for point in connection_points:
 			if point is Connector:
+				# 添加虚影块连接点详细信息
+				print("虚影块连接点: ", point.name,
+					  " 类型: ", point.connection_type,
+					  " 本地旋转: ", rad_to_deg(point.rotation),
+					  " 全局旋转: ", rad_to_deg(point.global_rotation),
+					  " 位置: ", point.location)
 				points.append(point)
 	return points
 
 # === 刚性体吸附系统 ===
-func find_best_rigidbody_snap_config(mouse_position: Vector2, turret_points: Array[TurretConnector], ghost_points: Array[TurretConnector]) -> Dictionary:
-	var best_config = {}
-	var min_distance = INF
-	
-	for turret_point in turret_points:
-		for ghost_point in ghost_points:
-			if not can_rigidbody_connectors_connect(turret_point, ghost_point):
-				continue
-			
-			var snap_config = calculate_rigidbody_snap_config(turret_point, ghost_point)
-			if snap_config.is_empty():
-				continue
-			
-			var target_position = snap_config.get("ghost_position", Vector2.ZERO)
-			var distance = mouse_position.distance_to(target_position)
-			
-			if distance < turret_point.snap_distance_threshold and distance < min_distance:
-				min_distance = distance
-				best_config = snap_config
-	
-	return best_config
-
 func calculate_rigidbody_snap_config(turret_point: TurretConnector, ghost_point: TurretConnector) -> Dictionary:
 	if not turret_point or not ghost_point or not current_ghost_block or not current_editing_turret:
 		return {}
 	
-	var grid_positions = calculate_all_grid_positions(turret_point.location, current_ghost_block.size, ghost_point)
-	
+	# 计算网格位置
+	var grid_positions = calculate_rigidbody_grid_positions(turret_point, ghost_point)
 	if not are_turret_grid_positions_available(grid_positions, current_editing_turret):
 		return {}
 	
+	# 计算世界位置和旋转
 	var world_position = calculate_turret_world_position(turret_point, ghost_point.position, deg_to_rad(ghost_point.get_parent().base_rotation_degree))
 	var target_rotation = calculate_turret_block_rotation(turret_point, ghost_point)
 	
@@ -737,40 +963,34 @@ func calculate_rigidbody_snap_config(turret_point: TurretConnector, ghost_point:
 		"connection_type": "rigidbody"
 	}
 
-func calculate_all_grid_positions(base_pos: Vector2i, block_size: Vector2i, ghost_point: TurretConnector) -> Array:
+func calculate_rigidbody_grid_positions(turret_point: TurretConnector, ghost_point: TurretConnector) -> Array:
 	var positions = []
-	var local_pos = ghost_point.location
-	var zero_pos: Vector2i
+	var turret_local_pos = turret_point.location
+	var ghost_local_pos = ghost_point.location
 	
-	match int(ghost_point.get_parent().base_rotation_degree):
-		0:
-			zero_pos = base_pos - local_pos
-		90:
-			zero_pos = base_pos + Vector2i(local_pos.y, -local_pos.x)
-		-90, 270:
-			zero_pos = base_pos + Vector2i(-local_pos.y, local_pos.x)
-		180, -180:
-			zero_pos = base_pos + Vector2i(local_pos.x, local_pos.y)
-		_:
-			zero_pos = base_pos - local_pos
+	# 计算基准位置
+	var base_pos = turret_local_pos
 	
-	for i in block_size.x:
-		for j in block_size.y:
-			var pos: Vector2i
-			match int(ghost_point.get_parent().base_rotation_degree):
-				0:
-					pos = Vector2i(zero_pos.x + i, zero_pos.y + j)
-				90:
-					pos = Vector2i(zero_pos.x - j, zero_pos.y + i)
-				-90, 270:
-					pos = Vector2i(zero_pos.x + j, zero_pos.y - i)
-				180, -180:
-					pos = Vector2i(zero_pos.x - i, zero_pos.y - j)
-				_:
-					pos = Vector2i(zero_pos.x + i, zero_pos.y + j)
+	# 根据虚影块的旋转计算所有网格位置
+	for x in range(current_ghost_block.size.x):
+		for y in range(current_ghost_block.size.y):
+			var pos = calculate_rigidbody_position(base_pos, Vector2i(x, y), ghost_local_pos, current_ghost_block.base_rotation_degree)
 			positions.append(pos)
 	
 	return positions
+
+func calculate_rigidbody_position(base_pos: Vector2i, local_pos: Vector2i, connector_pos: Vector2i, rotation_degree: int) -> Vector2i:
+	match rotation_degree:
+		0:
+			return Vector2i(base_pos.x - connector_pos.x + local_pos.x, base_pos.y - connector_pos.y + local_pos.y)
+		90:
+			return Vector2i(base_pos.x + connector_pos.y - local_pos.y, base_pos.y - connector_pos.x + local_pos.x)
+		-90, 270:
+			return Vector2i(base_pos.x - connector_pos.y + local_pos.y, base_pos.y + connector_pos.x - local_pos.x)
+		180, -180:
+			return Vector2i(base_pos.x + connector_pos.x - local_pos.x, base_pos.y + connector_pos.y - local_pos.y)
+		_:
+			return Vector2i(base_pos.x - connector_pos.x + local_pos.x, base_pos.y - connector_pos.y + local_pos.y)
 
 func calculate_turret_world_position(turret_point: TurretConnector, ghost_local_pos: Vector2, rotation: float) -> Vector2:
 	var use_pos = turret_point.position - ghost_local_pos.rotated(rotation)
@@ -797,30 +1017,73 @@ func can_rigidbody_connectors_connect(connector_a: TurretConnector, connector_b:
 	var a_is_turret = connector_a.get_parent() is Block
 	var b_is_turret = connector_b.get_parent() is Block
 	
-	return a_is_turret != b_is_turret
+	var can_connect = a_is_turret != b_is_turret
+	
+	return can_connect
 
 func are_turret_grid_positions_available(grid_positions: Array, turret: TurretRing) -> bool:
+	if not turret:
+		return false
+	
 	for pos in grid_positions:
-		if pos and not turret.is_position_available(pos):
+		if not is_grid_position_available(pos, turret):
 			return false
+	
 	return true
 
-# === 通用函数 ===
-func apply_turret_snap_config(snap_config: Dictionary):
-	if not snap_config.has("ghost_position"):
-		return
+func is_grid_position_available(grid_pos: Vector2i, turret: TurretRing) -> bool:
+	if not turret:
+		return false
 	
-	current_ghost_block.global_position = snap_config.ghost_position
+	# 检查位置是否在炮塔网格中
+	var existing_block = turret.get_turret_block_at_position(grid_pos)
+	if existing_block:
+		return false
 	
-	if snap_config.has("ghost_rotation"):
-		current_ghost_block.global_rotation = snap_config.ghost_rotation
-	else:
-		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-	
-	current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
-	
-	turret_snap_config = snap_config.duplicate()
+	return true
 
+# === 距离检测函数 ===
+func is_mouse_too_far_from_turret(mouse_position: Vector2) -> bool:
+	if not current_editing_turret:
+		return true
+	
+	var turret_center = current_editing_turret.global_position
+	var distance = mouse_position.distance_to(turret_center)
+	var effective_radius = calculate_effective_turret_radius()
+	
+	print("鼠标距离检测 - 距离: ", distance, " 有效半径: ", effective_radius)
+	
+	# 在炮塔编辑模式下，我们使用更宽松的距离检测
+	# 允许在炮塔外部较远的位置进行外部吸附
+	return distance > effective_radius * 3.0  # 增加3倍容忍范围
+
+func calculate_effective_turret_radius() -> float:
+	if not current_editing_turret:
+		return 0.0
+	
+	# 基础半径基于炮塔大小
+	var base_radius = max(current_editing_turret.size.x, current_editing_turret.size.y) * GRID_SIZE * TURRET_SNAP_RADIUS_MULTIPLIER
+	
+	# 考虑已放置块的最大延伸
+	var attached_blocks = current_editing_turret.get_attached_blocks()
+	var max_extension = 0.0
+	
+	for block in attached_blocks:
+		if is_instance_valid(block):
+			var block_distance = block.global_position.distance_to(current_editing_turret.global_position)
+			# 加上块本身的大小
+			var block_radius = max(block.size.x, block.size.y) * GRID_SIZE * 0.5
+			var total_distance = block_distance + block_radius
+			max_extension = max(max_extension, total_distance)
+	
+	# 使用较大的半径，确保外部吸附有足够空间
+	var effective_radius = max(base_radius, max_extension) + MAX_SNAP_DISTANCE
+	
+	print("计算有效半径 - 基础: ", base_radius, " 最大延伸: ", max_extension, " 最终: ", effective_radius)
+	
+	return effective_radius
+
+# === 通用函数 ===
 func set_ghost_free_position(mouse_position: Vector2):
 	current_ghost_block.global_position = mouse_position
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot

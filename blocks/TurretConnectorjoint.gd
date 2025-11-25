@@ -50,8 +50,14 @@ func _physics_process(delta):
 		return
 
 func apply_rotation_constraint(delta: float):
+	if not is_instance_valid(block):
+		return
 	var body_rid = block.get_rid()
+	if not body_rid.is_valid():
+		return
 	var body_state = PhysicsServer2D.body_get_direct_state(body_rid)
+	if body_state == null:
+		return
 	var inverse_inertia = body_state.inverse_inertia
 	var actual_inertia = 1.0 / inverse_inertia if inverse_inertia > 0 else 0.0
 	
