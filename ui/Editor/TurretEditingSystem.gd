@@ -668,17 +668,17 @@ func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Co
 		print("连接点类型不匹配: ", point_a.connection_type, " vs ", point_b.connection_type)
 		return false
 	
-	# 使用角度差来判断，而不是点积
-	var ghost_point_direction = wrapf(point_b.rotation + ghost_rotation, -PI, PI)
-	var vehicle_point_direction = wrapf(point_a.global_rotation, -PI, PI)
+	var ghost_point_direction = point_b.rotation + ghost_rotation
+	var vehicle_point_direction = point_a.global_rotation
 	
-	# 计算角度差
-	var angle_diff = abs(wrapf(vehicle_point_direction - ghost_point_direction, -PI, PI))
+	var dir1 = Vector2(cos(ghost_point_direction), sin(ghost_point_direction))
+	var dir2 = Vector2(cos(vehicle_point_direction), sin(vehicle_point_direction))
 	
-	print("方向检测 - 点A方向: ", rad_to_deg(vehicle_point_direction), " 点B方向: ", rad_to_deg(ghost_point_direction), " 角度差: ", rad_to_deg(angle_diff))
+	var dot_result = dir1.dot(dir2)
 	
-	# 允许更大的角度容差，比如165-195度范围内都认为是可连接的
-	return angle_diff > deg_to_rad(165) and angle_diff < deg_to_rad(195)
+	print("方向检测 - 点A方向: ", rad_to_deg(point_a.global_rotation), " 点B方向: ", rad_to_deg(ghost_point_direction), " 点积: ", dot_result)
+	
+	return dot_result < -0.9
 
 func calculate_rotated_grid_positions_for_turret(turret_point: Connector, ghost_point: Connector):
 	if not current_editing_turret:
@@ -898,14 +898,8 @@ func get_turret_block_connection_points() -> Array[Connector]:
 				if (point is Connector and 
 					point.is_connection_enabled and 
 					point.connected_to == null):
-					# 添加连接点详细信息
-					print("找到可用连接点: ", point.name, 
-						  " 在块: ", block.name,
-						  " 类型: ", point.connection_type,
-						  " 本地旋转: ", rad_to_deg(point.rotation),
-						  " 全局旋转: ", rad_to_deg(point.global_rotation),
-						  " 位置: ", point.location)
 					points.append(point)
+					print("找到可用连接点: ", point.name, " 在块: ", block.name)
 	
 	print("总共找到外部连接点: ", points.size())
 	return points
@@ -931,12 +925,6 @@ func get_ghost_block_connection_points() -> Array[Connector]:
 		var connection_points = current_ghost_block.get_available_connection_points()
 		for point in connection_points:
 			if point is Connector:
-				# 添加虚影块连接点详细信息
-				print("虚影块连接点: ", point.name,
-					  " 类型: ", point.connection_type,
-					  " 本地旋转: ", rad_to_deg(point.rotation),
-					  " 全局旋转: ", rad_to_deg(point.global_rotation),
-					  " 位置: ", point.location)
 				points.append(point)
 	return points
 
@@ -1053,9 +1041,7 @@ func is_mouse_too_far_from_turret(mouse_position: Vector2) -> bool:
 	
 	print("鼠标距离检测 - 距离: ", distance, " 有效半径: ", effective_radius)
 	
-	# 在炮塔编辑模式下，我们使用更宽松的距离检测
-	# 允许在炮塔外部较远的位置进行外部吸附
-	return distance > effective_radius * 3.0  # 增加3倍容忍范围
+	return distance > effective_radius
 
 func calculate_effective_turret_radius() -> float:
 	if not current_editing_turret:
