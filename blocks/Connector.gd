@@ -95,9 +95,6 @@ func try_connect(other_point: Connector) -> bool:
 		var parent_can_move = parent_block.is_movable_on_connection
 		var other_can_move = other_block.is_movable_on_connection
 		if parent_can_move and not other_can_move and qeck == true:
-			parent_block.global_position += other_point.global_position - global_position
-			parent_block.global_rotation = other_point.global_rotation - PI - rotation
-			parent_block.global_position += other_point.global_position - global_position
 			parent_block.create_joint_with(self, other_point, true) 
 			connected_to = other_point
 	return true

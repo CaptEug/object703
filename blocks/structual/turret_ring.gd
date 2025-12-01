@@ -204,7 +204,19 @@ func remove_block_from_turret(block: Block):
 							if connector.location == pos:
 								connector.connected_to = null
 								connector.is_connection_enabled = true
-								connector.joint.queue_free()
+								if is_instance_valid(connector.joint):
+									connector.joint.queue_free()
+		
+		for block_1:Block in turret_blocks:
+			for point in block_1.get_children():
+				if point is Connector:
+					if point.connected_to == null:
+						point.is_connection_enabled = true
+					else:
+						if point.connected_to.find_parent_block() == block:
+							point.connected_to = null
+							point.is_connection_enabled = true
+							
 		
 		# 从炮塔篮筐中移除
 		if block.get_parent() == turret_basket:

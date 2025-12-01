@@ -57,7 +57,6 @@ func handle_left_click():
 		try_remove_block()
 		return
 
-
 func process(delta):
 	if is_mouse_pressed and not is_dragging:
 		drag_timer += delta
@@ -77,7 +76,7 @@ func process(delta):
 	
 	selected_vehicle = editor.selected_vehicle
 	camera = editor.camera
-	
+
 func _start_block_drag():
 	if not selected_vehicle:
 		return
@@ -113,7 +112,7 @@ func start_moving_block(block: Block):
 	
 	# 创建移动虚影
 	moving_block_ghost = block.duplicate()
-	get_tree().current_scene.add_child(moving_block_ghost)  # 使用 get_tree()
+	get_tree().current_scene.add_child(moving_block_ghost)
 	moving_block_ghost.modulate = Color(1, 1, 1, 0.5)
 	moving_block_ghost.z_index = 100
 	setup_ghost_block_collision(moving_block_ghost)
@@ -206,7 +205,7 @@ func start_block_placement(scene_path: String):
 		return
 	
 	current_ghost_block = current_block_scene.instantiate()
-	get_tree().current_scene.add_child(current_ghost_block)  # 使用 get_tree()
+	get_tree().current_scene.add_child(current_ghost_block)
 	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
 	current_ghost_block.z_index = 100
 	current_ghost_block.do_connect = false
@@ -285,6 +284,7 @@ func find_best_snap_config() -> Dictionary:
 	var min_distance = INF
 	var best_ghost_pos = null
 	var best_vehicle_pos = null
+	
 	for vehicle_point in available_vehicle_points:
 		var vehicle_block = vehicle_point.find_parent_block()
 		if not vehicle_block:
@@ -315,7 +315,7 @@ func find_best_snap_config() -> Dictionary:
 					"ghost_position": ghost_position,
 					"ghost_rotation": target_rotation,
 					"vehicle_block": vehicle_block,
-					"positions":positions
+					"positions": positions
 				}
 	
 	return best_config
@@ -355,7 +355,7 @@ func rotate_ghost_connection():
 	
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
-	var mouse_pos = get_viewport().get_mouse_position()  # 使用 get_viewport()
+	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	update_ghost_block_position(global_mouse_pos)
 
@@ -374,7 +374,7 @@ func try_place_block():
 	disconnect_connections(connections_to_disconnect)
 	
 	var grid_positions = snap_config.positions
-	var new_block:Block = current_block_scene.instantiate()
+	var new_block: Block = current_block_scene.instantiate()
 	selected_vehicle.add_child(new_block)
 	new_block.global_position = current_snap_config.ghost_position
 	new_block.global_rotation = current_ghost_block.global_rotation
@@ -388,7 +388,7 @@ func try_place_block():
 	editor.update_blueprint_ghosts()
 
 func place_first_block():
-	var new_block:Block = current_block_scene.instantiate()
+	var new_block: Block = current_block_scene.instantiate()
 	selected_vehicle.add_child(new_block)
 	new_block.global_position = current_ghost_block.global_position
 	new_block.global_rotation = current_ghost_block.global_rotation
@@ -446,7 +446,7 @@ func start_block_placement_with_rotation(scene_path: String):
 		return
 	
 	current_ghost_block = current_block_scene.instantiate()
-	get_tree().current_scene.add_child(current_ghost_block)  # 使用 get_tree()
+	get_tree().current_scene.add_child(current_ghost_block)
 	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
 	current_ghost_block.z_index = 100
 	current_ghost_block.do_connect = false
@@ -613,10 +613,10 @@ func enable_connection_points_for_blocks(blocks: Array):
 func try_remove_block():
 	if not selected_vehicle:
 		return
-	var mouse_pos = get_viewport().get_mouse_position()  # 使用 get_viewport()
+	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	
-	var space_state = get_tree().root.get_world_2d().direct_space_state  # 使用 get_tree()
+	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = global_mouse_pos
 	query.collision_mask = 1
@@ -670,7 +670,7 @@ func cancel_placement():
 	editor.update_vehicle_info_display()
 
 func get_block_at_position(position: Vector2) -> Block:
-	var space_state = get_tree().root.get_world_2d().direct_space_state  # 使用 get_tree()
+	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = position
 	query.collision_mask = 1
@@ -734,3 +734,7 @@ func restore_original_connections():
 func reset_connection_indices():
 	current_ghost_connection_index = 0
 	current_vehicle_connection_index = 0
+
+func check_vehicle_stability():
+	if selected_vehicle:
+		selected_vehicle.check_and_regroup_disconnected_blocks()
