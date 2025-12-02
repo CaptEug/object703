@@ -55,8 +55,8 @@ func _process(delta):
 			start_reload()
 	
 	#check targeting method
-	if get_parent_vehicle():
-		var control_method = get_parent_vehicle().control.get_method()
+	if parent_vehicle:
+		var control_method = parent_vehicle.control.get_method()
 		if control_method == "manual_control":
 			targeting = Callable(self, "manual_target")
 		elif (control_method == "remote_control") or (control_method == "AI_control"):
@@ -208,6 +208,7 @@ func auto_target(delta):
 
 
 func manual_target(delta):
+	print(1)
 	aim(delta, get_global_mouse_position())
 	if Input.is_action_pressed("FIRE_MAIN"):
 	# Skip firing if mouse is over UI

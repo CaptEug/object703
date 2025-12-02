@@ -18,7 +18,7 @@ var available_block_connectors: Array[TurretConnector] = []
 var turret_snap_config: Dictionary = {}
 
 const GRID_SIZE = 16
-const MAX_SNAP_DISTANCE = 8
+const MAX_SNAP_DISTANCE = 50
 
 func get_viewport():
 	return editor.get_viewport()

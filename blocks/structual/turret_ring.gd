@@ -90,7 +90,7 @@ func add_block_to_turret(block: Block, grid_positions: Array = []) -> bool:
 	"""添加block到炮塔grid系统"""
 	if not block:
 		return false
-	
+	block.parent_vehicle = parent_vehicle
 	# 检查所有网格位置是否可用
 	if not grid_positions.is_empty():
 		for pos in grid_positions:

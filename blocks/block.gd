@@ -178,13 +178,6 @@ func get_parent_vehicle():
 	if parent_vehicle:
 		if self in parent_vehicle.blocks:
 			return parent_vehicle
-	else:
-		if get_parent() != null:
-			if get_parent().get_parent() is TurretRing:
-				parent_vehicle = get_parent().get_parent().parent_vehicle
-				if parent_vehicle:
-					if self in parent_vehicle.blocks:
-						return parent_vehicle
 	return null
 
 ## Neighbor and Connectivity System

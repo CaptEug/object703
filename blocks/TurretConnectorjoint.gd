@@ -114,12 +114,10 @@ static func connect_to_staticbody(block: Block, staticbody: StaticBody2D, connec
 	
 	# 最后添加为子节点
 	staticbody.add_child(joint)
-	
 	# 保持原有的连接关系管理
 	if turret_ring is TurretRing:
 		if not block.joint_connected_blocks.has(turret_ring):
 			block.joint_connected_blocks[joint] = turret_ring
 		if not turret_ring.joint_connected_blocks.has(block):
 			turret_ring.joint_connected_blocks[joint] = block
-	
 	return joint
