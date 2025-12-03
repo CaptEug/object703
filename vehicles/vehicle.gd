@@ -809,11 +809,11 @@ func open_vehicle_panel():
 		vehicle_panel.visible = true
 		vehicle_panel.move_to_front()
 	else:
-		var HUD = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+		var UI = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
 		var panel = load("res://ui/tankpanel.tscn").instantiate()
 		panel.selected_vehicle = self
 		vehicle_panel = panel
-		HUD.add_child(panel)
+		UI.add_child(panel)
 		while panel.any_overlap():
 			panel.position += Vector2(32, 32)
 
