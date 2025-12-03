@@ -67,8 +67,6 @@ func _ready():
 		push_warning("Block '%s' has no connection points" % block_name)
 
 func _process(_delta):
-	#if collision_layer == 2:
-		#print(1.0 / PhysicsServer2D.body_get_direct_state(get_rid()).inverse_inertia)
 	pass
 
 func set_layer(i : int):

@@ -80,23 +80,23 @@
 		"16": {
 			"base_pos": [
 				6,
-				2
-			],
-			"name": "search light",
-			"path": "res://blocks/auxiliary/search_light.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"17": {
-			"base_pos": [
-				6,
 				0
 			],
 			"name": "QF 6-pounder gun",
 			"path": "res://blocks/firepower/qf_6_pounder.tscn",
 			"rotation": [
-				0
+				0.0
+			]
+		},
+		"17": {
+			"base_pos": [
+				6,
+				2
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0.0
 			]
 		},
 		"2": {
@@ -191,12 +191,12 @@
 					"1": {
 						"base_pos": [
 							0,
-							7
+							-5
 						],
 						"name": "122mm D-52T cannon",
 						"path": "res://blocks/firepower/d_52t.tscn",
 						"rotation": [
-							180.0
+							0
 						]
 					}
 				},
