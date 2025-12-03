@@ -13,6 +13,50 @@
 		},
 		"10": {
 			"base_pos": [
+				3,
+				0
+			],
+			"name": "V-7",
+			"path": "res://blocks/mobility/v_7.tscn",
+			"rotation": [
+				90.0
+			]
+		},
+		"11": {
+			"base_pos": [
+				4,
+				0
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"12": {
+			"base_pos": [
+				5,
+				0
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"13": {
+			"base_pos": [
+				5,
+				1
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"14": {
+			"base_pos": [
 				5,
 				2
 			],
@@ -22,43 +66,32 @@
 				0.0
 			]
 		},
-		"11": {
+		"15": {
 			"base_pos": [
-				6,
+				5,
 				3
 			],
 			"name": "V-7",
 			"path": "res://blocks/mobility/v_7.tscn",
 			"rotation": [
-				90.0
+				-90.0
 			]
 		},
-		"12": {
-			"base_pos": [
-				5,
-				1
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"13": {
-			"base_pos": [
-				5,
-				0
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"14": {
+		"16": {
 			"base_pos": [
 				6,
-				1
+				2
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"17": {
+			"base_pos": [
+				6,
+				0
 			],
 			"name": "QF 6-pounder gun",
 			"path": "res://blocks/firepower/qf_6_pounder.tscn",
@@ -66,18 +99,7 @@
 				0
 			]
 		},
-		"15": {
-			"base_pos": [
-				0,
-				2
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"16": {
+		"2": {
 			"base_pos": [
 				0,
 				1
@@ -85,10 +107,21 @@
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": [
-				0
+				0.0
 			]
 		},
-		"2": {
+		"3": {
+			"base_pos": [
+				0,
+				2
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"4": {
 			"base_pos": [
 				0,
 				3
@@ -99,7 +132,7 @@
 				180.0
 			]
 		},
-		"3": {
+		"5": {
 			"base_pos": [
 				1,
 				0
@@ -110,7 +143,7 @@
 				0.0
 			]
 		},
-		"4": {
+		"6": {
 			"base_pos": [
 				1,
 				1
@@ -121,7 +154,7 @@
 				0.0
 			]
 		},
-		"5": {
+		"7": {
 			"base_pos": [
 				1,
 				2
@@ -132,7 +165,7 @@
 				0.0
 			]
 		},
-		"6": {
+		"8": {
 			"base_pos": [
 				1,
 				3
@@ -143,7 +176,7 @@
 				0.0
 			]
 		},
-		"7": {
+		"9": {
 			"base_pos": [
 				2,
 				1
@@ -172,28 +205,6 @@
 					8
 				]
 			}
-		},
-		"8": {
-			"base_pos": [
-				3,
-				0
-			],
-			"name": "V-7",
-			"path": "res://blocks/mobility/v_7.tscn",
-			"rotation": [
-				90.0
-			]
-		},
-		"9": {
-			"base_pos": [
-				4,
-				0
-			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
-			"rotation": [
-				0.0
-			]
 		}
 	},
 	"name": "object1",
