@@ -304,143 +304,95 @@ func show_editor_info():
 # === 输入处理 ===
 func _input(event):
 	if event is InputEventKey and event.pressed:
-		print("=== 键盘输入 ===")
 		_handle_key_input(event)
 	elif event is InputEventMouseButton and event.pressed:
-		print("=== 鼠标点击 ===")
-		print("鼠标按钮: ", event.button_index)
-		print("UI交互状态: ", is_ui_interaction)
-		print("悬停控件: ", get_viewport().gui_get_hovered_control())
-		
-		# 首先检查UI交互
 		if is_ui_interaction or get_viewport().gui_get_hovered_control():
-			print("点击被UI拦截")
 			return
-		
-		print("开始处理游戏内点击")
 		_handle_mouse_input(event)
 
 
 func _handle_key_input(event: InputEventKey):
-	print("处理键盘输入，按键: ", event.keycode)
 	match event.keycode:
 		KEY_B:
-			print("B键 - 切换编辑模式")
 			_toggle_edit_mode()
 		KEY_ESCAPE:
-			print("ESC键 - 取消操作")
 			_handle_escape_key()
 		KEY_R:
-			print("R键 - 旋转虚影块")
 			_rotate_ghost_block()
 		KEY_X:
-			print("X键 - 切换回收模式")
 			_toggle_recycle_mode()
 		KEY_T:
-			print("T键 - 切换蓝图显示")
 			if is_editing and selected_vehicle:
 				toggle_blueprint_display()
 		KEY_N:
-			print("N键 - 新建车辆")
 			if not is_editing:
 				create_new_vehicle()
 		KEY_F:
-			print("F键 - 修复车辆")
 			if is_editing and selected_vehicle and is_showing_blueprint:
 				repair_blueprint_missing_blocks()
 
 func _handle_mouse_input(event: InputEventMouseButton):
-	print("处理鼠标输入")
 	match event.button_index:
 		MOUSE_BUTTON_LEFT:
-			print("左键点击")
 			_handle_left_click()
 		MOUSE_BUTTON_RIGHT:
-			print("右键点击")
 			_handle_right_click()
 
 
 func _handle_left_click():
-	print("=== 处理左键点击 ===")
-	print("当前模式 - 车辆模式:", is_vehicle_mode, " 炮塔编辑模式:", turret_editing_system.is_turret_editing_mode, " 回收模式:", is_recycle_mode)
-	
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	print("鼠标位置 - 屏幕:", mouse_pos, " 全局:", global_mouse_pos)
 	
 	# 首先检查是否在炮塔编辑模式
 	if turret_editing_system.is_turret_editing_mode:
-		print("进入炮塔编辑模式点击处理")
 		_handle_turret_mode_click(global_mouse_pos)
 		return
 	
 	# 车辆模式下的点击处理
 	var clicked_block = get_block_at_position(global_mouse_pos)
-	print("点击到的块: ", clicked_block)
 	
 	# 检查是否点击了炮塔
 	if clicked_block is TurretRing and not is_recycle_mode:
-		print("点击到炮塔: ", clicked_block.name)
 		_handle_turret_click(clicked_block)
 	elif not turret_editing_system.is_turret_editing_mode:
-		print("调用车体编辑系统处理点击")
 		hull_editing_system.handle_left_click()
 	else:
-		print("调用炮塔编辑系统处理点击")
 		turret_editing_system.handle_left_click()
 
 func _handle_turret_mode_click(global_mouse_pos: Vector2):
-	"""专门处理炮塔编辑模式下的点击"""
-	print("=== 炮塔编辑模式点击处理 ===")
-	print("当前编辑的炮塔: ", turret_editing_system.current_editing_turret)
-	print("当前虚影块: ", turret_editing_system.current_ghost_block != null)
-	
 	# 如果有虚影块，尝试放置
 	if turret_editing_system.current_ghost_block:
-		print("有虚影块，尝试放置")
 		turret_editing_system.handle_left_click()
 		return
 	
 	# 检查是否点击了其他炮塔
 	var clicked_block = get_block_at_position(global_mouse_pos)
-	print("点击到的块: ", clicked_block)
 	
 	if clicked_block is TurretRing and clicked_block != turret_editing_system.current_editing_turret:
-		print("点击到其他炮塔，切换到: ", clicked_block.name)
 		_handle_turret_click(clicked_block)
 		return
 	
-	print("默认调用炮塔编辑系统处理点击")
 	turret_editing_system.handle_left_click()
 
 
 func _handle_turret_click(turret: TurretRing):
-	print("=== 处理炮塔点击 ===")
-	print("点击的炮塔: ", turret.name if turret else "null")
-	
 	# 确保炮塔有效
 	if not turret or not is_instance_valid(turret):
-		print("错误: 无效的炮塔")
 		return
 	
 	# 如果已经在编辑这个炮塔，忽略点击
 	if turret_editing_system.current_editing_turret == turret:
-		print("已经在编辑这个炮塔")
 		return
 	
 	# 如果正在放置虚影块，忽略炮塔切换
 	if turret_editing_system.current_ghost_block:
-		print("正在放置块，忽略炮塔切换")
 		return
 	
-	print("设置当前编辑炮塔并切换到炮塔模式")
 	# 设置当前编辑的炮塔
 	turret_editing_system.current_editing_turret = turret
 	
 	# 切换到炮塔模式
 	switch_to_turret_mode()
-	
-	print("成功进入炮塔编辑模式")
 
 
 func _handle_right_click():

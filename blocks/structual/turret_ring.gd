@@ -90,7 +90,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []) -> bool:
 	"""添加block到炮塔grid系统"""
 	if not block:
 		return false
-	block.parent_vehicle = parent_vehicle
 	# 检查所有网格位置是否可用
 	if not grid_positions.is_empty():
 		for pos in grid_positions:
@@ -119,37 +118,27 @@ func add_block_to_turret(block: Block, grid_positions: Array = []) -> bool:
 		for pos in grid_positions:
 			turret_grid[pos] = block
 		
-		if block.get_parent() != turret_basket:
-			reparent_block_to_turret(block, grid_positions)
+		reparent_block_to_vehicle(block, grid_positions)
 		
 		if block is CollisionObject2D:
 			block.collision_layer = 2
 			block.collision_mask = 2
 		
 		update_turret_properties()
-		print("成功添加块到炮塔，网格位置: ", grid_positions)
 		return true
 	
 	return false
 
-func reparent_block_to_turret(block: Block, grid_positions: Array):
-	"""将块重新父级到炮塔"""
-	print("重新父级块: ", block.name, " 到炮塔篮筐，网格位置: ", grid_positions)
-	
-	var old_parent = block.get_parent()
-	if old_parent and old_parent.has_method("remove_block"):
-		old_parent.remove_block(block, false)
+func reparent_block_to_vehicle(block: Block, grid_positions: Array):
 	
 	var global_pos = block.global_position
 	var global_rot = block.global_rotation
 	
-	# 将块添加到炮塔篮筐
-	turret_basket.add_child(block)
+	get_parent_vehicle().add_child(block)
 	block.on_turret = self
 	block.global_position = global_pos
 	block.global_rotation = global_rot
 	
-	print("重新父级完成，新父级: ", block.get_parent())
 
 func update_parent_vehicle_blocks(block: Block, add: bool):
 	"""更新父车辆中的块列表"""

@@ -208,7 +208,6 @@ func auto_target(delta):
 
 
 func manual_target(delta):
-	print(1)
 	aim(delta, get_global_mouse_position())
 	if Input.is_action_pressed("FIRE_MAIN"):
 	# Skip firing if mouse is over UI
