@@ -1,6 +1,7 @@
 extends Control
 
 @onready var camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
+@onready var UI = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
 
 var time:String = "00:00"
 
@@ -25,5 +26,6 @@ func _on_build_button_pressed():
 
 
 func _on_tank_dex_button_pressed():
-	var tankdex = get_tree().current_scene.find_child("TankDex")
-	tankdex.visible = true
+	var tankdex = UI.find_child("TankDex") as FloatingPanel
+	if tankdex:
+		tankdex.visible = true

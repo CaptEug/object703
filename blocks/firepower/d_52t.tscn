@@ -96,7 +96,6 @@ script = ExtResource("1_yqdh3")
 metadata/_custom_type_script = "uid://umbrwl1bnc2h"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-visible = false
 position = Vector2(0, 40)
 shape = SubResource("RectangleShape2D_yqdh3")
 
