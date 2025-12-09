@@ -524,8 +524,6 @@ func try_place_turret_block():
 	else:
 		await get_tree().process_frame
 	
-	# 只保留这个打印语句显示网格坐标
-	print("放置炮塔块到网格坐标: ", grid_positions)
 	
 	if selected_vehicle:
 		selected_vehicle.update_vehicle()

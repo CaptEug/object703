@@ -167,7 +167,6 @@ func update_parent_vehicle_blocks(block: Block, add: bool):
 			parent_vehicle.ammoracks.erase(block)
 		elif block is Fueltank:
 			parent_vehicle.fueltanks.erase(block)
-	print(turret_grid)
 
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""
@@ -207,12 +206,9 @@ func remove_block_from_turret(block: Block):
 							point.is_connection_enabled = true
 							
 		
-		# 从炮塔篮筐中移除
-		if block.get_parent() == turret_basket:
-			turret_basket.remove_child(block)
 		
 		block.on_turret = null
-		
+		block.queue_free()
 		update_turret_properties()
 		print("从炮塔移除块")
 

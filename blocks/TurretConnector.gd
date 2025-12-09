@@ -225,11 +225,6 @@ func try_connect(other_connector: TurretConnector) -> bool:
 	
 	if not body:
 		return false
-	
-	# 移动逻辑
-	var block_can_move = block.is_movable_on_connection
-	var rigidbody_can_move = rigidbody_connector.is_attached_to_block() and rigidbody_connector.find_parent_block().is_movable_on_connection
-	
 	# 创建连接
 	connected_to = other_connector
 	other_connector.connected_to = self
