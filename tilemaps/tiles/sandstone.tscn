@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cfhkc4q0mryl3"]
+
+[ext_resource type="Script" uid="uid://b6egtc5x8wss8" path="res://tilemaps/tiles/sandstone.gd" id="1_vukwf"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vukwf"]
+size = Vector2(16, 16)
+
+[node name="Sandstone" type="StaticBody2D"]
+script = ExtResource("1_vukwf")
+metadata/_custom_type_script = "uid://chj6wki6jpgsd"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_vukwf")

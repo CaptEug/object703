@@ -22,7 +22,7 @@ var broken_sprite:Sprite2D
 var do_connect = true
 var base_pos: Vector2i
 
-var shard_particle_path = "res://assets/particles/metal_shard.tscn"
+var shard_particle_path = "res://assets/particles/shard.tscn"
 
 ## Connection System
 @export var connection_point_script: Script
@@ -136,8 +136,8 @@ func damage(amount:int):
 	#print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
 	# phase 1
-	if current_hp <= max_hp * 0.5:
-		broke()
+	#if current_hp <= max_hp * 0.5:
+		
 	
 	# phase 2
 	if current_hp <= max_hp * 0.25:
@@ -150,15 +150,14 @@ func damage(amount:int):
 		shard_particle.position = global_position
 		get_tree().current_scene.add_child(shard_particle)
 
-func broke():
+
+func destroy():
 	if parent_vehicle:
 		functioning = false
 		parent_vehicle.update_vehicle()
 		if broken_sprite:
 			sprite.visible = false
 			broken_sprite.visible = true
-
-func destroy():
 	# Disconnect all joints before destroying
 	await disconnect_all()
 	if parent_vehicle:

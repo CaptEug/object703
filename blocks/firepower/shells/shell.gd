@@ -62,15 +62,16 @@ func explode():
 	
 	await get_tree().physics_frame
 	
-	for block in explosion_area.get_overlapping_bodies():
-		if block.has_method("damage"):
-			var dist = global_position.distance_to(block.global_position)
-			var dir = (block.global_position - global_position).normalized()
+	for body in explosion_area.get_overlapping_bodies():
+		if body.has_method("damage"):
+			var dist = global_position.distance_to(body.global_position)
+			var dir = (body.global_position - global_position).normalized()
 			var ratio = clamp(1.0 - dist / explosion_radius, 0.0, 1.0)
 			var dmg = max_explosive_damage * ratio
 			var impulse_strength = dmg
-			block.apply_impulse(dir * impulse_strength)
-			block.damage(dmg)
+			if body is Block:
+				body.apply_impulse(dir * impulse_strength)
+			body.damage(dmg)
 
 func stop():
 	stopped = true
@@ -89,21 +90,21 @@ func _on_timer_timeout():
 	queue_free()
 
 
-func _on_shell_body_entered(block:Block):
-	var vehicle_hit = block.parent_vehicle
+func _on_shell_body_entered(body):
+	if body is Block:
+		var vehicle_hit = body.parent_vehicle
+		#check if the vehicle is not self
+		if vehicle_hit == from and from != null:
+			return
 	
-	#check if the vehicle is not self
-	if vehicle_hit == from and from != null:
-		return
+		# apply hit inpluse
+		var momentum:Vector2 = mass * linear_velocity
+		body.apply_impulse(momentum)
 	
-	# apply hit inpluse
-	var momentum:Vector2 = mass * linear_velocity
-	block.apply_impulse(momentum)
-	
-	var block_hp = block.current_hp
-	if block_hp >= 0:
-		var damage_to_deal = min(kenetic_damage, block_hp)
-		block.damage(damage_to_deal)
+	var body_hp = body.current_hp
+	if body_hp >= 0:
+		var damage_to_deal = min(kenetic_damage, body_hp)
+		body.damage(damage_to_deal)
 		kenetic_damage -= damage_to_deal
 		if kenetic_damage <= 0:
 			if max_explosive_damage:

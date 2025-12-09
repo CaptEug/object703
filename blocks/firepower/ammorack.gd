@@ -20,9 +20,9 @@ func _process(_delta):
 	explosion_shape.shape.radius = ammo_storage/2
 
 
-func broke():
-	super.broke()
+func destroy():
 	explode()
+	super.destroy()
 	
 
 func explode():
@@ -36,12 +36,13 @@ func explode():
 	var max_explosive_damage = ammo_storage * 5
 	var explosion_radius = ammo_storage/2
 	ammo_storage = 0
-	for block in explosion_area.get_overlapping_bodies():
-		if block.has_method("damage"):
-			var dist = global_position.distance_to(block.global_position)
-			var dir = (block.global_position - global_position).normalized()
+	for body in explosion_area.get_overlapping_bodies():
+		if body.has_method("damage"):
+			var dist = global_position.distance_to(body.global_position)
+			var dir = (body.global_position - global_position).normalized()
 			var ratio = clamp(1.0 - dist / explosion_radius, 0.0, 1.0)
 			var dmg = max_explosive_damage * ratio
 			var impulse_strength = dmg
-			block.apply_impulse(dir * impulse_strength)
-			block.damage(dmg)
+			if body is Block:
+				body.apply_impulse(dir * impulse_strength)
+			body.damage(dmg)

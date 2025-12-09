@@ -55,8 +55,8 @@ func _on_received_state_force_signal(state_force_signal):
 	elif state_force_signal is Dictionary:
 		set_state_force(state_force_signal.get("state", ""), state_force_signal.get("force", 0))
 
-func broke():
-	super.broke()
+func destroy():
+	super.destroy()
 	var vehicle = get_parent_vehicle()
 	if vehicle is Vehicle:
 		if vehicle.tracks.has(self):
