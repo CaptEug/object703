@@ -92,9 +92,7 @@ func try_connect(other_point: Connector) -> bool:
 			other_block.freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
 			other_block.freeze = true
 		# 检查两个块的移动性
-		var parent_can_move = parent_block.is_movable_on_connection
-		var other_can_move = other_block.is_movable_on_connection
-		if parent_can_move and not other_can_move and qeck == true:
+		if qeck == true:
 			parent_block.create_joint_with(self, other_point, true) 
 			connected_to = other_point
 	return true

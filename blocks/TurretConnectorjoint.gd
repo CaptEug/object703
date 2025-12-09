@@ -87,7 +87,6 @@ func check_connection_strength() -> bool:
 	var stretch_ratio = current_distance / initial_distance
 	
 	if stretch_ratio > (1.0 + connection_strength * 0.5):
-		print("连接断裂! 拉伸比例: ", stretch_ratio)
 		break_connection()
 		return false
 	
