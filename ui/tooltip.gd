@@ -13,7 +13,7 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	var mouse_pos = get_tree().current_scene.get_local_mouse_position()
+	var mouse_pos = get_tree().root.get_node("Main/SceneRoot/TestScene").get_local_mouse_position()
 	var space_state = get_world_2d().direct_space_state
 
 	var query := PhysicsPointQueryParameters2D.new()

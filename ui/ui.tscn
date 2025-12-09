@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://deu1m0ujxkwh7"]
+
+[ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="1_nb4k0"]
+[ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/Editor/editormode.tscn" id="2_ks8t7"]
+[ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_wl5ax"]
+
+[node name="UI" type="CanvasLayer"]
+
+[node name="HUD" parent="." instance=ExtResource("1_nb4k0")]
+
+[node name="EditormodeUI" parent="." instance=ExtResource("2_ks8t7")]
+
+[node name="Tooltip" parent="." instance=ExtResource("3_wl5ax")]

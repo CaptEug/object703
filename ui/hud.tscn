@@ -12,7 +12,7 @@ region = Rect2(0, 160, 32, 32)
 atlas = ExtResource("3_546lt")
 region = Rect2(32, 96, 32, 32)
 
-[node name="Hud" type="Control"]
+[node name="HUD" type="Control"]
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
