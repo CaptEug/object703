@@ -91,6 +91,10 @@ func _ready():
 	update_recycle_button()
 	load_all_blocks()
 	_create_com_marker()
+	
+	description_label.bbcode_enabled = true
+	description_label.text = ""
+	
 	update_vehicle_info_display()
 
 # === UI管理 ===
@@ -252,13 +256,69 @@ func update_vehicle_info_display():
 	_set_font_sizes(8)
 	
 	var stats = _calculate_vehicle_stats()
+	var load_status = _calculate_load_status()
 	
+	# 确保BBCode启用
+	description_label.bbcode_enabled = true
+	
+	# 使用clear()然后重新构建文本
 	description_label.clear()
+	
+	# 使用append_text逐步添加内容
 	description_label.append_text("Name: %s\n" % (selected_vehicle.vehicle_name if selected_vehicle.vehicle_name else "Unnamed"))
 	description_label.append_text("ID: %s\n\n" % selected_vehicle.name)
-	description_label.append_text("Weight: %.1f T\n\n" % stats.total_weight)
+	
+	# 重量/载重显示
+	var weight_text = "Weight/Load: %.1f / %.1f T" % [stats.total_weight, load_status["total_capacity"]]
+	
+	# 检查是否超载
+	if stats.total_weight/load_status["total_capacity"] > 1:
+		print("zhongl")
+		# 超载时使用红色显示重量/载重
+		description_label.append_text("[color=#FF5555]")
+		description_label.append_text(weight_text)
+		description_label.append_text("[/color]")
+	else:
+		# 正常显示
+		description_label.append_text(weight_text)
+	
+	# 换行
+	description_label.append_text("\n\n")
+	
 	description_label.append_text("MAX Engine Power: %.1f kN\n\n" % stats.total_engine_power)
-	description_label.append_text("Power/Weight: %.2f kN/T\n\n" % stats.power_to_weight_ratio)
+	
+	# 功率重量比
+	var pwr_text = "Power/Weight: %.2f kN/T" % stats.power_to_weight_ratio
+	description_label.append_text(pwr_text)
+
+func _calculate_load_status() -> Dictionary:
+	if not selected_vehicle:
+		return {
+			"total_capacity": 0.0,
+			"is_overloaded": false,
+			"overload_percentage": 0.0
+		}
+	
+	# 确保Vehicle类有这些方法
+	var total_capacity: float = 0.0
+	var current_load: float = 0.0
+	var is_overloaded: bool = false
+	
+	if selected_vehicle.has_method("calculate_total_track_load_capacity"):
+		total_capacity = selected_vehicle.calculate_total_track_load_capacity()
+	
+	if selected_vehicle.has_method("calculate_current_total_load"):
+		current_load = selected_vehicle.calculate_current_total_load()
+	
+	if selected_vehicle.has_method("is_any_track_overloaded"):
+		is_overloaded = selected_vehicle.is_any_track_overloaded()
+	
+	return {
+		"total_capacity": total_capacity,
+		"current_load": current_load,
+		"is_overloaded": is_overloaded,
+		"overload_percentage": ((current_load / total_capacity) - 1.0) * 100.0 if total_capacity > 0 and current_load > total_capacity else 0.0
+	}
 
 func _calculate_vehicle_stats() -> Dictionary:
 	if not selected_vehicle:
@@ -432,6 +492,9 @@ func _process(delta):
 	_update_com_marker()
 	hull_editing_system.process(delta)
 	turret_editing_system.process(delta)
+	
+	# 更新车辆信息显示，确保载重信息实时更新
+	update_vehicle_info_display()
 
 # === 模式切换 ===
 func _on_mode_button_pressed():
