@@ -465,7 +465,7 @@ func calculate_center_of_mass() -> Vector2:
 				has_calculated[body.get_instance_id()] = true
 	
 	# 还要考虑炮塔上的块
-	for block in total_blocks:
+	for block in blocks:
 		if not blocks.has(block) and block is Block and block.functioning:
 			if has_calculated.get(block.get_instance_id(), false):
 				continue
@@ -861,7 +861,7 @@ func open_vehicle_panel():
 
 func check_and_regroup_disconnected_blocks():
 	var valid_blocks = []
-	for block in total_blocks:
+	for block in blocks:
 		if is_instance_valid(block) and block.get_parent() == self:
 			valid_blocks.append(block)
 	if valid_blocks.is_empty():
@@ -1130,7 +1130,7 @@ func get_track_load_status() -> Dictionary:
 func get_actual_total_mass() -> float:
 	var total_actual_mass := 0.0
 	
-	for block in total_blocks:
+	for block in blocks:
 		if block is Block and block.functioning:
 			total_actual_mass += block.get_actual_mass()
 	
