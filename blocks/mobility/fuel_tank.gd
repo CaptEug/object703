@@ -5,9 +5,9 @@ const WEIGHT:float = 200
 const BLOCK_NAME:String = 'fuel tank'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)
-const FUEL_CAPACITY:= 100
+const INITIAL_GAS: int = 10
 
-var description := ""
+var description := "存储燃料供发动机使用"
 
 func _init():
 	max_hp = HITPOINT
@@ -16,4 +16,8 @@ func _init():
 	block_name = BLOCK_NAME
 	type = TYPE
 	size = SIZE
-	fuel_storage = FUEL_CAPACITY
+
+func _ready():
+	super._ready()
+	clear_all()
+	add_item("gas", INITIAL_GAS)

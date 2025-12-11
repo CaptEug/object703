@@ -47,6 +47,10 @@ var cached_center_of_mass: Vector2
 var cached_center_of_mass_dirty: bool = true
 var targets_dirty: bool = true
 
+# 承重系统相关
+var total_mass: float = 0.0  # 车辆总质量
+var track_load_distribution: Dictionary = {}  # 履带承重分布
+var load_check_timer: float = 0.0  # 承重检查计时器
 
 func _ready():
 	if blueprint:
@@ -81,6 +85,9 @@ func _process(delta):
 		update_tracks_state(control.call(), delta)
 	
 	update_targets_if_needed()
+	
+	# 更新承重检查
+	update_load_check(delta)
 
 func handle_delayed_connections():
 	if not ready_connect:
@@ -113,6 +120,7 @@ func update_vehicle():
 	calculate_balanced_forces()
 	calculate_rotation_forces()
 	
+	calculate_track_load_distribution()
 	# 重新获取控制方法
 	if not check_control(control.get_method()):
 		if not check_control("AI_control"):
@@ -240,17 +248,17 @@ func get_current_engine_power() -> float:
 
 func get_fuel_cap():
 	var fuel_cap := 0.0
-	for fueltank in fueltanks:
+	for fueltank:Fueltank in fueltanks:
 		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			fuel_cap += fueltank.FUEL_CAPACITY
+			fuel_cap += fueltank.get_total_fuel()
 	total_fuel_cap = fuel_cap
 	return fuel_cap
 
 func get_current_fuel():
 	var current_fuel := 0.0
-	for fueltank in fueltanks:
+	for fueltank:Fueltank in fueltanks:
 		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			current_fuel += fueltank.fuel_storage
+			current_fuel += fueltank.get_total_fuel()
 	total_fuel = current_fuel
 	return current_fuel
 
@@ -438,18 +446,45 @@ func calculate_center_of_mass() -> Vector2:
 	
 	for grid_pos in grid:
 		if grid[grid_pos] != null:
-			var body: RigidBody2D = grid[grid_pos]
+			var body: Block = grid[grid_pos]
 			if blocks.has(body):
 				if has_calculated.get(body.get_instance_id(), false):
 					continue
 				
 				var rid = get_block_grid(body)
-				var global_com:Vector2 = get_rectangle_corners(rid)
-				var mass = body.total_mass if body is TurretRing else body.mass
+				var geometric_center: Vector2 = get_rectangle_corners(rid)
 				
-				weighted_sum += global_com * mass
+				# 使用块的实际重心（考虑偏移）
+				var actual_com: Vector2 = body.get_actual_center_of_mass(geometric_center)
+				
+				# 使用块的实际质量
+				var mass = body.mass
+				
+				weighted_sum += actual_com * mass
 				total_mass += mass
 				has_calculated[body.get_instance_id()] = true
+	
+	# 还要考虑炮塔上的块
+	for block in total_blocks:
+		if not blocks.has(block) and block is Block and block.functioning:
+			if has_calculated.get(block.get_instance_id(), false):
+				continue
+			var actual_com = Vector2.ZERO
+			# 对于炮塔上的块，需要获取其在车辆坐标系中的位置
+			if block.on_turret:
+				var turret_pos = block.on_turret.global_position - global_position
+				var block_local_pos = block.position - block.on_turret.position
+				actual_com = turret_pos + block_local_pos
+				
+				# 考虑块的旋转和偏移
+				var rotation_rad = deg_to_rad(block.base_rotation_degree)
+				var rotated_offset = block.center_of_mass_offset.rotated(rotation_rad)
+				actual_com += rotated_offset
+			
+			var mass = block.get_actual_mass()
+			weighted_sum += actual_com * mass
+			total_mass += mass
+			has_calculated[block.get_instance_id()] = true
 	
 	cached_center_of_mass = weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 	cached_center_of_mass_dirty = false
@@ -760,11 +795,18 @@ func apply_smooth_track_forces(_delta):
 	for track in track_target_forces:
 		var target = track_target_forces[track]
 		if tracks.has(track) and current_engine_power != 0:
-			if abs(target) > 0:
-				track.set_state_force(move_state, target)
-				track_current_forces[track] = target
+			# 检查履带是否因超载停止工作
+			var track_status = track.get_load_status()
+			if track_status["functioning"]:
+				if abs(target) > 0:
+					track.set_state_force(move_state, target)
+					track_current_forces[track] = target
+				else:
+					track.set_state_force('idle', 0)
 			else:
+				# 履带停止工作，不提供动力
 				track.set_state_force('idle', 0)
+				track_current_forces[track] = 0.0
 
 func update_vehicle_size():
 	if grid.is_empty():
@@ -862,3 +904,234 @@ func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Arra
 				var connected_id = connected_block.get_instance_id()
 				if not visited.get(connected_id, false):
 					dfs_traverse(connected_block, visited, component, all_blocks)
+
+########################## 履带承重系统函数 ##########################
+
+func calculate_total_track_load_capacity() -> float:
+	"""计算所有正常工作的履带的总承重能力"""
+	var total_capacity := 0.0
+	
+	for track in tracks:
+		if is_instance_valid(track):
+			var load_status = track.get_load_status()
+			if load_status["functioning"]:
+				total_capacity += track.max_load
+	
+	return total_capacity
+
+func calculate_current_total_load() -> float:
+	"""计算当前所有履带承受的总重量"""
+	var total_current_load := 0.0
+	
+	for track in tracks:
+		if is_instance_valid(track):
+			var load_status = track.get_load_status()
+			if load_status["functioning"]:
+				total_current_load += load_status["current_load"]
+	
+	return total_current_load
+
+func get_load_safety_margin() -> float:
+	"""获取载重安全余量（正数表示有富余，负数表示超载）"""
+	var total_capacity = calculate_total_track_load_capacity()
+	var current_load = calculate_current_total_load()
+	
+	return total_capacity - current_load
+
+func get_overload_percentage() -> float:
+	"""获取超载百分比（>0表示超载）"""
+	var total_capacity = calculate_total_track_load_capacity()
+	var current_load = calculate_current_total_load()
+	
+	if total_capacity <= 0:
+		return 0.0
+	
+	return max(0.0, (current_load / total_capacity - 1.0) * 100.0)
+
+func is_any_track_overloaded() -> bool:
+	"""检查是否有任意履带超载"""
+	for track in tracks:
+		if is_instance_valid(track):
+			var load_status = track.get_load_status()
+			if load_status["overloaded"]:
+				return true
+	return false
+
+func get_overloaded_tracks_count() -> int:
+	"""获取超载的履带数量"""
+	var count := 0
+	
+	for track in tracks:
+		if is_instance_valid(track):
+			var load_status = track.get_load_status()
+			if load_status["overloaded"]:
+				count += 1
+	
+	return count
+
+func get_track_load_distribution_summary() -> Dictionary:
+	"""获取履带载重分布摘要"""
+	var summary := {
+		"total_tracks": tracks.size(),
+		"functioning_tracks": 0,
+		"overloaded_tracks": 0,
+		"total_capacity": 0.0,
+		"current_load": 0.0,
+		"average_load_per_track": 0.0,
+		"max_track_load": 0.0,
+		"min_track_load": 0.0,
+		"track_details": []
+	}
+	
+	for track in tracks:
+		if is_instance_valid(track):
+			var status = track.get_load_status()
+			summary["track_details"].append({
+				"name": track.name,
+				"max_load": track.max_load,
+				"current_load": status["current_load"],
+				"overloaded": status["overloaded"],
+				"functioning": status["functioning"],
+				"load_percentage": (status["current_load"] / track.max_load) * 100 if track.max_load > 0 else 0.0
+			})
+			
+			if status["functioning"]:
+				summary["functioning_tracks"] += 1
+				summary["total_capacity"] += track.max_load
+				summary["current_load"] += status["current_load"]
+				
+				# 更新最大/最小负载
+				if status["current_load"] > summary["max_track_load"]:
+					summary["max_track_load"] = status["current_load"]
+				if summary["min_track_load"] == 0.0 or status["current_load"] < summary["min_track_load"]:
+					summary["min_track_load"] = status["current_load"]
+			
+			if status["overloaded"]:
+				summary["overloaded_tracks"] += 1
+	
+	if summary["functioning_tracks"] > 0:
+		summary["average_load_per_track"] = summary["current_load"] / summary["functioning_tracks"]
+	
+	return summary
+
+func apply_load_penalties():
+	"""根据载重状态应用惩罚效果"""
+	var summary = get_track_load_distribution_summary()
+	
+	# 如果有履带超载，降低车辆性能
+	if summary["overloaded_tracks"] > 0:
+		var overload_ratio = float(summary["overloaded_tracks"]) / summary["total_tracks"]
+		
+		# 速度惩罚
+		var speed_multiplier = 1.0 - (overload_ratio * 0.5)  # 最多降低50%速度
+		
+		# 燃料消耗增加
+		var fuel_consumption_multiplier = 1.0 + (overload_ratio * 0.3)  # 最多增加30%燃料消耗
+		
+		# 转向性能降低
+		var steering_multiplier = 1.0 - (overload_ratio * 0.4)  # 最多降低40%转向性能
+		
+		return {
+			"speed_multiplier": speed_multiplier,
+			"fuel_consumption_multiplier": fuel_consumption_multiplier,
+			"steering_multiplier": steering_multiplier,
+			"is_overloaded": true,
+			"overload_ratio": overload_ratio
+		}
+	
+	return {
+		"speed_multiplier": 1.0,
+		"fuel_consumption_multiplier": 1.0,
+		"steering_multiplier": 1.0,
+		"is_overloaded": false,
+		"overload_ratio": 0.0
+	}
+
+func update_load_check(delta: float):
+	"""更新承重检查和伤害系统"""
+	load_check_timer += delta
+	
+	# 每0.5秒更新一次承重分布（避免每帧计算）
+	if load_check_timer >= 0.5:
+		calculate_track_load_distribution()
+		load_check_timer = 0.0
+		
+		# 检查是否有履带超载停止工作
+		check_track_overload_status()
+
+func calculate_track_load_distribution():
+	"""计算履带承重分布 - 平均分配"""
+	# 计算车辆总质量
+	total_mass = 0.0
+	for block in total_blocks:
+		if block is Block and block.functioning:
+			total_mass += block.mass
+	
+	# 如果没有履带或者没有质量，直接返回
+	if tracks.is_empty() or total_mass <= 0:
+		return
+	
+	# 计算每个履带平均承受的重量
+	var average_load = total_mass / tracks.size()
+	
+	# 应用承重到每个履带
+	for track in tracks:
+		if track is Track and track.functioning:
+			track.set_current_load(average_load)
+			track_load_distribution[track] = average_load
+
+func check_track_overload_status():
+	"""检查履带超载状态，更新车辆功能"""
+	var any_track_overloaded = false
+	
+	for track in tracks:
+		if track is Track:
+			var status = track.get_load_status()
+			if status["overloaded"]:
+				any_track_overloaded = true
+	
+	# 如果有履带超载停止工作，重新计算力的分布
+	if any_track_overloaded:
+		calculate_balanced_forces()
+		calculate_rotation_forces()
+
+func get_track_load_status() -> Dictionary:
+	"""获取所有履带的承重状态"""
+	var status = {}
+	var total_overload = 0.0
+	var overloaded_tracks = 0
+	var functioning_tracks = 0
+	
+	for track in tracks:
+		if track is Track:
+			var track_status = track.get_load_status()
+			status[track.name] = track_status
+			
+			if track_status["overload_amount"] > 0:
+				total_overload += track_status["overload_amount"]
+			
+			if track_status["overloaded"]:
+				overloaded_tracks += 1
+			
+			if track_status["functioning"]:
+				functioning_tracks += 1
+	
+	return {
+		"track_status": status,
+		"total_mass": total_mass,
+		"total_tracks": tracks.size(),
+		"average_load": total_mass / max(1, tracks.size()),
+		"total_overload": total_overload,
+		"overloaded_tracks": overloaded_tracks,
+		"functioning_tracks": functioning_tracks
+	}
+
+# 获取车辆的实际总质量（考虑所有块的损坏状态）
+func get_actual_total_mass() -> float:
+	var total_actual_mass := 0.0
+	
+	for block in total_blocks:
+		if block is Block and block.functioning:
+			total_actual_mass += block.get_actual_mass()
+	
+	return total_actual_mass

@@ -123,7 +123,7 @@ func has_fuel() -> bool:
 	find_all_connected_fueltank()
 	total_fuel = 0
 	for fueltank:Fueltank in connected_fueltank:
-		total_fuel += fueltank.fuel_storage
+		total_fuel += fueltank.get_total_fuel()
 	if total_fuel > 0:
 		return true
 	else:
