@@ -7,6 +7,8 @@ var max_hp:float
 var weight:float
 var block_name:String
 var type:String
+var kinetic_absorb:float
+var explosice_absorb:float
 var size:Vector2i
 var parent_vehicle: Vehicle = null  
 var connected_blocks := []

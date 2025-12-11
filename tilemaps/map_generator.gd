@@ -1,18 +1,27 @@
-extends Node
+extends Node2D
 
-var ground:TileMapLayer
-var wall:TileMapLayer
+@onready var ground:TileMapLayer = $GroundLayer
+@onready var wall:WallLayer = $WallLayer
+var world_height:int = 128
+var world_width:int = 128
 
-
+@export var noise_height_text:NoiseTexture2D
 
 func _ready():
-	ground = find_child("Grond") as TileMapLayer
-	wall = find_child("Wall") as TileMapLayer
-	generate_tile_blocks(wall)
+	generate_world(noise_height_text.noise)
+	wall.init_layerdata()
 
 
 func _process(delta):
 	pass
+
+
+func generate_world(noise:Noise):
+	for x in range(world_width):
+		for y in range(world_height):
+			var noise_val = noise.get_noise_2d(x, y)
+			if noise_val > 0:
+				wall.set_cells_terrain_connect([Vector2i(x,y)], 0, 0)
 
 
 func generate_tile_blocks(layer:TileMapLayer):

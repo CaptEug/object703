@@ -49,19 +49,20 @@ grow_vertical = 2
 
 [node name="Testfeild" parent="." instance=ExtResource("8_iwiij")]
 
+[node name="Object1" parent="Testfeild" instance=ExtResource("2_5du73")]
+position = Vector2(-198, 153)
+rotation = -0.785405
+
+[node name="Object2" parent="Testfeild" instance=ExtResource("7_hie3q")]
+position = Vector2(-217, -219)
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_m32x0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, 1)
 ignore_rotation = false
 script = ExtResource("2_m5lm4")
-
-[node name="Object1" parent="." instance=ExtResource("2_5du73")]
-position = Vector2(-198, 153)
-rotation = 5.49778
-
-[node name="Object2" parent="." instance=ExtResource("7_hie3q")]
-position = Vector2(292, 130)
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 script = ExtResource("7_iwiij")

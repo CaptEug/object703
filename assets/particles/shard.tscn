@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://otqra8s5u8ql"]
+[gd_scene load_steps=5 format=3 uid="uid://otqra8s5u8ql"]
 
 [ext_resource type="Script" uid="uid://dmssv2hav2uv4" path="res://assets/particles/particle.gd" id="1_0ayl5"]
 
@@ -26,8 +26,6 @@ collision_mode = 1
 collision_friction = 0.0
 collision_bounce = 0.5
 
-[sub_resource type="Gradient" id="Gradient_p7oxr"]
-
 [node name="MetalShard" type="GPUParticles2D"]
 amount = 20
 lifetime = 2.0
@@ -35,4 +33,3 @@ explosiveness = 0.9
 randomness = 0.5
 process_material = SubResource("ParticleProcessMaterial_edt6r")
 script = ExtResource("1_0ayl5")
-color_initial_ramp = SubResource("Gradient_p7oxr")
