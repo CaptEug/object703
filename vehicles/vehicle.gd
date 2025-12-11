@@ -1063,7 +1063,7 @@ func calculate_track_load_distribution():
 	"""计算履带承重分布 - 平均分配"""
 	# 计算车辆总质量
 	total_mass = 0.0
-	for block in total_blocks:
+	for block in blocks:
 		if block is Block and block.functioning:
 			total_mass += block.mass
 	
