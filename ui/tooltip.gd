@@ -16,7 +16,7 @@ func _physics_process(_delta: float) -> void:
 	var mouse_pos = get_tree().current_scene.get_local_mouse_position()
 	var space_state = get_world_2d().direct_space_state
 
-	var query := PhysicsPointQueryParameters2D.new()
+	var query:= PhysicsPointQueryParameters2D.new()
 	query.position = mouse_pos
 	query.collide_with_areas = false
 	query.collide_with_bodies = true
@@ -24,10 +24,9 @@ func _physics_process(_delta: float) -> void:
 	var results = space_state.intersect_point(query)
 	if results.size() > 0:
 		var body = results[0].collider
+		visible = true
+		global_position = get_viewport().get_mouse_position() + Vector2(16, 16)
 		if body is Block:
-			visible = true
-			global_position = get_viewport().get_mouse_position() + Vector2(16, 16)
-
 			# --- 基本信息 ---
 			var vehicle = null
 			if body.has_method("get_parent_vehicle"):
@@ -36,7 +35,7 @@ func _physics_process(_delta: float) -> void:
 				textlabel.text = body.block_name
 			else:
 				textlabel.text = body.block_name + ": debris"
-
+			
 			# --- Cargo 特殊内容 ---
 			# 尝试按优先级取 items：
 			var items: Array = []
@@ -47,9 +46,15 @@ func _physics_process(_delta: float) -> void:
 				_update_cargo_items(items)
 			else:
 				_clear_grid()
-
+			
 			call_deferred("update_panel_size")
 			_last_block = body
+			return
+		
+		if body is TileMapLayer:
+			var celldata = body.get_celldata(body.local_to_map(query.position))
+			if celldata:
+				textlabel.text = celldata["matter"] + "\nHP:" + str(celldata["current_hp"])
 			return
 
 	# ---- 鼠标移出或未检测到 ----

@@ -6,9 +6,11 @@ var cell:Vector2i
 var terrain_set:int
 var max_hp:int
 var current_hp:int
+var kinetic_absorb:float
+var explosice_absorb:float
 
 var shard_particle_path = "res://assets/particles/shard.tscn"
-
+@export var shard_gradient:Gradient
 
 func _ready():
 	pass # Replace with function body.
