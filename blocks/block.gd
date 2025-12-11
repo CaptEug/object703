@@ -22,6 +22,8 @@ var broken_sprite:Sprite2D
 var do_connect = true
 var base_pos: Vector2i
 
+var center_of_mass_offset: Vector2 = Vector2.ZERO
+
 var shard_particle_path = "res://assets/particles/shard.tscn"
 
 ## Connection System
@@ -46,7 +48,7 @@ func _ready():
 	mass = weight/1000
 	linear_damp = 5
 	angular_damp = 1
-	#collision_layer = 0
+	
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
 	broken_sprite = find_child("Broken") as Sprite2D
@@ -149,7 +151,6 @@ func damage(amount:int):
 		var shard_particle = load(shard_particle_path).instantiate()
 		shard_particle.position = global_position
 		get_tree().current_scene.add_child(shard_particle)
-
 
 func destroy():
 	if parent_vehicle:
@@ -480,3 +481,14 @@ func disconnect_all_connections():
 			connector.disconnect_connection()
 	
 	joint_connected_blocks.clear()
+
+# 获取块的实际重心位置（考虑偏移和旋转）
+func get_actual_center_of_mass(geometric_center: Vector2) -> Vector2:
+	if not functioning:
+		return geometric_center
+	
+	# 计算考虑旋转后的偏移
+	var rotation_rad = deg_to_rad(base_rotation_degree)
+	var rotated_offset = center_of_mass_offset.rotated(rotation_rad)
+	
+	return geometric_center + rotated_offset

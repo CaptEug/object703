@@ -29,3 +29,4 @@ func _init():
 	muzzle_energy = MUZZLE_ENERGY
 	spread = SPREAD
 	shells = SHELLS
+	center_of_mass_offset = Vector2(0, 32)

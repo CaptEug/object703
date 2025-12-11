@@ -273,7 +273,6 @@ func update_vehicle_info_display():
 	
 	# 检查是否超载
 	if stats.total_weight/load_status["total_capacity"] > 1:
-		print("zhongl")
 		# 超载时使用红色显示重量/载重
 		description_label.append_text("[color=#FF5555]")
 		description_label.append_text(weight_text)

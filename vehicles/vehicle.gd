@@ -446,18 +446,45 @@ func calculate_center_of_mass() -> Vector2:
 	
 	for grid_pos in grid:
 		if grid[grid_pos] != null:
-			var body: RigidBody2D = grid[grid_pos]
+			var body: Block = grid[grid_pos]
 			if blocks.has(body):
 				if has_calculated.get(body.get_instance_id(), false):
 					continue
 				
 				var rid = get_block_grid(body)
-				var global_com:Vector2 = get_rectangle_corners(rid)
-				var mass = body.total_mass if body is TurretRing else body.mass
+				var geometric_center: Vector2 = get_rectangle_corners(rid)
 				
-				weighted_sum += global_com * mass
+				# 使用块的实际重心（考虑偏移）
+				var actual_com: Vector2 = body.get_actual_center_of_mass(geometric_center)
+				
+				# 使用块的实际质量
+				var mass = body.mass
+				
+				weighted_sum += actual_com * mass
 				total_mass += mass
 				has_calculated[body.get_instance_id()] = true
+	
+	# 还要考虑炮塔上的块
+	for block in total_blocks:
+		if not blocks.has(block) and block is Block and block.functioning:
+			if has_calculated.get(block.get_instance_id(), false):
+				continue
+			var actual_com = Vector2.ZERO
+			# 对于炮塔上的块，需要获取其在车辆坐标系中的位置
+			if block.on_turret:
+				var turret_pos = block.on_turret.global_position - global_position
+				var block_local_pos = block.position - block.on_turret.position
+				actual_com = turret_pos + block_local_pos
+				
+				# 考虑块的旋转和偏移
+				var rotation_rad = deg_to_rad(block.base_rotation_degree)
+				var rotated_offset = block.center_of_mass_offset.rotated(rotation_rad)
+				actual_com += rotated_offset
+			
+			var mass = block.get_actual_mass()
+			weighted_sum += actual_com * mass
+			total_mass += mass
+			has_calculated[block.get_instance_id()] = true
 	
 	cached_center_of_mass = weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 	cached_center_of_mass_dirty = false
@@ -1036,7 +1063,7 @@ func calculate_track_load_distribution():
 	"""计算履带承重分布 - 平均分配"""
 	# 计算车辆总质量
 	total_mass = 0.0
-	for block in blocks:
+	for block in total_blocks:
 		if block is Block and block.functioning:
 			total_mass += block.mass
 	
@@ -1068,14 +1095,6 @@ func check_track_overload_status():
 		calculate_balanced_forces()
 		calculate_rotation_forces()
 
-func calculate_total_mass():
-	"""计算车辆总质量"""
-	total_mass = 0.0
-	for block in total_blocks:
-		if block is Block:
-			total_mass += block.mass
-	total_weight = int(total_mass)
-
 func get_track_load_status() -> Dictionary:
 	"""获取所有履带的承重状态"""
 	var status = {}
@@ -1106,3 +1125,13 @@ func get_track_load_status() -> Dictionary:
 		"overloaded_tracks": overloaded_tracks,
 		"functioning_tracks": functioning_tracks
 	}
+
+# 获取车辆的实际总质量（考虑所有块的损坏状态）
+func get_actual_total_mass() -> float:
+	var total_actual_mass := 0.0
+	
+	for block in total_blocks:
+		if block is Block and block.functioning:
+			total_actual_mass += block.get_actual_mass()
+	
+	return total_actual_mass
