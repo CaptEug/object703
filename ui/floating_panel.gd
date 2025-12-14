@@ -23,7 +23,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func any_overlap() -> bool:
-	var HUD = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+	var HUD = get_tree().root.get_node("Main/UI") as CanvasLayer
 	for p in HUD.get_children():
 		if p is FloatingPanel and p != self:
 			var r = Rect2(p.position, Vector2(32, 32))
