@@ -55,6 +55,7 @@ func use_fuel(power: float, delta: float) -> bool:
 			return false
 	
 	var fuel_needed = power * delta
+
 	
 	if fuel_needed <= current_fuel_pack_remaining:
 		current_fuel_pack_remaining -= fuel_needed

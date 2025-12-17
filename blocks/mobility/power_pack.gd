@@ -96,18 +96,13 @@ func calculate_power_distribution(forward_input, turn_input):
 
 func fuel_reduction(delta):
 	if parent_vehicle and connected_fueltank.size() > 0:
-		var required_fuel = power * delta
-		var fuel_per_tank = required_fuel / connected_fueltank.size()
-		var remaining_fuel_needed = required_fuel
+		var remaining_power = power * delta
 		for tank in connected_fueltank:
-			if tank is Fueltank and remaining_fuel_needed > 0:
-				if tank.use_fuel(remaining_fuel_needed, delta):
-					remaining_fuel_needed = 0
+			if tank is Fueltank and tank.get_total_fuel() > 0:
+				if tank.use_fuel(remaining_power, delta):
+					return
 				else:
-					var tank_fuel = tank.get_total_fuel()
-					if tank_fuel > 0:
-						tank.use_fuel(tank_fuel, delta)
-						remaining_fuel_needed -= tank_fuel
+					remaining_power -= tank.get_total_fuel()
 
 # 外部接口 - 设置状态
 func set_movement_state(moving: bool, rotating: bool):
