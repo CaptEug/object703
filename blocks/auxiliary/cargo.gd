@@ -1,6 +1,8 @@
 class_name Cargo
 extends Block
 
+signal inventory_changed(cargo: Cargo)
+
 @export var slot_count: int = 6
 @export var is_full: bool = false
 @export var ui_ref: Node = null
@@ -42,7 +44,7 @@ func set_item(slot_index: int, item_data: Dictionary) -> bool:
 	return true
 	
 func finalize_changes():
-	EventBus.emit_signal("inventory_changed", self)
+	emit_signal("inventory_changed", self)
 
 # ============================================================
 # 物品交互接口（供 UI 调用）
@@ -56,11 +58,11 @@ func add_item(id: String, count: int) -> bool:
 	for item_index in range(len(inventory)):
 		if inventory[item_index].is_empty():
 			inventory[item_index] = item_data
-			EventBus.emit_signal("inventory_changed", self)
+			emit_signal("inventory_changed", self)
 			return true
 		elif inventory[item_index]["id"] == id:
 			inventory[item_index]["count"] += count
-			EventBus.emit_signal("inventory_changed", self)
+			emit_signal("inventory_changed", self)
 			return true
 	
 	return false
@@ -85,12 +87,12 @@ func take_item(id: String, count: int) -> bool:
 				inventory[item_index]["count"] -= count_remain
 				if inventory[item_index]["count"] == 0:
 					inventory[item_index] = {}
-				EventBus.emit_signal("inventory_changed", self)
+				emit_signal("inventory_changed", self)
 				return true
 			else:
 				count_remain -= inventory[item_index]["count"]
 				inventory[item_index] = {}
-				EventBus.emit_signal("inventory_changed", self)
+				emit_signal("inventory_changed", self)
 	
 	return false
 
@@ -105,13 +107,13 @@ func split_item(slot_index: int) -> Dictionary:
 	var new_item = item.duplicate()
 	new_item["count"] = half
 	
-	EventBus.emit_signal("inventory_changed", self)
+	emit_signal("inventory_changed", self)
 	return new_item
 
 func clear_all():
 	for item_index in range(slot_count):
 		inventory[item_index] = {}
-	EventBus.emit_signal("inventory_changed", self)
+	emit_signal("inventory_changed", self)
 
 # ============================================================
 # 可扩展：类型限制或容量控制

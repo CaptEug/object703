@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Object703"
-run/main_scene="uid://dawkb0e8tm4e8"
+run/main_scene="uid://d3w6ypwy5igvg"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
 [autoload]
@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 GlobalTimeManager="*res://GlobalTimeManager.gd"
 ItemDB="*res://item_database.gd"
 EventBus="*res://event_bus.gd"
+WindowManager="*res://ui/window/window_manager.gd"
 
 [display]
 

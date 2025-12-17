@@ -125,7 +125,7 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	drag_preview.add_child(label)
 
 	# 放到最顶层（挂到 root，保证可见）
-	get_node("/root/Testground/CanvasLayer/Tankpanel").add_child(drag_preview)
+	get_tree().root.get_node("Main/UI/Tankpanel").add_child(drag_preview)
 	if not drag_is_split:
 		hide_current_icon()
 	_update_drag()
