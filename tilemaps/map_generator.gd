@@ -8,7 +8,7 @@ var world_width:int = 256
 @export var noise_height_text:NoiseTexture2D
 
 #terrain sets
-var sandstone_int = 0
+var sandstone_int = 1
 var sandstone_tiles_arr = []
 
 func _ready():
@@ -27,7 +27,9 @@ func generate_world(noise:Noise):
 			if noise_val > 0:
 				sandstone_tiles_arr.append(Vector2i(x,y))
 				
-	wall.set_cells_terrain_connect(sandstone_tiles_arr, sandstone_int, 0)
+	BetterTerrain.set_cells(wall, sandstone_tiles_arr, sandstone_int)
+	BetterTerrain.update_terrain_cells(wall, sandstone_tiles_arr, sandstone_int)
+
 
 func generate_tile_blocks(layer:TileMapLayer):
 	for cell in layer.get_used_cells():

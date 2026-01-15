@@ -51,7 +51,7 @@ func damage_tile(cell:Vector2i, amount:int):
 
 func destroy_tile(cell:Vector2i):
 	var tile_data = get_cell_tile_data(cell)
-	set_cells_terrain_connect([cell], tile_data.terrain_set, -1)
 	erase_cell(cell)
 	layerdata.erase(cell)
+	BetterTerrain.update_terrain_cell(self, cell, true)
 	
