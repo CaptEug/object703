@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 GlobalTimeManager="*res://GlobalTimeManager.gd"
 ItemDB="*res://item_database.gd"
 TileDB="*res://tile_database.gd"
+BetterTerrain="*res://addons/better-terrain/BetterTerrain.gd"
 
 [display]
 
@@ -27,6 +28,10 @@ window/stretch/scale_mode="integer"
 [editor]
 
 version_control/autoload_on_startup=true
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/better-terrain/plugin.cfg")
 
 [file_customization]
 
