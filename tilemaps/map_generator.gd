@@ -2,10 +2,14 @@ extends Node2D
 
 @onready var ground:TileMapLayer = $GroundLayer
 @onready var wall:WallLayer = $WallLayer
-var world_height:int = 128
-var world_width:int = 128
+var world_height:int = 256
+var world_width:int = 256
 
 @export var noise_height_text:NoiseTexture2D
+
+#terrain sets
+var sandstone_int = 0
+var sandstone_tiles_arr = []
 
 func _ready():
 	generate_world(noise_height_text.noise)
@@ -21,8 +25,9 @@ func generate_world(noise:Noise):
 		for y in range(world_height):
 			var noise_val = noise.get_noise_2d(x, y)
 			if noise_val > 0:
-				wall.set_cells_terrain_connect([Vector2i(x,y)], 0, 0)
-
+				sandstone_tiles_arr.append(Vector2i(x,y))
+				
+	wall.set_cells_terrain_connect(sandstone_tiles_arr, sandstone_int, 0)
 
 func generate_tile_blocks(layer:TileMapLayer):
 	for cell in layer.get_used_cells():

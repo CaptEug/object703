@@ -9,7 +9,13 @@ var tiles = {
 		"drop_item_id": "sandstone"
 	},
 	
-	
+	"hematite":{
+		"layer": "wall",
+		"hp": 800,
+		"kinetic_aborb": 1.0,
+		"explosive_absorb": 0.5,
+		"drop_item_id": "hematite"
+	}
 }
 
 
