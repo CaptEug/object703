@@ -2,8 +2,8 @@ extends Node2D
 
 @onready var ground:TileMapLayer = $GroundLayer
 @onready var wall:WallLayer = $WallLayer
-var world_height:int = 256
-var world_width:int = 256
+var world_height:int = 128
+var world_width:int = 128
 
 @export var noise_height_text:NoiseTexture2D
 
