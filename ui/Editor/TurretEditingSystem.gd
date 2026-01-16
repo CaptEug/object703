@@ -84,9 +84,6 @@ func enter_turret_editing_mode(turret: TurretRing):
 	
 	turret.lock_turret_rotation()
 	
-	# 设置块的颜色状态
-	await update_all_block_colors_in_turret_mode(turret)
-	
 	if current_ghost_block:
 		current_ghost_block.visible = false
 	
@@ -106,13 +103,7 @@ func exit_turret_editing_mode():
 	
 	Input.set_custom_mouse_cursor(null)
 	
-	# 恢复所有块的颜色
-	if selected_vehicle:
-		for block in selected_vehicle.blocks:
-			if is_instance_valid(block):
-				block.modulate = Color.WHITE
-	
-	if editor.is_recycle_mode:
+	if editor and editor.is_recycle_mode:
 		Input.set_custom_mouse_cursor(editor.saw_cursor)
 	
 	turret_snap_config = {}
@@ -124,38 +115,7 @@ func exit_turret_editing_mode():
 	
 	current_editing_turret = null
 
-# === 颜色处理函数 ===
-func handle_block_colors_in_turret_mode(block: Block):
-	if not is_turret_editing_mode or not current_editing_turret:
-		return
-	
-	if block == current_editing_turret:
-		block.modulate = Color.WHITE
-		# 炮塔篮筐中的子块也设为白色
-		for child in block.turret_basket.get_children():
-			if child is Block:
-				child.modulate = Color.WHITE
-	elif current_editing_turret.turret_blocks.has(block):
-		block.modulate = Color.WHITE
-	else:
-		block.modulate = editor.BLOCK_DIM_COLOR
-		# 如果是其他炮塔，将其子块也设为暗淡颜色
-		if block is TurretRing:
-			for child in block.turret_basket.get_children():
-				if child is Block:
-					child.modulate = editor.BLOCK_DIM_COLOR
-
-func update_all_block_colors_in_turret_mode(turret:TurretRing):
-	if not is_turret_editing_mode or not selected_vehicle:
-		return
-	
-	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			handle_block_colors_in_turret_mode(block)
-	
-	await get_tree().process_frame
-	turret.lock_turret_rotation()
-	
+		
 # === 方块放置功能 ===
 func start_block_placement(scene_path: String):
 	if not is_turret_editing_mode or not selected_vehicle:
@@ -440,8 +400,6 @@ func try_remove_turret_block():
 	
 	if block_to_remove and block_to_remove != current_editing_turret:
 		current_editing_turret.remove_block_from_turret(block_to_remove)
-		# 更新块颜色
-		update_all_block_colors_in_turret_mode(current_editing_turret)
 
 func get_turret_block_at_position(position: Vector2) -> Block:
 	var space_state = get_tree().root.get_world_2d().direct_space_state
@@ -527,9 +485,6 @@ func try_place_turret_block():
 	
 	if selected_vehicle:
 		selected_vehicle.update_vehicle()
-	
-	# 更新块颜色
-	update_all_block_colors_in_turret_mode(current_editing_turret)
 	
 	# 重新开始放置
 	start_block_placement_with_rotation(current_block_scene.resource_path)

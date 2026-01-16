@@ -2,7 +2,7 @@ class_name Fueltank
 extends Cargo
 
 const ACCEPT:= ["fuel"]
-const FUEL_PACK_CAPACITY: float = 10.0
+const FUEL_PACK_CAPACITY: float = 100.0
 
 var current_fuel_pack_remaining: float = 0.0
 var current_fuel_pack_slot: int = -1

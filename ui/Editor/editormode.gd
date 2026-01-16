@@ -17,6 +17,7 @@ extends Control
 @onready var recycle_button = $Panel/DismantleButton
 @onready var repair_button = $Panel/RepairButton
 @onready var mode_button = $Panel/ModeButton
+@onready var mass_center_show = $Panel/CoM/TextureButton
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 var panel_instance = null
@@ -82,6 +83,9 @@ func _ready():
 	recycle_button.pressed.connect(_on_recycle_button_pressed)
 	repair_button.pressed.connect(_on_repair_button_pressed)
 	mode_button.pressed.connect(_on_mode_button_pressed)
+	mass_center_show.toggle_mode = true
+	mass_center_show.button_pressed = show_center_of_mass
+	mass_center_show.toggled.connect(_on_mass_center_show_toggled)
 	create_tabs()
 	
 	save_dialog.hide()
@@ -135,6 +139,10 @@ func create_tab_with_itemlist(tab_name: String):
 	
 	tab_container.add_child(item_list)
 	item_lists[tab_name] = item_list
+
+func _on_mass_center_show_toggled(button_pressed: bool):
+	show_center_of_mass = button_pressed
+	_update_com_marker()
 
 func _create_com_marker():
 	if com_marker and is_instance_valid(com_marker):
@@ -484,8 +492,9 @@ func _process(delta):
 	if is_showing_blueprint and not blueprint_ghosts.is_empty():
 		update_ghosts_transform()	
 	
-	if is_editing and is_recycle_mode and selected_vehicle:
-		update_recycle_highlight()
+	# 使用中央控制器更新方块颜色
+	if is_editing and selected_vehicle:
+		update_all_block_colors()
 	
 	_update_com_marker()
 	hull_editing_system.process(delta)
@@ -493,6 +502,123 @@ func _process(delta):
 	
 	# 更新车辆信息显示，确保载重信息实时更新
 	update_vehicle_info_display()
+
+# === 中央颜色管理系统 ===
+func update_all_block_colors():
+	"""统一更新所有方块颜色（中央控制器入口）"""
+	if not selected_vehicle:
+		return
+	
+	# 1. 重置所有方块为默认颜色
+	reset_all_blocks_to_default()
+	
+	# 2. 根据当前模式应用特定颜色
+	apply_mode_specific_colors()
+	
+	# 3. 如果有悬停方块，应用悬停效果
+	apply_hover_highlight_if_needed()
+
+func reset_all_blocks_to_default():
+	"""重置所有方块为默认颜色"""
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			block.modulate = Color.WHITE
+
+func apply_mode_specific_colors():
+	"""应用模式特定的颜色"""
+	if is_recycle_mode:
+		# 回收模式下，虚化所有方块
+		apply_recycle_mode_dim()
+		return
+	
+	if turret_editing_system.is_turret_editing_mode:
+		# 炮塔编辑模式
+		apply_turret_editing_colors()
+	else:
+		# 车体编辑模式
+		apply_hull_editing_colors()
+
+func apply_turret_editing_colors():
+	"""炮塔编辑模式颜色方案"""
+	if not turret_editing_system.current_editing_turret:
+		return
+	
+	var current_turret = turret_editing_system.current_editing_turret
+	
+	for block in selected_vehicle.blocks:
+		if not is_instance_valid(block):
+			continue
+		
+		if block == current_turret:
+			# 当前编辑的炮塔：白色
+			block.modulate = Color.WHITE
+			# 当前炮塔上的所有块：白色
+			for turret_block in block.turret_blocks:
+				if is_instance_valid(turret_block):
+					turret_block.modulate = Color.WHITE
+		elif block is TurretRing:
+			# 其他炮塔本体：虚化
+			block.modulate = BLOCK_DIM_COLOR
+			# 其他炮塔上的块：虚化
+			for turret_block in block.turret_blocks:
+				if is_instance_valid(turret_block):
+					turret_block.modulate = BLOCK_DIM_COLOR
+		elif not block in current_turret.turret_blocks:
+			# 车体上的其他块：虚化
+			block.modulate = BLOCK_DIM_COLOR
+
+func apply_hull_editing_colors():
+	"""车体编辑模式颜色方案"""
+	for block in selected_vehicle.blocks:
+		var block_use = []
+		if not is_instance_valid(block):
+			continue
+		if block is TurretRing:
+			# 炮塔上的块：虚化（仅在车体模式） 
+			for turret_block in block.turret_blocks:
+				if is_instance_valid(turret_block):
+					turret_block.modulate = BLOCK_DIM_COLOR
+					block_use.append(turret_block)
+
+func apply_recycle_mode_dim():
+	"""回收模式下的虚化效果"""
+	for block in selected_vehicle.blocks:
+		if is_instance_valid(block):
+			block.modulate = Color.WHITE
+
+func apply_hover_highlight_if_needed():
+	"""如果有悬停方块，应用悬停高亮"""
+	if not is_recycle_mode:
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	var hovered_block = get_hovered_block(global_mouse_pos)
+	if hovered_block:
+		hovered_block.modulate = RECYCLE_HIGHLIGHT_COLOR
+
+func get_hovered_block(position: Vector2) -> Block:
+	"""获取鼠标悬停的方块"""
+	if turret_editing_system.is_turret_editing_mode:
+		return turret_editing_system.get_turret_block_at_position(position)
+	else:
+		return get_block_at_position(position)
+
+# === 状态变更接口 ===
+func on_mode_changed():
+	"""模式变更时调用"""
+	update_all_block_colors()
+	update_mode_button_display()
+
+func on_recycle_mode_toggled():
+	"""回收模式切换时调用"""
+	update_all_block_colors()
+	update_recycle_button()
+
+func on_edit_mode_changed():
+	"""编辑模式切换时调用"""
+	update_all_block_colors()
 
 # === 模式切换 ===
 func _on_mode_button_pressed():
@@ -503,6 +629,8 @@ func _on_mode_button_pressed():
 		switch_to_turret_mode()
 	else:
 		switch_to_vehicle_mode()
+	
+	on_mode_changed()  # 中央控制器管理颜色
 
 func switch_to_turret_mode():
 	if not is_editing or not selected_vehicle:
@@ -531,7 +659,6 @@ func switch_to_vehicle_mode():
 	
 	if turret_editing_system.is_turret_editing_mode:
 		turret_editing_system.exit_turret_editing_mode()
-	
 	is_vehicle_mode = true
 	update_mode_button_display()
 
@@ -564,6 +691,7 @@ func enter_recycle_mode():
 	clear_tab_container_selection()
 	
 	update_recycle_button()
+	on_recycle_mode_toggled()  # 中央控制器管理颜色
 	emit_signal("recycle_mode_toggled", is_recycle_mode)
 
 func exit_recycle_mode():
@@ -571,49 +699,9 @@ func exit_recycle_mode():
 		is_recycle_mode = false
 		Input.set_custom_mouse_cursor(null)
 		update_recycle_button()
-		
-		if selected_vehicle:
-			reset_all_blocks_color()
+		on_recycle_mode_toggled()  # 中央控制器管理颜色
 		
 		emit_signal("recycle_mode_toggled", false)
-
-func update_recycle_highlight():
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	
-	reset_all_blocks_color()
-	
-	if turret_editing_system.is_turret_editing_mode:
-		var block = turret_editing_system.get_turret_block_at_position(global_mouse_pos)
-		if block:
-			block.modulate = RECYCLE_HIGHLIGHT_COLOR
-	else:
-		var space_state = get_tree().root.get_world_2d().direct_space_state
-		var query = PhysicsPointQueryParameters2D.new()
-		query.position = global_mouse_pos
-		query.collision_mask = 1
-		
-		var result = space_state.intersect_point(query)
-		for collision in result:
-			var block = collision.collider
-			if block is Block and block.get_parent() == selected_vehicle:
-				block.modulate = RECYCLE_HIGHLIGHT_COLOR
-				break
-
-func reset_all_blocks_color():
-	if not selected_vehicle:
-		return
-	
-	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			if turret_editing_system.is_turret_editing_mode:
-				turret_editing_system.handle_block_colors_in_turret_mode(block)
-			else:
-				block.modulate = Color.WHITE
-				if block is TurretRing:
-					for child in block.turret_basket.get_children():
-						if child is Block:
-							child.modulate = Color.WHITE
 
 func update_recycle_button():
 	if is_recycle_mode:
@@ -661,11 +749,13 @@ func enter_editor_mode(vehicle: Vehicle):
 	
 	hull_editing_system.reset_connection_indices()
 	
-	show_center_of_mass = true
-	com_marker.visible = true
+	show_center_of_mass = mass_center_show.button_pressed
+	com_marker.visible = show_center_of_mass
 	
 	toggle_blueprint_display()
 	update_vehicle_info_display()
+	
+	on_edit_mode_changed()  # 中央控制器管理颜色
 
 func _cleanup_invalid_blocks():
 	for block in selected_vehicle.get_children():
@@ -720,7 +810,7 @@ func exit_editor_mode():
 	
 	camera.target_rot = 0.0
 	
-	show_center_of_mass = false
+	show_center_of_mass = mass_center_show.button_pressed
 	com_marker.visible = false
 	
 	hide()
