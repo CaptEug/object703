@@ -1,6 +1,8 @@
 class_name Block
 extends RigidBody2D
 
+@export var center_of_mass_offset: Vector2 = Vector2.ZERO
+
 ## Basic Properties
 var current_hp:float
 var max_hp:float
@@ -23,8 +25,6 @@ var sprite:Sprite2D
 var broken_sprite:Sprite2D
 var do_connect = true
 var base_pos: Vector2i
-
-var center_of_mass_offset: Vector2 = Vector2.ZERO
 
 var shard_particle_path = "res://assets/particles/shard.tscn"
 
