@@ -6,7 +6,7 @@ const BLOCK_NAME:String = 'Daimler-littleknight'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)
 const MAX_POWER:float = 50.0
-const FUEL_CONSUMPTION:float = 50.0
+const FUEL_CONSUMPTION:float = 0.5
 const ROTATING_POWER: float = 0.3
 const POWER_CHANGE_RATE: float = 10
 
