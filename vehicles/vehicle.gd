@@ -139,13 +139,6 @@ func update_vehicle():
 ###################### BLOCK MANAGEMENT ######################
 
 func _add_block(block: Block, local_pos = null, grid_positions = null):
-	if not local_pos == null and not grid_positions == null:
-		if block.parent_vehicle == null:
-			add_child(block)
-			block.parent_vehicle = self
-		block.position = local_pos
-		await block.connect_aready()
-	
 	if block not in blocks:
 		blocks.append(block)
 		total_blocks.append(block)
@@ -167,6 +160,13 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 		elif block is Cargo:
 			cargos.append(block)
 			emit_signal("cargo_changed")
+	
+	if not local_pos == null and not grid_positions == null:
+		if block.parent_vehicle == null:
+			add_child(block)
+			block.parent_vehicle = self
+		block.position = local_pos
+		await block.connect_aready()
 		
 		for pos in grid_positions:
 			grid[pos] = block
