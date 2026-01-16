@@ -23,3 +23,4 @@ func _init():
 	max_power = MAX_POWER
 	rotate_power_ratio = ROTATING_POWER
 	power_change_rate = POWER_CHANGE_RATE
+	fuel_consumption = FUEL_CONSUMPTION

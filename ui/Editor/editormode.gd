@@ -462,7 +462,7 @@ func _handle_turret_click(turret: TurretRing):
 
 
 func _handle_right_click():
-	if turret_editing_system.is_turret_editing_mode and is_recycle_mode:
+	if is_recycle_mode:
 		exit_recycle_mode()
 		return
 	if turret_editing_system.is_turret_editing_mode and turret_editing_system.current_ghost_block == null:
@@ -525,12 +525,7 @@ func reset_all_blocks_to_default():
 			block.modulate = Color.WHITE
 
 func apply_mode_specific_colors():
-	"""应用模式特定的颜色"""
-	if is_recycle_mode:
-		# 回收模式下，虚化所有方块
-		apply_recycle_mode_dim()
-		return
-	
+	"""应用模式特定的颜色"""	
 	if turret_editing_system.is_turret_editing_mode:
 		# 炮塔编辑模式
 		apply_turret_editing_colors()
@@ -580,17 +575,10 @@ func apply_hull_editing_colors():
 					turret_block.modulate = BLOCK_DIM_COLOR
 					block_use.append(turret_block)
 
-func apply_recycle_mode_dim():
-	"""回收模式下的虚化效果"""
-	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			block.modulate = Color.WHITE
-
 func apply_hover_highlight_if_needed():
 	"""如果有悬停方块，应用悬停高亮"""
 	if not is_recycle_mode:
 		return
-	
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	
