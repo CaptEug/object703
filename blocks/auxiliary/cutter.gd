@@ -56,13 +56,14 @@ func damage_contacted_blocks(delta):
 					gain_scrap(body)
 				body.damage(damage_to_deal)
 			# spark particle
-			var spark_pos = (global_position + body.global_position)/2
-			var spark_rot = (global_position - body.global_position).rotated(-PI/2).angle()
-			var spark = spark_particle.instantiate()
-			spark.position = spark_pos
-			spark.rotation = spark_rot
-			spark.emitting = true
-			get_tree().current_scene.add_child(spark)
+			if randf_range(0, 1) < 0.1:
+				var spark_pos = (global_position + body.global_position)/2
+				var spark_rot = (global_position - body.global_position).rotated(-PI/2).angle()
+				var spark = spark_particle.instantiate()
+				spark.position = spark_pos
+				spark.rotation = spark_rot
+				spark.emitting = true
+				get_tree().current_scene.add_child(spark)
 		
 		if body is WallLayer:
 			var tilemap = body
