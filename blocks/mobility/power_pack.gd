@@ -4,6 +4,7 @@ extends Block
 # 发动机属性
 var power: float = 0
 var max_power: float
+var fuel_consumption:float
 var power_change_rate: float
 var target_power: float
 var state = {"move": false, "rotate": false}
