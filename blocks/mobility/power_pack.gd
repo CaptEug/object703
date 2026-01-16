@@ -97,10 +97,10 @@ func calculate_power_distribution(forward_input, turn_input):
 
 func fuel_reduction(delta):
 	if parent_vehicle and connected_fueltank.size() > 0:
-		var remaining_power = power * delta
+		var remaining_power = power * (fuel_consumption/max_power)
 		for tank in connected_fueltank:
 			if tank is Fueltank and tank.get_total_fuel() > 0:
-				if tank.use_fuel(remaining_power, delta):
+				if tank.use_fuel(remaining_power , delta):
 					return
 				else:
 					remaining_power -= tank.get_total_fuel()

@@ -582,15 +582,17 @@ func apply_hull_editing_colors():
 
 func apply_recycle_mode_dim():
 	"""回收模式下的虚化效果"""
-	for block in selected_vehicle.blocks:
-		if is_instance_valid(block):
-			block.modulate = Color.WHITE
+	if turret_editing_system.is_turret_editing_mode:
+		# 炮塔编辑模式
+		apply_turret_editing_colors()
+	else:
+		# 车体编辑模式
+		apply_hull_editing_colors()
 
 func apply_hover_highlight_if_needed():
 	"""如果有悬停方块，应用悬停高亮"""
 	if not is_recycle_mode:
 		return
-	
 	var mouse_pos = get_viewport().get_mouse_position()
 	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 	
