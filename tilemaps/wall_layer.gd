@@ -48,6 +48,16 @@ func damage_tile(cell:Vector2i, amount:int):
 	if layerdata[cell]["current_hp"] <= 0:
 		destroy_tile(cell)
 	
+	#shard particle
+	if randf_range(0, 1) < 0.1:
+		if not get_cell_tile_data(cell):
+			return
+		var particle_path = get_cell_tile_data(cell).get_custom_data("particle_path")
+		
+		var shard = load(particle_path).instantiate()
+		shard.position = map_to_local(cell)
+		shard.emitting = true
+		get_tree().current_scene.add_child(shard)
 
 func destroy_tile(cell:Vector2i):
 	var tile_data = get_cell_tile_data(cell)

@@ -1,10 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://otqra8s5u8ql"]
+[gd_scene load_steps=5 format=3 uid="uid://egtrnfu44lj"]
 
-[ext_resource type="Script" uid="uid://dmssv2hav2uv4" path="res://assets/particles/particle.gd" id="1_0ayl5"]
+[ext_resource type="Script" uid="uid://dmssv2hav2uv4" path="res://assets/particles/particle.gd" id="1_8btrk"]
 
 [sub_resource type="Gradient" id="Gradient_jxm2g"]
 offsets = PackedFloat32Array(0, 0.510288, 1)
-colors = PackedColorArray(0.0705882, 0.0705882, 0.0705882, 1, 0.380392, 0.243137, 0.203922, 1, 0.458824, 0.443137, 0.439216, 1)
+colors = PackedColorArray(0.125911, 0.125911, 0.125911, 1, 0.277528, 0.277528, 0.277528, 1, 0.733005, 0.733005, 0.733005, 1)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_mxw3l"]
 gradient = SubResource("Gradient_jxm2g")
@@ -21,15 +21,15 @@ gravity = Vector3(0, 0, 0)
 damping_min = 100.0
 damping_max = 100.0
 scale_max = 4.0
-color = Color(0.446777, 0.446777, 0.446777, 1)
+color = Color(0.705882, 0.356863, 0.270588, 1)
 color_initial_ramp = SubResource("GradientTexture1D_mxw3l")
 collision_mode = 1
 collision_friction = 0.0
 collision_bounce = 0.5
 
-[node name="MetalShard" type="GPUParticles2D"]
+[node name="SandstoneShard" type="GPUParticles2D"]
 lifetime = 2.0
 explosiveness = 0.9
 randomness = 0.5
 process_material = SubResource("ParticleProcessMaterial_edt6r")
-script = ExtResource("1_0ayl5")
+script = ExtResource("1_8btrk")

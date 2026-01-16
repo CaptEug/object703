@@ -6,14 +6,14 @@ var zoom_max: float = 3.0
 var move_speed: float = 500
 var rotation_speed: float = 5.0
 var focused: bool = false
-var target_pos: Vector2 = Vector2.ZERO
+var target_pos: Vector2 
 var target_rot: float = 0.0
 var move_tween: Tween = null
 
 @onready var control_ui := get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
 
 func _ready():
-	pass
+	target_pos = position
 
 func _input(event: InputEvent) -> void:
 	var target_zoom = zoom

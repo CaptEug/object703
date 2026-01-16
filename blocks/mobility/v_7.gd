@@ -6,6 +6,7 @@ const BLOCK_NAME:String = 'V-7'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 2)
 const MAX_POWER:float = 120.0
+const FUEL_CONSUMPTION:float = 120.0
 const ROTATING_POWER: float = 0.5
 const POWER_CHANGE_RATE: float = 40
 

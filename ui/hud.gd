@@ -15,7 +15,7 @@ func _process(_delta):
 # 创建新车辆
 func create_new_vehicle():
 	# 获取编辑器引用
-	var editor = get_tree().current_scene.find_child("Editorui")
+	var editor = UI.find_child("Editorui")
 	if editor:
 		if editor.has_method("create_new_vehicle"):
 			editor.create_new_vehicle()
@@ -26,6 +26,9 @@ func _on_build_button_pressed():
 
 
 func _on_tank_dex_button_pressed():
-	var tankdex = UI.find_child("TankDex") as FloatingPanel
+	var tankdex = UI.find_child("TankDex", true, false) as FloatingPanel
 	if tankdex:
 		tankdex.visible = true
+	else:
+		tankdex = load("res://ui/tankdex.tscn").instantiate()
+		UI.add_child(tankdex)
