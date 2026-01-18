@@ -460,6 +460,7 @@ func try_place_turret_block():
 		new_block.collision_mask = 2
 	
 	new_block.global_position = turret_snap_config.ghost_position
+	print(turret_snap_config)
 	if turret_snap_config.has("ghost_rotation"):
 		new_block.global_rotation = turret_snap_config.ghost_rotation
 	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
@@ -475,8 +476,8 @@ func try_place_turret_block():
 	if not success:
 		new_block.queue_free()
 		return
-	
-	# 异步操作
+	#
+	## 异步操作
 	if new_block.has_method("connect_aready"):
 		await new_block.connect_aready()
 	else:
@@ -835,8 +836,9 @@ func calculate_turret_world_position(turret_point: TurretConnector, ghost_local_
 	return turret_point.get_parent().to_global(use_pos)
 
 func calculate_turret_block_rotation(turret_point: TurretConnector, ghost_point: TurretConnector) -> float:
-	var turret_direction = turret_point.global_rotation
+	var turret_direction = turret_point.get_parent().global_rotation
 	var ghost_base_rotation = deg_to_rad(ghost_point.get_parent().base_rotation_degree)
+	print(turret_direction + ghost_base_rotation)
 	return turret_direction + ghost_base_rotation
 
 func can_rigidbody_connectors_connect(connector_a: TurretConnector, connector_b: TurretConnector) -> bool:
