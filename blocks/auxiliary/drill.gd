@@ -82,7 +82,11 @@ func damage_contacted_blocks(delta):
 					var cell = Vector2i(x, y)
 					if not tilemap.get_celldata(cell):
 						continue
+					var tile_hp = tilemap.layerdata[cell]["current_hp"]
+					if tile_hp - dmg * delta * 2 <= 0:
+						gain_material(tilemap, cell)
 					tilemap.damage_tile(cell, dmg * delta * 2) #deal double dmg to tile
+
 
 func update_drill_sprite(delta):
 	if on:
@@ -93,10 +97,10 @@ func update_drill_sprite(delta):
 	var wrapped_x = wrapf(drill_scroll, 0, 32) #drill sprite is 32x32
 	drill_sprite.texture.region.position = sprite_origin + Vector2(wrapped_x, 0)
 
-func gain_material(block):
-	var amount = block.size.x * block.size.y
+func gain_material(tilemap:WallLayer, cell:Vector2i):
+	var item = tilemap.layerdata[cell]["matter"]
 	for cargo in connected_cargo:
-		cargo.add_item("scrap", amount)
+		cargo.add_item(item, 1)
 
 
 func find_all_connected_cargo():
