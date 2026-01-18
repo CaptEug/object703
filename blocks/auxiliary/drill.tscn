@@ -1,0 +1,64 @@
+[gd_scene load_steps=8 format=3 uid="uid://c2ab2583sci4s"]
+
+[ext_resource type="Script" uid="uid://dw4aurlkcp4b8" path="res://blocks/auxiliary/drill.gd" id="1_xumhd"]
+[ext_resource type="Texture2D" uid="uid://c5ovvxeiuly74" path="res://assets/blocks_eng.png" id="2_xumhd"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_w362x"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w362x"]
+size = Vector2(32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xumhd"]
+atlas = ExtResource("2_xumhd")
+region = Rect2(96, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w362x"]
+resource_local_to_scene = true
+atlas = ExtResource("2_xumhd")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1wynv"]
+atlas = ExtResource("2_xumhd")
+region = Rect2(0, 32, 32, 48)
+
+[node name="Drill" type="RigidBody2D"]
+script = ExtResource("1_xumhd")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 16)
+shape = SubResource("RectangleShape2D_w362x")
+
+[node name="Mask" type="Sprite2D" parent="."]
+clip_children = 1
+position = Vector2(0, -8)
+texture = SubResource("AtlasTexture_xumhd")
+
+[node name="Sprite2D" type="Sprite2D" parent="Mask"]
+texture = SubResource("AtlasTexture_w362x")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_1wynv")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Area2D"]
+polygon = PackedVector2Array(0, -22, -14, 6, 14, 6)
+
+[node name="Connector" parent="." instance=ExtResource("3_w362x")]
+position = Vector2(16, 16)
+location = Vector2i(1, 2)
+
+[node name="Connector2" parent="." instance=ExtResource("3_w362x")]
+position = Vector2(8, 24)
+rotation = 1.5708
+location = Vector2i(1, 2)
+
+[node name="Connector3" parent="." instance=ExtResource("3_w362x")]
+position = Vector2(-8, 24)
+rotation = 1.5708
+location = Vector2i(0, 2)
+
+[node name="Connector4" parent="." instance=ExtResource("3_w362x")]
+position = Vector2(-16, 16)
+rotation = 3.14159
+location = Vector2i(0, 2)

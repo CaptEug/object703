@@ -22,6 +22,22 @@ var items = {
 		"max_stack": 999,
 	},
 	
+	"sandstone": {
+		"tag": "material",
+		"weight": 100,
+		"icon": preload("res://assets/icons/items/sandstone.png"),
+		"max_stack": 999,
+	},
+	
+	"hematite": {
+		"tag": "material",
+		"weight": 100,
+		"icon": preload("res://assets/icons/items/hematite.png"),
+		"max_stack": 999,
+	},
+	
+	### AMMO ###
+	
 	"57mmAP": {
 		"tag": "ammo",
 		"weight": 4,

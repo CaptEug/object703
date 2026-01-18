@@ -1,20 +1,25 @@
 extends Block
 
-const HITPOINT:float = 800
-const WEIGHT:float = 1000
-const BLOCK_NAME:String = 'cutter'
-const SIZE:= Vector2(2, 2)
+const HITPOINT:float = 1200
+const WEIGHT:float = 1500
+const BLOCK_NAME:String = 'drill'
+const SIZE:= Vector2(2, 3)
 const TYPE:= 'Auxiliary'
 
-var description := "saw use to cut metal"
-var outline_tex := preload("res://assets/outlines/cutter_outline.png")
+var description := ""
+var outline_tex := preload("res://assets/outlines/drill_outline.png")
 var spark_particle = preload("res://assets/particles/spark.tscn")
 
 var inventory:Array = []
 var on:bool
 var dmg:= 150
 var connected_cargo:Array[Cargo] = []
-@onready var saw:RigidBody2D = $Saw
+
+@onready var drill_sprite:= $Mask/Sprite2D
+var sprite_origin:Vector2
+var drill_scroll:float = 0.0
+var drill_speed:float = 0.0
+var max_drill_speed:float = 3
 
 func _init():
 	max_hp = HITPOINT
@@ -25,13 +30,18 @@ func _init():
 	type = TYPE
 
 
+func _ready():
+	super._ready()
+	sprite_origin = drill_sprite.texture.region.position
+
+
 func _physics_process(delta):
+	update_drill_sprite(delta)
 	if not functioning:
 		on = false
 		return
 	find_all_connected_cargo()
 	if on:
-		saw.apply_torque(1000)
 		damage_contacted_blocks(delta)
 
 
@@ -44,15 +54,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func damage_contacted_blocks(delta):
-	for body in $Saw/Area2D.get_overlapping_bodies():
+	for body in $Area2D.get_overlapping_bodies():
 		if body is Block:
 			if body.parent_vehicle == parent_vehicle:
 				continue
 			var block_hp = body.current_hp
 			if block_hp >= 0:
-				var damage_to_deal = min(dmg * delta * 2, block_hp) #deal double dmg to block
-				if block_hp - dmg * delta * 2 <= 0:
-					gain_scrap(body)
+				var damage_to_deal = min(dmg * delta, block_hp)
 				body.damage(damage_to_deal)
 			# spark particle
 			if randf_range(0, 1) < 0.1:
@@ -68,16 +76,24 @@ func damage_contacted_blocks(delta):
 			var tilemap = body
 			var center_cell = tilemap.local_to_map(global_position)
 			var tile_size:int = 16
-			var r_tiles = 1
+			var r_tiles = 1.5
 			for y in range(center_cell.y - r_tiles, center_cell.y + r_tiles + 1):
 				for x in range(center_cell.x - r_tiles, center_cell.x + r_tiles + 1):
 					var cell = Vector2i(x, y)
 					if not tilemap.get_celldata(cell):
 						continue
-					tilemap.damage_tile(cell, dmg * delta)
+					tilemap.damage_tile(cell, dmg * delta * 2) #deal double dmg to tile
 
+func update_drill_sprite(delta):
+	if on:
+		drill_speed = clamp(drill_speed + 1 * delta, 0, max_drill_speed)
+	else:
+		drill_speed = clamp(drill_speed - 1 * delta, 0, max_drill_speed)
+	drill_scroll += drill_speed
+	var wrapped_x = wrapf(drill_scroll, 0, 32) #drill sprite is 32x32
+	drill_sprite.texture.region.position = sprite_origin + Vector2(wrapped_x, 0)
 
-func gain_scrap(block):
+func gain_material(block):
 	var amount = block.size.x * block.size.y
 	for cargo in connected_cargo:
 		cargo.add_item("scrap", amount)

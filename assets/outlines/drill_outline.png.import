@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0gcvtsw8khpp"
-path="res://.godot/imported/dismantler_outline.png-90b89e17f245a0ab8eb777604b5de8b5.ctex"
+uid="uid://dmbvem1ncrko1"
+path="res://.godot/imported/drill_outline.png-4a3350c9ce633f02f9c6b78207c89948.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/outlines/dismantler_outline.png"
-dest_files=["res://.godot/imported/dismantler_outline.png-90b89e17f245a0ab8eb777604b5de8b5.ctex"]
+source_file="res://assets/outlines/drill_outline.png"
+dest_files=["res://.godot/imported/drill_outline.png-4a3350c9ce633f02f9c6b78207c89948.ctex"]
 
 [params]
 
