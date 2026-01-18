@@ -165,6 +165,7 @@ func destroy():
 	await disconnect_all()
 	if parent_vehicle:
 		parent_vehicle.remove_block(self, false)
+		parent_vehicle = null
 	destroyed = true
 
 ## Block Management
