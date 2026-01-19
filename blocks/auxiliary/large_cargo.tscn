@@ -1,11 +1,14 @@
-[gd_scene load_steps=6 format=3 uid="uid://b7rtb38fi8atj"]
+[gd_scene load_steps=7 format=3 uid="uid://b7rtb38fi8atj"]
 
-[ext_resource type="Script" path="res://blocks/auxiliary/large_cargo.gd" id="1_1f020"]
+[ext_resource type="Script" uid="uid://dt0mcqok8yflc" path="res://blocks/auxiliary/large_cargo.gd" id="1_1f020"]
 [ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_r812u"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_r812u"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iayvv"]
 size = Vector2(32, 32)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_r812u"]
+radius = 128.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hihmu"]
 atlas = ExtResource("2_r812u")
@@ -17,6 +20,11 @@ metadata/_custom_type_script = "uid://cc5gucj74l8ng"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_iayvv")
+
+[node name="PickupMagnet" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupMagnet"]
+shape = SubResource("CircleShape2D_r812u")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_hihmu")
