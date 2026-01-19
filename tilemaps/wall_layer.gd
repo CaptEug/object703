@@ -2,11 +2,11 @@ class_name WallLayer
 extends TileMapLayer
 
 var layerdata:Dictionary[Vector2i, Dictionary]
-
+var item_pickup:PackedScene = preload("res://items/item_pickup.tscn")
+var map:Node2D
 
 func _ready():
-	pass # Replace with function body.
-
+	map = get_parent()
 
 
 func _process(delta):
@@ -60,8 +60,25 @@ func damage_tile(cell:Vector2i, amount:int):
 		get_tree().current_scene.add_child(shard)
 
 func destroy_tile(cell:Vector2i):
-	var tile_data = get_cell_tile_data(cell)
+	#shard particle
+	var particle_path = get_cell_tile_data(cell).get_custom_data("particle_path")
+	var shard = load(particle_path).instantiate()
+	shard.position = map_to_local(cell)
+	shard.emitting = true
+	get_tree().current_scene.add_child(shard)
+	
+	#pickup
+	spawn_pickup(cell)
+	
 	erase_cell(cell)
 	layerdata.erase(cell)
 	BetterTerrain.update_terrain_cell(self, cell, true)
-	
+
+
+func spawn_pickup(cell:Vector2i):
+	var item_id = layerdata[cell]["matter"]
+	var pickup = item_pickup.instantiate() as Pickup
+	pickup.item_id = item_id
+	pickup.amount = 1
+	pickup.position = map_to_local(cell)
+	map.add_child(pickup)
