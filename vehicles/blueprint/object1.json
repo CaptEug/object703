@@ -110,17 +110,6 @@
 				0.0
 			]
 		},
-		"19": {
-			"base_pos": [
-				2,
-				7
-			],
-			"name": "large cargo",
-			"path": "res://blocks/auxiliary/large_cargo.tscn",
-			"rotation": [
-				0
-			]
-		},
 		"2": {
 			"base_pos": [
 				0,
@@ -257,6 +246,6 @@
 	],
 	"vehicle_size": [
 		6,
-		9
+		7
 	]
 }

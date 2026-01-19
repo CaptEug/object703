@@ -70,21 +70,20 @@ func damage_contacted_blocks(delta):
 				spark.position = spark_pos
 				spark.rotation = spark_rot
 				spark.emitting = true
-				get_tree().current_scene.add_child(spark)
+				map.add_child(spark)
 		
 		if body is WallLayer:
 			var tilemap = body
 			var center_cell = tilemap.local_to_map(global_position)
-			var tile_size:int = 16
-			var r_tiles = 1.5
+			var r_tiles = 1
 			for y in range(center_cell.y - r_tiles, center_cell.y + r_tiles + 1):
 				for x in range(center_cell.x - r_tiles, center_cell.x + r_tiles + 1):
 					var cell = Vector2i(x, y)
 					if not tilemap.get_celldata(cell):
 						continue
 					var tile_hp = tilemap.layerdata[cell]["current_hp"]
-					if tile_hp - dmg * delta * 2 <= 0:
-						gain_material(tilemap, cell)
+					#if tile_hp - dmg * delta * 2 <= 0:
+						#gain_material(tilemap, cell)
 					tilemap.damage_tile(cell, dmg * delta * 2) #deal double dmg to tile
 
 
@@ -97,10 +96,11 @@ func update_drill_sprite(delta):
 	var wrapped_x = wrapf(drill_scroll, 0, 32) #drill sprite is 32x32
 	drill_sprite.texture.region.position = sprite_origin + Vector2(wrapped_x, 0)
 
-func gain_material(tilemap:WallLayer, cell:Vector2i):
-	var item = tilemap.layerdata[cell]["matter"]
-	for cargo in connected_cargo:
-		cargo.add_item(item, 1)
+
+#func gain_material(tilemap:WallLayer, cell:Vector2i):
+	#var item = tilemap.layerdata[cell]["matter"]
+	#for cargo in connected_cargo:
+		#cargo.add_item(item, 1)
 
 
 func find_all_connected_cargo():

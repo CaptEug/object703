@@ -2,7 +2,7 @@ class_name WallLayer
 extends TileMapLayer
 
 var layerdata:Dictionary[Vector2i, Dictionary]
-var item_pickup:PackedScene = preload("res://items/item_pickup.tscn")
+var item_pickup_path = "res://items/item_pickup.tscn"
 var map:Node2D
 
 func _ready():
@@ -27,7 +27,6 @@ func init_layerdata():
 			"current_hp": tile_info["hp"],
 		}
 		layerdata[cell] = celldata
-
 
 func get_celldata(cell:Vector2i):
 	if cell in layerdata:
@@ -77,8 +76,9 @@ func destroy_tile(cell:Vector2i):
 
 func spawn_pickup(cell:Vector2i):
 	var item_id = layerdata[cell]["matter"]
-	var pickup = item_pickup.instantiate() as Pickup
+	var pickup = load(item_pickup_path).instantiate() as Pickup
 	pickup.item_id = item_id
 	pickup.amount = 1
 	pickup.position = map_to_local(cell)
 	map.add_child(pickup)
+	

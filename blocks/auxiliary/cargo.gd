@@ -11,6 +11,7 @@ var accept: Array = []  # 可以存放的物品类型约束（暂留）
 var max_load: float = false
 var pickupmagnet: Area2D
 
+
 func _ready():
 	super._ready()
 	initialize_inventory()
@@ -146,4 +147,14 @@ func calculate_total_weight() -> float:
 	for item_index in inventory:
 		total_weight += item_index.count * item_index.weight
 	return total_weight
-	
+
+func destroy():
+	for item in inventory:
+		if item == {}:
+			continue
+		var pickup = load(item_pickup_path).instantiate() as Pickup
+		pickup.item_id = item["id"]
+		pickup.amount = item["count"]
+		pickup.position = global_position
+		map.add_child(pickup)
+	super.destroy()

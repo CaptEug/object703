@@ -2,6 +2,7 @@ class_name Block
 extends RigidBody2D
 
 @export var center_of_mass_offset: Vector2 = Vector2.ZERO
+var map:Node2D
 
 ## Basic Properties
 var current_hp:float
@@ -15,9 +16,8 @@ var size:Vector2i
 var parent_vehicle: Vehicle = null  
 var connected_blocks := []
 var global_grid_pos
-var mouse_inside:bool
 var base_rotation_degree = 0
-var cost:Dictionary = {}
+var cost: = {}
 var on_turret:TurretRing
 var functioning:bool = true
 var destroyed:bool
@@ -27,6 +27,7 @@ var do_connect = true
 var base_pos: Vector2i
 
 var shard_particle_path = "res://assets/particles/shard.tscn"
+var item_pickup_path = "res://items/item_pickup.tscn"
 
 ## Connection System
 @export var connection_point_script: Script
@@ -46,10 +47,17 @@ signal connection_broken(joint: Joint2D)
 signal connections_processed(block: Block)
 
 func _ready():
+	# Get current game map
+	for child in get_tree().current_scene.get_children():
+		if child is GameMap:
+			map = child
+			continue
+	
 	# Initialize physics properties
 	mass = weight/1000
 	linear_damp = 5
 	angular_damp = 1
+	z_index = 1
 	
 	# init sprite
 	sprite = find_child("Sprite2D") as Sprite2D
@@ -58,8 +66,6 @@ func _ready():
 	# Set up input signals
 	input_pickable = true
 	connect("input_event", Callable(self, "_on_input_event"))
-	connect("mouse_entered", Callable(self, "_on_mouse_entered"))
-	connect("mouse_exited", Callable(self, "_on_mouse_exited"))
 	
 	# Collect connection points
 	collect_connection_points()
@@ -130,13 +136,7 @@ func _on_input_event(_viewport, event, _shape_idx):
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				parent_vehicle.open_vehicle_panel()
 
-func _on_mouse_entered():
-	mouse_inside = true
-
-func _on_mouse_exited():
-	mouse_inside = false
-
-func damage(amount:int):
+func damage(amount:int, from = null):
 	#print(str(name)+' receive damage:'+str(amount))
 	current_hp -= amount
 	# phase 1
@@ -145,16 +145,18 @@ func damage(amount:int):
 	
 	# phase 2
 	if current_hp <= max_hp * 0.25:
-		destroy()
+		broke()
 	
 	# phase 3
 	if current_hp <= 0:
-		queue_free()
-		var shard_particle = load(shard_particle_path).instantiate()
-		shard_particle.position = global_position
-		get_tree().current_scene.add_child(shard_particle)
+		if from:
+			if from.block_name == "cutter":
+				spawn_material()
+		else:
+			spawn_scrap()
+		destroy()
 
-func destroy():
+func broke():
 	if parent_vehicle:
 		functioning = false
 		parent_vehicle.update_vehicle()
@@ -167,6 +169,28 @@ func destroy():
 		parent_vehicle.remove_block(self, false)
 		parent_vehicle = null
 	destroyed = true
+
+func destroy():
+	queue_free()
+	var shard_particle = load(shard_particle_path).instantiate()
+	shard_particle.position = global_position
+	map.add_child(shard_particle)
+
+func spawn_material():
+	for materials in cost:
+		var pickup = load(item_pickup_path).instantiate() as Pickup
+		pickup.item_id = materials
+		pickup.amount = cost[materials]
+		pickup.position = global_position
+		map.add_child(pickup)
+
+func spawn_scrap():
+	var amount = size.x * size.y
+	var pickup = load(item_pickup_path).instantiate() as Pickup
+	pickup.item_id = "scrap"
+	pickup.amount = amount
+	pickup.position = global_position
+	map.add_child(pickup)
 
 ## Block Management
 func get_icon_texture():

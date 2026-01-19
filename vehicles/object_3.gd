@@ -1,7 +1,7 @@
 extends Vehicle
 
 func _init() -> void:
-	blueprint = "zddc"
+	blueprint = "armed miner"
 
 func _ready():
 	super._ready()
