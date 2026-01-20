@@ -110,7 +110,6 @@ func add_block_to_turret(block: Block, grid_positions: Array = []) -> bool:
 	
 	if block not in turret_blocks:
 		turret_blocks.append(block)
-		block.z_index = 50  # 确保实际块的 z-index 低于虚影块
 		
 		if grid_positions.is_empty():
 			grid_positions = calculate_block_grid_positions(block)
@@ -119,6 +118,8 @@ func add_block_to_turret(block: Block, grid_positions: Array = []) -> bool:
 			turret_grid[pos] = block
 		
 		reparent_block_to_vehicle(block, grid_positions)
+		
+		block.z_index = 2
 		
 		if block is CollisionObject2D:
 			block.collision_layer = 2
