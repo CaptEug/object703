@@ -63,8 +63,8 @@ func change_layer(area2D: Area2D, ceng: int):
 	area2D.collision_mask = ceng 
 	layer = ceng
 
-func _on_area_entered(area: Area2D):
-	var other_point = area.get_parent()
+func _on_area_entered(area_: Area2D):
+	var other_point = area_.get_parent()
 	if other_point is Connector:
 		if not overlapping_points.has(other_point):
 			var con = [other_point, self]
@@ -72,8 +72,8 @@ func _on_area_entered(area: Area2D):
 				find_parent_block().overlapping_points.append(con)
 			overlapping_points.append(other_point)
 
-func _on_area_exited(area: Area2D):
-	var other_point = area.get_parent()
+func _on_area_exited(area_: Area2D):
+	var other_point = area_.get_parent()
 	if other_point is Connector:
 		overlapping_points.erase(other_point)
 
@@ -84,7 +84,7 @@ func try_connect(other_point: Connector) -> bool:
 	if not layer == other_point.layer:
 		return false
 	
-	var parent_block = find_parent_block()
+	parent_block = find_parent_block()
 	var other_block = other_point.find_parent_block()
 	
 	if not other_block.is_movable_on_connection:
@@ -102,7 +102,7 @@ func can_connect_with(other_point: Connector) -> bool:
 		return false
 	
 	# 检查角度是否接近90度增量对齐
-	var parent_block = find_parent_block()
+	parent_block = find_parent_block()
 	var other_block = other_point.find_parent_block()
 	if not parent_block or not other_block:
 		return false
@@ -130,7 +130,7 @@ func disconnect_joint():
 	var other_point = connected_to
 	
 	if joint and is_instance_valid(joint):
-		var parent_block = find_parent_block()
+		parent_block = find_parent_block()
 		if parent_block:
 			parent_block.disconnect_joint(joint)
 	
@@ -164,7 +164,7 @@ func is_internal_connection() -> bool:
 	if not connected_to:
 		return false
 	
-	var parent_block = find_parent_block()
+	parent_block = find_parent_block()
 	var other_block = connected_to.find_parent_block()
 	
 	if not parent_block or not other_block:
