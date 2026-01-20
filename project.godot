@@ -39,6 +39,7 @@ folder_colors={
 "res://blocks/auxiliary/": "green",
 "res://blocks/command/": "yellow",
 "res://blocks/firepower/": "red",
+"res://blocks/industrial/": "purple",
 "res://blocks/mobility/": "orange",
 "res://blocks/structual/": "blue"
 }

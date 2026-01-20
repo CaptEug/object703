@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://blg0r11bkc8ix" path="res://items/item_pickup.gd" id="1_prgrc"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_5y1tf"]
+radius = 8.0
 
 [node name="ItemPickup" type="Area2D"]
 collision_layer = 4

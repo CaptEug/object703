@@ -217,10 +217,10 @@ func manual_target(delta):
 		fire()
 
 
-func destroy():
+func broke():
 	if turret:
 		turret.visible = false
 	if broken_turret:
 		broken_turret.rotation = turret.rotation
 		broken_turret.visible = true
-	super.destroy()
+	super.broke()

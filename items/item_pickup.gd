@@ -32,15 +32,16 @@ func _physics_process(delta):
 		return
 	
 	if attracting and target:
+		z_index = 5
 		var dir = (target.global_position - global_position)
 		var dist = dir.length()
-		
 		if dist <= collect_distance:
 			target.add_item(item_id, amount)
 			queue_free()
 			return
-		
 		global_position += dir.normalized() * attract_speed * clamp(64/dist, 0.2, 1.0) * delta
+	else:
+		z_index = 0
 
 
 func burst():

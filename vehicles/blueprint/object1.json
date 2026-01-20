@@ -110,6 +110,17 @@
 				0.0
 			]
 		},
+		"19": {
+			"base_pos": [
+				1,
+				7
+			],
+			"name": "smelter",
+			"path": "res://blocks/industrial/smelter.tscn",
+			"rotation": [
+				0
+			]
+		},
 		"2": {
 			"base_pos": [
 				0,
@@ -246,6 +257,6 @@
 	],
 	"vehicle_size": [
 		6,
-		7
+		11
 	]
 }

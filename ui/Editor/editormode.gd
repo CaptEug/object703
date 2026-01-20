@@ -28,12 +28,12 @@ signal recycle_mode_toggled(is_recycle_mode: bool)
 
 const GRID_SIZE = 16
 const BLOCK_PATHS = {
-	"Firepower": "res://blocks/firepower/",
-	"Mobility": "res://blocks/mobility/",
+	"Auxiliary": "res://blocks/auxiliary/",
 	"Command": "res://blocks/command/",
-	"Building": "res://blocks/building/",
+	"Firepower": "res://blocks/firepower/",
+	"Industrial": "res://blocks/industrial/",
+	"Mobility": "res://blocks/mobility/",
 	"Structual": "res://blocks/structual/",
-	"Auxiliary": "res://blocks/auxiliary/"
 }
 
 const BLUEPRINT_PATH = "res://vehicles/blueprint/"

@@ -4,6 +4,7 @@ const BLOCK_PATHS = {
 	"Auxiliary": "res://blocks/auxiliary/",
 	"Commannd": "res://blocks/command/",
 	"Firepower": "res://blocks/firepower/",
+	"Industrial": "res://blocks/industrial/",
 	"Mobility": "res://blocks/mobility/",
 	"Structual": "res://blocks/structual/"
 }

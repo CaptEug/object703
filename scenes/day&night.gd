@@ -13,7 +13,7 @@ func _process(delta):
 	var brightness = clamp((sin(t * TAU - TAU/4) + 1.0) / 2.0, 0.0, 1.0)
 	color = day_color.lerp(night_color, 1.0 - brightness)
 	
-	if HUD:
+	if HUD: 
 		HUD.time = get_clock_string()
 
 func get_clock_string() -> String:
