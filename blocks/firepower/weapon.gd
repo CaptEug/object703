@@ -124,7 +124,7 @@ func shoot(muz:Marker2D, shell_picked:PackedScene):
 	shell.from = parent_vehicle
 	var gun_rotation = muz.global_rotation
 	shell.global_position = muz.global_position
-	get_tree().current_scene.add_child(shell)
+	map.add_child(shell)
 	
 	if shell.max_thrust:
 		shell.target_dir = Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread))

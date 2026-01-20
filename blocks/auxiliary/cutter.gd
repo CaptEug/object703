@@ -53,7 +53,7 @@ func damage_contacted_blocks(delta):
 				var damage_to_deal = min(dmg * delta * 2, block_hp) #deal double dmg to block
 				if block_hp - dmg * delta * 2 <= 0:
 					gain_scrap(body)
-				body.damage(damage_to_deal)
+				body.damage(damage_to_deal, self)
 			# spark particle
 			if randf_range(0, 1) < 0.1:
 				var spark_pos = (global_position + body.global_position)/2
@@ -62,12 +62,11 @@ func damage_contacted_blocks(delta):
 				spark.position = spark_pos
 				spark.rotation = spark_rot
 				spark.emitting = true
-				get_tree().current_scene.add_child(spark)
+				map.add_child(spark)
 		
 		if body is WallLayer:
 			var tilemap = body
 			var center_cell = tilemap.local_to_map(global_position)
-			var tile_size:int = 16
 			var r_tiles = 1
 			for y in range(center_cell.y - r_tiles, center_cell.y + r_tiles + 1):
 				for x in range(center_cell.x - r_tiles, center_cell.x + r_tiles + 1):

@@ -4,9 +4,7 @@ const HITPOINT:float = 1000
 const WEIGHT:float = 1000
 const BLOCK_NAME:String = 'armor'
 const SIZE:= Vector2(1, 1)
-const COST:= [
-	{"metal": 2}
-	]
+const COST:= {"metal": 2}
 
 
 func _init():
@@ -15,3 +13,4 @@ func _init():
 	weight = WEIGHT
 	block_name = BLOCK_NAME
 	size = SIZE
+	cost = COST

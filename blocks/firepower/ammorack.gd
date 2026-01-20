@@ -23,7 +23,7 @@ func _process(_delta):
 func destroy():
 	explode()
 	super.destroy()
-	
+
 
 func explode():
 	if exploded:

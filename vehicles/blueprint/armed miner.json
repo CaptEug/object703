@@ -1,0 +1,188 @@
+{
+	"blocks": {
+		"1": {
+			"base_pos": [
+				0,
+				3
+			],
+			"name": "fuel tank",
+			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"10": {
+			"base_pos": [
+				3,
+				4
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"11": {
+			"base_pos": [
+				3,
+				5
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"12": {
+			"base_pos": [
+				3,
+				7
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": [
+				90.0
+			]
+		},
+		"13": {
+			"base_pos": [
+				2,
+				0
+			],
+			"name": "drill",
+			"path": "res://blocks/auxiliary/drill.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"14": {
+			"base_pos": [
+				0,
+				0
+			],
+			"name": "drill",
+			"path": "res://blocks/auxiliary/drill.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"15": {
+			"base_pos": [
+				3,
+				6
+			],
+			"name": "Daimler-littleknight",
+			"path": "res://blocks/mobility/dlk.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"16": {
+			"base_pos": [
+				3,
+				3
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"2": {
+			"base_pos": [
+				0,
+				4
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"3": {
+			"base_pos": [
+				0,
+				5
+			],
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"4": {
+			"base_pos": [
+				0,
+				6
+			],
+			"name": "Daimler-littleknight",
+			"path": "res://blocks/mobility/dlk.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"5": {
+			"base_pos": [
+				0,
+				7
+			],
+			"name": "pike armor",
+			"path": "res://blocks/structual/pike_armor.tscn",
+			"rotation": [
+				180.0
+			]
+		},
+		"6": {
+			"base_pos": [
+				1,
+				3
+			],
+			"name": "57mm duel barrel gun Zis-57-2",
+			"path": "res://blocks/firepower/zis_57_2.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"7": {
+			"base_pos": [
+				1,
+				5
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"8": {
+			"base_pos": [
+				1,
+				6
+			],
+			"name": "large cargo",
+			"path": "res://blocks/auxiliary/large_cargo.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"9": {
+			"base_pos": [
+				2,
+				5
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": [
+				0.0
+			]
+		}
+	},
+	"name": "armed miner",
+	"rotation": [
+		0
+	],
+	"vehicle_size": [
+		4,
+		8
+	]
+}

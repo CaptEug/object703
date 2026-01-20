@@ -1,3 +1,4 @@
+class_name GameMap
 extends Node2D
 
 @onready var ground:TileMapLayer = $GroundLayer

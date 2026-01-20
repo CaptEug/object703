@@ -17,8 +17,8 @@ config/features=PackedStringArray("4.4", "Forward Plus")
 [autoload]
 
 GlobalTimeManager="*res://GlobalTimeManager.gd"
-ItemDB="*res://item_database.gd"
-TileDB="*res://tile_database.gd"
+ItemDB="*res://items/item_database.gd"
+TileDB="*res://tilemaps/tile_database.gd"
 BetterTerrain="*res://addons/better-terrain/BetterTerrain.gd"
 
 [display]
@@ -176,6 +176,7 @@ take_test_item={
 
 2d_physics/layer_1="GroundBlocks"
 2d_physics/layer_2="TurretBlocks"
+2d_physics/layer_3="ItemPickup"
 
 [physics]
 

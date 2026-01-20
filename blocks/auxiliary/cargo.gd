@@ -3,17 +3,23 @@ extends Block
 
 signal inventory_changed(cargo: Cargo)
 
-
 @export var slot_count: int = 6
 @export var is_full: bool = false
 @export var ui_ref: Node = null
-var inventory: Array = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10}
+var inventory: Array[Dictionary] = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10}
 var accept: Array = []  # 可以存放的物品类型约束（暂留）
 var max_load: float = false
+var pickupmagnet: Area2D
+
 
 func _ready():
 	super._ready()
 	initialize_inventory()
+	pickupmagnet = find_child("PickupMagnet") as Area2D
+	if pickupmagnet:
+		pickupmagnet.collision_layer = 4
+		pickupmagnet.collision_mask = 4
+
 
 # ============================================================
 # 初始化 / 安全访问
@@ -29,7 +35,7 @@ func initialize_inventory():
 	add_item("gas", 10)
 	add_item("sandstone", 10)
 	add_item("hematite", 10)
-	
+
 
 func get_item(slot_index: int) -> Dictionary:
 	if slot_index < 0 or slot_index >= slot_count:
@@ -39,13 +45,15 @@ func get_item(slot_index: int) -> Dictionary:
 		return {}
 	return item
 
+
 func set_item(slot_index: int, item_data: Dictionary) -> bool:
 	if slot_index < 0 or slot_index >= slot_count and check_overload():
 		return false
 	inventory[slot_index] = item_data
 	print("📦 Set item at", slot_index, ":", item_data)
 	return true
-	
+
+
 func finalize_changes():
 	emit_signal("inventory_changed", self)
 
@@ -53,7 +61,7 @@ func finalize_changes():
 # 物品交互接口（供 UI 调用）
 
 func add_item(id: String, count: int) -> bool:
-	if ItemDB.get_item(id)["tag"] not in self.ACCEPT and "ALL" not in self.ACCEPT:
+	if not can_accept_item(id):
 		return false 
 	
 	var item_data = {"id": id, "count": count}
@@ -121,15 +129,16 @@ func clear_all():
 # ============================================================
 # 可扩展：类型限制或容量控制
 # ============================================================
-func can_accept_item(item: Dictionary) -> bool:
-	if accept.is_empty():
-		return true
-	return item.get("type", "") in accept
-	
+func can_accept_item(item_id:String) -> bool:
+	return ItemDB.get_item(item_id)["tag"] in self.ACCEPT or "ALL" in self.ACCEPT
+
+
 func check_overload() -> bool:
 	var is_overload = calculate_total_weight() >= max_load
 	is_full = is_overload
 	return is_overload
+
+
 # ============================================================
 # 工具
 # ============================================================
@@ -138,4 +147,14 @@ func calculate_total_weight() -> float:
 	for item_index in inventory:
 		total_weight += item_index.count * item_index.weight
 	return total_weight
-	
+
+func destroy():
+	for item in inventory:
+		if item == {}:
+			continue
+		var pickup = load(item_pickup_path).instantiate() as Pickup
+		pickup.item_id = item["id"]
+		pickup.amount = item["count"]
+		pickup.position = global_position
+		map.add_child(pickup)
+	super.destroy()

@@ -138,7 +138,7 @@ func _on_shell_body_entered(body):
 				spark.position = global_position
 				spark.rotation = linear_velocity.angle()
 				spark.emitting = true
-				get_tree().current_scene.add_child(spark)
+				get_parent().add_child(spark)
 			stop()
 
 func check_shell_enter_tile(delta):
