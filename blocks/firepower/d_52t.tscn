@@ -105,7 +105,6 @@ texture = SubResource("AtlasTexture_tauxs")
 offset = Vector2(0, 40)
 
 [node name="Gun" type="Sprite2D" parent="."]
-light_mask = 2
 texture = SubResource("AtlasTexture_dcorw")
 offset = Vector2(0, -8)
 

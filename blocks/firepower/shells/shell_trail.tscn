@@ -4,5 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://di1forcnqx0fg" path="res://assets/trail.png" id="1_thf06"]
 
 [node name="ShellTrail" type="Line2D"]
+light_mask = 0
 texture = ExtResource("1_thf06")
 script = ExtResource("1_5dyxn")

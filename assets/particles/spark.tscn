@@ -21,6 +21,7 @@ damping_max = 300.0
 color_ramp = SubResource("GradientTexture1D_mgkm6")
 
 [node name="Spark" type="GPUParticles2D"]
+light_mask = 0
 amount = 5
 explosiveness = 1.0
 trail_enabled = true
