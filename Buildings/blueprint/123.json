@@ -1,0 +1,56 @@
+{
+	"blocks": {
+		"1": {
+			"base_pos": [
+				0,
+				0
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"2": {
+			"base_pos": [
+				1,
+				0
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"3": {
+			"base_pos": [
+				1,
+				1
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"4": {
+			"base_pos": [
+				0,
+				1
+			],
+			"name": "command cupola",
+			"path": "res://blocks/command/cupola.tscn",
+			"rotation": [
+				0
+			]
+		}
+	},
+	"building_size": [
+		2,
+		2
+	],
+	"name": "123",
+	"rotation": [
+		0
+	]
+}
