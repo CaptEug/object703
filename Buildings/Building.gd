@@ -159,20 +159,6 @@ func get_used_storage() -> int:
 			used += storage.current_amount
 	return used
 
-func get_production_rate() -> float:
-	var rate := 0.0
-	for producer in production_blocks:
-		if producer.is_inside_tree() and is_instance_valid(producer):
-			rate += producer.production_rate
-	return rate
-
-func get_power_consumption() -> float:
-	var consumption := 0.0
-	for block in blocks:
-		if block.is_inside_tree() and is_instance_valid(block):
-			consumption += block.power_consumption
-	return consumption
-
 ########################## BUILDING LOADING ###########################
 
 func load_from_file(identifier):
@@ -435,8 +421,6 @@ func get_building_stats() -> Dictionary:
 		"block_count": blocks.size(),
 		"storage_capacity": get_total_storage_capacity(),
 		"used_storage": get_used_storage(),
-		"production_rate": get_production_rate(),
-		"power_consumption": get_power_consumption(),
 		"is_operational": is_operational(),
 		"is_destroyed": destroyed
 	}

@@ -14,6 +14,7 @@ var kinetic_absorb:float
 var explosice_absorb:float
 var size:Vector2i
 var parent_vehicle: Vehicle = null  
+var parent_building: Building = null
 var connected_blocks := []
 var global_grid_pos
 var base_rotation_degree = 0
@@ -203,6 +204,20 @@ func get_parent_vehicle():
 	if parent_vehicle:
 		if self in parent_vehicle.blocks:
 			return parent_vehicle
+	return null
+
+func get_parent_building() -> Building:
+	if parent_building != null:
+		return parent_building
+	
+	# 向上查找父建筑
+	var parent = get_parent()
+	while parent != null:
+		if parent is Building:
+			parent_building = parent
+			return parent_building
+		parent = parent.get_parent()
+	
 	return null
 
 ## Neighbor and Connectivity System
