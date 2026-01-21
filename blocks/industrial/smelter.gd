@@ -1,4 +1,4 @@
-extends Block
+extends Manufactory
 
 const HITPOINT:float = 2000
 const WEIGHT:float = 10000
@@ -6,6 +6,18 @@ const BLOCK_NAME:String = 'smelter'
 const TYPE:= "Industrial"
 const SIZE:= Vector2(4, 4)
 const COST:= {"metal": 1}
+const RECIPES:= [
+	{
+		"inputs": {"hematite": 1, "coal": 1},
+		"outputs": {"metal": 1},
+		"production_time": 5
+		},
+	{
+		"inputs": {"malachite": 1, "coal": 1},
+		"outputs": {"metal": 1},
+		"production_time": 5
+		},
+]
 
 var description := ""
 #var outline_tex := preload("res://assets/outlines/pike_outline.png")

@@ -1,8 +1,8 @@
 extends Control
 
 @onready var section_container = $ScrollContainer/VBoxContainer
-@export var storage_section_scene: PackedScene = preload("res://ui/storage_section.tscn")
-@export var slot_scene: PackedScene = preload("res://ui/cargo_slot.tscn")
+@export var storage_section_scene: PackedScene = preload("res://ui/inventory/storage_section.tscn")
+@export var slot_scene: PackedScene = preload("res://ui/inventory/cargo_slot.tscn")
 
 var current_tank: Vehicle = null
 var block_to_section := {}  # 记录每个 block -> section 的映射
