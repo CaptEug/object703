@@ -5,6 +5,7 @@ extends TextureRect
 
 @export var slot_index: int = 0
 @export var storage_ref: Node = null # 指向 Cargo 节点
+@export var inventory_panel_ref: Panel = null
 
 var accept = []
 var item_data: Dictionary = {}       # { "id": "iron", "count": 20}
@@ -125,7 +126,8 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	drag_preview.add_child(label)
 
 	# 放到最顶层（挂到 root，保证可见）
-	get_node("/root/Testground/CanvasLayer/Tankpanel").add_child(drag_preview)
+	inventory_panel_ref.add_child(drag_preview)
+	print("drag is split: ", drag_is_split)
 	if not drag_is_split:
 		hide_current_icon()
 	_update_drag()
