@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://dsrbwryh0conf" path="res://ui/tankpanel.gd" id="2_b7f80"]
 [ext_resource type="Texture2D" uid="uid://dnn2g7ksth8o" path="res://assets/icons/idle.png" id="4_bu53t"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="6_6e8cr"]
-[ext_resource type="PackedScene" uid="uid://cil4c3i7uegwf" path="res://ui/inventory/inventory_panel.tscn" id="9_kkd3v"]
+[ext_resource type="PackedScene" uid="uid://cil4c3i7uegwf" path="res://ui/inventory_panel.tscn" id="9_kkd3v"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
 atlas = ExtResource("2_6e8cr")

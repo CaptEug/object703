@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cil4c3i7uegwf"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_ang1s"]
-[ext_resource type="Script" uid="uid://dl6vu7vh0mtcm" path="res://ui/inventory/inventory_panel.gd" id="2_hc366"]
+[ext_resource type="Script" uid="uid://dl6vu7vh0mtcm" path="res://ui/inventory_panel.gd" id="2_hc366"]
 
 [node name="InventoryPanel" type="Panel"]
 offset_right = 236.0
