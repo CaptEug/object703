@@ -13,7 +13,7 @@ var spark_particle = preload("res://assets/particles/spark.tscn")
 var inventory:Array = []
 var on:bool
 var dmg:= 150
-var connected_cargos:Array[Cargo] = []
+var connected_cargo:Array[Cargo] = []
 @onready var saw:RigidBody2D = $Saw
 
 func _init():
@@ -51,6 +51,8 @@ func damage_contacted_blocks(delta):
 			var block_hp = body.current_hp
 			if block_hp >= 0:
 				var damage_to_deal = min(dmg * delta * 2, block_hp) #deal double dmg to block
+				if block_hp - dmg * delta * 2 <= 0:
+					gain_scrap(body)
 				body.damage(damage_to_deal, self)
 			# spark particle
 			if randf_range(0, 1) < 0.1:
@@ -74,9 +76,15 @@ func damage_contacted_blocks(delta):
 					tilemap.damage_tile(cell, dmg * delta)
 
 
+func gain_scrap(block):
+	var amount = block.size.x * block.size.y
+	for cargo in connected_cargo:
+		cargo.add_item("scrap", amount)
+
+
 func find_all_connected_cargo():
-	connected_cargos.clear()
+	connected_cargo.clear()
 	for block in get_all_connected_blocks():
 		if block is Cargo:
-			connected_cargos.append(block)
-	return connected_cargos
+			connected_cargo.append(block)
+	return connected_cargo

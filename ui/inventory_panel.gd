@@ -1,8 +1,8 @@
 extends Control
 
 @onready var section_container = $ScrollContainer/VBoxContainer
-@export var storage_section_scene: PackedScene = preload("res://ui/inventory/storage_section.tscn")
-@export var slot_scene: PackedScene = preload("res://ui/inventory/cargo_slot.tscn")
+@export var storage_section_scene: PackedScene = preload("res://ui/storage_section.tscn")
+@export var slot_scene: PackedScene = preload("res://ui/cargo_slot.tscn")
 
 var current_tank: Vehicle = null
 var block_to_section := {}  # 记录每个 block -> section 的映射
@@ -62,6 +62,7 @@ func add_storage_section(block: Cargo) -> void:
 		slot.slot_index = i
 		slot.storage_ref = block
 		slot.accept = block.ACCEPT
+		slot.inventory_panel_ref = self
 
 		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
 
@@ -101,6 +102,7 @@ func _on_inventory_changed(block: Cargo) -> void:
 		var slot = slot_scene.instantiate()
 		slot.slot_index = i
 		slot.storage_ref = block
+		slot.inventory_panel_ref = self
 
 		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
 
