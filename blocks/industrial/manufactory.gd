@@ -2,17 +2,17 @@ class_name Manufactory
 extends Block
 
 var connected_cargos: Array[Cargo]
-var recipes: Array[Dictionary]
+var recipes: Array
 		# a single recipe is
 		#{
 		#"inputs": {"item_id": amount},
 		#"outputs": {"item_id": amount},
 		#"production_time": int
 		#},
-var input_inv: Array[Dictionary]
-var output_inv: Array[Dictionary]
+var input_inv: Array[Dictionary] = []
+var output_inv: Array[Dictionary] = []
 var timer:Timer
-var on:bool = false
+var on:bool = true
 var working:bool = false
 var current_recipe:Dictionary
 var panel:FloatingPanel
@@ -21,12 +21,21 @@ var manufactory_panel_path := "res://ui/manufactory/manufactory_panel.tscn"
 func _ready():
 	super._ready()
 	timer = Timer.new()
+	timer.one_shot = true
 	timer.timeout.connect(_on_timer_timeout)
+	add_child(timer)
 
 
 func _process(delta):
-	pass
+	super._process(delta)
+	find_all_connected_cargo()
+	if on:
+		var recipe = find_recipe()
+		if recipe:
+			produce(recipe)
 
+
+# UI realated 
 func _on_input_event(_viewport, event, _shape_idx):
 		if event is InputEventMouseButton:
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
@@ -44,6 +53,7 @@ func open_manufactory_panel():
 		while panel.any_overlap():
 			panel.position += Vector2(32, 32)
 
+# manufactory code
 func find_recipe():
 	for recipe in recipes:
 		if recipe_can_run(recipe):
@@ -59,11 +69,12 @@ func has_material(item_id:String, amount:int):
 	var total_amount_in_cargo:int
 	for cargo in connected_cargos:
 		total_amount_in_cargo += cargo.check_amount(item_id)
-	return total_amount_in_cargo <= amount
+	return total_amount_in_cargo >= amount
 
 func load_material(recipe:Dictionary):
 	for item_id in recipe["inputs"]:
 		var amount_needed = recipe["inputs"][item_id]
+		var found:= false
 		for cargo in connected_cargos:
 			var inv = cargo.inventory
 			if cargo.check_amount(item_id) >= amount_needed:
@@ -73,22 +84,31 @@ func load_material(recipe:Dictionary):
 				amount_needed -= cargo.check_amount(item_id)
 			if amount_needed == 0:
 				break
-		var item = {"id":item_id, "count":amount_needed}
-		input_inv.append(item)
+		for item in input_inv:
+			if item["id"] == item_id:
+				item["count"] += recipe["inputs"][item_id]
+				found = true
+		if not found:
+			var item = {"id":item_id, "count":amount_needed}
+			input_inv.append(item)
 
 
 func produce(recipe:Dictionary):
-	#check input inventory
+	if working:
+		return
+	load_material(recipe)
 	if not inputs_ready(recipe):
-		working = false
 		timer.stop()
-	
-		if not working:
-			working = true
-			timer.wait_time = recipe["production_time"]
-			timer.start()
+		working = false
+		return
+	working = true
+	current_recipe = recipe
+	timer.wait_time = recipe["production_time"]
+	timer.start()
 
 func inputs_ready(recipe:Dictionary) -> bool:
+	if recipe == null or recipe.is_empty():
+		return false  # recipe is invalid or empty → not ready
 	for item_id in recipe["inputs"]:
 		var found:= false
 		for item in input_inv:
@@ -102,6 +122,11 @@ func inputs_ready(recipe:Dictionary) -> bool:
 func _on_timer_timeout():
 	consume_inputs(current_recipe)
 	produce_outputs(current_recipe)
+	working = false
+	current_recipe = {}
+	
+	print(output_inv)
+
 
 func consume_inputs(recipe:Dictionary):
 	for item_id in recipe["inputs"]:
@@ -130,3 +155,11 @@ func produce_outputs(recipe:Dictionary):
 		"id": item_id,
 		"count": amount
 	})
+
+
+func find_all_connected_cargo():
+	connected_cargos.clear()
+	for block in get_all_connected_blocks():
+		if block is Cargo:
+			connected_cargos.append(block)
+	return connected_cargos

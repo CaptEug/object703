@@ -35,6 +35,7 @@ func initialize_inventory():
 	add_item("gas", 10)
 	add_item("sandstone", 10)
 	add_item("hematite", 10)
+	add_item("coal", 10)
 
 
 func get_item(slot_index: int) -> Dictionary:

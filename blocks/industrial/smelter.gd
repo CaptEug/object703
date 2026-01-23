@@ -31,6 +31,10 @@ func _init():
 	block_name = BLOCK_NAME
 	size = SIZE
 	cost = COST
+	recipes = RECIPES
+
+func _ready() -> void:
+	super._ready()
 
 func _process(delta):
 	super._process(delta)
