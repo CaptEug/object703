@@ -22,7 +22,6 @@ const RECIPES:= [
 var description := ""
 #var outline_tex := preload("res://assets/outlines/pike_outline.png")
 
-var on:bool
 @onready var canvas_mod = get_tree().current_scene.find_child("CanvasModulate") as CanvasModulate
 
 func _init():
@@ -37,14 +36,10 @@ func _process(delta):
 	super._process(delta)
 	update_core_light(delta)
 
-func _on_input_event(_viewport, event, _shape_idx):
-	if event is InputEventMouseButton:
-		on = event.pressed
-
 
 func update_core_light(delta):
 	var core_alpha = $Sprite2D/MoltenCore.modulate.a
-	if on:
+	if working:
 		core_alpha = clamp(core_alpha + 0.5 * delta, 0.0, 1.0)
 	else:
 		core_alpha = clamp(core_alpha - 0.5 * delta, 0.0, 1.0)

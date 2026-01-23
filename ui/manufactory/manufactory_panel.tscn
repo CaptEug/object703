@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://cenhdprrehtha"]
 
-[ext_resource type="Script" uid="uid://b2dy5mxgwngh6" path="res://ui/floating_panel.gd" id="1_cvedh"]
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_unq2q"]
+[ext_resource type="Script" uid="uid://c6sk0j0qgxxpq" path="res://ui/manufactory/manufactory_panel.gd" id="2_uu5ba"]
 [ext_resource type="PackedScene" uid="uid://dnwpcmifp3o6j" path="res://ui/inventory/cargo_slot.tscn" id="3_uu5ba"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="4_32ea0"]
 
@@ -19,7 +19,7 @@ bg_color = Color(0.898039, 0.898039, 0.898039, 1)
 offset_right = 240.0
 offset_bottom = 240.0
 theme = ExtResource("1_unq2q")
-script = ExtResource("1_cvedh")
+script = ExtResource("2_uu5ba")
 metadata/_custom_type_script = "uid://b2dy5mxgwngh6"
 
 [node name="Label" type="Label" parent="."]

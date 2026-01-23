@@ -26,8 +26,8 @@ func _ready():
 # ============================================================
 func initialize_inventory():
 	inventory.resize(slot_count)
-	for item_index in range(slot_count):
-		inventory[item_index] = {}
+	for slot_index in range(slot_count):
+		inventory[slot_index] = {}
 	add_item("57mmAP", 10)
 	add_item("PZGR75", 10)
 	add_item("122mmAPHE", 10)
@@ -82,27 +82,21 @@ func take_item(id: String, count: int) -> bool:
 	var total_item_stored = 0
 	var count_remain = count
 	#Check total numer in inventory
-	for item_index in range(len(inventory)):
-		if inventory[item_index].is_empty():
-			continue
-		elif inventory[item_index]["id"] == id:
-			total_item_stored += inventory[item_index]["count"]
-	if total_item_stored < count:
+	if check_amount(id) < count:
 		return false
-	
-	for item_index in range(len(inventory)):
-		if inventory[item_index].is_empty():
+	for slot_index in range(len(inventory)):
+		if inventory[slot_index].is_empty():
 			continue
-		elif inventory[item_index]["id"] == id:
-			if inventory[item_index]["count"] >= count_remain:
-				inventory[item_index]["count"] -= count_remain
-				if inventory[item_index]["count"] == 0:
-					inventory[item_index] = {}
+		elif inventory[slot_index]["id"] == id:
+			if inventory[slot_index]["count"] >= count_remain:
+				inventory[slot_index]["count"] -= count_remain
+				if inventory[slot_index]["count"] == 0:
+					inventory[slot_index] = {}
 				emit_signal("inventory_changed", self)
 				return true
 			else:
-				count_remain -= inventory[item_index]["count"]
-				inventory[item_index] = {}
+				count_remain -= inventory[slot_index]["count"]
+				inventory[slot_index] = {}
 				emit_signal("inventory_changed", self)
 	
 	return false
@@ -120,6 +114,15 @@ func split_item(slot_index: int) -> Dictionary:
 	
 	emit_signal("inventory_changed", self)
 	return new_item
+
+func check_amount(id: String) -> int:
+	var total_item_stored:= 0
+	for slot_index in range(len(inventory)):
+		if inventory[slot_index].is_empty():
+			continue
+		elif inventory[slot_index]["id"] == id:
+			total_item_stored += inventory[slot_index]["count"]
+	return total_item_stored
 
 func clear_all():
 	for item_index in range(slot_count):
@@ -147,6 +150,7 @@ func calculate_total_weight() -> float:
 	for item_index in inventory:
 		total_weight += item_index.count * item_index.weight
 	return total_weight
+
 
 func destroy():
 	for item in inventory:
