@@ -1,12 +1,12 @@
 [gd_scene load_steps=2 format=3 uid="uid://cqixwd0vdlyat"]
 
-[ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="1_6l4he"]
+[ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="1_k7c5s"]
 
 [node name="VBoxContainer" type="VBoxContainer"]
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_6l4he")
+theme_override_fonts/font = ExtResource("1_k7c5s")
 text = "C1"
 
 [node name="GridContainer" type="GridContainer" parent="."]

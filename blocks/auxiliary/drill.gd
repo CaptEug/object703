@@ -13,7 +13,7 @@ var spark_particle = preload("res://assets/particles/spark.tscn")
 var inventory:Array = []
 var on:bool
 var dmg:= 150
-var connected_cargos:Array[Cargo] = []
+var connected_cargo:Array[Cargo] = []
 
 @onready var drill_sprite:= $Mask/Sprite2D
 var sprite_origin:Vector2
@@ -104,8 +104,8 @@ func update_drill_sprite(delta):
 
 
 func find_all_connected_cargo():
-	connected_cargos.clear()
+	connected_cargo.clear()
 	for block in get_all_connected_blocks():
 		if block is Cargo:
-			connected_cargos.append(block)
-	return connected_cargos
+			connected_cargo.append(block)
+	return connected_cargo
