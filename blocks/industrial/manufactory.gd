@@ -74,22 +74,23 @@ func has_material(item_id:String, amount:int):
 func load_material(recipe:Dictionary):
 	for item_id in recipe["inputs"]:
 		var amount_needed = recipe["inputs"][item_id]
-		var found:= false
 		for cargo in connected_cargos:
-			var inv = cargo.inventory
 			if cargo.check_amount(item_id) >= amount_needed:
 				cargo.take_item(item_id, amount_needed)
+				amount_needed = 0
 			else:
 				cargo.take_item(item_id, cargo.check_amount(item_id))
 				amount_needed -= cargo.check_amount(item_id)
 			if amount_needed == 0:
 				break
+		
+		var found:= false
 		for item in input_inv:
 			if item["id"] == item_id:
 				item["count"] += recipe["inputs"][item_id]
 				found = true
 		if not found:
-			var item = {"id":item_id, "count":amount_needed}
+			var item = {"id":item_id, "count":recipe["inputs"][item_id]}
 			input_inv.append(item)
 
 
@@ -97,6 +98,7 @@ func produce(recipe:Dictionary):
 	if working:
 		return
 	load_material(recipe)
+	print(input_inv)
 	if not inputs_ready(recipe):
 		timer.stop()
 		working = false

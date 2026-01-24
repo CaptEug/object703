@@ -23,6 +23,8 @@ var description := ""
 #var outline_tex := preload("res://assets/outlines/pike_outline.png")
 
 @onready var canvas_mod = get_tree().current_scene.find_child("CanvasModulate") as CanvasModulate
+var core_alpha := 0.0
+var time:float
 
 func _init():
 	max_hp = HITPOINT
@@ -42,11 +44,19 @@ func _process(delta):
 
 
 func update_core_light(delta):
-	var core_alpha = $Sprite2D/MoltenCore.modulate.a
+	var c = canvas_mod.color
+	var a:float = 0.0
+	time += delta
 	if working:
 		core_alpha = clamp(core_alpha + 0.5 * delta, 0.0, 1.0)
+		a = core_alpha + 0.1 * sin(time * 2)
 	else:
 		core_alpha = clamp(core_alpha - 0.5 * delta, 0.0, 1.0)
-	var c = canvas_mod.color
+		a = core_alpha
 	# Compute per-channel inverse, avoid divide by zero
-	$Sprite2D/MoltenCore.modulate = Color(1.2 / max(c.r, 0.001), 1.2 / max(c.g, 0.001), 1.2 / max(c.b, 0.001), core_alpha)
+	$Sprite2D/MoltenCore.modulate = Color(
+		1.2 / max(c.r, 0.001),
+		1.2 / max(c.g, 0.001),
+		1.2 / max(c.b, 0.001),
+		a
+		)
