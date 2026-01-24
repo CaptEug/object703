@@ -33,6 +33,7 @@ func _process(delta):
 		var recipe = find_recipe()
 		if recipe:
 			produce(recipe)
+		unload_products()
 
 
 # UI realated 
@@ -158,6 +159,14 @@ func produce_outputs(recipe:Dictionary):
 		"count": amount
 	})
 
+func unload_products():
+	for item in output_inv:
+		for cargo in connected_cargos:
+			if cargo.can_accept_item(item["id"]):
+				cargo.add_item(item["id"], item["count"])
+				item["count"] -= item["count"]
+				if item["count"] == 0:
+					output_inv.erase(item)
 
 func find_all_connected_cargo():
 	connected_cargos.clear()

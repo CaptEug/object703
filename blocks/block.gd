@@ -137,18 +137,17 @@ func _on_input_event(_viewport, event, _shape_idx):
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				parent_vehicle.open_vehicle_panel()
 
-func damage(amount:int, from = null):
-	#print(str(name)+' receive damage:'+str(amount))
-	current_hp -= amount
-	# phase 1
-	#if current_hp <= max_hp * 0.5:
-		
+func damage(amount:int, dmg_type:String = "",from = null):
+	if dmg_type == "kinetic":
+		amount *= kinetic_absorb
+	elif dmg_type == "explosive":
+		amount *= explosice_absorb
 	
-	# phase 2
+	current_hp -= amount
+	
 	if current_hp <= max_hp * 0.25:
 		broke()
 	
-	# phase 3
 	if current_hp <= 0:
 		if from:
 			if from.block_name == "cutter":

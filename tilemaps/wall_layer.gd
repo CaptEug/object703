@@ -34,8 +34,16 @@ func get_celldata(cell:Vector2i):
 	else:
 		return false
 
-func damage_tile(cell:Vector2i, amount:int):
+func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
+	var kinetic_absorb = TileDB.get_tile(layerdata[cell]["matter"])["kinetic_aborb"]
+	var explosive_absorb = TileDB.get_tile(layerdata[cell]["matter"])["explosive_absorb"]
+	if dmg_type == "kinetic":
+		amount *= kinetic_absorb
+	elif dmg_type == "explosive":
+		amount *= explosive_absorb
+	
 	layerdata[cell]["current_hp"] -= amount
+	
 	if layerdata[cell]["current_hp"] <= layerdata[cell]["max_hp"] * 0.5:
 		pass
 	
@@ -81,4 +89,35 @@ func spawn_pickup(cell:Vector2i):
 	pickup.amount = 1
 	pickup.position = map_to_local(cell)
 	map.add_child(pickup)
+
+# liquid Calculation
+func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
+	if not TileDB.get_tile(layerdata[start_cell]["matter"])["phase"] == "liquid":
+		return []
+	var liquid = layerdata[start_cell]["matter"]
+	var connected_liquid = []
+	var directions = [
+		Vector2i.LEFT,
+		Vector2i.RIGHT,
+		Vector2i.UP,
+		Vector2i.DOWN
+	]
+	var stack = [start_cell]
+	var visited = {}
 	
+	while stack.size() > 0:
+		var cell = stack.pop_back()
+		if visited.has(cell):
+			continue
+		visited[cell] = true
+		connected_liquid.append(cell)
+		for dir in directions:
+			var next = cell + dir
+			if visited.has(next):
+				continue
+			if not get_celldata(cell):
+				continue
+			if layerdata[start_cell]["matter"] == liquid:
+				stack.append(next)
+	
+	return connected_liquid
