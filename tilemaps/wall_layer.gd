@@ -21,11 +21,18 @@ func init_layerdata():
 		
 		var tile_matter = get_cell_tile_data(cell).get_custom_data("matter")
 		var tile_info = TileDB.get_tile(tile_matter)
-		var celldata:Dictionary = {
-			"matter": tile_matter,
-			"max_hp": tile_info["hp"],
-			"current_hp": tile_info["hp"],
-		}
+		var celldata:Dictionary
+		if tile_info["phase"] == "solid":
+			celldata = {
+				"matter": tile_matter,
+				"max_hp": tile_info["hp"],
+				"current_hp": tile_info["hp"],
+			}
+		elif tile_info["phase"] == "liquid":
+			celldata = {
+				"matter": tile_matter,
+				"mass": tile_info["mass"]
+			}
 		layerdata[cell] = celldata
 
 func get_celldata(cell:Vector2i):
@@ -121,3 +128,34 @@ func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
 				stack.append(next)
 	
 	return connected_liquid
+
+func remove_liquid(cell:Vector2i, mass:float):
+	var connected_liquid = get_connected_liquid(cell)
+	var mass_left = mass
+	while mass_left > 0:
+		var farthest_cell = find_farthest_cell(cell, connected_liquid)
+		if layerdata[farthest_cell]["mass"] > mass_left:
+			layerdata[farthest_cell]["mass"] -= mass_left
+		else:
+			erase_cell(farthest_cell)
+			layerdata.erase(farthest_cell)
+			BetterTerrain.update_terrain_cell(self, farthest_cell, true)
+			mass_left -= layerdata[farthest_cell]["mass"]
+
+func add_liquid(cell:Vector2i, mass:float):
+	var connected_liquid = get_connected_liquid(cell)
+
+
+func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]) -> Vector2i:
+	var farthest := Vector2i.ZERO
+	var max_dist := -1.0
+	for c in from:
+		var d = cell.distance_to(c)
+		if d > max_dist:
+			max_dist = d
+			farthest = c
+	return farthest
+
+func liquid_confined(connected_liquid:Array[Vector2i]) -> bool:
+	return false
+	
