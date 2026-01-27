@@ -18,8 +18,10 @@ func _ready():
 
 
 func _process(delta):
-	pass
-
+	if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
+		wall.add_liquid(wall.local_to_map(get_global_mouse_position()),"crude_oil", 100)
+	elif Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_RIGHT):
+		wall.remove_liquid(wall.local_to_map(get_global_mouse_position()), 100)
 
 func generate_world(noise:Noise):
 	for x in range(world_width):
