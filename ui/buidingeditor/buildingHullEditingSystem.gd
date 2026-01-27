@@ -107,8 +107,6 @@ func setup_ghost_block_collision(ghost: Node2D):
 func update_ghost_block_position(mouse_position: Vector2):
 	if mouse_position != null and tile != null:
 		mouse_position = tile.map_to_local(tile.local_to_map(mouse_position)) 
-	var a
-	var b
 	if current_ghost_block.rotation_degrees == 90 or -90:
 		if current_ghost_block.size.x % 2 == 0:
 			mouse_position.y += 8
