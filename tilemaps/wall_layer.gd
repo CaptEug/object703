@@ -212,7 +212,7 @@ func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
 	var farthest = null
 	var max_dist := -1.0
 	for c in from:
-		var d = cell.distance_to(c)
+		var d = abs(c.x - cell.x) + abs(c.y - cell.y)
 		if d > max_dist:
 			max_dist = d
 			farthest = c
@@ -233,7 +233,7 @@ func find_closest_cell(cell: Vector2i, from: Array[Vector2i]):
 		for d in dirs:
 			var n = c + d
 			if not get_cell_tile_data(n):
-				var dist = cell.distance_to(n)
+				var dist = abs(n.x - cell.x) + abs(n.y - cell.y)
 				if dist < min_dist:
 					min_dist = dist
 					closest = n
