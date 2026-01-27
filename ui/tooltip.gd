@@ -72,10 +72,17 @@ func show_pickup(pickup:Area2D):
 
 func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 	visible = true
-	var celldata = tilemap.get_celldata(tilemap.local_to_map(qurey_pos))
+	var cell = tilemap.local_to_map(qurey_pos)
+	var celldata = tilemap.get_celldata(cell)
 	if celldata:
-		textlabel.text = celldata["matter"] + " tile\nHP:" + str(celldata["current_hp"])
-
+		if TileDB.get_tile(celldata["matter"])["phase"] == "solid":
+			textlabel.text = celldata["matter"] + " tile\nHP:" + str(celldata["current_hp"])
+		elif TileDB.get_tile(celldata["matter"])["phase"] == "liquid":
+			var total_mass = tilemap.get_total_liquid_mass(tilemap.get_connected_liquid(cell))
+			if total_mass < 1000.0:
+				textlabel.text = celldata["matter"] + "\nTotal mass: " + "%.f" % total_mass + " kg"
+			else:
+				textlabel.text = celldata["matter"] + "\nTotal mass: " + "%.1f" % (total_mass/1000) + " T"
 # 清空 grid（无 cargo 或空内容时）
 func _clear_grid() -> void:
 	for c in grid_container.get_children():

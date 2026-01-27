@@ -128,12 +128,21 @@ func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
 				continue
 			if layerdata[next]["matter"] == liquid:
 				stack.append(next)
-	print(connected_liquid)
 	return connected_liquid
+
+func get_total_liquid_mass(cells:Array[Vector2i]) -> float:
+	var total_mass := 0.0
+	for cell in cells:
+		if not layerdata[cell]:
+			return 0.0
+		if not layerdata[cell]["mass"]:
+			return 0.0
+		total_mass += layerdata[cell]["mass"]
+	return total_mass
 
 func remove_liquid(cell:Vector2i, mass:float):
 	if not get_celldata(cell):
-		print("No thing at "+str(cell))
+		print("Nothing at "+str(cell))
 		return
 	if TileDB.get_tile(layerdata[cell]["matter"])["phase"] != "liquid":
 		print(str(cell)+" is not liauid")
@@ -141,8 +150,11 @@ func remove_liquid(cell:Vector2i, mass:float):
 	var mass_left = mass
 	while mass_left > 0:
 		var farthest_cell = find_farthest_cell(cell, get_connected_liquid(cell))
-		if layerdata[farthest_cell]["mass"] > mass_left:
+		if farthest_cell == null:
+			return
+		elif layerdata[farthest_cell]["mass"] > mass_left:
 			layerdata[farthest_cell]["mass"] -= mass_left
+			return
 		else:
 			mass_left -= layerdata[farthest_cell]["mass"]
 			erase_cell(farthest_cell)
@@ -175,8 +187,8 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 		print("Closest Cell is "+ str(closest_cell))
 		if closest_cell == null:
 			for c in connected_liquid:
-				layerdata[c]["mass"] -= mass / connected_liquid.size()
-				return
+				layerdata[c]["mass"] += mass / connected_liquid.size()
+			return
 		elif mass_left <= 1000.0:
 			var celldata = {
 				"matter": matter,
@@ -192,15 +204,15 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 			layerdata[closest_cell] = celldata
 			mass_left -= 1000.0
 		tile_added.append(closest_cell)
-	BetterTerrain.set_cells(self, tile_added, 3)
+	BetterTerrain.set_cells(self, tile_added, TileDB.get_tile(matter)["terrain_int"])
 	BetterTerrain.update_terrain_cells(self, tile_added)
 
 
-func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]) -> Vector2i:
-	var farthest := Vector2i.ZERO
+func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
+	var farthest = null
 	var max_dist := -1.0
 	for c in from:
-		var d = cell.distance_to(c)
+		var d = abs(c.x - cell.x) + abs(c.y - cell.y)
 		if d > max_dist:
 			max_dist = d
 			farthest = c
@@ -221,7 +233,7 @@ func find_closest_cell(cell: Vector2i, from: Array[Vector2i]):
 		for d in dirs:
 			var n = c + d
 			if not get_cell_tile_data(n):
-				var dist = cell.distance_to(n)
+				var dist = abs(n.x - cell.x) + abs(n.y - cell.y)
 				if dist < min_dist:
 					min_dist = dist
 					closest = n

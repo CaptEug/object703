@@ -8,7 +8,8 @@ var tiles = {
 		"hp": 400,
 		"kinetic_aborb": 1.0,
 		"explosive_absorb": 1.0,
-		"drop_item_id": "sandstone"
+		"drop_item_id": "sandstone",
+		"terrain_int": 1,
 	},
 	
 	"hematite":{
@@ -17,14 +18,16 @@ var tiles = {
 		"hp": 800,
 		"kinetic_aborb": 1.0,
 		"explosive_absorb": 0.5,
-		"drop_item_id": "hematite"
+		"drop_item_id": "hematite",
+		"terrain_int": 2,
 	},
 	
 	# Liquid Tile
 	"crude_oil":{
 		"layer": "wall",
 		"phase": "liquid",
-		"mass": 1000
+		"mass": 1000,
+		"terrain_int": 3,
 	}
 }
 

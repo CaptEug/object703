@@ -158,6 +158,8 @@ func check_shell_enter_tile(delta):
 		var cell_contact: Vector2i = maplayer.local_to_map(hit_pos)
 		var contact_celldata = maplayer.get_celldata(cell_contact)
 		if contact_celldata:
+			if TileDB.get_tile(contact_celldata["matter"])["phase"] != "solid":
+				return
 			if contact_celldata["current_hp"] > 0:
 				var damage_to_deal = min(kenetic_damage, contact_celldata["current_hp"])
 				maplayer.damage_tile(cell_contact, damage_to_deal, "kinetic")
