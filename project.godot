@@ -179,6 +179,7 @@ take_test_item={
 2d_physics/layer_1="GroundBlocks"
 2d_physics/layer_2="TurretBlocks"
 2d_physics/layer_3="ItemPickup"
+2d_physics/layer_4="Liquid"
 
 [physics]
 
