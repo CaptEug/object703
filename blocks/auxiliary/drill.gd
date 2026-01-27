@@ -79,11 +79,11 @@ func damage_contacted_blocks(delta):
 			for y in range(center_cell.y - r_tiles, center_cell.y + r_tiles + 1):
 				for x in range(center_cell.x - r_tiles, center_cell.x + r_tiles + 1):
 					var cell = Vector2i(x, y)
-					if not tilemap.get_celldata(cell):
+					var celldata = tilemap.get_celldata(cell)
+					if not celldata:
 						continue
-					var tile_hp = tilemap.layerdata[cell]["current_hp"]
-					#if tile_hp - dmg * delta * 2 <= 0:
-						#gain_material(tilemap, cell)
+					if TileDB.get_tile(celldata["matter"])["phase"] != "solid":
+						continue
 					tilemap.damage_tile(cell, dmg * delta * 2) #deal double dmg to tile
 
 

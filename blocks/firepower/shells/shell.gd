@@ -86,7 +86,10 @@ func explode():
 			for y in range(center_cell.y - r_tiles, center_cell.y + r_tiles + 1):
 				for x in range(center_cell.x - r_tiles, center_cell.x + r_tiles + 1):
 					var cell = Vector2i(x, y)
-					if not tilemap.get_celldata(cell):
+					var celldata = tilemap.get_celldata(cell)
+					if not celldata:
+						continue
+					if TileDB.get_tile(celldata["matter"])["phase"] != "solid":
 						continue
 					var cell_center_world = tilemap.map_to_local(cell) + Vector2(tile_size, tile_size) * 0.5
 					# check circular distance
@@ -158,20 +161,19 @@ func check_shell_enter_tile(delta):
 		var cell_contact: Vector2i = maplayer.local_to_map(hit_pos)
 		var contact_celldata = maplayer.get_celldata(cell_contact)
 		if contact_celldata:
-			if TileDB.get_tile(contact_celldata["matter"])["phase"] != "solid":
-				return
-			if contact_celldata["current_hp"] > 0:
-				var damage_to_deal = min(kenetic_damage, contact_celldata["current_hp"])
-				maplayer.damage_tile(cell_contact, damage_to_deal, "kinetic")
-				kenetic_damage -= damage_to_deal
-			if kenetic_damage <= 0:
-				if max_explosive_damage:
-					explode()
-				else:
-					var spark = spark_particle.instantiate()
-					spark.position = global_position
-					spark.rotation = linear_velocity.angle()
-					spark.emitting = true
-					get_tree().current_scene.add_child(spark)
-				stop()
+			if TileDB.get_tile(contact_celldata["matter"])["phase"] == "solid":
+				if contact_celldata["current_hp"] > 0:
+					var damage_to_deal = min(kenetic_damage, contact_celldata["current_hp"])
+					maplayer.damage_tile(cell_contact, damage_to_deal, "kinetic")
+					kenetic_damage -= damage_to_deal
+				if kenetic_damage <= 0:
+					if max_explosive_damage:
+						explode()
+					else:
+						var spark = spark_particle.instantiate()
+						spark.position = global_position
+						spark.rotation = linear_velocity.angle()
+						spark.emitting = true
+						get_tree().current_scene.add_child(spark)
+					stop()
 	last_pos = current_pos
