@@ -269,8 +269,13 @@ func try_place_block():
 	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
 	
 	selected_building._add_block(new_block, new_block.position, grid_positions)
-	new_block.freeze_mode =RigidBody2D.FREEZE_MODE_KINEMATIC
+	new_block.freeze_mode = RigidBody2D.FREEZE_MODE_KINEMATIC
 	new_block.freeze = true
+	
+	# === 重要：放置方块后更新到BuildingLayer ===
+	if editor:
+		editor.on_block_placed(new_block, grid_positions)
+	
 	start_block_placement_with_rotation(current_block_scene.resource_path)
 	
 	editor.update_blueprint_ghosts()
@@ -285,6 +290,10 @@ func place_first_block():
 	var grid_positions = calculate_free_grid_positions(new_block)
 	
 	selected_building._add_block(new_block, new_block.position, grid_positions)
+	
+	# === 重要：放置第一个方块后更新到BuildingLayer ===
+	if editor:
+		editor.on_block_placed(new_block, grid_positions)
 	
 	is_first_block = false
 	
@@ -516,9 +525,20 @@ func try_remove_block():
 	for collision in result:
 		var block = collision.collider
 		if block is Block and block.get_parent() == selected_building:			
+			# === 重要：删除方块前获取该方块的网格位置 ===
+			var block_grid_positions = []
+			for pos in selected_building.grid:
+				if selected_building.grid[pos] == block:
+					block_grid_positions.append([pos.x, pos.y])
+			
 			var connections_to_disconnect = find_connections_for_block(block)
 			disconnect_connections(connections_to_disconnect)
 			selected_building.remove_block(block, true)
+			
+			# === 重要：删除方块后从BuildingLayer中移除 ===
+			if editor and not block_grid_positions.is_empty():
+				editor.on_block_removed(block, block_grid_positions)
+			
 			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
 			call_deferred("check_building_stability")
 			

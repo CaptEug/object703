@@ -398,7 +398,18 @@ func try_remove_turret_block():
 	var block_to_remove = get_turret_block_at_position(global_mouse_pos)
 	
 	if block_to_remove and block_to_remove != current_editing_turret:
+		# === 重要：删除炮塔方块前获取网格位置 ===
+		var turret_grid_positions = []
+		for pos in current_editing_turret.turret_grid:
+			if current_editing_turret.turret_grid[pos] == block_to_remove:
+				turret_grid_positions.append([pos.x, pos.y])
+		
+		# 从炮塔移除方块
 		current_editing_turret.remove_block_from_turret(block_to_remove)
+		
+		# === 重要：删除炮塔方块后从BuildingLayer中移除 ===
+		if editor and not turret_grid_positions.is_empty():
+			editor.on_block_removed(block_to_remove, turret_grid_positions)
 
 func get_turret_block_at_position(position: Vector2) -> Block:
 	var space_state = get_tree().root.get_world_2d().direct_space_state
@@ -474,6 +485,11 @@ func try_place_turret_block():
 	if not success:
 		new_block.queue_free()
 		return
+	
+	# === 重要：放置炮塔方块后更新到BuildingLayer ===
+	if editor and success and grid_positions.size() > 0:
+		# 注意：炮塔上的方块需要特殊处理
+		editor.on_turret_block_placed(current_editing_turret, new_block, Vector2i(grid_positions[0][0], grid_positions[0][1]))
 	
 	# 异步操作
 	if new_block.has_method("connect_aready"):
