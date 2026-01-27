@@ -75,7 +75,7 @@ func explode():
 			var impulse_strength = dmg
 			if body is Block:
 				body.apply_impulse(dir * impulse_strength)
-			body.damage(dmg)
+			body.damage(dmg, "explosive")
 		
 		if body is WallLayer:
 			#explosion caluclation for tiles
@@ -95,7 +95,7 @@ func explode():
 						var ratio = clamp(1.0 - dist / explosion_radius, 0.0, 1.0)
 						var dmg = max_explosive_damage * ratio
 						# this tile is inside explosion area
-						tilemap.damage_tile(cell, dmg)
+						tilemap.damage_tile(cell, dmg, "explosive")
 
 func stop():
 	stopped = true
@@ -128,7 +128,7 @@ func _on_shell_body_entered(body):
 		body_hp = body.current_hp
 		if body_hp > 0:
 			damage_to_deal = min(kenetic_damage, body_hp)
-			body.damage(damage_to_deal)
+			body.damage(damage_to_deal, "kinetic")
 			kenetic_damage -= damage_to_deal
 		if kenetic_damage <= 0:
 			if max_explosive_damage:
@@ -160,7 +160,7 @@ func check_shell_enter_tile(delta):
 		if contact_celldata:
 			if contact_celldata["current_hp"] > 0:
 				var damage_to_deal = min(kenetic_damage, contact_celldata["current_hp"])
-				maplayer.damage_tile(cell_contact, damage_to_deal)
+				maplayer.damage_tile(cell_contact, damage_to_deal, "kinetic")
 				kenetic_damage -= damage_to_deal
 			if kenetic_damage <= 0:
 				if max_explosive_damage:

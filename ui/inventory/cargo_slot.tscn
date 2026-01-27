@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dnwpcmifp3o6j"]
 
 [ext_resource type="Texture2D" uid="uid://v16sigblato1" path="res://assets/icons/item_slot.png" id="1_oauvc"]
-[ext_resource type="Script" uid="uid://bxf3fqjbfiuls" path="res://ui/cargo_slot.gd" id="2_84368"]
+[ext_resource type="Script" uid="uid://bxf3fqjbfiuls" path="res://ui/inventory/cargo_slot.gd" id="2_84368"]
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="3_pdxnm"]
 
 [node name="CargoSlot" type="TextureRect"]

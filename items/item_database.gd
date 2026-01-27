@@ -36,6 +36,12 @@ var items = {
 		"max_stack": 999,
 	},
 	
+	"coal": {
+		"tag": "material",
+		"weight": 100,
+		"icon": preload("res://assets/icons/items/coal.png"),
+		"max_stack": 999,
+	},
 	### AMMO ###
 	
 	"57mmAP": {
