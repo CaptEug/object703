@@ -1,6 +1,7 @@
 extends Node
 
 var items = {
+	### Material ###
 	"scrap": {
 		"tag": "material",
 		"weight": 100,
@@ -12,13 +13,6 @@ var items = {
 		"tag": "material",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/metal.png"),
-		"max_stack": 999,
-	},
-	
-	"gas": {
-		"tag": "fuel",
-		"weight": 10,
-		"icon": preload("res://assets/icons/items/gas.png"),
 		"max_stack": 999,
 	},
 	
@@ -42,6 +36,7 @@ var items = {
 		"icon": preload("res://assets/icons/items/coal.png"),
 		"max_stack": 999,
 	},
+	
 	### AMMO ###
 	
 	"57mmAP": {

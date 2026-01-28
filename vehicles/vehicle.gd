@@ -11,8 +11,6 @@ var move_state:String
 var max_engine_power:float
 var current_engine_power:float
 var total_weight:int
-var total_fuel:float
-var total_fuel_cap:float
 var total_store:int
 var blueprint:Variant
 var blueprint_grid:= {}
@@ -21,9 +19,7 @@ var blocks:= []
 var total_blocks:= []
 var powerpacks:= []
 var tracks:= []
-var ammoracks:= []
 var cargos:= []
-var fueltanks:= []
 var commands:= []
 var vehicle_panel:Panel
 var speed_of_increase = 0.05
@@ -75,8 +71,6 @@ func initialize_empty_vehicle():
 	tracks = []
 	powerpacks = []
 	commands = []
-	ammoracks = []
-	fueltanks = []
 
 func _process(delta):
 	handle_delayed_connections()
@@ -112,8 +106,6 @@ func update_vehicle():
 	#Get all total parameters
 	get_max_engine_power()
 	get_current_engine_power()
-	get_fuel_cap()
-	get_current_fuel()
 	update_vehicle_size()
 	# 重新计算物理属性
 	calculate_center_of_mass()
@@ -152,11 +144,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 			powerpacks.append(block)
 		elif block is Command:
 			commands.append(block)
-		elif block is Ammorack:
-			ammoracks.append(block)
-			emit_signal("cargo_changed")
-		elif block is Fueltank:
-			fueltanks.append(block)
 		elif block is Cargo:
 			cargos.append(block)
 			emit_signal("cargo_changed")
@@ -202,11 +189,6 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		powerpacks.erase(block)
 	if block in commands:
 		commands.erase(block)
-	if block in ammoracks:
-		ammoracks.erase(block)
-		emit_signal("cargo_changed")
-	if block in fueltanks:
-		fueltanks.erase(block)
 	if block in cargos:
 		cargos.erase(block)
 		emit_signal("cargo_changed")
@@ -245,22 +227,6 @@ func get_current_engine_power() -> float:
 			current_power += engine.power
 	current_engine_power = current_power
 	return current_power
-
-func get_fuel_cap():
-	var fuel_cap := 0.0
-	for fueltank:Fueltank in fueltanks:
-		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			fuel_cap += fueltank.get_total_fuel()
-	total_fuel_cap = fuel_cap
-	return fuel_cap
-
-func get_current_fuel():
-	var current_fuel := 0.0
-	for fueltank:Fueltank in fueltanks:
-		if fueltank.is_inside_tree() and is_instance_valid(fueltank):
-			current_fuel += fueltank.get_total_fuel()
-	total_fuel = current_fuel
-	return current_fuel
 
 ########################## VEHICLE LOADING ###########################
 

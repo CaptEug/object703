@@ -16,7 +16,8 @@ var move_power_ratio: float = 1.0  # 移动动力比例
 var rotate_power_ratio: float = 0.3  # 旋转动力比例 (30%)
 
 var track_power_target = {}
-var connected_fueltank = []
+var connected_fueltanks:Array[LiquidTank] = []
+var connected_cargos:Array[Cargo] = []
 var total_fuel = 0
 
 func _ready():
@@ -96,14 +97,15 @@ func calculate_power_distribution(forward_input, turn_input):
 		track_power_target[track] = clamp(track_power_target[track], -available_power, available_power)
 
 func fuel_reduction(delta):
-	if parent_vehicle and connected_fueltank.size() > 0:
-		var remaining_power = power * (fuel_consumption/max_power)
-		for tank in connected_fueltank:
-			if tank is Fueltank and tank.get_total_fuel() > 0:
-				if tank.use_fuel(remaining_power , delta):
-					return
-				else:
-					remaining_power -= tank.get_total_fuel()
+	pass
+	#if parent_vehicle and connected_fueltanks.size() > 0:
+		#var remaining_power = power * (fuel_consumption/max_power)
+		#for tank in connected_fueltanks:
+			#if tank is Fueltank and tank.get_total_fuel() > 0:
+				#if tank.use_fuel(remaining_power , delta):
+					#return
+				#else:
+					#remaining_power -= tank.get_total_fuel()
 
 # 外部接口 - 设置状态
 func set_movement_state(moving: bool, rotating: bool):
@@ -116,20 +118,28 @@ func set_power_ratios(move_ratio: float, rotate_ratio: float):
 	rotate_power_ratio = clamp(rotate_ratio, 0.0, 1.0)
 
 func find_all_connected_fueltank():
-	connected_fueltank.clear()
+	connected_fueltanks.clear()
 	for block in get_all_connected_blocks():
-		if block is Fueltank:
-			connected_fueltank.append(block)
-	return connected_fueltank
+		if block is LiquidTank:
+			connected_fueltanks.append(block)
+	return connected_fueltanks
+
+func find_all_connected_cargo():
+	connected_cargos.clear()
+	for block in get_all_connected_blocks():
+		if block is Cargo:
+			connected_cargos.append(block)
+	return connected_cargos
 
 func has_fuel() -> bool:
-	connected_fueltank.clear()
-	find_all_connected_fueltank()
-	total_fuel = 0
-	for fueltank:Fueltank in connected_fueltank:
-		total_fuel += fueltank.get_total_fuel()
-	if total_fuel > 0:
-		return true
-	else:
-		on = false
-		return false
+	return false
+	#connected_fueltanks.clear()
+	#find_all_connected_fueltank()
+	#total_fuel = 0
+	#for fueltank in connected_fueltanks:
+		#total_fuel += fueltank.get_total_fuel()
+	#if total_fuel > 0:
+		#return true
+	#else:
+		#on = false
+		#return false
