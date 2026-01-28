@@ -2,7 +2,7 @@ extends LiquidTank
 
 const HITPOINT:float = 400
 const WEIGHT:float = 200
-const BLOCK_NAME:String = 'fuel tank'
+const BLOCK_NAME:String = 'fueltank'
 const TYPE:= "Auxilliary"
 const SIZE:= Vector2(1, 1)
 const ACCEPT:Array[String] = ["petroleum"]

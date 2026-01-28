@@ -2,7 +2,7 @@ extends Cargo
 
 const HITPOINT:float = 600
 const WEIGHT:float = 500
-const BLOCK_NAME:String = 'ammo rack'
+const BLOCK_NAME:String = 'ammorack'
 const SIZE:= Vector2(1, 1)
 const TYPE:= "Firepower"
 const ACCEPT:= ["ammo"]
