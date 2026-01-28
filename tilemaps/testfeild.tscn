@@ -25,5 +25,4 @@ tile_set = ExtResource("1_df33e")
 script = ExtResource("3_2p7kj")
 
 [node name="BuildingLayer" type="TileMapLayer" parent="."]
-visible = false
 script = ExtResource("4_77rb7")

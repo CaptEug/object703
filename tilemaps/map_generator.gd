@@ -3,6 +3,7 @@ extends Node2D
 
 @onready var ground:TileMapLayer = $GroundLayer
 @onready var wall:WallLayer = $WallLayer
+@onready var building:buildinglayer = $BuildingLayer
 var world_height:int = 128
 var world_width:int = 128
 
@@ -15,6 +16,12 @@ var sandstone_tiles_arr = []
 func _ready():
 	generate_world(noise_height_text.noise)
 	wall.init_layerdata()
+	
+	# 加载蓝图并生成建筑
+	building.load_all_blueprints()
+	building.generate_buildings_from_layerdata(self)
+	
+	print("=== 游戏地图初始化完成 ===")
 
 
 func _process(delta):

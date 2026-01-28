@@ -152,9 +152,9 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 			powerpacks.append(block)
 		elif block is Command:
 			commands.append(block)
-		elif block is Ammorack:
-			ammoracks.append(block)
-			emit_signal("cargo_changed")
+		#elif block is Ammorack:
+			#ammoracks.append(block)
+			#emit_signal("cargo_changed")
 		elif block is Fueltank:
 			fueltanks.append(block)
 		elif block is Cargo:

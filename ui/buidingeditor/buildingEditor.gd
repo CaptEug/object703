@@ -35,6 +35,7 @@ const BLOCK_PATHS = {
 }
 
 const BLUEPRINT_PATH = "res://buildings/blueprint/"
+const BLUEPRINT_SAVE_PATH = "res://buildings/blueprint/"
 
 # 编辑系统实例
 var building_editing_system: BuildingHullEditingSystem
@@ -58,12 +59,6 @@ var blueprint_ghosts := []
 var blueprint_data: Dictionary
 var is_showing_blueprint := false
 var ghost_data_map = {}
-
-# === 重心显示变量 ===
-var com_marker: Sprite2D
-var com_texture: Texture2D = preload("res://assets/icons/symbls.png")
-var com_marker_region: Rect2 = Rect2(224, 32, 16, 16)
-var show_center_of_mass: bool = true
 
 # === 地图对齐相关 ===
 var game_map: GameMap
@@ -94,7 +89,6 @@ func _ready():
 	building_saved.connect(_on_building_saved)
 	update_recycle_button()
 	load_all_blocks()
-	_create_com_marker()
 	
 	description_label.bbcode_enabled = true
 	description_label.text = ""
@@ -167,38 +161,6 @@ func create_tab_with_itemlist(tab_name: String):
 	
 	tab_container.add_child(item_list)
 	item_lists[tab_name] = item_list
-
-func _on_mass_center_show_toggled(button_pressed: bool):
-	show_center_of_mass = button_pressed
-	_update_com_marker()
-
-func _create_com_marker():
-	if com_marker and is_instance_valid(com_marker):
-		com_marker.queue_free()
-	
-	com_marker = Sprite2D.new()
-	
-	if com_texture:
-		if com_marker_region != Rect2(0, 0, 0, 0):
-			var atlas_texture = AtlasTexture.new()
-			atlas_texture.atlas = com_texture
-			atlas_texture.region = com_marker_region
-			com_marker.texture = atlas_texture
-		else:
-			com_marker.texture = com_texture
-	
-	com_marker.centered = true
-	com_marker.visible = false
-	com_marker.z_index = -1
-	
-	add_child(com_marker)
-
-func _update_com_marker():
-	if is_editing and selected_building and show_center_of_mass:
-		com_marker.visible = true
-		com_marker.global_position = _get_com_ui_position()
-	else:
-		com_marker.visible = false
 
 func _get_com_ui_position() -> Vector2:
 	var world_com: Vector2 = selected_building.calculate_center_of_mass()
@@ -481,8 +443,7 @@ func _process(delta):
 	# 更新方块颜色
 	if is_editing and selected_building:
 		update_all_block_colors()
-	
-	_update_com_marker()
+
 	building_editing_system.process(delta)
 	turret_editing_system.process(delta)
 	
@@ -711,7 +672,6 @@ func enter_editor_mode(building: Building):
 	show()
 	
 	building_editing_system.reset_connection_indices()
-	com_marker.visible = show_center_of_mass
 	
 	toggle_blueprint_display()
 	update_building_info_display()
@@ -768,8 +728,6 @@ func exit_editor_mode():
 	clear_blueprint_ghosts()
 	
 	camera.target_rot = 0.0
-	
-	com_marker.visible = false
 	
 	hide()
 	is_editing = false
@@ -1211,50 +1169,43 @@ func update_block_to_tilemap(block: Block, grid_positions: Array):
 		building_name = "Unnamed_" + str(selected_building.get_instance_id())
 		selected_building.building_name = building_name
 	
-	# 获取建筑的世界位置和旋转
+	# 获取TileMap的单元格大小（默认16x16）
+	var tile_size = building_layer.tile_set.tile_size if building_layer.tile_set else Vector2i(16, 16)
+	
+	# 获取建筑的世界位置
 	var building_world_pos = selected_building.global_position
-	var building_rotation = selected_building.global_rotation
 	
-	print("=== 更新方块到TileMap ===")
-	print("建筑名称: ", building_name)
-	print("建筑世界位置: ", building_world_pos)
-	print("建筑旋转（度）: ", rad_to_deg(building_rotation))
-	
-	# 遍历方块的每个小格网格位置
+	# 遍历方块的每个小格
 	for i in range(grid_positions.size()):
 		var grid_pos_array = grid_positions[i]
 		var grid_pos = Vector2i(grid_pos_array[0], grid_pos_array[1])
 		
-		print("方块网格位置 ", i, ": ", grid_pos)
+		# 1. 计算建筑局部坐标
+		var building_local = Vector2(grid_pos) * GRID_SIZE
 		
-		# 将建筑网格坐标转换为世界坐标
-		var building_local_pos = Vector2(grid_pos) * GRID_SIZE
-		var world_pos = selected_building.to_global(building_local_pos)
+		# 2. 考虑建筑的旋转
+		var rotated_local = building_local.rotated(selected_building.global_rotation)
 		
-		print("  建筑局部位置: ", building_local_pos)
-		print("  世界坐标: ", world_pos)
+		# 3. 计算世界坐标
+		var world_pos = building_world_pos + rotated_local
 		
-		# 将世界坐标转换为TileMap的局部坐标
-		var tilemap_local_pos = building_layer.to_local(world_pos)
-		print("  TileMap局部坐标: ", tilemap_local_pos)
+		# 4. 计算相对于TileMap的坐标
+		var tilemap_global_pos = building_layer.global_position
+		var relative_to_tilemap = world_pos - tilemap_global_pos
 		
-		# 转换为TileMap网格坐标 - 这将作为layerdata的键
-		var tilemap_grid_pos = building_layer.local_to_map(tilemap_local_pos)
-		print("  TileMap网格坐标: ", tilemap_grid_pos)
+		# 5. 转换为TileMap网格坐标
+		var tilemap_grid_pos = building_layer.local_to_map(relative_to_tilemap)
 		
 		# 存储数据
-		# 注意：tilemap_grid_pos作为键，不再存储base_grid_pos
-		building_layer.layerdata[tilemap_grid_pos] = {
+		building_layer.layerdata[grid_pos] = {
 			"building_name": building_name,
 			"block_name": block.block_name,
 			"block_path": block.scene_file_path,
 			"rotation": block.base_rotation_degree,
 			"hp": block.current_hp,
-			"block_size": [block.size.x, block.size.y],  # 方块大小
-			"grid_pos": [grid_pos.x, grid_pos.y]        # 在建筑网格中的位置
+			"block_size": [block.size.x, block.size.y],
+			"grid_pos": [grid_pos.x, grid_pos.y]
 		}
-	
-	print("=======================")
 	
 	# 更新TileMap显示
 	building_layer.update_from_layerdata()
@@ -1446,20 +1397,6 @@ func get_block_at_position(position: Vector2) -> Block:
 			return block
 	return null
 
-# === 需要在BuildingHullEditingSystem中调用的接口 ===
-func on_block_placed(block: Block, grid_positions: Array):
-	"""当方块被放置时调用，更新到BuildingLayer"""
-	update_block_to_tilemap(block, grid_positions)
-
-func on_block_removed(block: Block, grid_positions: Array):
-	"""当方块被移除时调用，从BuildingLayer中删除"""
-	remove_block_from_tilemap(block, grid_positions)
-
-# === 需要在BuildingTurretEditingSystem中调用的接口 ===
-func on_turret_block_placed(turret: TurretRing, turret_block: Block, turret_grid_pos: Vector2i):
-	"""当炮塔上的方块被放置时调用，更新到BuildingLayer"""
-	update_turret_block_to_tilemap(turret, turret_block, turret_grid_pos)
-
 # === 虚影数据类 ===
 class GhostData:
 	var grid_positions: Array
@@ -1478,3 +1415,126 @@ func calculate_offset_by_rotation(local_pos: Vector2i, rotation: int) -> Vector2
 			return -local_pos
 		_:
 			return local_pos
+
+func _ensure_blueprint_directory():
+	"""确保蓝图目录存在"""
+	var dir = DirAccess.open("res://")
+	if dir:
+		if not dir.dir_exists("buildings"):
+			dir.make_dir("buildings")
+			print("创建目录: res://buildings/")
+		
+		var buildings_dir = DirAccess.open("res://buildings/")
+		if buildings_dir:
+			if not buildings_dir.dir_exists("blueprint"):
+				buildings_dir.make_dir("blueprint")
+				print("创建蓝图目录: res://buildings/blueprint/")
+	else:
+		print("错误: 无法访问res://目录")
+
+# 修改放置方块的方法，添加即时保存
+func on_block_placed(block: Block, grid_positions: Array):
+	"""当方块被放置时调用，更新到BuildingLayer"""
+	update_block_to_tilemap(block, grid_positions)
+	_save_building_blueprint_immediately()  # 立即保存
+
+func on_block_removed(block: Block, grid_positions: Array):
+	"""当方块被移除时调用，从BuildingLayer中删除"""
+	remove_block_from_tilemap(block, grid_positions)
+	_save_building_blueprint_immediately()  # 立即保存
+
+func on_turret_block_placed(turret: TurretRing, turret_block: Block, turret_grid_pos: Vector2i):
+	"""当炮塔上的方块被放置时调用，更新到BuildingLayer"""
+	update_turret_block_to_tilemap(turret, turret_block, turret_grid_pos)
+	_save_building_blueprint_immediately()  # 立即保存
+
+func _save_building_blueprint_immediately():
+	"""立即保存建筑蓝图到JSON文件"""
+	if not is_editing or not selected_building:
+		return
+	
+	var building_name = selected_building.building_name
+	if not building_name or building_name.is_empty():
+		building_name = "Unnamed_" + str(selected_building.get_instance_id())
+		selected_building.building_name = building_name
+	
+	print("=== 立即保存蓝图 ===")
+	
+	# 收集建筑的所有方块数据
+	var building_data = _collect_building_data_for_blueprint()
+	
+	# 保存到JSON文件
+	var file_path = BLUEPRINT_SAVE_PATH + building_name + ".json"
+	_save_json_file_immediately(file_path, building_data)
+	
+	print("蓝图已保存: ", file_path)
+
+func _collect_building_data_for_blueprint() -> Dictionary:
+	"""收集建筑的完整数据用于蓝图保存"""
+	var building_data = {
+		"version": "1.0",
+		"name": selected_building.building_name,
+		"created_time": Time.get_datetime_string_from_system(),
+		"blocks": {}
+	}
+	
+	# 按方块分组，避免重复
+	var processed_blocks = {}
+	var block_index = 0
+	
+	# 遍历建筑网格中的所有方块
+	for grid_pos in selected_building.grid:
+		var block = selected_building.grid[grid_pos]
+		
+		if not block:
+			continue
+		
+		# 创建方块唯一标识符
+		var block_key = str(block.get_instance_id())
+		
+		# 如果这个方块已经处理过，跳过
+		if processed_blocks.has(block_key):
+			continue
+		
+		processed_blocks[block_key] = true
+		
+		# 收集该方块占据的所有网格位置
+		var block_grid_positions = []
+		for pos in selected_building.grid:
+			if selected_building.grid[pos] == block:
+				block_grid_positions.append([pos.x, pos.y])
+		
+		# 计算方块的基准位置
+		var base_pos = find_base_grid_position(block_grid_positions, block)
+		
+		# 添加到方块数据
+		building_data["blocks"][str(block_index)] = {
+			"path": block.scene_file_path,
+			"name": block.block_name,
+			"size": [block.size.x, block.size.y],
+			"rotation": block.base_rotation_degree,
+			"hp": block.current_hp,
+			"max_hp": block.max_hp,
+			"base_pos": [base_pos.x, base_pos.y],
+			"grid_positions": block_grid_positions
+		}
+		
+		block_index += 1
+	
+	print("收集到 ", block_index, " 个方块数据")
+	return building_data
+
+func _save_json_file_immediately(file_path: String, data: Dictionary):
+	"""立即保存数据到JSON文件"""
+	# 创建JSON字符串
+	var json_string = JSON.stringify(data, "\t")
+	
+	# 保存到文件
+	var file = FileAccess.open(file_path, FileAccess.WRITE)
+	if file:
+		file.store_string(json_string)
+		file.close()
+		print("JSON文件已保存: ", file_path)
+	else:
+		print("错误: 无法保存JSON文件: ", file_path)
+		print("错误代码: ", FileAccess.get_open_error())
