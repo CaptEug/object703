@@ -3,15 +3,37 @@
 		"1": {
 			"base_pos": [
 				0,
-				3
+				0
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"name": "drill",
+			"path": "res://blocks/auxiliary/drill.tscn",
 			"rotation": [
 				0.0
 			]
 		},
 		"10": {
+			"base_pos": [
+				2,
+				5
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"11": {
+			"base_pos": [
+				3,
+				3
+			],
+			"name": "search light",
+			"path": "res://blocks/auxiliary/search_light.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"12": {
 			"base_pos": [
 				3,
 				4
@@ -22,7 +44,7 @@
 				0.0
 			]
 		},
-		"11": {
+		"13": {
 			"base_pos": [
 				3,
 				5
@@ -33,7 +55,18 @@
 				0.0
 			]
 		},
-		"12": {
+		"14": {
+			"base_pos": [
+				3,
+				6
+			],
+			"name": "Daimler-littleknight",
+			"path": "res://blocks/mobility/dlk.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"15": {
 			"base_pos": [
 				3,
 				7
@@ -44,46 +77,13 @@
 				90.0
 			]
 		},
-		"13": {
-			"base_pos": [
-				2,
-				0
-			],
-			"name": "drill",
-			"path": "res://blocks/auxiliary/drill.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"14": {
-			"base_pos": [
-				0,
-				0
-			],
-			"name": "drill",
-			"path": "res://blocks/auxiliary/drill.tscn",
-			"rotation": [
-				0
-			]
-		},
-		"15": {
-			"base_pos": [
-				3,
-				6
-			],
-			"name": "Daimler-littleknight",
-			"path": "res://blocks/mobility/dlk.tscn",
-			"rotation": [
-				0
-			]
-		},
 		"16": {
 			"base_pos": [
-				3,
+				0,
 				3
 			],
-			"name": "search light",
-			"path": "res://blocks/auxiliary/search_light.tscn",
+			"name": "fuel tank",
+			"path": "res://blocks/auxiliary/fuel_tank.tscn",
 			"rotation": [
 				0
 			]
@@ -168,10 +168,10 @@
 		"9": {
 			"base_pos": [
 				2,
-				5
+				0
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"name": "drill",
+			"path": "res://blocks/auxiliary/drill.tscn",
 			"rotation": [
 				0.0
 			]

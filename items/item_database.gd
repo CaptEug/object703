@@ -37,6 +37,18 @@ var items = {
 		"max_stack": 999,
 	},
 	
+	### Liquid ###
+	
+	"crude_oil": {
+		"tag": "liquid",
+		"icon": preload("res://assets/icons/items/crude_oil.png"),
+	},
+	
+	"petroleum": {
+		"tag": "fuel",
+		"icon": preload("res://assets/icons/items/petroleum.png"),
+	},
+	
 	### AMMO ###
 	
 	"57mmAP": {

@@ -13,6 +13,17 @@
 		},
 		"10": {
 			"base_pos": [
+				2,
+				3
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"rotation": [
+				0.0
+			]
+		},
+		"11": {
+			"base_pos": [
 				3,
 				1
 			],
@@ -22,7 +33,7 @@
 				0.0
 			]
 		},
-		"11": {
+		"12": {
 			"base_pos": [
 				3,
 				3
@@ -33,7 +44,7 @@
 				0.0
 			]
 		},
-		"12": {
+		"13": {
 			"base_pos": [
 				4,
 				3
@@ -44,21 +55,10 @@
 				0.0
 			]
 		},
-		"13": {
-			"base_pos": [
-				4,
-				4
-			],
-			"name": "rusty track",
-			"path": "res://blocks/mobility/rusty_track.tscn",
-			"rotation": [
-				0.0
-			]
-		},
 		"14": {
 			"base_pos": [
 				4,
-				5
+				4
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -69,7 +69,7 @@
 		"15": {
 			"base_pos": [
 				4,
-				6
+				5
 			],
 			"name": "rusty track",
 			"path": "res://blocks/mobility/rusty_track.tscn",
@@ -79,11 +79,11 @@
 		},
 		"16": {
 			"base_pos": [
-				5,
-				2
+				4,
+				6
 			],
-			"name": "QF 6-pounder gun",
-			"path": "res://blocks/firepower/qf_6_pounder.tscn",
+			"name": "rusty track",
+			"path": "res://blocks/mobility/rusty_track.tscn",
 			"rotation": [
 				0.0
 			]
@@ -91,10 +91,10 @@
 		"17": {
 			"base_pos": [
 				5,
-				4
+				2
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/mobility/fuel_tank.tscn",
+			"name": "QF 6-pounder gun",
+			"path": "res://blocks/firepower/qf_6_pounder.tscn",
 			"rotation": [
 				0.0
 			]
@@ -112,11 +112,11 @@
 		},
 		"19": {
 			"base_pos": [
-				1,
-				7
+				5,
+				4
 			],
-			"name": "smelter",
-			"path": "res://blocks/industrial/smelter.tscn",
+			"name": "fuel tank",
+			"path": "res://blocks/auxiliary/fuel_tank.tscn",
 			"rotation": [
 				0
 			]
@@ -241,11 +241,11 @@
 		},
 		"9": {
 			"base_pos": [
-				2,
-				3
+				1,
+				7
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"name": "smelter",
+			"path": "res://blocks/industrial/smelter.tscn",
 			"rotation": [
 				0.0
 			]
