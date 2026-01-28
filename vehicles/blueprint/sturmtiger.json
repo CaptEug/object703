@@ -113,10 +113,10 @@
 		"19": {
 			"base_pos": [
 				2,
-				4
+				3
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/auxiliary/fuel_tank.tscn",
+			"name": "ammo rack",
+			"path": "res://blocks/auxiliary/ammo_rack.tscn",
 			"rotation": [
 				0
 			]
@@ -135,10 +135,10 @@
 		"20": {
 			"base_pos": [
 				3,
-				4
+				3
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/auxiliary/fuel_tank.tscn",
+			"name": "ammo rack",
+			"path": "res://blocks/auxiliary/ammo_rack.tscn",
 			"rotation": [
 				0
 			]
@@ -201,10 +201,10 @@
 		"8": {
 			"base_pos": [
 				2,
-				3
+				4
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"name": "fuel tank",
+			"path": "res://blocks/auxiliary/fuel_tank.tscn",
 			"rotation": [
 				0.0
 			]
@@ -212,10 +212,10 @@
 		"9": {
 			"base_pos": [
 				3,
-				3
+				4
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"name": "fuel tank",
+			"path": "res://blocks/auxiliary/fuel_tank.tscn",
 			"rotation": [
 				0.0
 			]

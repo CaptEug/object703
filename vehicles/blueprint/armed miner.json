@@ -14,10 +14,10 @@
 		"10": {
 			"base_pos": [
 				2,
-				5
+				0
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/firepower/ammo_rack.tscn",
+			"name": "drill",
+			"path": "res://blocks/auxiliary/drill.tscn",
 			"rotation": [
 				0.0
 			]
@@ -79,16 +79,27 @@
 		},
 		"16": {
 			"base_pos": [
+				2,
+				5
+			],
+			"name": "ammo rack",
+			"path": "res://blocks/auxiliary/ammo_rack.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"2": {
+			"base_pos": [
 				0,
 				3
 			],
 			"name": "fuel tank",
 			"path": "res://blocks/auxiliary/fuel_tank.tscn",
 			"rotation": [
-				0
+				0.0
 			]
 		},
-		"2": {
+		"3": {
 			"base_pos": [
 				0,
 				4
@@ -99,7 +110,7 @@
 				0.0
 			]
 		},
-		"3": {
+		"4": {
 			"base_pos": [
 				0,
 				5
@@ -110,7 +121,7 @@
 				0.0
 			]
 		},
-		"4": {
+		"5": {
 			"base_pos": [
 				0,
 				6
@@ -121,7 +132,7 @@
 				0.0
 			]
 		},
-		"5": {
+		"6": {
 			"base_pos": [
 				0,
 				7
@@ -132,7 +143,7 @@
 				180.0
 			]
 		},
-		"6": {
+		"7": {
 			"base_pos": [
 				1,
 				3
@@ -143,7 +154,7 @@
 				0.0
 			]
 		},
-		"7": {
+		"8": {
 			"base_pos": [
 				1,
 				5
@@ -154,24 +165,13 @@
 				0.0
 			]
 		},
-		"8": {
+		"9": {
 			"base_pos": [
 				1,
 				6
 			],
 			"name": "large cargo",
 			"path": "res://blocks/auxiliary/large_cargo.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"9": {
-			"base_pos": [
-				2,
-				0
-			],
-			"name": "drill",
-			"path": "res://blocks/auxiliary/drill.tscn",
 			"rotation": [
 				0.0
 			]
