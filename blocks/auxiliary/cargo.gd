@@ -8,7 +8,7 @@ signal inventory_changed(cargo: Cargo)
 @export var ui_ref: Node = null
 var inventory: Array[Dictionary] = [] # 每个元素是 Dictionary, eg. {"id": "iron", "count": 10}
 var accept: Array = []  # 可以存放的物品类型约束（暂留）
-var max_load: float = false
+var max_load: float
 var pickupmagnet: Area2D
 
 
@@ -32,7 +32,6 @@ func initialize_inventory():
 	add_item("PZGR75", 10)
 	add_item("122mmAPHE", 10)
 	add_item("380mmrocket", 10)
-	add_item("gas", 10)
 	add_item("sandstone", 10)
 	add_item("hematite", 10)
 	add_item("coal", 10)

@@ -1,11 +1,12 @@
-extends Fueltank
+extends LiquidTank
 
 const HITPOINT:float = 400
 const WEIGHT:float = 200
-const BLOCK_NAME:String = 'fuel tank'
-const TYPE:= "Mobility"
+const BLOCK_NAME:String = 'fueltank'
+const TYPE:= "Auxilliary"
 const SIZE:= Vector2(1, 1)
-const INITIAL_GAS: int = 10
+const ACCEPT:Array[String] = ["petroleum"]
+const CAPACITY:= 500.0
 
 var description := "存储燃料供发动机使用"
 
@@ -16,8 +17,5 @@ func _init():
 	block_name = BLOCK_NAME
 	type = TYPE
 	size = SIZE
-
-func _ready():
-	super._ready()
-	clear_all()
-	add_item("gas", INITIAL_GAS)
+	accept = ACCEPT
+	capacity = CAPACITY

@@ -154,20 +154,12 @@ func update_parent_vehicle_blocks(block: Block, add: bool):
 			parent_vehicle.powerpacks.append(block)
 		elif block is Command and block not in parent_vehicle.commands:
 			parent_vehicle.commands.append(block)
-		elif block is Ammorack and block not in parent_vehicle.ammoracks:
-			parent_vehicle.ammoracks.append(block)
-		elif block is Fueltank and block not in parent_vehicle.fueltanks:
-			parent_vehicle.fueltanks.append(block)
 	else:
 		parent_vehicle.blocks.erase(block)
 		if block is Powerpack:
 			parent_vehicle.powerpacks.erase(block)
 		elif block is Command:
 			parent_vehicle.commands.erase(block)
-		elif block is Ammorack:
-			parent_vehicle.ammoracks.erase(block)
-		elif block is Fueltank:
-			parent_vehicle.fueltanks.erase(block)
 
 func remove_block_from_turret(block: Block):
 	"""从炮塔grid系统移除block"""

@@ -21,7 +21,7 @@ var reload_timer:Timer
 var loaded:bool = false
 var loading:bool = false
 var shell_chosen:PackedScene
-var connected_ammoracks := []
+var connected_cargos := []
 var targeting:= Callable()
 
 
@@ -147,18 +147,18 @@ func start_reload():
 	reload_timer.start()
 
 func find_ammo() -> bool:
-	connected_ammoracks.clear()
-	find_all_connected_ammorack()
-	if connected_ammoracks.is_empty():
+	connected_cargos.clear()
+	find_all_connected_cargo()
+	if connected_cargos.is_empty():
 		return false
-	for ammorack in connected_ammoracks:
-		var inv = ammorack.inventory
+	for cargo in connected_cargos:
+		var inv = cargo.inventory
 		for item in inv:
 			if item == {}:
 				continue
 			if item["id"] in shells:
 				shell_chosen = ItemDB.get_item(item["id"])["shell_scene"]
-				return ammorack.take_item(item["id"], 1)
+				return cargo.take_item(item["id"], 1)
 	return false
 
 
@@ -167,12 +167,12 @@ func _on_timer_timeout():
 	loading = false
 
 
-func find_all_connected_ammorack():
-	connected_ammoracks.clear()
+func find_all_connected_cargo():
+	connected_cargos.clear()
 	for block in get_all_connected_blocks():
-		if block is Ammorack:
-			connected_ammoracks.append(block)
-	return connected_ammoracks
+		if block is Cargo:
+			connected_cargos.append(block)
+	return connected_cargos
 
 
 

@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b174t40r5evkq"]
+
+[ext_resource type="Script" uid="uid://dm2mhbalqusxg" path="res://blocks/auxiliary/liquidtank.gd" id="1_3fy0r"]
+
+[node name="Reservoir" type="RigidBody2D"]
+script = ExtResource("1_3fy0r")
+metadata/_custom_type_script = "uid://dm2mhbalqusxg"

@@ -1,6 +1,7 @@
 extends Node
 
 var items = {
+	### Material ###
 	"scrap": {
 		"tag": "material",
 		"weight": 100,
@@ -12,13 +13,6 @@ var items = {
 		"tag": "material",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/metal.png"),
-		"max_stack": 999,
-	},
-	
-	"gas": {
-		"tag": "fuel",
-		"weight": 10,
-		"icon": preload("res://assets/icons/items/gas.png"),
 		"max_stack": 999,
 	},
 	
@@ -42,6 +36,19 @@ var items = {
 		"icon": preload("res://assets/icons/items/coal.png"),
 		"max_stack": 999,
 	},
+	
+	### Liquid ###
+	
+	"crude_oil": {
+		"tag": "liquid",
+		"icon": preload("res://assets/icons/items/crude_oil.png"),
+	},
+	
+	"petroleum": {
+		"tag": "fuel",
+		"icon": preload("res://assets/icons/items/petroleum.png"),
+	},
+	
 	### AMMO ###
 	
 	"57mmAP": {

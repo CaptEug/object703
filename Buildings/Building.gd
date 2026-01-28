@@ -13,9 +13,7 @@ var blueprint_grid:= {}
 var grid:= {}
 var blocks:= []
 var total_blocks:= []
-var ammoracks:= []
 var cargos:= []
-var fueltanks:= []
 var storage_blocks:= []
 var production_blocks:= []
 var commands:= []
@@ -53,8 +51,6 @@ func initialize_empty_building():
 	storage_blocks = []
 	production_blocks = []
 	commands = []
-	ammoracks = []
-	fueltanks = []
 
 func update_building():
 	# Check block connectivity
@@ -80,9 +76,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 		total_blocks.append(block)
 		block.global_grid_pos = get_rectangle_corners(grid_positions)
 		
-		#if block is Ammorack:
-			#ammoracks.append(block)
-			#emit_signal("cargo_changed")
 		if block is Cargo:
 			cargos.append(block)
 			emit_signal("cargo_changed")
@@ -123,11 +116,6 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		production_blocks.erase(block)
 	if block in commands:
 		commands.erase(block)
-	if block in ammoracks:
-		ammoracks.erase(block)
-		emit_signal("cargo_changed")
-	if block in fueltanks:
-		fueltanks.erase(block)
 	if block in cargos:
 		cargos.erase(block)
 		emit_signal("cargo_changed")
