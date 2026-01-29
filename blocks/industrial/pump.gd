@@ -76,8 +76,10 @@ func update_pump_window(delta):
 	else:
 		window_color = liquid_color[liquid_on_tile]
 		window_alpha = clamp(window_alpha + delta, 0.0, 1.0)
-	if not pumping:
-		window_color = Color.CRIMSON
+	if pumping:
+		$AnimationPlayer.play("pumping")
+	else:
+		$AnimationPlayer.stop()
 	$Sprite2D2.modulate = Color(
 		window_color.r,
 		window_color.g,
