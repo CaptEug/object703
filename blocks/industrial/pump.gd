@@ -79,7 +79,7 @@ func update_pump_window(delta):
 	if pumping:
 		$AnimationPlayer.play("pumping")
 	else:
-		$AnimationPlayer.stop()
+		$AnimationPlayer.pause()
 	$Sprite2D2.modulate = Color(
 		window_color.r,
 		window_color.g,
