@@ -2,7 +2,7 @@ class_name Block
 extends RigidBody2D
 
 @export var center_of_mass_offset: Vector2 = Vector2.ZERO
-var map:Node2D
+var map:GameMap
 
 ## Basic Properties
 var current_hp:float

@@ -147,7 +147,6 @@ func start_reload():
 	reload_timer.start()
 
 func find_ammo() -> bool:
-	connected_cargos.clear()
 	find_all_connected_cargo()
 	if connected_cargos.is_empty():
 		return false

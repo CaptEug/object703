@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://dh2urqk5fxqex"]
 
-[ext_resource type="Script" uid="uid://dbtcrwmc3he01" path="res://smelter.gd" id="1_plyit"]
+[ext_resource type="Script" uid="uid://dbtcrwmc3he01" path="res://blocks/industrial/smelter.gd" id="1_plyit"]
 [ext_resource type="Texture2D" uid="uid://dekajs0eevwkv" path="res://assets/blocks_ind.png" id="2_b5kk2"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_plyit"]
 

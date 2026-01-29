@@ -29,16 +29,16 @@ func take_liquid(liquid:String, amount:float) -> bool:
 		return false
 	return false
 
-func check_available_space() -> float:
+func available_space() -> float:
 	return capacity - stored_amount
 
 func destory():
 	super.destroy()
 	pass
 
-func can_accept_liquid(liquid:String) -> bool:
+func accept_liquid(liquid:String) -> bool:
 	if stored_liquid != liquid:
 		if stored_liquid == "":
-			return accept.has(liquid)
+			return accept.has(liquid) or accept.has("ALL")
 		return false
 	return true

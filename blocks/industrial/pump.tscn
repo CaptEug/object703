@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://db2pifpvswbp"]
+
+[ext_resource type="Script" uid="uid://g6kq6ler602c" path="res://blocks/industrial/pump.gd" id="1_206m0"]
+[ext_resource type="Texture2D" uid="uid://22scdg581sgy" path="res://assets/blocks_log.png" id="2_k3n2d"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_i58sw"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w16g7"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a5tig"]
+atlas = ExtResource("2_k3n2d")
+region = Rect2(0, 48, 16, 16)
+
+[node name="Pump" type="RigidBody2D"]
+script = ExtResource("1_206m0")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_w16g7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_a5tig")
+
+[node name="Connector" parent="." instance=ExtResource("3_i58sw")]
+position = Vector2(8, 0)
+
+[node name="Connector2" parent="." instance=ExtResource("3_i58sw")]
+position = Vector2(0, 8)
+rotation = 1.57079
+
+[node name="Connector3" parent="." instance=ExtResource("3_i58sw")]
+position = Vector2(-8, 0)
+rotation = 3.14159
+
+[node name="Connector4" parent="." instance=ExtResource("3_i58sw")]
+position = Vector2(0, -8)
+rotation = -1.57079
