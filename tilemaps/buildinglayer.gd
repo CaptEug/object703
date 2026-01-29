@@ -34,10 +34,6 @@ func update_from_layerdata():
 						var offset = calculate_offset_by_rotation(Vector2i(x, y), rotation)
 						var base_pos = Vector2i(data["base_grid_pos"][0], data["base_grid_pos"][1])
 						var grid_pos = base_pos + offset
-						
-						# 找到这个网格位置对应的TileMap格子
-						# 这里需要根据原始建筑位置和旋转计算实际的世界位置
-						# 这是一个简化版本，实际需要更复杂的计算
 						set_cell(cell, get_tile_for_block_path(data["block_path"]), Vector2i(0, 0))
 		# 如果没有基准位置信息，直接显示
 		else:
