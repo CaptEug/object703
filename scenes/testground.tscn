@@ -22,6 +22,8 @@ glow_hdr_scale = 1.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
+[node name="Node" type="Node" parent="CanvasLayer"]
+
 [node name="EditormodeUI" parent="CanvasLayer" instance=ExtResource("1_eun4v")]
 visible = false
 offset_top = 648.0
