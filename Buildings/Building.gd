@@ -57,8 +57,6 @@ func update_building():
 	for block:Block in blocks:
 		block.get_all_connected_blocks()
 	
-	# Update building parameters
-	update_building_size()
 	calculate_center_of_mass()
 	
 	# Check building destroyed (has command block)
@@ -307,24 +305,6 @@ func calculate_center_of_mass() -> Vector2:
 	cached_center_of_mass = weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
 	cached_center_of_mass_dirty = false
 	return cached_center_of_mass
-
-func update_building_size():
-	if grid.is_empty():
-		building_size = Vector2i.ZERO
-		return
-	
-	var min_x = grid.keys()[0].x
-	var min_y = grid.keys()[0].y
-	var max_x = min_x
-	var max_y = min_y
-	
-	for grid_pos in grid:
-		min_x = min(min_x, grid_pos.x)
-		min_y = min(min_y, grid_pos.y)
-		max_x = max(max_x, grid_pos.x)
-		max_y = max(max_y, grid_pos.y)
-	
-	building_size = Vector2i(max_x - min_x + 1, max_y - min_y + 1)
 
 func get_available_points_near_position(_position: Vector2, max_distance: float = 30.0) -> Array[Connector]:
 	var temp_points = []

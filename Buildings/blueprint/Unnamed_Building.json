@@ -1,0 +1,94 @@
+{
+	"blocks": {
+		"0": {
+			"base_pos": [
+				84,
+				69
+			],
+			"grid_positions": [
+				[
+					84,
+					69
+				]
+			],
+			"hp": 400.0,
+			"max_hp": 400.0,
+			"name": "small cargo",
+			"path": "res://blocks/auxiliary/small_cargo.tscn",
+			"rotation": 0,
+			"size": [
+				1,
+				1
+			]
+		},
+		"1": {
+			"base_pos": [
+				84,
+				67
+			],
+			"grid_positions": [
+				[
+					84,
+					67
+				],
+				[
+					84,
+					68
+				],
+				[
+					85,
+					67
+				],
+				[
+					85,
+					68
+				]
+			],
+			"hp": 1500.0,
+			"max_hp": 1500.0,
+			"name": "7.5cm Kwak 45 L/70",
+			"path": "res://blocks/firepower/kwak45.tscn",
+			"rotation": 0,
+			"size": [
+				2,
+				2
+			]
+		},
+		"2": {
+			"base_pos": [
+				82,
+				68
+			],
+			"grid_positions": [
+				[
+					82,
+					68
+				],
+				[
+					82,
+					69
+				],
+				[
+					83,
+					68
+				],
+				[
+					83,
+					69
+				]
+			],
+			"hp": 1500.0,
+			"max_hp": 1500.0,
+			"name": "7.5cm Kwak 45 L/70",
+			"path": "res://blocks/firepower/kwak45.tscn",
+			"rotation": 0,
+			"size": [
+				2,
+				2
+			]
+		}
+	},
+	"created_time": "2026-01-28T17:41:01",
+	"name": "Unnamed_Building",
+	"version": "1.0"
+}
