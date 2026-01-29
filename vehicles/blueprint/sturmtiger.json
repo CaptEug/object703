@@ -14,28 +14,6 @@
 		"10": {
 			"base_pos": [
 				4,
-				0
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"11": {
-			"base_pos": [
-				4,
-				1
-			],
-			"name": "armor",
-			"path": "res://blocks/structual/armor.tscn",
-			"rotation": [
-				0.0
-			]
-		},
-		"12": {
-			"base_pos": [
-				4,
 				2
 			],
 			"name": "command cupola",
@@ -44,7 +22,7 @@
 				0.0
 			]
 		},
-		"13": {
+		"11": {
 			"base_pos": [
 				4,
 				3
@@ -55,7 +33,7 @@
 				0.0
 			]
 		},
-		"14": {
+		"12": {
 			"base_pos": [
 				5,
 				0
@@ -66,7 +44,7 @@
 				0.0
 			]
 		},
-		"15": {
+		"13": {
 			"base_pos": [
 				5,
 				1
@@ -77,7 +55,7 @@
 				0.0
 			]
 		},
-		"16": {
+		"14": {
 			"base_pos": [
 				5,
 				2
@@ -88,7 +66,7 @@
 				0.0
 			]
 		},
-		"17": {
+		"15": {
 			"base_pos": [
 				5,
 				3
@@ -99,7 +77,7 @@
 				0.0
 			]
 		},
-		"18": {
+		"16": {
 			"base_pos": [
 				5,
 				4
@@ -110,13 +88,35 @@
 				0.0
 			]
 		},
+		"17": {
+			"base_pos": [
+				2,
+				4
+			],
+			"name": "fueltank",
+			"path": "res://blocks/auxiliary/fueltank.tscn",
+			"rotation": [
+				0
+			]
+		},
+		"18": {
+			"base_pos": [
+				3,
+				4
+			],
+			"name": "fueltank",
+			"path": "res://blocks/auxiliary/fueltank.tscn",
+			"rotation": [
+				0
+			]
+		},
 		"19": {
 			"base_pos": [
 				2,
 				3
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/auxiliary/ammo_rack.tscn",
+			"name": "ammorack",
+			"path": "res://blocks/auxiliary/ammorack.tscn",
 			"rotation": [
 				0
 			]
@@ -137,8 +137,8 @@
 				3,
 				3
 			],
-			"name": "ammo rack",
-			"path": "res://blocks/auxiliary/ammo_rack.tscn",
+			"name": "ammorack",
+			"path": "res://blocks/auxiliary/ammorack.tscn",
 			"rotation": [
 				0
 			]
@@ -200,22 +200,22 @@
 		},
 		"8": {
 			"base_pos": [
-				2,
-				4
+				4,
+				0
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/auxiliary/fuel_tank.tscn",
+			"name": "armor",
+			"path": "res://blocks/structual/armor.tscn",
 			"rotation": [
 				0.0
 			]
 		},
 		"9": {
 			"base_pos": [
-				3,
-				4
+				4,
+				1
 			],
-			"name": "fuel tank",
-			"path": "res://blocks/auxiliary/fuel_tank.tscn",
+			"name": "armor",
+			"path": "res://blocks/structual/armor.tscn",
 			"rotation": [
 				0.0
 			]

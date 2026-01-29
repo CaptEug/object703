@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://db2pifpvswbp"]
-
-[ext_resource type="Script" uid="uid://bp6qvvq40qgik" path="res://blocks/block.gd" id="1_thna4"]
-
-[node name="LiquidPump" type="RigidBody2D"]
-script = ExtResource("1_thna4")
-metadata/_custom_type_script = "uid://bp6qvvq40qgik"

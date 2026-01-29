@@ -1,7 +1,58 @@
-[gd_scene load_steps=2 format=3 uid="uid://b174t40r5evkq"]
+[gd_scene load_steps=6 format=3 uid="uid://dtnan3ybucdfd"]
 
-[ext_resource type="Script" uid="uid://dm2mhbalqusxg" path="res://blocks/auxiliary/liquidtank.gd" id="1_3fy0r"]
+[ext_resource type="Script" uid="uid://uu1nlya6svb7" path="res://blocks/auxiliary/reservoir.gd" id="1_ei61s"]
+[ext_resource type="Texture2D" uid="uid://22scdg581sgy" path="res://assets/blocks_log.png" id="2_l8svx"]
+[ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_0bj2m"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_me5n5"]
+size = Vector2(32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ji2jf"]
+atlas = ExtResource("2_l8svx")
+region = Rect2(0, 0, 32, 32)
 
 [node name="Reservoir" type="RigidBody2D"]
-script = ExtResource("1_3fy0r")
-metadata/_custom_type_script = "uid://dm2mhbalqusxg"
+script = ExtResource("1_ei61s")
+metadata/_custom_type_script = "uid://bp6qvvq40qgik"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_me5n5")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_ji2jf")
+
+[node name="Connector" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(-8, -16)
+rotation = -1.57079
+
+[node name="Connector2" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(8, -16)
+rotation = -1.57079
+location = Vector2i(1, 0)
+
+[node name="Connector3" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(16, -8)
+location = Vector2i(1, 0)
+
+[node name="Connector4" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(16, 8)
+location = Vector2i(1, 1)
+
+[node name="Connector5" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(8, 16)
+rotation = 1.57079
+location = Vector2i(1, 1)
+
+[node name="Connector6" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(-8, 16)
+rotation = 1.57079
+location = Vector2i(0, 1)
+
+[node name="Connector7" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(-16, 8)
+rotation = 3.14159
+location = Vector2i(0, 1)
+
+[node name="Connector8" parent="." instance=ExtResource("3_0bj2m")]
+position = Vector2(-16, -8)
+rotation = -3.14159
