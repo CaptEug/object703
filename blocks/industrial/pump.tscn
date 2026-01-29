@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://db2pifpvswbp"]
+[gd_scene load_steps=7 format=3 uid="uid://db2pifpvswbp"]
 
 [ext_resource type="Script" uid="uid://g6kq6ler602c" path="res://blocks/industrial/pump.gd" id="1_206m0"]
 [ext_resource type="Texture2D" uid="uid://22scdg581sgy" path="res://assets/blocks_log.png" id="2_k3n2d"]
@@ -11,6 +11,10 @@ size = Vector2(16, 16)
 atlas = ExtResource("2_k3n2d")
 region = Rect2(0, 48, 16, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_206m0"]
+atlas = ExtResource("2_k3n2d")
+region = Rect2(16, 48, 16, 16)
+
 [node name="Pump" type="RigidBody2D"]
 script = ExtResource("1_206m0")
 metadata/_custom_type_script = "uid://bp6qvvq40qgik"
@@ -20,6 +24,9 @@ shape = SubResource("RectangleShape2D_w16g7")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_a5tig")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_206m0")
 
 [node name="Connector" parent="." instance=ExtResource("3_i58sw")]
 position = Vector2(8, 0)

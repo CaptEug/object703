@@ -142,10 +142,8 @@ func get_total_liquid_mass(cells:Array[Vector2i]) -> float:
 
 func remove_liquid(cell:Vector2i, mass:float):
 	if not get_celldata(cell):
-		print("Nothing at "+str(cell))
 		return
 	if TileDB.get_tile(layerdata[cell]["matter"])["phase"] != "liquid":
-		print(str(cell)+" is not liauid")
 		return
 	var mass_left = mass
 	while mass_left > 0:
@@ -165,7 +163,6 @@ func remove_liquid(cell:Vector2i, mass:float):
 func add_liquid(cell:Vector2i, matter:String, mass:float):
 	if get_celldata(cell):
 		if layerdata[cell]["matter"] != matter:
-			print("pipe blocked")
 			return
 	var mass_left = mass
 	var tile_added:Array[Vector2i] = []
@@ -184,7 +181,6 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 	while mass_left > 0:
 		var connected_liquid = get_connected_liquid(cell)
 		var closest_cell = find_closest_cell(cell, connected_liquid)
-		print("Closest Cell is "+ str(closest_cell))
 		if closest_cell == null:
 			for c in connected_liquid:
 				layerdata[c]["mass"] += mass / connected_liquid.size()

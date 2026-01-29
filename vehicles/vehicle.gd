@@ -821,7 +821,7 @@ func open_vehicle_panel():
 		var panel = load("res://ui/tankpanel.tscn").instantiate()
 		panel.selected_vehicle = self
 		vehicle_panel = panel
-		#UI.add_child(panel)
+		UI.add_child(panel)
 		while panel.any_overlap():
 			panel.position += Vector2(32, 32)
 
