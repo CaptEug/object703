@@ -6,8 +6,7 @@ const BLOCK_NAME:String = 'maybach HL 250'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 3)
 const MAX_POWER:float = 180.0
-const FUEL_CONSUMPTION:float = 2.0
-const ROTATING_POWER: float = 0.3
+const INPUTS:Dictionary[String, float] = {"petroleum": 2.0}
 const POWER_CHANGE_RATE: float = 60
 
 var description := ""
@@ -21,6 +20,5 @@ func _init():
 	type = TYPE
 	size = SIZE
 	max_power = MAX_POWER
-	rotate_power_ratio = ROTATING_POWER
+	inputs = INPUTS
 	power_change_rate = POWER_CHANGE_RATE
-	fuel_consumption = FUEL_CONSUMPTION

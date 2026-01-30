@@ -4,7 +4,8 @@ extends Block
 # 发动机属性
 var power: float = 0
 var max_power: float
-var fuel_consumption:float #kg/s
+var inputs:Dictionary[String, float] # per second
+var solid_fuel:Dictionary[String, float]
 var power_change_rate: float
 var target_power: float
 var state = {"move": false, "rotate": false}
@@ -18,7 +19,6 @@ var rotate_power_ratio: float = 0.3  # 旋转动力比例 (30%)
 var track_power_target = {}
 var connected_fueltanks:Array[LiquidTank] = []
 var connected_cargos:Array[Cargo] = []
-var total_fuel = 0
 
 func _ready():
 	super._ready()
@@ -31,12 +31,12 @@ func _process(delta: float) -> void:
 	if not functioning:
 		power = 0
 		return
-	
 	if has_fuel():
 		update_power(delta)
 		fuel_reduction(delta)
 	else:
-		power_reduction(delta)
+		on = false
+		power = 0
 	
 	if parent_vehicle:
 		if parent_vehicle.control.get_method() == "":
@@ -64,41 +64,38 @@ func update_power(delta):
 	elif power > target_power:
 		power = max(power - power_change_rate * delta, target_power)
 
-func power_reduction(delta):
-	if power > 0:
-		power = max(power - power_change_rate * delta, 0)
-
-func calculate_power_distribution(forward_input, turn_input):
-	if not parent_vehicle:
-		return
-	var track_power_move = parent_vehicle.balanced_forces
-	var track_power_rotat = parent_vehicle.rotation_forces
-	
-	# 计算总可用功率
-	var available_power = power
-	
-	# 根据输入和状态分配功率
-	for track in track_power_move:
-		var move_component = 0.0
-		var rotate_component = 0.0
-		
-		# 移动功率分量
-		if state["move"]:
-			move_component = track_power_move[track] * available_power * move_power_ratio * forward_input
-		
-		# 旋转功率分量  
-		if state["rotate"]:
-			rotate_component = track_power_rotat[track] * available_power * rotate_power_ratio * turn_input
-		
-		# 总功率 = 移动功率 + 旋转功率
-		track_power_target[track] = move_component + rotate_component
-		
-		# 限制单条履带最大功率（防止过载）
-		track_power_target[track] = clamp(track_power_target[track], -available_power, available_power)
+func load_solid_fuel():
+	for item_id in inputs:
+		if ItemDB.get_item(item_id)["tag"] == "material":
+			for cargo in find_all_connected_cargo():
+				if cargo.check_amount(item_id) > 0:
+					cargo.take_item(item_id, 1)
+					if not solid_fuel.has(item_id):
+						solid_fuel[item_id] = ItemDB.get_item(item_id)["weight"]
+					else:
+						solid_fuel[item_id] += ItemDB.get_item(item_id)["weight"]
 
 func fuel_reduction(delta):
-	pass
-	#if parent_vehicle and connected_fueltanks.size() > 0:
+	for item_id in inputs:
+		var amount_needed = inputs[item_id] * (power/max_power) * delta
+		if ItemDB.get_item(item_id)["tag"] == "material":
+			while solid_fuel[item_id] < amount_needed:
+				load_solid_fuel()
+			solid_fuel[item_id] -= amount_needed
+		elif ItemDB.get_item(item_id)["tag"] == "fuel":
+			var mass_needed = inputs[item_id] * (power/max_power) * delta
+			for tank in find_all_connected_fueltank():
+				if tank.stored_liquid == item_id:
+					if tank.stored_amount >= mass_needed:
+						tank.take_liquid(item_id, mass_needed)
+						mass_needed = 0
+					else:
+						tank.take_liquid(item_id, tank.stored_amount)
+						mass_needed -= tank.stored_amount
+					if mass_needed == 0:
+						break
+				
+		#if parent_vehicle and connected_fueltanks.size() > 0:
 		#var remaining_power = power * (fuel_consumption/max_power)
 		#for tank in connected_fueltanks:
 			#if tank is Fueltank and tank.get_total_fuel() > 0:
@@ -107,15 +104,7 @@ func fuel_reduction(delta):
 				#else:
 					#remaining_power -= tank.get_total_fuel()
 
-# 外部接口 - 设置状态
-func set_movement_state(moving: bool, rotating: bool):
-	state["move"] = moving
-	state["rotate"] = rotating
-
 # 外部接口 - 调整分配比例（可用于不同驾驶模式）
-func set_power_ratios(move_ratio: float, rotate_ratio: float):
-	move_power_ratio = clamp(move_ratio, 0.0, 1.0)
-	rotate_power_ratio = clamp(rotate_ratio, 0.0, 1.0)
 
 func find_all_connected_fueltank():
 	connected_fueltanks.clear()
@@ -132,14 +121,16 @@ func find_all_connected_cargo():
 	return connected_cargos
 
 func has_fuel() -> bool:
-	return false
-	#connected_fueltanks.clear()
-	#find_all_connected_fueltank()
-	#total_fuel = 0
-	#for fueltank in connected_fueltanks:
-		#total_fuel += fueltank.get_total_fuel()
-	#if total_fuel > 0:
-		#return true
-	#else:
-		#on = false
-		#return false
+	for item_id in inputs:
+		var total_mass:float
+		if ItemDB.get_item(item_id)["tag"] == "material":
+			var mass_per_unit:float = ItemDB.get_item(item_id)["weight"]
+			for cargo in find_all_connected_cargo():
+				total_mass += cargo.check_amount(item_id) * mass_per_unit
+		elif ItemDB.get_item(item_id)["tag"] == "fuel":
+			for tank in find_all_connected_fueltank():
+				if tank.stored_liquid == item_id:
+					total_mass += tank.stored_amount
+		if total_mass < inputs[item_id]:
+			return false
+	return true

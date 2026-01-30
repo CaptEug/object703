@@ -24,8 +24,7 @@ var commands:= []
 var vehicle_panel:Panel
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
-var track_target_forces:= {}  # 存储每个履带的目标力
-var track_current_forces:= {} # 存储当前实际施加的力
+var track_forces:= {}  # 存储每个履带的目标力
 var balanced_forces:= {} # 存储直线行驶时的理想出力分布
 var rotation_forces:= {} # 存储纯旋转时的理想出力分布
 var control:Callable
@@ -138,8 +137,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 		
 		if block is Track:
 			tracks.append(block)
-			track_target_forces[block] = 0.0
-			track_current_forces[block] = 0.0
 		elif block is Powerpack:
 			powerpacks.append(block)
 		elif block is Command:
@@ -383,8 +380,6 @@ func clear_existing_blocks():
 	grid.clear()
 	tracks.clear()
 	powerpacks.clear()
-	track_target_forces.clear()
-	track_current_forces.clear()
 
 func get_blueprint_path() -> String:
 	if blueprint is String:
@@ -731,7 +726,6 @@ func update_tracks_state(control_input:Array, delta):
 	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
 		for engine:Powerpack in powerpacks:
-			engine.power_reduction(delta)
 			engine.state["move"] = false
 			engine.state["rotate"] = false
 	else:
@@ -740,39 +734,43 @@ func update_tracks_state(control_input:Array, delta):
 			engine.state["move"] = (forward_input != 0)
 			engine.state["rotate"] = (turn_input != 0)
 	
-	var track_forces = get_track_forces(forward_input, turn_input)
-	if track_forces != null:
-		get_current_engine_power()
-		track_target_forces = track_forces
-		apply_smooth_track_forces(delta)
-
-func get_track_forces(forward_input, turn_input):
-	var combined_power = null
-	for engine:Powerpack in powerpacks:
-		engine.calculate_power_distribution(forward_input, turn_input)
-		if combined_power == null:
-			combined_power = engine.track_power_target.duplicate()
-		else:
-			for track in engine.track_power_target:
-				combined_power[track] += engine.track_power_target[track]
-	return combined_power
-
-func apply_smooth_track_forces(_delta):
-	for track in track_target_forces:
-		var target = track_target_forces[track]
-		if tracks.has(track) and current_engine_power != 0:
-			# 检查履带是否因超载停止工作
-			var track_status = track.get_load_status()
-			if track_status["functioning"]:
-				if abs(target) > 0:
-					track.set_state_force(move_state, target)
-					track_current_forces[track] = target
-				else:
-					track.set_state_force('idle', 0)
+	track_forces = calculate_track_forces(forward_input, turn_input)
+	for track in tracks:
+		var force = track_forces[track]
+		var track_status = track.get_load_status()
+		if track_status["functioning"]:
+			if force != 0:
+				track.set_state_force(move_state, force)
 			else:
-				# 履带停止工作，不提供动力
 				track.set_state_force('idle', 0)
-				track_current_forces[track] = 0.0
+		else:
+			# 履带停止工作，不提供动力
+			track.set_state_force('idle', 0)
+
+
+func calculate_track_forces(forward_input:int, turn_input:int) -> Dictionary:
+	var track_forces:Dictionary = {}
+	var total_power = get_current_engine_power()
+	for track in tracks:
+		var forward_power_ratio = 0.0
+		var rotate_power_ratio = 0.0
+		if (forward_input != 0) and (turn_input != 0):
+			forward_power_ratio = 0.5
+			rotate_power_ratio = 0.5
+		elif forward_input != 0:
+			forward_power_ratio = 1.0
+		elif turn_input != 0:
+			rotate_power_ratio = 1
+		# 移动功率分量
+		var move_component = balanced_forces[track] * total_power * forward_power_ratio * forward_input
+		# 旋转功率分量  
+		var rotate_component = rotation_forces[track] * total_power * rotate_power_ratio * turn_input
+		# 总功率 = 移动功率 + 旋转功率
+		track_forces[track] = move_component + rotate_component
+	return track_forces 
+
+
+
 
 func update_vehicle_size():
 	if grid.is_empty():

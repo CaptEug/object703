@@ -6,8 +6,7 @@ const BLOCK_NAME:String = 'Daimler-littleknight'
 const TYPE:= "Mobility"
 const SIZE:= Vector2(1, 1)
 const MAX_POWER:float = 50.0
-const FUEL_CONSUMPTION:float = 0.5
-const ROTATING_POWER: float = 0.3
+const INPUTS:Dictionary[String, float] = {"petroleum": 0.5}
 const POWER_CHANGE_RATE: float = 10
 
 var description := ""
@@ -20,6 +19,5 @@ func _init():
 	type = TYPE
 	size = SIZE
 	max_power = MAX_POWER
-	rotate_power_ratio = ROTATING_POWER
+	inputs = INPUTS
 	power_change_rate = POWER_CHANGE_RATE
-	fuel_consumption = FUEL_CONSUMPTION
