@@ -21,6 +21,7 @@ func _ready():
 
 
 func _process(delta):
+	print(size)
 	time += delta
 	if selected_vehicle:
 		var color = Color.RED if selected_vehicle.destroyed else Color.GREEN

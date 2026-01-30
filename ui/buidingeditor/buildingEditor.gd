@@ -63,7 +63,7 @@ var ghost_data_map = {}
 # === 地图对齐相关 ===
 var game_map: GameMap
 var tilemap_layer: TileMapLayer
-var building_layer: buildinglayer  # BuildingLayer引用
+var building_layer: BuildingLayer  # BuildingLayer引用
 
 func _ready():
 	# 初始化编辑系统
@@ -110,7 +110,7 @@ func _find_game_map():
 		if game_map:
 			# 查找TileMapLayer和BuildingLayer
 			tilemap_layer = game_map.find_child("GroundLayer") as TileMapLayer
-			building_layer = game_map.find_child("BuildingLayer") as buildinglayer
+			building_layer = game_map.find_child("BuildingLayer") as BuildingLayer
 			
 			# 打印调试信息
 			if building_layer:
@@ -1151,7 +1151,7 @@ func ensure_building_layer():
 		# 尝试从当前场景中获取BuildingLayer
 		var current_scene = get_tree().current_scene
 		if current_scene:
-			building_layer = current_scene.find_child("BuildingLayer") as buildinglayer
+			building_layer = current_scene.find_child("BuildingLayer") as BuildingLayer
 			if building_layer:
 				print("重新获取到BuildingLayer")
 			else:

@@ -10,6 +10,7 @@ var tiles = {
 		"explosive_absorb": 1.0,
 		"drop_item_id": "sandstone",
 		"terrain_int": 1,
+		"color": Color(0.533, 0.212, 0.176)
 	},
 	
 	"hematite":{
@@ -20,6 +21,7 @@ var tiles = {
 		"explosive_absorb": 0.5,
 		"drop_item_id": "hematite",
 		"terrain_int": 2,
+		"color": Color.LIGHT_STEEL_BLUE
 	},
 	
 	# Liquid Tile
@@ -28,7 +30,15 @@ var tiles = {
 		"phase": "liquid",
 		"mass": 1000,
 		"terrain_int": 3,
+		"color": Color(0.149, 0.078, 0.310)
+	},
+	
+	# Function Tile
+	"building":{
+		"layer": "building",
+		"color": Color.YELLOW
 	}
+	
 }
 
 

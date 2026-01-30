@@ -52,7 +52,7 @@ func _ready():
 	for child in get_tree().current_scene.get_children():
 		if child is GameMap:
 			map = child
-			continue
+			break
 	
 	# Initialize physics properties
 	mass = weight/1000

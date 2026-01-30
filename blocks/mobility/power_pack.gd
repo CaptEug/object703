@@ -8,7 +8,6 @@ var inputs:Dictionary[String, float] # per second
 var solid_fuel:Dictionary[String, float]
 var power_change_rate: float
 var target_power: float
-var state = {"move": false, "rotate": false}
 var on:bool = false
 var starting:bool = false
 
@@ -50,7 +49,7 @@ func start():
 
 func update_power(delta):
 	# 根据状态确定目标功率
-	if state["move"] or state["rotate"]:
+	if parent_vehicle.move_state == "move":
 		if not on:
 			start()
 		else:
@@ -94,15 +93,6 @@ func fuel_reduction(delta):
 						mass_needed -= tank.stored_amount
 					if mass_needed == 0:
 						break
-				
-		#if parent_vehicle and connected_fueltanks.size() > 0:
-		#var remaining_power = power * (fuel_consumption/max_power)
-		#for tank in connected_fueltanks:
-			#if tank is Fueltank and tank.get_total_fuel() > 0:
-				#if tank.use_fuel(remaining_power , delta):
-					#return
-				#else:
-					#remaining_power -= tank.get_total_fuel()
 
 # 外部接口 - 调整分配比例（可用于不同驾驶模式）
 

@@ -75,7 +75,7 @@ func _process(delta):
 	handle_delayed_connections()
 	
 	if control:
-		update_tracks_state(control.call(), delta)
+		update_mobility_state(control.call(), delta)
 	
 	update_targets_if_needed()
 	
@@ -719,20 +719,14 @@ func array_zero(size: int) -> Array:
 		arr[i] = 0.0
 	return arr
 
-func update_tracks_state(control_input:Array, delta):
+func update_mobility_state(control_input:Array, delta):
 	var forward_input = control_input[0]
 	var turn_input = control_input[1]
 	
 	if forward_input == 0 and turn_input == 0:
 		move_state = 'idle'
-		for engine:Powerpack in powerpacks:
-			engine.state["move"] = false
-			engine.state["rotate"] = false
 	else:
 		move_state = 'move'
-		for engine:Powerpack in powerpacks:
-			engine.state["move"] = (forward_input != 0)
-			engine.state["rotate"] = (turn_input != 0)
 	
 	track_forces = calculate_track_forces(forward_input, turn_input)
 	for track in tracks:

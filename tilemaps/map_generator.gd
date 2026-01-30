@@ -3,7 +3,7 @@ extends Node2D
 
 @onready var ground:TileMapLayer = $GroundLayer
 @onready var wall:WallLayer = $WallLayer
-@onready var building:buildinglayer = $BuildingLayer
+@onready var building:BuildingLayer = $BuildingLayer
 var world_height:int = 128
 var world_width:int = 128
 
