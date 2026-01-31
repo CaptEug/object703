@@ -13,10 +13,11 @@ func clear_all():
 	is_full = false
 
 func add_liquid(liquid:String, amount:float) -> bool:
-	if stored_liquid != liquid:
+	if not accept_liquid(liquid):
 		return false
 	if amount <= capacity - stored_amount:
 		stored_amount += amount
+		stored_liquid = liquid
 		return true
 	return false
 

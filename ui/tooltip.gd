@@ -23,18 +23,29 @@ func _physics_process(_delta: float) -> void:
 	global_position = get_viewport().get_mouse_position() + Vector2(16, 16)
 	
 	var results = space_state.intersect_point(query)
-	if results.size() > 0:
-		for body in results:
-			if body.collider is Block:
-				show_block(body.collider)
-				return
-			elif body.collider is Pickup:
-				show_pickup(body.collider)
-				return
-			elif body.collider is TileMapLayer:
-				show_tile(body.collider, query.position)
-				return
-				
+	var block:Block
+	var pickup:Pickup
+	var maplayer:TileMapLayer
+
+	for hit in results:
+		var c = hit.collider
+		if c is Block:
+			block = c
+		elif c is Pickup:
+			pickup = c
+		elif c is TileMapLayer:
+			maplayer = c
+
+	if block:
+		show_block(block)
+		return
+	elif pickup:
+		show_pickup(pickup)
+		return
+	elif maplayer:
+		show_tile(maplayer, query.position)
+		return
+	
 	# ---- 鼠标移出或未检测到 ----
 	if visible:
 		visible = false
@@ -63,6 +74,9 @@ func show_block(block:Block):
 	else:
 		_clear_grid()
 	call_deferred("update_panel_size")
+	#LiquidTank
+	if block is LiquidTank:
+		textlabel.text += ("\n" + "%.f" % block.stored_amount + " kg " + block.stored_liquid + " stored")
 	_last_block = block
 
 

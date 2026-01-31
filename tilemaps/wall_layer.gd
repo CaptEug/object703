@@ -4,9 +4,11 @@ extends TileMapLayer
 var layerdata:Dictionary[Vector2i, Dictionary]
 var item_pickup_path = "res://items/item_pickup.tscn"
 var map:Node2D
+var minimap:FloatingPanel
 
 func _ready():
 	map = get_parent()
+	minimap = get_tree().current_scene.find_child("Minimap") as FloatingPanel
 
 
 func _process(delta):
@@ -87,6 +89,7 @@ func destroy_tile(cell:Vector2i):
 	erase_cell(cell)
 	layerdata.erase(cell)
 	BetterTerrain.update_terrain_cell(self, cell, true)
+	minimap.update_cellmap([cell])
 
 
 func spawn_pickup(cell:Vector2i):
@@ -142,10 +145,8 @@ func get_total_liquid_mass(cells:Array[Vector2i]) -> float:
 
 func remove_liquid(cell:Vector2i, mass:float):
 	if not get_celldata(cell):
-		print("Nothing at "+str(cell))
 		return
 	if TileDB.get_tile(layerdata[cell]["matter"])["phase"] != "liquid":
-		print(str(cell)+" is not liauid")
 		return
 	var mass_left = mass
 	while mass_left > 0:
@@ -160,12 +161,11 @@ func remove_liquid(cell:Vector2i, mass:float):
 			erase_cell(farthest_cell)
 			layerdata.erase(farthest_cell)
 			BetterTerrain.update_terrain_cell(self, farthest_cell, true)
-			
+			minimap.update_cellmap([farthest_cell])
 
 func add_liquid(cell:Vector2i, matter:String, mass:float):
 	if get_celldata(cell):
 		if layerdata[cell]["matter"] != matter:
-			print("pipe blocked")
 			return
 	var mass_left = mass
 	var tile_added:Array[Vector2i] = []
@@ -184,7 +184,6 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 	while mass_left > 0:
 		var connected_liquid = get_connected_liquid(cell)
 		var closest_cell = find_closest_cell(cell, connected_liquid)
-		print("Closest Cell is "+ str(closest_cell))
 		if closest_cell == null:
 			for c in connected_liquid:
 				layerdata[c]["mass"] += mass / connected_liquid.size()
@@ -204,8 +203,10 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 			layerdata[closest_cell] = celldata
 			mass_left -= 1000.0
 		tile_added.append(closest_cell)
-	BetterTerrain.set_cells(self, tile_added, TileDB.get_tile(matter)["terrain_int"])
-	BetterTerrain.update_terrain_cells(self, tile_added)
+	if !tile_added.is_empty():
+		BetterTerrain.set_cells(self, tile_added, TileDB.get_tile(matter)["terrain_int"])
+		BetterTerrain.update_terrain_cells(self, tile_added)
+		minimap.update_cellmap(tile_added)
 
 
 func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):

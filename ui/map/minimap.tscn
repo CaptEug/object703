@@ -1,0 +1,70 @@
+[gd_scene load_steps=10 format=3 uid="uid://dtw2v5sc0o4ng"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_auusx"]
+[ext_resource type="Script" uid="uid://b37n3npklkyok" path="res://ui/map/minimap.gd" id="2_auusx"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="2_ki044"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="3_ki044"]
+[ext_resource type="Script" uid="uid://banov6c7pd7i8" path="res://ui/map/map_renderer.gd" id="4_2tcx1"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6e8cr"]
+atlas = ExtResource("2_ki044")
+region = Rect2(240, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_c3in5"]
+texture = SubResource("AtlasTexture_6e8cr")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c3in5"]
+atlas = ExtResource("3_ki044")
+region = Rect2(176, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2tcx1"]
+atlas = ExtResource("3_ki044")
+region = Rect2(192, 16, 16, 16)
+
+[node name="Minimap" type="Panel"]
+offset_right = 320.0
+offset_bottom = 320.0
+theme = ExtResource("1_auusx")
+theme_override_styles/panel = SubResource("StyleBoxTexture_c3in5")
+script = ExtResource("2_auusx")
+metadata/_custom_type_script = "uid://b2dy5mxgwngh6"
+
+[node name="Panel" type="Control" parent="."]
+clip_children = 1
+clip_contents = true
+anchors_preset = 0
+offset_left = 18.0
+offset_top = 16.0
+offset_right = 304.0
+offset_bottom = 302.0
+mouse_filter = 2
+
+[node name="MapRenderer" type="Node2D" parent="Panel"]
+script = ExtResource("4_2tcx1")
+
+[node name="ZoomInButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 288.0
+offset_top = 16.0
+offset_right = 304.0
+offset_bottom = 32.0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_c3in5")
+
+[node name="ZoomOutButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 264.0
+offset_top = 16.0
+offset_right = 280.0
+offset_bottom = 32.0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_2tcx1")
+
+[connection signal="pressed" from="ZoomInButton" to="." method="_on_zoom_in_button_pressed"]
+[connection signal="pressed" from="ZoomOutButton" to="." method="_on_zoom_out_button_pressed"]

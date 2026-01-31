@@ -60,7 +60,7 @@ func _physics_process(delta):
 		
 	# 只有在运动中才更新承重伤害系统
 	if is_moving:
-		update_load_damage(delta)
+		update_overload_damage(delta)
 	
 	apply_track_force()
 	update_track_sprite(delta)
@@ -81,7 +81,7 @@ func destroy():
 			vehicle.tracks.erase(self)
 			vehicle.calculate_balanced_forces()
 
-func update_load_damage(delta: float):
+func update_overload_damage(delta: float):
 	"""更新承重伤害 - 只在运动中造成伤害"""
 	if not functioning or not is_moving:
 		return

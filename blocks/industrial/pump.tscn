@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://db2pifpvswbp"]
+[gd_scene load_steps=11 format=3 uid="uid://db2pifpvswbp"]
 
 [ext_resource type="Script" uid="uid://g6kq6ler602c" path="res://blocks/industrial/pump.gd" id="1_206m0"]
 [ext_resource type="Texture2D" uid="uid://22scdg581sgy" path="res://assets/blocks_log.png" id="2_k3n2d"]
@@ -7,9 +7,56 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_w16g7"]
 size = Vector2(16, 16)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_k3n2d"]
+atlas = ExtResource("2_k3n2d")
+region = Rect2(16, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_206m0"]
+atlas = ExtResource("2_k3n2d")
+region = Rect2(0, 64, 16, 16)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_a5tig"]
+resource_local_to_scene = true
 atlas = ExtResource("2_k3n2d")
 region = Rect2(0, 48, 16, 16)
+
+[sub_resource type="Animation" id="Animation_k3n2d"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture:region")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Rect2(0, 48, 16, 16)]
+}
+
+[sub_resource type="Animation" id="Animation_206m0"]
+resource_name = "pumping"
+length = 0.3
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:texture:region")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [Rect2(0, 48, 16, 16), Rect2(16, 48, 16, 16), Rect2(32, 48, 16, 16)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_i58sw"]
+_data = {
+&"RESET": SubResource("Animation_k3n2d"),
+&"pumping": SubResource("Animation_206m0")
+}
 
 [node name="Pump" type="RigidBody2D"]
 script = ExtResource("1_206m0")
@@ -17,6 +64,12 @@ metadata/_custom_type_script = "uid://bp6qvvq40qgik"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_w16g7")
+
+[node name="Sprite2D3" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_k3n2d")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_206m0")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = SubResource("AtlasTexture_a5tig")
@@ -35,3 +88,8 @@ rotation = 3.14159
 [node name="Connector4" parent="." instance=ExtResource("3_i58sw")]
 position = Vector2(0, -8)
 rotation = -1.57079
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_i58sw")
+}

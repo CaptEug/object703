@@ -19,3 +19,7 @@ func _init():
 	size = SIZE
 	accept = ACCEPT
 	capacity = CAPACITY
+
+func _ready() -> void:
+	super._ready()
+	add_liquid("petroleum", 100.0)
