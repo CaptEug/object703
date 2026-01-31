@@ -53,9 +53,8 @@ func process(delta):
 	
 	# 更新虚影位置
 	if current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
-		var mouse_pos = get_viewport().get_mouse_position()
-		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-		update_ghost_block_position(global_mouse_pos)
+		var mouse_pos = editor.get_mouse_global_position()
+		update_ghost_block_position(mouse_pos)
 
 # === 方块放置核心功能 ===
 func start_block_placement(scene_path: String):
@@ -63,7 +62,7 @@ func start_block_placement(scene_path: String):
 		return
 	
 	if current_ghost_block:
-		current_ghost_block.queue_free()
+		editor.cleanup_ghost_block(current_ghost_block)
 		current_ghost_block = null
 	
 	current_block_scene = load(scene_path)
@@ -80,43 +79,17 @@ func start_block_placement(scene_path: String):
 	current_ghost_block.base_rotation_degree = 0
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
-	setup_ghost_block_collision(current_ghost_block)
+	editor.setup_ghost_block_collision_for_editing(current_ghost_block)
 	
 	reset_connection_indices()
 	current_snap_config = {}
 	
 	# 立即更新一次位置
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	update_ghost_block_position(global_mouse_pos)
-
-func setup_ghost_block_collision(ghost: Node2D):
-	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
-	for shape in collision_shapes:
-		shape.disabled = true
-	
-	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
-	for poly in collision_polygons:
-		poly.disabled = true
-	
-	if ghost is RigidBody2D:
-		ghost.freeze = true
-		ghost.collision_layer = 0
-		ghost.collision_mask = 0
+	var mouse_pos = editor.get_mouse_global_position()
+	update_ghost_block_position(mouse_pos)
 
 func update_ghost_block_position(mouse_position: Vector2):
-	if mouse_position != null and tile != null:
-		mouse_position = tile.map_to_local(tile.local_to_map(mouse_position)) 
-	if current_ghost_block.rotation_degrees == 90 or -90:
-		if current_ghost_block.size.x % 2 == 0:
-			mouse_position.y += 8
-		if current_ghost_block.size.y % 2 == 0:
-			mouse_position.x += 8
-	else :
-		if current_ghost_block.size.x % 2 == 0:
-			mouse_position.x += 8
-		if current_ghost_block.size.y % 2 == 0:
-			mouse_position.y += 8
+	mouse_position = editor.update_ghost_position_common(current_ghost_block, mouse_position)
 	
 	if not current_ghost_block or not selected_building:
 		return
@@ -152,14 +125,7 @@ func update_ghost_block_position(mouse_position: Vector2):
 		current_snap_config = {}
 
 func get_ghost_block_available_connection_points() -> Array[Connector]:
-	var points: Array[Connector] = []
-	if current_ghost_block:
-		var connection_points = current_ghost_block.get_available_connection_points()
-		for point in connection_points:
-			if point is Connector:
-				point.qeck = false
-				points.append(point)
-	return points
+	return editor.get_available_connection_points(current_ghost_block, "Connector") as Array[Connector]
 
 func get_current_snap_config() -> Dictionary:
 	if available_building_points.is_empty() or available_ghost_points.is_empty():
@@ -190,9 +156,8 @@ func find_best_snap_config() -> Dictionary:
 				continue
 			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
 			var ghost_position = building_point_global - ghost_local_offset
-			var mouse_pos = get_viewport().get_mouse_position()
-			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-			var distance = global_mouse_pos.distance_to(ghost_position)
+			var mouse_pos = editor.get_mouse_global_position()
+			var distance = mouse_pos.distance_to(ghost_position)
 			if distance < min_distance:
 				best_building_pos = building_point
 				best_ghost_pos = ghost_point
@@ -243,9 +208,8 @@ func rotate_ghost_connection():
 	
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	update_ghost_block_position(global_mouse_pos)
+	var mouse_pos = editor.get_mouse_global_position()
+	update_ghost_block_position(mouse_pos)
 
 func try_place_block():
 	if not current_ghost_block or not selected_building:
@@ -306,24 +270,7 @@ func calculate_free_grid_positions(block: Block) -> Array:
 	var grid_y = int(round(world_pos.y / GRID_SIZE))
 	
 	var block_size = block.size
-	for x in range(block_size.x):
-		for y in range(block_size.y):
-			var grid_pos: Vector2i
-			match int(block.base_rotation_degree):
-				0:
-					grid_pos = Vector2i(grid_x + x, grid_y + y)
-				90:
-					grid_pos = Vector2i(grid_x - y, grid_y + x)
-				-90:
-					grid_pos = Vector2i(grid_x + y, grid_y - x)
-				180, -180:
-					grid_pos = Vector2i(grid_x - x, grid_y - y)
-				_:
-					grid_pos = Vector2i(grid_x + x, grid_y + y)
-			
-			grid_positions.append(grid_pos)
-	
-	return grid_positions
+	return editor.calculate_grid_positions_common(Vector2i(grid_x, grid_y), block.base_rotation_degree, block_size)
 
 func start_block_placement_with_rotation(scene_path: String):
 	if not editor.is_editing or not selected_building:
@@ -332,7 +279,7 @@ func start_block_placement_with_rotation(scene_path: String):
 	var base_rotation_degree = current_ghost_block.base_rotation_degree
 	
 	if current_ghost_block:
-		current_ghost_block.queue_free()
+		editor.cleanup_ghost_block(current_ghost_block)
 		current_ghost_block = null
 	
 	current_block_scene = load(scene_path)
@@ -349,15 +296,14 @@ func start_block_placement_with_rotation(scene_path: String):
 	current_ghost_block.base_rotation_degree = base_rotation_degree
 	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
 	
-	setup_ghost_block_collision(current_ghost_block)
+	editor.setup_ghost_block_collision_for_editing(current_ghost_block)
 	
 	reset_connection_indices()
 	current_snap_config = {}
 	
 	# 立即更新一次位置
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	update_ghost_block_position(global_mouse_pos)
+	var mouse_pos = editor.get_mouse_global_position()
+	update_ghost_block_position(mouse_pos)
 
 func establish_connection(building_point: Connector, new_block: Block, ghost_point: Connector):
 	var new_block_points = new_block.find_children("*", "Connector")
@@ -513,12 +459,11 @@ func enable_connection_points_for_blocks(blocks: Array):
 func try_remove_block():
 	if not selected_building:
 		return
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	var mouse_pos = editor.get_mouse_global_position()
 	
 	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = global_mouse_pos
+	query.position = mouse_pos
 	query.collision_mask = 1
 	
 	var result = space_state.intersect_point(query)
@@ -570,7 +515,7 @@ func get_affected_blocks_for_removal(removed_block: Block) -> Array:
 
 func cancel_placement():
 	if current_ghost_block:
-		current_ghost_block.queue_free()
+		editor.cleanup_ghost_block(current_ghost_block)
 		current_ghost_block = null
 	current_block_scene = null
 	current_snap_config = {}

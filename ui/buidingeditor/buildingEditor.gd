@@ -444,8 +444,8 @@ func _process(delta):
 	if is_editing and selected_building:
 		update_all_block_colors()
 
-	building_editing_system.process(delta)
-	turret_editing_system.process(delta)
+	#building_editing_system.process(delta)
+	#turret_editing_system.process(delta)
 	
 	# 更新建筑信息显示
 	update_building_info_display()
@@ -1538,3 +1538,91 @@ func _save_json_file_immediately(file_path: String, data: Dictionary):
 	else:
 		print("错误: 无法保存JSON文件: ", file_path)
 		print("错误代码: ", FileAccess.get_open_error())
+
+# === 通用辅助函数（提取到主系统中）===
+func setup_ghost_block_collision_for_editing(ghost: Node2D, is_turret: bool = false):
+	"""通用虚影方块碰撞设置"""
+	# 禁用所有碰撞形状
+	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
+	for shape in collision_shapes:
+		shape.disabled = true
+	
+	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
+	for poly in collision_polygons:
+		poly.disabled = true
+	
+	if ghost is RigidBody2D:
+		ghost.freeze = true
+		ghost.collision_layer = 0
+		ghost.collision_mask = 0
+	
+	# 如果是Block，设置do_connect为false
+	if ghost is Block:
+		ghost.do_connect = false
+	
+	# 如果是炮塔模式，设置额外的碰撞层
+	if is_turret and ghost is CollisionObject2D:
+		ghost.set_layer(2)
+		ghost.collision_mask = 2
+
+func cleanup_ghost_block(ghost_block: Node2D):
+	"""清理虚影方块"""
+	if ghost_block and is_instance_valid(ghost_block):
+		ghost_block.queue_free()
+
+func get_mouse_global_position() -> Vector2:
+	"""获取鼠标的全局位置"""
+	var mouse_pos = get_viewport().get_mouse_position()
+	return get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+
+func update_ghost_position_common(ghost_block: Node2D, mouse_position: Vector2):
+	"""通用的虚影位置更新逻辑"""
+	if tilemap_layer != null:
+		mouse_position = tilemap_layer.map_to_local(tilemap_layer.local_to_map(mouse_position)) 
+	
+	if ghost_block.rotation_degrees == 90 or -90:
+		if ghost_block.size.x % 2 == 0:
+			mouse_position.y += 8
+		if ghost_block.size.y % 2 == 0:
+			mouse_position.x += 8
+	else:
+		if ghost_block.size.x % 2 == 0:
+			mouse_position.x += 8
+		if ghost_block.size.y % 2 == 0:
+			mouse_position.y += 8
+	
+	return mouse_position
+
+func get_available_connection_points(block: Node2D, point_type: String = "Connector") -> Array:
+	"""通用获取连接点函数"""
+	var points = []
+	if block:
+		var connection_points = block.get_available_connection_points()
+		for point in connection_points:
+			if point.is_class(point_type):
+				points.append(point)
+	return points
+
+func calculate_grid_positions_common(base_pos: Vector2i, rotation_deg: float, block_size: Vector2i) -> Array:
+	"""通用网格位置计算"""
+	var grid_positions = []
+	
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			var grid_pos: Vector2i
+			
+			match int(rotation_deg):
+				0:
+					grid_pos = base_pos + Vector2i(x, y)
+				90:
+					grid_pos = base_pos + Vector2i(-y, x)
+				-90:
+					grid_pos = base_pos + Vector2i(y, -x)
+				180, -180:
+					grid_pos = base_pos + Vector2i(-x, -y)
+				_:
+					grid_pos = base_pos + Vector2i(x, y)
+			
+			grid_positions.append(grid_pos)
+	
+	return grid_positions

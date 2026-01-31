@@ -1,4 +1,4 @@
-class_name buildinglayer
+class_name Buildinglayer
 extends TileMapLayer
 
 var layerdata: Dictionary[Vector2i, Dictionary]
