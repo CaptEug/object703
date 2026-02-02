@@ -604,8 +604,8 @@ func calculate_rotated_grid_positions_turret(turret_point: Connector, ghost_poin
 	var grid_b_pos = {}
 	
 	for key in current_editing_turret.turret_grid:
-		if current_editing_turret.turret_grid[key] == turret_point.find_parent_block():
-			grid_b[key] = current_editing_turret.turret_grid[key]
+		if current_editing_turret.turret_grid[key]["block"]== turret_point.find_parent_block():
+			grid_b[key] = current_editing_turret.turret_grid[key]["block"]
 	
 	grid_b_pos = get_rectangle_corners_turret(grid_b)
 	var grid_connect_g

@@ -683,7 +683,7 @@ func find_and_select_vehicle():
 		if canvas_layer:
 			var panels = canvas_layer.get_children()
 			for i in range(panels.size() - 1, -1, -1):
-				if panels[i] is FloatingPanel and panels[i].selected_vehicle != null and panels[i].visible == true:
+				if panels[i] is TankPanel and panels[i].selected_vehicle != null and panels[i].visible == true:
 					panel_instance = panels[i]
 					break
 	if testground and panel_instance:

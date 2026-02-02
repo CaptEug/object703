@@ -488,8 +488,8 @@ func calculate_rotated_grid_positions(vehiclepoint, ghostpoint):
 	var grid_b_pos = {}
 	
 	for key in selected_vehicle.grid:
-		if selected_vehicle.grid[key] == vehiclepoint.find_parent_block():
-			grid_b[key] = selected_vehicle.grid[key]
+		if selected_vehicle.grid[key]["block"] == vehiclepoint.find_parent_block():
+			grid_b[key] = selected_vehicle.grid[key]["block"]
 	
 	grid_b_pos = get_rectangle_corners(grid_b)
 	var grid_connect_g
@@ -686,7 +686,7 @@ func get_block_grid_positions(block: Block) -> Array:
 	var grid_positions = []
 	
 	for grid_pos in selected_vehicle.grid:
-		if selected_vehicle.grid[grid_pos] == block:
+		if selected_vehicle.grid[grid_pos]["block"] == block:
 			grid_positions.append(grid_pos)
 	
 	return grid_positions
