@@ -35,8 +35,7 @@ func handle_left_click():
 	if editor.is_ui_interaction:
 		return
 	
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	var mouse_pos = editor.get_mouse_global_position()
 	
 	if current_ghost_block:
 		var can_place = turret_snap_config and not turret_snap_config.is_empty()
@@ -49,7 +48,7 @@ func handle_left_click():
 		if editor.is_recycle_mode:
 			try_remove_turret_block()
 		else:
-			var clicked_turret = get_turret_at_position(global_mouse_pos)
+			var clicked_turret = get_turret_at_position(mouse_pos)
 			
 			if clicked_turret and clicked_turret != current_editing_turret:
 				exit_turret_editing_mode()
@@ -121,7 +120,7 @@ func start_block_placement(scene_path: String):
 		return
 	
 	if current_ghost_block:
-		current_ghost_block.queue_free()
+		editor.cleanup_ghost_block(current_ghost_block)
 		current_ghost_block = null
 	
 	current_block_scene = load(scene_path)
@@ -135,32 +134,12 @@ func start_block_placement(scene_path: String):
 	current_ghost_block.z_index = 1000
 	current_ghost_block.do_connect = false
 	
-	# 在炮塔编辑模式下设置碰撞层
-	if current_ghost_block is CollisionObject2D:
-		current_ghost_block.set_layer(2)
-		current_ghost_block.collision_mask = 2
+	editor.setup_ghost_block_collision_for_editing(current_ghost_block, true)
 	
 	current_ghost_block.base_rotation_degree = 0
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
-	setup_ghost_block_collision(current_ghost_block)
-	
 	turret_snap_config = {}
-
-func setup_ghost_block_collision(ghost: Node2D):
-	# 禁用所有碰撞形状
-	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
-	for shape in collision_shapes:
-		shape.disabled = true
-	
-	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
-	for poly in collision_polygons:
-		poly.disabled = true
-	
-	if ghost is RigidBody2D:
-		ghost.freeze = true
-		ghost.collision_layer = 0
-		ghost.collision_mask = 0
 
 func rotate_ghost_connection():
 	if not current_ghost_block:
@@ -172,13 +151,12 @@ func rotate_ghost_connection():
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
 	# 旋转后重新计算吸附
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	update_turret_editing_snap_system(global_mouse_pos)
+	var mouse_pos = editor.get_mouse_global_position()
+	update_turret_editing_snap_system(mouse_pos)
 
 func cancel_placement():
 	if current_ghost_block:
-		current_ghost_block.queue_free()
+		editor.cleanup_ghost_block(current_ghost_block)
 		current_ghost_block = null
 	current_block_scene = null
 	turret_snap_config = {}
@@ -190,10 +168,8 @@ func update_turret_placement_feedback():
 	if not is_turret_editing_mode or not current_ghost_block or not current_editing_turret:
 		return
 	
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	
-	update_turret_editing_snap_system(global_mouse_pos)
+	var mouse_pos = editor.get_mouse_global_position()
+	update_turret_editing_snap_system(mouse_pos)
 
 func update_turret_editing_snap_system(mouse_position: Vector2):
 	if not is_turret_editing_mode or not current_ghost_block or not current_editing_turret:
@@ -392,10 +368,9 @@ func try_remove_turret_block():
 	if not is_turret_editing_mode or not current_editing_turret:
 		return
 		
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	var mouse_pos = editor.get_mouse_global_position()
 	
-	var block_to_remove = get_turret_block_at_position(global_mouse_pos)
+	var block_to_remove = get_turret_block_at_position(mouse_pos)
 	
 	if block_to_remove and block_to_remove != current_editing_turret:
 		# === 重要：删除炮塔方块前获取网格位置 ===
@@ -510,7 +485,7 @@ func start_block_placement_with_rotation(scene_path: String):
 	var base_rotation_degree = current_ghost_block.base_rotation_degree
 	
 	if current_ghost_block:
-		current_ghost_block.queue_free()
+		editor.cleanup_ghost_block(current_ghost_block)
 		current_ghost_block = null
 	
 	current_block_scene = load(scene_path)
@@ -524,14 +499,10 @@ func start_block_placement_with_rotation(scene_path: String):
 	current_ghost_block.z_index = 1000
 	current_ghost_block.do_connect = false
 	
-	if current_ghost_block is CollisionObject2D:
-		current_ghost_block.set_layer(2)
-		current_ghost_block.collision_mask = 2
+	editor.setup_ghost_block_collision_for_editing(current_ghost_block, true)
 	
 	current_ghost_block.base_rotation_degree = base_rotation_degree
 	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
-	
-	setup_ghost_block_collision(current_ghost_block)
 	
 	turret_snap_config = {}
 
@@ -769,28 +740,10 @@ func get_turret_block_connection_points() -> Array[Connector]:
 	return points
 
 func get_ghost_block_rigidbody_connectors() -> Array[TurretConnector]:
-	var points: Array[TurretConnector] = []
-	
-	if not current_ghost_block:
-		return points
-	
-	# 确保我们找到的是正确的连接点类型
-	for connector in current_ghost_block.find_children("*", "TurretConnector", true):
-		if (connector is TurretConnector and 
-			connector.is_connection_enabled and 
-			connector.connected_to == null):
-			points.append(connector)
-	
-	return points
+	return editor.get_available_connection_points(current_ghost_block, "TurretConnector") as Array[TurretConnector]
 
 func get_ghost_block_connection_points() -> Array[Connector]:
-	var points: Array[Connector] = []
-	if current_ghost_block:
-		var connection_points = current_ghost_block.get_available_connection_points()
-		for point in connection_points:
-			if point is Connector:
-				points.append(point)
-	return points
+	return editor.get_available_connection_points(current_ghost_block, "Connector") as Array[Connector]
 
 # === 刚性体吸附系统 ===
 func calculate_rigidbody_snap_config(turret_point: TurretConnector, ghost_point: TurretConnector) -> Dictionary:
