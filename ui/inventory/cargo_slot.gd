@@ -17,6 +17,7 @@ var drag_origin_pos := Vector2.ZERO
 var drag_source_item: Dictionary = {}    # 当前拖拽物（独立于 item_data）
 var drag_from_slot_ref: Node = null      # 源 slot（通常是 self，拆分也来自 self）
 var drag_is_split: bool = false          # 是否为拆分产生的拖拽物
+var slot_under_mouse = null
 
 
 # ============================================================
@@ -56,6 +57,8 @@ func update_slot_display() -> void:
 		var count = item_data.get("count", 1)
 		count_label.text = str(count)
 		count_label.visible = count > 0
+		if is_dragging:
+			_end_drag()
 		show_current_icon()
 
 
@@ -136,6 +139,33 @@ func _update_drag() -> void:
 	if drag_preview:
 		# 让预览中心偏移一点，看起来更自然
 		drag_preview.global_position = get_viewport().get_mouse_position() - Vector2(24, 24)
+		var mouse_pos = get_viewport().get_mouse_position()
+		var current_slot_under_mouse = _get_slot_under_mouse(mouse_pos)
+		if current_slot_under_mouse:
+			if slot_under_mouse:
+				if current_slot_under_mouse.name != slot_under_mouse.name:
+					slot_under_mouse.hide_forbid()
+					slot_under_mouse = current_slot_under_mouse
+					if not _check_slot_availability(slot_under_mouse):
+						slot_under_mouse.show_forbid()
+			else:
+				slot_under_mouse = current_slot_under_mouse
+				if not _check_slot_availability(slot_under_mouse):
+						slot_under_mouse.show_forbid()
+
+			
+				
+		elif slot_under_mouse:
+			slot_under_mouse.hide_forbid()
+			
+func _check_slot_availability(slot) -> bool:
+	return slot and slot != drag_from_slot_ref
+
+func show_forbid() -> void:
+	$ForbidIcon.modulate.a = 1.0
+	
+func hide_forbid() -> void:
+	$ForbidIcon.modulate.a = 0.0
 
 func _end_drag() -> void:
 	if not is_dragging:
@@ -145,7 +175,7 @@ func _end_drag() -> void:
 	var mouse_pos = get_viewport().get_mouse_position()
 	var target_slot = _get_slot_under_mouse(mouse_pos)
 
-	if target_slot and target_slot != drag_from_slot_ref:
+	if _check_slot_availability(target_slot):
 		_perform_drop(target_slot)
 	else:
 		# 放回原位（如果拆分则不需要恢复源，因为源已在拆分时更新）
