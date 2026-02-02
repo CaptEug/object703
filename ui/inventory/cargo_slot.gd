@@ -141,31 +141,28 @@ func _update_drag() -> void:
 		drag_preview.global_position = get_viewport().get_mouse_position() - Vector2(24, 24)
 		var mouse_pos = get_viewport().get_mouse_position()
 		var current_slot_under_mouse = _get_slot_under_mouse(mouse_pos)
+		
 		if current_slot_under_mouse:
-			if slot_under_mouse:
-				if current_slot_under_mouse.name != slot_under_mouse.name:
-					slot_under_mouse.hide_forbid()
-					slot_under_mouse = current_slot_under_mouse
-					if not _check_slot_availability(slot_under_mouse):
-						slot_under_mouse.show_forbid()
-			else:
-				slot_under_mouse = current_slot_under_mouse
-				if not _check_slot_availability(slot_under_mouse):
-						slot_under_mouse.show_forbid()
+			if slot_under_mouse and current_slot_under_mouse.name != slot_under_mouse.name:
+				slot_under_mouse.hide_forbid()
 
-			
-				
+			slot_under_mouse = current_slot_under_mouse
+			if not _check_slot_availability(slot_under_mouse):
+				slot_under_mouse.show_forbid()
+					
 		elif slot_under_mouse:
 			slot_under_mouse.hide_forbid()
 			
-func _check_slot_availability(slot) -> bool:
-	return slot and slot != drag_from_slot_ref
+func _check_slot_availability(target_slot) -> bool:
+	var source_item = drag_source_item
+	var source_item_tag = ItemDB.get_item(source_item["id"])["tag"]
+	return source_item_tag in target_slot.accept or "ALL" in target_slot.accept
 
 func show_forbid() -> void:
-	$ForbidIcon.modulate.a = 1.0
+	$ForbidIcon.visible = true
 	
 func hide_forbid() -> void:
-	$ForbidIcon.modulate.a = 0.0
+	$ForbidIcon.visible = false
 
 func _end_drag() -> void:
 	if not is_dragging:
@@ -175,7 +172,7 @@ func _end_drag() -> void:
 	var mouse_pos = get_viewport().get_mouse_position()
 	var target_slot = _get_slot_under_mouse(mouse_pos)
 
-	if _check_slot_availability(target_slot):
+	if target_slot and target_slot != drag_from_slot_ref:
 		_perform_drop(target_slot)
 	else:
 		# 放回原位（如果拆分则不需要恢复源，因为源已在拆分时更新）
@@ -208,6 +205,9 @@ func _perform_drop(target_slot: Node) -> void:
 	if not target_slot:
 		return
 
+	if slot_under_mouse:
+		slot_under_mouse.hide_forbid()
+		slot_under_mouse = null
 	var source_item = drag_source_item
 	var source_item_tag = ItemDB.get_item(source_item["id"])["tag"]
 	var target_item = target_slot.item_data if target_slot.item_data != null else {}
