@@ -495,7 +495,7 @@ func get_global_mass_center() -> Vector2:
 		return Vector2.ZERO
 	
 	var first_grid_pos = grid.keys()[0]
-	var first_block = grid[first_grid_pos]
+	var first_block = grid[first_grid_pos]["block"]
 	var first_grid_positions = get_block_grid(first_block)
 	
 	if first_block is Block:
