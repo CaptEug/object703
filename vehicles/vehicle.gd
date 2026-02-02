@@ -152,8 +152,35 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 		block.position = local_pos
 		await block.connect_aready()
 		
+		# 预计算块的连接点位置到方向的映射
+		var connection_map = {}
+		for point in block.connection_points:
+			if point is Connector:
+				var local_pos_key = point.location
+				if not connection_map.has(local_pos_key):
+					connection_map[local_pos_key] = []
+				
+				var total_rotation = point.global_rotation_degrees + block.base_rotation_degree
+				var dir = block.get_direction_from_rotation(total_rotation)
+				connection_map[local_pos_key].append(dir)
+		
 		for pos in grid_positions:
-			grid[pos] = block
+			# 计算局部网格位置
+			var local_grid_pos = pos - block.base_pos
+			
+			# 获取该位置的连接方向列表
+			var dir_list = connection_map.get(local_grid_pos, [])
+			
+			# 创建连接状态数组
+			var connections = [false, false, false, false]
+			for dir in dir_list:
+				if dir >= 0 and dir < connections.size():
+					connections[dir] = true
+			
+			grid[pos] = {
+				"block": block,
+				"connections": connections
+			}
 		
 		block.set_connection_enabled(true)
 	
@@ -173,9 +200,10 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		total_blocks.erase(block)
 		block.queue_free()
 	
+	# 修改：遍历grid查找要删除的块
 	var keys_to_erase = []
 	for pos in grid:
-		if grid[pos] == block:
+		if grid[pos]["block"] == block:
 			keys_to_erase.append(pos)
 	for pos in keys_to_erase:
 		grid.erase(pos)
@@ -392,10 +420,20 @@ func get_blueprint_path() -> String:
 
 func get_block_grid(block:Block) -> Array:
 	var positions:Array
-	for pos in grid.keys():
-		if grid[pos] == block and not positions.has(pos):
+	for pos in grid:
+		if grid[pos]["block"] == block and not positions.has(pos):
 			positions.append(pos)
 	return positions
+
+func get_block_at_grid_position(pos: Vector2i) -> Block:
+	if grid.has(pos):
+		return grid[pos]["block"]
+	return null
+
+func get_connections_at_grid_position(pos: Vector2i) -> Array[bool]:
+	if grid.has(pos):
+		return grid[pos]["connections"]
+	return [false, false, false, false]
 
 func calculate_center_of_mass() -> Vector2:
 	if not cached_center_of_mass_dirty:
@@ -407,7 +445,7 @@ func calculate_center_of_mass() -> Vector2:
 	
 	for grid_pos in grid:
 		if grid[grid_pos] != null:
-			var body: Block = grid[grid_pos]
+			var body: Block = grid[grid_pos]["block"]
 			if blocks.has(body):
 				if has_calculated.get(body.get_instance_id(), false):
 					continue

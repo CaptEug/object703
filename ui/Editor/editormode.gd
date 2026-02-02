@@ -258,28 +258,25 @@ func _set_font_sizes(size: int):
 # === 车辆信息显示 ===
 func update_vehicle_info_display():
 	if not is_editing or not selected_vehicle:
-		show_editor_info()
 		return
 	
 	_set_font_sizes(8)
-	
 	var stats = _calculate_vehicle_stats()
 	var load_status = _calculate_load_status()
-	
+	#
 	# 确保BBCode启用
 	description_label.bbcode_enabled = true
-	
 	# 使用clear()然后重新构建文本
 	description_label.clear()
-	
-	# 使用append_text逐步添加内容
+	#
+	## 使用append_text逐步添加内容
 	description_label.append_text("Name: %s\n" % (selected_vehicle.vehicle_name if selected_vehicle.vehicle_name else "Unnamed"))
 	description_label.append_text("ID: %s\n\n" % selected_vehicle.name)
-	
-	# 重量/载重显示
+	#
+	## 重量/载重显示
 	var weight_text = "Weight/Load: %.1f / %.1f T" % [stats.total_weight, load_status["total_capacity"]]
-	
-	# 检查是否超载
+	#
+	## 检查是否超载
 	if stats.total_weight/load_status["total_capacity"] > 1:
 		description_label.append_text("[color=#FF0000]")
 		description_label.append_text(weight_text)
@@ -287,8 +284,8 @@ func update_vehicle_info_display():
 	else:
 		# 正常显示
 		description_label.append_text(weight_text)
-	
-	# 换行
+	#
+	## 换行
 	description_label.append_text("\n\n")
 	
 	description_label.append_text("MAX Engine Power: %.1f kN\n\n" % stats.total_engine_power)
@@ -296,6 +293,7 @@ func update_vehicle_info_display():
 	# 功率重量比
 	var pwr_text = "Power/Weight: %.2f kN/T" % stats.power_to_weight_ratio
 	description_label.append_text(pwr_text)
+	pass
 
 func _calculate_load_status() -> Dictionary:
 	if not selected_vehicle:
@@ -346,26 +344,6 @@ func _calculate_vehicle_stats() -> Dictionary:
 		"total_engine_power": total_engine_power,
 		"power_to_weight_ratio": power_to_weight_ratio
 	}
-
-func show_editor_info():
-	description_label.text = "[b]TankEditor - Vehicle Builder[/b]\n\n"
-	description_label.append_text("Hotkeys:\n")
-	description_label.append_text("• B: Enter/Exit Edit Mode\n")
-	description_label.append_text("• R: Rotate Block\n")
-	description_label.append_text("• X: Toggle Delete Mode\n")
-	description_label.append_text("• T: Toggle Blueprint Display\n")
-	description_label.append_text("• ESC: Cancel Operation\n")
-	description_label.append_text("• F: Repair Vehicle\n")
-	description_label.append_text("• N: New Vehicle\n")
-	description_label.append_text("• L: Load Mode\n\n")
-	
-	description_label.append_text("[b]Edit Mode[/b]\n")
-	if is_vehicle_mode:
-		description_label.append_text("Current: Hull Edit Mode\n")
-		description_label.append_text("Click turret to edit turret\n")
-	else:
-		description_label.append_text("Current: Turret Edit Mode\n")
-		description_label.append_text("Right-click to exit turret edit\n")
 
 # === 输入处理 ===
 func _input(event):

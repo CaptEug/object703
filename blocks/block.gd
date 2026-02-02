@@ -533,3 +533,26 @@ func get_actual_center_of_mass(geometric_center: Vector2) -> Vector2:
 	var rotated_offset = center_of_mass_offset.rotated(rotation_rad)
 	
 	return geometric_center + rotated_offset
+
+func get_connections_at_position(local_grid_pos: Vector2i) -> Array[bool]:
+	var connections = [false, false, false, false]
+	
+	for point in connection_points:
+		if point is Connector and point.location == local_grid_pos:
+			var total_rotation = point.global_rotation_degrees + base_rotation_degree
+			var dir = get_direction_from_rotation(total_rotation)
+			if dir >= 0 and dir < connections.size():
+				connections[dir] = true
+	
+	return connections
+
+func get_direction_from_rotation(rotation_degrees: float) -> int:
+	var normalized = fmod(rotation_degrees + 360, 360)
+	if normalized >= 315 or normalized < 45:
+		return 0  # Right
+	elif normalized >= 45 and normalized < 135:
+		return 1  # Down
+	elif normalized >= 135 and normalized < 225:
+		return 2  # Left
+	else:  # 225-315
+		return 3  # Up

@@ -63,7 +63,7 @@ var ghost_data_map = {}
 # === 地图对齐相关 ===
 var game_map: GameMap
 var tilemap_layer: TileMapLayer
-var building_layer: BuildingLayer  # BuildingLayer引用
+var building_layer: BuildingLayer
 
 func _ready():
 	# 初始化编辑系统
@@ -248,9 +248,8 @@ func _set_font_sizes(size: int):
 # === 建筑信息显示 ===
 func update_building_info_display():
 	if not is_editing or not selected_building:
-		show_editor_info()
 		return
-	
+
 	_set_font_sizes(8)
 	
 	var stats = _calculate_building_stats()
@@ -275,6 +274,7 @@ func update_building_info_display():
 		description_label.append_text("\n[b]Mode: Building Edit[/b]")
 	else:
 		description_label.append_text("\n[b]Mode: Turret Edit[/b]")
+	pass
 
 func _calculate_building_stats() -> Dictionary:
 	if not selected_building:
@@ -287,33 +287,6 @@ func _calculate_building_stats() -> Dictionary:
 		"is_destroyed": selected_building.destroyed,
 		"block_count": selected_building.blocks.size()
 	}
-
-func show_editor_info():
-	description_label.text = "[b]BuildingEditor - Structure Builder[/b]\n\n"
-	description_label.append_text("Hotkeys:\n")
-	description_label.append_text("• B: Enter/Exit Edit Mode (新建建筑)\n")
-	description_label.append_text("• R: Rotate Block\n")
-	description_label.append_text("• X: Toggle Delete Mode\n")
-	description_label.append_text("• T: Toggle Blueprint Display\n")
-	description_label.append_text("• ESC: Cancel Operation\n")
-	description_label.append_text("• F: Repair Building\n")
-	description_label.append_text("• L: Load Saved Building\n")
-	description_label.append_text("\n")
-	
-	description_label.append_text("[b]Quick Start:[/b]\n")
-	description_label.append_text("1. 按 B 键新建一个建筑\n")
-	description_label.append_text("2. 从左侧选择方块放置\n")
-	description_label.append_text("3. 按 R 旋转方块方向\n")
-	description_label.append_text("4. 按 B 再次退出编辑模式\n")
-	description_label.append_text("\n")
-	
-	description_label.append_text("[b]Edit Mode[/b]\n")
-	if is_building_mode:
-		description_label.append_text("Current: Building Edit Mode\n")
-		description_label.append_text("Click turret to edit turret\n")
-	else:
-		description_label.append_text("Current: Turret Edit Mode\n")
-		description_label.append_text("Right-click to exit turret edit\n")
 
 # === 输入处理 ===
 func _input(event):
@@ -444,8 +417,8 @@ func _process(delta):
 	if is_editing and selected_building:
 		update_all_block_colors()
 
-	#building_editing_system.process(delta)
-	#turret_editing_system.process(delta)
+	building_editing_system.process(delta)
+	turret_editing_system.process(delta)
 	
 	# 更新建筑信息显示
 	update_building_info_display()

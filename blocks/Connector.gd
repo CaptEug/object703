@@ -4,8 +4,8 @@ extends Marker2D
 @onready var line = $Line2D
 # 严格对齐参数
 @export var is_connection_enabled := true
-@export var connection_range := 5.0  # 非常小的连接范围
-@export var snap_angle_threshold := 30.0  # 角度对齐阈值(度)
+@export var connection_range := 5.0 
+@export var snap_angle_threshold := 30.0
 @export var connection_type := "default"
 @export var location:= Vector2i()
 @export var layer = 1
