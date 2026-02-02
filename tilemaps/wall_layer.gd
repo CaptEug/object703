@@ -37,11 +37,9 @@ func init_layerdata():
 			}
 		layerdata[cell] = celldata
 
-func get_celldata(cell:Vector2i):
-	if cell in layerdata:
-		return layerdata[cell]
-	else:
-		return false
+func get_celldata(cell:Vector2i) -> Dictionary:
+	return layerdata.get(cell, {})
+
 
 func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
 	var kinetic_absorb = TileDB.get_tile(layerdata[cell]["matter"])["kinetic_aborb"]
@@ -218,6 +216,7 @@ func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
 			max_dist = d
 			farthest = c
 	return farthest
+
 
 func find_closest_cell(cell: Vector2i, from: Array[Vector2i]):
 	if from.is_empty():
