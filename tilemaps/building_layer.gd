@@ -71,9 +71,9 @@ func get_tile_for_block_path(path: String) -> int:
 	else:
 		return 0
 
-func get_data_at_position(cell: Vector2i) -> Dictionary:
-	"""获取指定位置的数据"""
+func get_celldata(cell:Vector2i) -> Dictionary:
 	return layerdata.get(cell, {})
+
 
 func remove_data_at_position(cell: Vector2i):
 	"""移除指定位置的数据"""

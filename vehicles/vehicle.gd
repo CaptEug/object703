@@ -802,8 +802,6 @@ func calculate_track_forces(forward_input:int, turn_input:int) -> Dictionary:
 	return track_forces 
 
 
-
-
 func update_vehicle_size():
 	if grid.is_empty():
 		vehicle_size = Vector2i.ZERO
