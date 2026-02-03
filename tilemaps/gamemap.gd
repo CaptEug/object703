@@ -30,8 +30,8 @@ func _ready():
 	print("=== 游戏地图初始化完成 ===")
 
 func _process(delta: float) -> void:
-	if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
-		save_world()
+	#if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
+		#save_world()
 		pass
 
 func generate_world(noise:Noise):
