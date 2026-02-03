@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=40 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=45 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
@@ -54,7 +54,18 @@ texture_margin_bottom = 10.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4w2ry"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edc7y"]
+bg_color = Color(0, 1, 0, 1)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_o6fga"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vqaq"]
+bg_color = Color(0, 1, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4w2ry"]
+bg_color = Color(0, 1, 0, 1)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4w2ry"]
 atlas = ExtResource("1_4w2ry")
@@ -188,6 +199,8 @@ region = Rect2(224, 16, 16, 16)
 atlas = ExtResource("3_vwcpp")
 region = Rect2(240, 16, 16, 16)
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vwcpp"]
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i6524"]
 texture = SubResource("AtlasTexture_edc7y")
 texture_margin_left = 16.0
@@ -237,7 +250,17 @@ Button/styles/focus = SubResource("StyleBoxTexture_cet5l")
 Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
 Button/styles/normal = SubResource("StyleBoxTexture_xxub0")
 Button/styles/pressed = SubResource("StyleBoxTexture_7qj07")
+ItemList/colors/font_color = Color(0, 1, 0, 1)
+ItemList/colors/font_hovered_color = Color(0, 1, 0, 1)
+ItemList/colors/font_hovered_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
+ItemList/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
+ItemList/colors/guide_color = Color(0, 0, 0, 0)
+ItemList/fonts/font = ExtResource("3_4w2ry")
+ItemList/styles/focus = SubResource("StyleBoxEmpty_4w2ry")
+ItemList/styles/hovered_selected_focus = SubResource("StyleBoxFlat_edc7y")
 ItemList/styles/panel = SubResource("StyleBoxTexture_o6fga")
+ItemList/styles/selected = SubResource("StyleBoxFlat_6vqaq")
+ItemList/styles/selected_focus = SubResource("StyleBoxFlat_4w2ry")
 Label/colors/font_color = Color(0.13145, 0.258068, 0.37867, 1)
 Label/fonts/font = ExtResource("3_4w2ry")
 LineEdit/colors/font_color = Color(0, 1, 0, 1)
@@ -270,6 +293,7 @@ Tree/colors/guide_color = Color(0, 0.701961, 0, 0)
 Tree/fonts/font = ExtResource("3_4w2ry")
 Tree/icons/arrow = SubResource("AtlasTexture_6vqaq")
 Tree/icons/arrow_collapsed = SubResource("AtlasTexture_2u1il")
+Tree/styles/focus = SubResource("StyleBoxEmpty_vwcpp")
 Tree/styles/panel = SubResource("StyleBoxTexture_i6524")
 Tree/styles/selected_focus = SubResource("StyleBoxFlat_vwcpp")
 Window/colors/title_color = Color(0.129412, 0.258824, 0.376471, 1)

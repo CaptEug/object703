@@ -40,6 +40,7 @@ offset_top = 2.0
 offset_right = 638.0
 offset_bottom = 556.0
 theme_override_constants/scrollbar_margin_top = 32
+theme_override_constants/scrollbar_margin_bottom = 16
 
 [node name="CloseButton" type="TextureButton" parent="."]
 layout_mode = 0

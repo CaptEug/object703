@@ -44,7 +44,11 @@ func _process(delta):
 
 
 func update_core_light(delta):
-	var c = canvas_mod.color
+	var c:Color
+	if canvas_mod:
+		c = canvas_mod.color
+	else:
+		c = Color(1,1,1)
 	var a:float = 0.0
 	time += delta
 	if working:

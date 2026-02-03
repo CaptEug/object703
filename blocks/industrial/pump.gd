@@ -31,7 +31,7 @@ func _init():
 
 func _process(delta: float) -> void:
 	super._process(delta)
-	if on:
+	if on and map:
 		pump_liquid(delta)
 	update_pump_window(delta)
 

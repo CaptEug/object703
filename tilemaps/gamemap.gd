@@ -20,7 +20,7 @@ func _ready():
 		"wall": wall,
 	}
 	#generate_world(noise_height_text.noise)
-	load_world("res://tilemaps/savedmaps/TestField.llh")
+	load_world("TestField.llh")
 	
 	
 	# 加载蓝图并生成建筑
@@ -89,7 +89,7 @@ func save_world():
 	file.close()
 
 func load_world(path: String):
-	var file := FileAccess.open(path, FileAccess.READ)
+	var file := FileAccess.open(mapfolder_path + path, FileAccess.READ)
 	if not file:
 		push_error("Failed to open world file")
 		return
