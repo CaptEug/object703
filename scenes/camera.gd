@@ -103,7 +103,7 @@ func sync_rotation_to_vehicle(vehicle: Vehicle):
 		return
 		
 	for pos in vehicle.grid.keys():
-		var block = vehicle.grid[pos]
+		var block = vehicle.grid[pos]["block"]
 		var vehicle_rotation = block.global_rotation - deg_to_rad(block.base_rotation_degree)
 		target_rot = vehicle_rotation
 		break

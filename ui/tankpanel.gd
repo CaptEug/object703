@@ -1,3 +1,4 @@
+class_name TankPanel
 extends FloatingPanel
 
 @onready var inventory_panel = $InventoryPanel
@@ -119,7 +120,7 @@ func draw_grid():
 					draw_texture(mask_tex, extents, line_color)
 				else:
 					# else only draw the shape
-					var collisionshape := grid[pos].find_child("CollisionShape2D") as CollisionShape2D
+					var collisionshape := grid[pos]["blocks"].find_child("CollisionShape2D") as CollisionShape2D
 					if collisionshape and collisionshape.shape is RectangleShape2D:
 						var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
 						if rot == 90 or rot == -90:
