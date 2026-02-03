@@ -162,8 +162,8 @@ func check_shell_enter_tile(delta):
 		var contact_celldata = maplayer.get_celldata(cell_contact)
 		if contact_celldata:
 			if TileDB.get_tile(contact_celldata["matter"])["phase"] == "solid":
-				if contact_celldata["current_hp"] > 0:
-					var damage_to_deal = min(kenetic_damage, contact_celldata["current_hp"])
+				if contact_celldata["data"] > 0:
+					var damage_to_deal = min(kenetic_damage, contact_celldata["data"])
 					maplayer.damage_tile(cell_contact, damage_to_deal, "kinetic")
 					kenetic_damage -= damage_to_deal
 				if kenetic_damage <= 0:
