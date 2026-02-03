@@ -239,20 +239,24 @@ func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
 			var y := chunk_y * CHUNK_SIZE + ly
 			var cell := Vector2i(x, y)
 			var celldata = get_celldata(cell)
-			if celldata.is_empty():
-				bytes.append_array([0, 0])    # empty tile
-			else:
-				var terrain_int = TileDB.get_tile(celldata["matter"])["terrain_int"]
-				var data = celldata.get("data", 0)
-				bytes.append_array([terrain_int, data])       
+			# --- terrain (u8) ---
+			bytes.append(0 if celldata.is_empty() else TileDB.get_tile(celldata["matter"])["terrain_int"])
+	
+			# --- data (u16) ---
+			var data := 0
+			if not celldata.is_empty():
+				data = celldata.get("data", 0)
+			var offset := bytes.size()
+			bytes.resize(offset + 2)
+			bytes.encode_u16(offset, data)    
 	return bytes
 
 func load_chunk(chunk_x:int, chunk_y:int, bytes:PackedByteArray, CHUNK_SIZE:int):
 	var i := 0
 	for ly in range(CHUNK_SIZE):
 		for lx in range(CHUNK_SIZE):
-			var terrain := bytes[i]; i += 1
-			var data := bytes[i]; i += 1
+			var terrain := bytes.decode_u8(i); i += 1
+			var data := bytes.decode_u16(i); i += 2
 
 			if terrain == 0:
 				continue

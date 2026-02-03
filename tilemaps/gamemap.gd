@@ -12,9 +12,7 @@ var world_width:int = 256
 @export var noise_height_text:NoiseTexture2D
 var mapfolder_path:= "res://tilemaps/savedmaps/"
 
-#terrain sets
-var sandstone_int = 1
-var sandstone_tiles_arr = []
+
 
 func _ready():
 	world_name = "TestField"
@@ -32,19 +30,27 @@ func _ready():
 	print("=== 游戏地图初始化完成 ===")
 
 func _process(delta: float) -> void:
-	#if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
-		#save_world()
+	if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
+		save_world()
 		pass
 
 func generate_world(noise:Noise):
+	#terrain sets
+	var height_dict = {
+		"sandstone": [0, 0.5],
+		"hematite": [0.2, 0.3],
+		"crude_oil": [-INF, -0.5]
+	}
+	
 	for x in range(world_width):
 		for y in range(world_height):
 			var noise_val = noise.get_noise_2d(x, y)
-			if noise_val > 0:
-				sandstone_tiles_arr.append(Vector2i(x,y))
-				
-	BetterTerrain.set_cells(wall, sandstone_tiles_arr, sandstone_int)
-	BetterTerrain.update_terrain_cells(wall, sandstone_tiles_arr, sandstone_int)
+			for matter in height_dict:
+				if noise_val > height_dict[matter][0] and noise_val <= height_dict[matter][1]:
+					var terrain_int = TileDB.get_tile(matter)["terrain_int"]
+					BetterTerrain.set_cell(wall, Vector2i(x, y), terrain_int)
+
+	BetterTerrain.update_terrain_area(wall, Rect2i(Vector2i(0, 0), Vector2i(world_width, world_height)))
 	wall.init_layerdata()
 
 func save_world():
