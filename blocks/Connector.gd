@@ -21,7 +21,7 @@ var area:Area2D
 
 
 func _ready():
-	line.visible = false
+	line.visible = true
 	setup_detection_area()
 	queue_redraw()
 	
@@ -95,6 +95,8 @@ func try_connect(other_point: Connector) -> bool:
 		if qeck == true:
 			parent_block.create_joint_with(self, other_point, true) 
 			connected_to = other_point
+			line.visible = false
+			connected_to.line.visible = false
 	return true
 
 func can_connect_with(other_point: Connector) -> bool:

@@ -713,8 +713,6 @@ func enter_editor_mode(vehicle: Vehicle):
 	vehicle.control = Callable()
 	show()
 	
-	hull_editing_system.reset_connection_indices()
-	
 	show_center_of_mass = mass_center_show.button_pressed
 	com_marker.visible = show_center_of_mass
 	
