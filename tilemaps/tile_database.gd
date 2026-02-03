@@ -59,3 +59,9 @@ func get_tile(id: String) -> Dictionary:
 	if tiles.has(id):
 		return tiles[id]
 	return {}
+
+func get_matter(terrain_int: int) -> String:
+	for tile in tiles:
+		if tiles[tile]["terrain_int"] == terrain_int:
+			return tile
+	return ""

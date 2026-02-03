@@ -86,24 +86,25 @@ func draw_grid():
 	var grid_size = 16
 	var draw_pos = $Marker2D.position - Vector2(vehicle_size/2) * grid_size
 	var blocks = []
-	var check_blocks = []
-	for pos in selected_vehicle.grid.keys():
-		if not check_blocks.has(selected_vehicle.grid[pos]):
-			check_blocks.append(selected_vehicle.grid[pos])
-	if not has_commend_class_exact(check_blocks):
-		return
+	#var check_blocks = []
+	#for pos in selected_vehicle.grid.keys():
+		#if not check_blocks.has(selected_vehicle.grid[pos]["block"]):
+			#check_blocks.append(selected_vehicle.grid[pos]["block"])
+	#if not has_commend_class_exact(check_blocks):
+		#return
 	for x in max_x+1:
 		for y in max_y+1:
 			var pos = Vector2i(x, y)
 			if not grid.has(pos):
 				continue
-			if is_instance_valid(grid[pos]) and not blocks.has(grid[pos]):
-				blocks.append(grid[pos])
-				var health_ratio = grid[pos].current_hp/grid[pos].max_hp
+			var block = grid[pos]["block"]
+			if is_instance_valid(block) and not blocks.has(block):
+				blocks.append(block)
+				var health_ratio = block.current_hp/block.max_hp
 				var line_color = health_gradient.sample(clamp(health_ratio, 0.0, 1.0))
-				var rot = grid[pos].base_rotation_degree
+				var rot = block.base_rotation_degree
 				var topleft = Vector2(pos) * grid_size
-				var center = Vector2(grid[pos].size) * grid_size / 2
+				var center = Vector2(block.size) * grid_size / 2
 				
 				# If health is not full, make it pulse
 				if health_ratio < 1.0:
@@ -111,8 +112,8 @@ func draw_grid():
 					line_color = line_color * blink_strength
 				
 				# draw outline if the block has one
-				if "outline_tex" in grid[pos]:
-					var mask_tex = grid[pos].outline_tex
+				if "outline_tex" in block:
+					var mask_tex = block.outline_tex
 					var extents = -mask_tex.get_size() / 2
 					if rot == 90 or rot == -90:
 						center = Vector2(center.y, center.x)
@@ -120,7 +121,7 @@ func draw_grid():
 					draw_texture(mask_tex, extents, line_color)
 				else:
 					# else only draw the shape
-					var collisionshape := grid[pos]["blocks"].find_child("CollisionShape2D") as CollisionShape2D
+					var collisionshape := block.find_child("CollisionShape2D") as CollisionShape2D
 					if collisionshape and collisionshape.shape is RectangleShape2D:
 						var extents = collisionshape.shape.extents - Vector2(line_width,line_width)/2
 						if rot == 90 or rot == -90:
@@ -129,7 +130,7 @@ func draw_grid():
 						draw_set_transform(draw_pos + topleft, 0, Vector2.ONE)
 						draw_rect(rect, line_color, false, line_width)
 				
-				if grid[pos] is Command:
+				if block is Command:
 					draw_texture(command_sign, Vector2.ZERO, line_color)
 				# Reset rotaion
 				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)

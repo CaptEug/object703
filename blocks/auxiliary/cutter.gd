@@ -51,7 +51,7 @@ func damage_contacted_blocks(delta):
 			var block_hp = body.current_hp
 			if block_hp >= 0:
 				var damage_to_deal = min(dmg * delta * 2, block_hp) #deal double dmg to block
-				body.damage(damage_to_deal, self)
+				body.damage(damage_to_deal)
 			# spark particle
 			if randf_range(0, 1) < 0.1:
 				var spark_pos = (global_position + body.global_position)/2
