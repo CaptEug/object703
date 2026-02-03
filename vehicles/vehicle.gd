@@ -164,7 +164,10 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				var dir = block.get_direction_from_rotation(total_rotation)
 				connection_map[local_pos_key].append(dir)
 		
-		for pos in grid_positions:
+		for pos_array in grid_positions:
+			# 将数组转换为 Vector2i
+			var pos = Vector2i(pos_array[0], pos_array[1])
+			
 			# 计算局部网格位置
 			var local_grid_pos = pos - block.base_pos
 			
@@ -177,6 +180,7 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				if dir >= 0 and dir < connections.size():
 					connections[dir] = true
 			
+			# 使用新的grid数据结构
 			grid[pos] = {
 				"block": block,
 				"connections": connections

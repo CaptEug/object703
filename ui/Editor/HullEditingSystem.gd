@@ -1,26 +1,18 @@
 class_name HullEditingSystem
 extends RefCounted
 
-# 引用
+# === 引用 ===
 var editor: Control
 var selected_vehicle: Vehicle
 var camera: Camera2D
 
-# 放置状态变量
+# === 放置状态变量 ===
 var current_ghost_block: Node2D = null
 var current_block_scene: PackedScene = null
 var is_first_block := true
 var is_new_vehicle := false
 
-# 吸附系统变量
-var current_ghost_connection_index := 0
-var current_vehicle_connection_index = 0
-var available_ghost_points: Array[Connector] = []
-var available_vehicle_points: Array[Connector] = []
-var current_snap_config: Dictionary = {}
-var snap_config: Dictionary
-
-# 移动功能变量
+# === 移动功能变量 ===
 var is_moving_block := false
 var moving_block: Block = null
 var moving_block_original_position: Vector2
@@ -28,13 +20,20 @@ var moving_block_original_rotation: float
 var moving_block_original_grid_positions: Array
 var moving_block_ghost: Node2D = null
 var moving_snap_config: Dictionary = {}
-var is_mouse_pressed := false
+var is_mouse_pressed := bool(false)
 var drag_timer: float = 0.0
-var is_dragging := false
+var is_dragging := bool(false)
 var DRAG_DELAY: float = 0.2
+
+# === 网格变换系统 ===
+var grid_transform: Transform2D = Transform2D.IDENTITY
+var inverse_grid_transform: Transform2D = Transform2D.IDENTITY
+var reference_block: Block = null
+var reference_grid_min: Vector2i = Vector2i.ZERO
 
 const GRID_SIZE = 16
 
+# === 获取引用辅助函数 ===
 func get_viewport():
 	return editor.get_viewport()
 
@@ -46,6 +45,115 @@ func setup(editor_ref: Control):
 	selected_vehicle = editor_ref.selected_vehicle
 	camera = editor_ref.camera
 
+# === 网格变换系统核心 ===
+func update_grid_transform():
+	"""更新网格变换矩阵，基于车辆中第一个方块的位置和旋转"""
+	if not selected_vehicle or selected_vehicle.grid.is_empty():
+		# 没有方块时，使用车辆本身的变换
+		grid_transform = selected_vehicle.global_transform
+		inverse_grid_transform = grid_transform.affine_inverse()
+		reference_block = null
+		return
+	
+	# 获取第一个方块
+	for pos in selected_vehicle.grid:
+		reference_block = selected_vehicle.grid[pos]["block"]
+		break
+	
+	if not reference_block:
+		grid_transform = selected_vehicle.global_transform
+		inverse_grid_transform = grid_transform.affine_inverse()
+		return
+	
+	# 收集该方块的所有网格位置
+	var block_grid_positions = []
+	for pos in selected_vehicle.grid:
+		if selected_vehicle.grid[pos]["block"] == reference_block:
+			block_grid_positions.append(pos)
+	
+	if block_grid_positions.is_empty():
+		grid_transform = selected_vehicle.global_transform
+		inverse_grid_transform = grid_transform.affine_inverse()
+		reference_block = null
+		return
+	
+	# 找到方块的最小网格位置（左上角）
+	var min_x = block_grid_positions[0].x
+	var min_y = block_grid_positions[0].y
+	for pos in block_grid_positions:
+		min_x = min(min_x, pos.x)
+		min_y = min(min_y, pos.y)
+	
+	reference_grid_min = Vector2i(min_x, min_y)
+	
+	# 计算方块的中心世界位置
+	var block_center = reference_block.global_position
+	var block_rotation = reference_block.global_rotation
+	var block_size = reference_block.size
+	
+	# 计算方块左上角相对于中心的位置
+	# 方块中心在 (size.x/2, size.y/2) * GRID_SIZE
+	var half_block_width = (block_size.x * GRID_SIZE) / 2.0
+	var half_block_height = (block_size.y * GRID_SIZE) / 2.0
+	
+	# 左上角相对于中心的位置（未旋转时）
+	var top_left_offset = Vector2(-half_block_width, -half_block_height)
+	
+	# 应用方块的旋转
+	top_left_offset = top_left_offset.rotated(block_rotation)
+	
+	# 计算左上角的世界位置
+	var top_left_world = block_center + top_left_offset
+	
+	# 网格(min_x, min_y)对应的偏移量（未旋转时）
+	var grid_offset = Vector2(min_x * GRID_SIZE, min_y * GRID_SIZE)
+	
+	# 应用网格系统的旋转（即参考方块的旋转）
+	grid_offset = grid_offset.rotated(block_rotation)
+	
+	# 网格(0,0)对应的世界位置
+	# 这是网格系统的原点，位于 top_left_world 减去 (min_x, min_y) 的偏移
+	var grid_origin_world = top_left_world - grid_offset
+	
+	# 构建变换矩阵
+	# Transform2D: x轴, y轴, 原点
+	# x轴和y轴已经包含了旋转和缩放
+	var x_axis = Vector2(GRID_SIZE, 0).rotated(block_rotation)
+	var y_axis = Vector2(0, GRID_SIZE).rotated(block_rotation)
+	
+	grid_transform = Transform2D(x_axis, y_axis, grid_origin_world)
+	inverse_grid_transform = grid_transform.affine_inverse()
+
+func world_to_grid_position(world_position: Vector2) -> Vector2i:
+	"""将世界坐标转换为网格坐标"""
+	if not selected_vehicle:
+		return Vector2i.ZERO
+	
+	# 更新网格变换
+	update_grid_transform()
+	
+	# 使用逆变换将世界坐标转换到网格空间
+	var grid_space = inverse_grid_transform * world_position
+	
+	# 四舍五入到最近的网格
+	var grid_x = int(round(grid_space.x))
+	var grid_y = int(round(grid_space.y))
+	
+	return Vector2i(grid_x, grid_y)
+
+func grid_to_world_position(grid_position: Vector2i) -> Vector2:
+	"""将网格坐标转换为世界坐标"""
+	if not selected_vehicle:
+		return Vector2.ZERO
+	
+	# 更新网格变换
+	update_grid_transform()
+	
+	# 使用变换将网格坐标转换到世界空间
+	var grid_vec = Vector2(grid_position)
+	return grid_transform * grid_vec
+
+# === 输入处理 ===
 func handle_left_click():
 	if editor.is_ui_interaction:
 		return
@@ -58,25 +166,348 @@ func handle_left_click():
 		return
 
 func process(delta):
+	# 拖动检测
 	if is_mouse_pressed and not is_dragging:
 		drag_timer += delta
 		if drag_timer >= DRAG_DELAY:
 			is_dragging = true
 			_start_block_drag()
 	
+	# 更新虚影块位置
 	if current_ghost_block and Engine.get_frames_drawn() % 2 == 0:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_ghost_block_position(global_mouse_pos)
 	
+	# 更新移动块位置
 	if is_moving_block and moving_block_ghost:
 		var mouse_pos = get_viewport().get_mouse_position()
 		var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
 		update_moving_block_position(global_mouse_pos)
 	
+	# 更新引用
 	selected_vehicle = editor.selected_vehicle
 	camera = editor.camera
 
+func handle_mouse_press(pressed: bool):
+	is_mouse_pressed = pressed
+	if not pressed:
+		if is_dragging:
+			if is_moving_block:
+				place_moving_block()
+			is_dragging = false
+		drag_timer = 0.0
+
+# === 方块放置功能 ===
+func start_block_placement(scene_path: String):
+	if not editor.is_editing or not selected_vehicle:
+		return
+	
+	if current_ghost_block:
+		current_ghost_block.queue_free()
+		current_ghost_block = null
+	
+	current_block_scene = load(scene_path)
+	if not current_block_scene:
+		push_error("Unable to load block scene: ", scene_path)
+		return
+	
+	current_ghost_block = current_block_scene.instantiate()
+	get_tree().current_scene.add_child(current_ghost_block)
+	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
+	current_ghost_block.z_index = 100
+	current_ghost_block.do_connect = false
+	
+	current_ghost_block.base_rotation_degree = 0
+	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
+	
+	setup_ghost_block_collision(current_ghost_block)
+	
+	reset_connection_indices()
+
+func setup_ghost_block_collision(ghost: Node2D):
+	# 禁用所有碰撞形状
+	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
+	for shape in collision_shapes:
+		shape.disabled = true
+	
+	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
+	for poly in collision_polygons:
+		poly.disabled = true
+	
+	if ghost is RigidBody2D:
+		ghost.freeze = true
+		ghost.collision_layer = 0
+		ghost.collision_mask = 0
+
+func update_ghost_block_position(mouse_position: Vector2):
+	# 更新网格变换
+	update_grid_transform()
+	
+	if is_first_block and is_new_vehicle:
+		# 第一个块自由放置
+		current_ghost_block.global_position = mouse_position
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+		current_ghost_block.modulate = Color(0.8, 0.8, 1.0, 0.5)
+		return
+	
+	# 关键修改：计算方块中心相对于左上角的偏移
+	var block_size = current_ghost_block.size
+	var center_offset = Vector2(
+		block_size.x * GRID_SIZE / 2.0,
+		block_size.y * GRID_SIZE / 2.0
+	)
+	
+	# 设置旋转：方块自身旋转 + 网格参考旋转
+	var base_rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
+	var final_rotation = base_rotation
+	if reference_block:
+		final_rotation = base_rotation + reference_block.global_rotation
+		current_ghost_block.global_rotation = final_rotation
+	else:
+		current_ghost_block.global_rotation = base_rotation
+	
+	# 应用旋转到偏移量
+	center_offset = center_offset.rotated(final_rotation)
+	
+	# 计算鼠标位置对应的左上角位置
+	var top_left_position = mouse_position - center_offset
+	
+	# 计算网格位置（基于左上角）
+	var grid_pos = world_to_grid_position(top_left_position)
+	
+	# 计算方块占用的所有网格位置
+	var block_positions = calculate_block_grid_positions_for_placement(grid_pos, current_ghost_block)
+	
+	# 检查是否可以放置
+	var can_place = are_grid_positions_available(block_positions)
+	
+	if can_place:
+		# 可以放置，计算世界位置（左上角）
+		var world_pos = grid_to_world_position(grid_pos)
+		
+		# 设置虚影方块位置（左上角 + 中心偏移 = 中心点）
+		current_ghost_block.global_position = world_pos + center_offset
+		
+		# 检查是否有连接吸附
+		var snap_config = check_grid_connection_snap(grid_pos, block_positions, current_ghost_block)
+		
+		if snap_config and not snap_config.is_empty():
+			current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
+		else:
+			current_ghost_block.modulate = editor.GHOST_FREE_COLOR
+	else:
+		# 不能放置，跟随鼠标但不吸附（中心点跟随鼠标）
+		current_ghost_block.global_position = mouse_position
+		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
+		current_ghost_block.modulate = editor.GHOST_FREE_COLOR
+
+func rotate_ghost_connection():
+	if not current_ghost_block:
+		return
+	
+	current_ghost_block.base_rotation_degree += 90
+	current_ghost_block.base_rotation_degree = fmod(current_ghost_block.base_rotation_degree + 90, 360) - 90
+	
+	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
+	
+	# 旋转后重新计算位置
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	update_ghost_block_position(global_mouse_pos)
+
+func try_place_block():
+	if not current_ghost_block or not selected_vehicle:
+		return
+	
+	# 第一个块放置逻辑
+	if is_first_block and is_new_vehicle:
+		place_first_block()
+		return
+	
+	# 更新网格变换
+	update_grid_transform()
+	
+	# 计算当前虚影块位置对应的网格位置（虚影块当前是中心点位置）
+	var block_size = current_ghost_block.size
+	var center_offset = Vector2(
+		block_size.x * GRID_SIZE / 2.0,
+		block_size.y * GRID_SIZE / 2.0
+	)
+	
+	var base_rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
+	var final_rotation = base_rotation
+	if reference_block:
+		final_rotation = base_rotation + reference_block.global_rotation
+	
+	# 应用旋转到偏移量
+	center_offset = center_offset.rotated(final_rotation)
+	
+	# 计算左上角位置
+	var top_left_position = current_ghost_block.global_position - center_offset
+	
+	# 计算网格位置（基于左上角）
+	var grid_pos = world_to_grid_position(top_left_position)
+	var block_positions = calculate_block_grid_positions_for_placement(grid_pos, current_ghost_block)
+	
+	# 检查位置是否可用
+	if not are_grid_positions_available(block_positions):
+		return  # 位置不可用，不能放置
+	
+	# 创建新块
+	var new_block: Block = current_block_scene.instantiate()
+	selected_vehicle.add_child(new_block)
+	
+	# 设置位置（左上角 + 中心偏移 = 中心点）
+	var world_pos = grid_to_world_position(grid_pos)
+	new_block.global_position = world_pos + center_offset
+	
+	# 设置旋转
+	if reference_block:
+		new_block.global_rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + reference_block.global_rotation
+	else:
+		new_block.global_rotation = current_ghost_block.global_rotation
+	
+	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
+	
+	# 添加到车辆
+	var control = selected_vehicle.control
+	selected_vehicle._add_block(new_block, new_block.position, block_positions)
+	selected_vehicle.control = control
+	
+	# 如果有连接配置，建立连接
+	var snap_config = check_grid_connection_snap(grid_pos, block_positions, current_ghost_block)
+	if snap_config and not snap_config.is_empty():
+		establish_grid_connection(new_block, snap_config)
+	
+	# 重新开始放置
+	start_block_placement_with_rotation(current_block_scene.resource_path)
+	
+	# 放置后更新网格变换
+	update_grid_transform()
+	
+	editor.update_blueprint_ghosts()
+
+func place_first_block():
+	var new_block: Block = current_block_scene.instantiate()
+	selected_vehicle.add_child(new_block)
+	new_block.global_position = current_ghost_block.global_position
+	new_block.global_rotation = current_ghost_block.global_rotation
+	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
+	
+	# 第一个方块的网格位置从 (0, 0) 开始
+	var grid_positions = calculate_block_grid_positions_for_placement(Vector2i.ZERO, new_block)
+	
+	var control = selected_vehicle.control
+	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
+	selected_vehicle.control = control
+	
+	is_first_block = false
+	is_new_vehicle = false
+	
+	# 放置第一个方块后，更新网格参考
+	update_grid_transform()
+	
+	start_block_placement_with_rotation(current_block_scene.resource_path)
+
+func start_block_placement_with_rotation(scene_path: String):
+	if not editor.is_editing or not selected_vehicle:
+		return
+	
+	var base_rotation_degree = current_ghost_block.base_rotation_degree
+	
+	if current_ghost_block:
+		current_ghost_block.queue_free()
+		current_ghost_block = null
+	
+	current_block_scene = load(scene_path)
+	if not current_block_scene:
+		push_error("无法加载块场景: ", scene_path)
+		return
+	
+	current_ghost_block = current_block_scene.instantiate()
+	get_tree().current_scene.add_child(current_ghost_block)
+	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
+	current_ghost_block.z_index = 100
+	current_ghost_block.do_connect = false
+	
+	current_ghost_block.base_rotation_degree = base_rotation_degree
+	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
+	
+	setup_ghost_block_collision(current_ghost_block)
+	
+	reset_connection_indices()
+
+# === 删除模式功能 ===
+func try_remove_block():
+	if not selected_vehicle:
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
+	
+	var space_state = get_tree().root.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = global_mouse_pos
+	query.collision_mask = 1
+	
+	var result = space_state.intersect_point(query)
+	for collision in result:
+		var block = collision.collider
+		if block is Block and block.get_parent() == selected_vehicle:
+			var connections_to_disconnect = find_connections_for_block(block)
+			disconnect_connections(connections_to_disconnect)
+			
+			var control = selected_vehicle.control
+			selected_vehicle.remove_block(block, true)
+			selected_vehicle.control = control
+			
+			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
+			call_deferred("check_vehicle_stability")
+			
+			editor.update_blueprint_ghosts()
+			
+			var block_count_after = selected_vehicle.blocks.size()
+			if block_count_after == 0:
+				is_first_block = true
+				is_new_vehicle = true
+			break
+
+func find_connections_for_block(block: Block) -> Array:
+	var connections = []
+	for point in block.connection_points:
+		if point.connected_to:
+			connections.append({
+				"from": point,
+				"to": point.connected_to
+			})
+	return connections
+
+func disconnect_connections(connections: Array):
+	for connection in connections:
+		if is_instance_valid(connection.from):
+			connection.from.disconnect_joint()
+		if is_instance_valid(connection.to):
+			connection.to.disconnect_joint()
+
+func get_affected_blocks_for_removal(removed_block: Block) -> Array:
+	var affected_blocks = []
+	for point in removed_block.connection_points:
+		if point.connected_to:
+			var connected_block = point.connected_to.find_parent_block()
+			if connected_block:
+				affected_blocks.append(connected_block)
+	return affected_blocks
+
+func cancel_placement():
+	if current_ghost_block:
+		current_ghost_block.queue_free()
+		current_ghost_block = null
+	current_block_scene = null
+	editor.clear_tab_container_selection()
+	editor.update_vehicle_info_display()
+
+# === 方块移动功能 ===
 func _start_block_drag():
 	if not selected_vehicle:
 		return
@@ -87,19 +518,6 @@ func _start_block_drag():
 	
 	if block and block.get_parent() == selected_vehicle:
 		start_moving_block(block)
-
-func _end_block_drag():
-	if is_moving_block and moving_block:
-		if moving_snap_config and not moving_snap_config.is_empty():
-			place_moving_block()
-		else:
-			cancel_moving_block()
-	
-	is_moving_block = false
-	moving_block = null
-	if moving_block_ghost:
-		moving_block_ghost.queue_free()
-		moving_block_ghost = null
 
 func start_moving_block(block: Block):
 	if is_moving_block:
@@ -131,48 +549,85 @@ func update_moving_block_position(mouse_position: Vector2):
 	if not is_moving_block or not moving_block_ghost:
 		return
 	
-	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
-	available_ghost_points = get_moving_ghost_available_connection_points()
+	# 更新网格变换
+	update_grid_transform()
 	
-	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
-		moving_block_ghost.global_position = mouse_position
-		moving_block_ghost.rotation = moving_block_original_rotation
-		moving_block_ghost.modulate = editor.GHOST_FREE_COLOR
-		moving_snap_config = {}
-		return
+	# 计算方块中心偏移
+	var block_size = moving_block_ghost.size
+	var center_offset = Vector2(
+		block_size.x * GRID_SIZE / 2.0,
+		block_size.y * GRID_SIZE / 2.0
+	)
+	center_offset = center_offset.rotated(moving_block_original_rotation)
 	
-	moving_snap_config = get_current_snap_config_for_moving()
+	# 计算鼠标位置对应的左上角位置
+	var top_left_position = mouse_position - center_offset
 	
-	if moving_snap_config and not moving_snap_config.is_empty():
-		moving_block_ghost.global_position = moving_snap_config.ghost_position
-		moving_block_ghost.global_rotation = moving_snap_config.ghost_rotation
+	# 计算网格位置（基于左上角）
+	var grid_pos = world_to_grid_position(top_left_position)
+	
+	# 计算方块占用的所有网格位置
+	var new_grid_positions = calculate_block_grid_positions_for_moving(grid_pos)
+	
+	# 检查新位置是否可用（排除原始位置）
+	var can_place = are_grid_positions_available_for_moving(new_grid_positions)
+	
+	# 检查网格连接吸附
+	var snap_config = check_connection_snap_for_moving_block(grid_pos, new_grid_positions)
+	
+	if can_place and snap_config and not snap_config.is_empty():
+		# 可以放置且有吸附点
+		var world_pos = grid_to_world_position(grid_pos)
+		
+		# 设置移动虚影位置（左上角 + 中心偏移 = 中心点）
+		moving_block_ghost.global_position = world_pos + center_offset
+		moving_block_ghost.global_rotation = moving_block_original_rotation
 		moving_block_ghost.modulate = editor.GHOST_SNAP_COLOR
+		
+		# 更新吸附配置
+		moving_snap_config = {
+			"ghost_position": world_pos + center_offset,  # 存储的是中心位置
+			"ghost_rotation": moving_block_original_rotation,
+			"positions": new_grid_positions,
+			"grid_valid": true,
+			"connection_config": snap_config
+		}
 	else:
+		# 不能放置或没有吸附点，中心点跟随鼠标
 		moving_block_ghost.global_position = mouse_position
 		moving_block_ghost.rotation = moving_block_original_rotation
 		moving_block_ghost.modulate = editor.GHOST_FREE_COLOR
 		moving_snap_config = {}
 
 func place_moving_block():
-	if not is_moving_block or not moving_block or not moving_snap_config:
+	if not is_moving_block or not moving_block:
 		return
 	
-	var grid_positions = moving_snap_config.positions
+	# 如果有有效的网格吸附配置，放置到网格位置
+	if moving_snap_config and moving_snap_config.get("grid_valid", false):
+		var grid_positions = moving_snap_config.positions
+		
+		# 设置新位置和旋转
+		moving_block.global_position = moving_snap_config.ghost_position
+		moving_block.global_rotation = moving_snap_config.ghost_rotation
+		
+		# 重新添加到车辆
+		var control = selected_vehicle.control
+		selected_vehicle._add_block(moving_block, moving_block.position, grid_positions)
+		selected_vehicle.control = control
+		
+		# 如果有连接配置，建立连接
+		if moving_snap_config.get("connection_config"):
+			var conn_config = moving_snap_config.connection_config
+			establish_grid_connection(moving_block, conn_config)
+		
+		editor.update_blueprint_ghosts()
+	else:
+		# 没有有效的吸附，恢复原始位置
+		cancel_moving_block()
 	
-	# 设置新位置和旋转
-	moving_block.global_position = moving_snap_config.ghost_position
-	moving_block.global_rotation = moving_snap_config.ghost_rotation
-	
-	# 重新添加到车辆
-	var control = selected_vehicle.control
-	selected_vehicle._add_block(moving_block, moving_block.position, grid_positions)
-	selected_vehicle.control = control
-	
-	# 建立连接
-	if moving_snap_config.has("vehicle_point") and moving_snap_config.has("ghost_point"):
-		establish_connection(moving_snap_config.vehicle_point, moving_block, moving_snap_config.ghost_point)
-	
-	editor.update_blueprint_ghosts()
+	# 清理移动状态
+	cleanup_moving_block()
 
 func cancel_moving_block():
 	if not is_moving_block or not moving_block:
@@ -189,486 +644,319 @@ func cancel_moving_block():
 	
 	# 恢复连接
 	enable_connection_points_for_blocks([moving_block])
+	
+	# 清理移动状态
+	cleanup_moving_block()
 
-# === 方块放置核心功能 ===
-func start_block_placement(scene_path: String):
-	if not editor.is_editing or not selected_vehicle:
-		return
+func cleanup_moving_block():
+	if moving_block_ghost:
+		moving_block_ghost.queue_free()
+		moving_block_ghost = null
 	
-	if current_ghost_block:
-		current_ghost_block.queue_free()
-		current_ghost_block = null
-	
-	current_block_scene = load(scene_path)
-	if not current_block_scene:
-		push_error("Unable to load block scene: ", scene_path)
-		return
-	
-	current_ghost_block = current_block_scene.instantiate()
-	get_tree().current_scene.add_child(current_ghost_block)
-	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
-	current_ghost_block.z_index = 100
-	current_ghost_block.do_connect = false
-	
-	current_ghost_block.base_rotation_degree = 0
-	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
-	
-	setup_ghost_block_collision(current_ghost_block)
-	
-	reset_connection_indices()
-	current_snap_config = {}
+	moving_block = null
+	is_moving_block = false
+	is_dragging = false
+	moving_snap_config = {}
 
-func setup_ghost_block_collision(ghost: Node2D):
-	var collision_shapes = ghost.find_children("*", "CollisionShape2D", true)
-	for shape in collision_shapes:
-		shape.disabled = true
-	
-	var collision_polygons = ghost.find_children("*", "CollisionPolygon2D", true)
-	for poly in collision_polygons:
-		poly.disabled = true
-	
-	if ghost is RigidBody2D:
-		ghost.freeze = true
-		ghost.collision_layer = 0
-		ghost.collision_mask = 0
-
-func update_ghost_block_position(mouse_position: Vector2):
-	if is_first_block and is_new_vehicle:
-		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = Color(0.8, 0.8, 1.0, 0.5)
-		current_snap_config = {}
-		return
-	
-	available_vehicle_points = selected_vehicle.get_available_points_near_position(mouse_position, 20.0)
-	available_ghost_points = get_ghost_block_available_connection_points()
-	
-	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
-		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = editor.GHOST_FREE_COLOR
-		current_snap_config = {}
-		return
-	
-	snap_config = get_current_snap_config()
-	
-	if snap_config:
-		current_ghost_block.global_position = snap_config.ghost_position
-		current_ghost_block.global_rotation = snap_config.ghost_rotation
-		current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
-		current_snap_config = snap_config
-	else:
-		current_ghost_block.global_position = mouse_position
-		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = editor.GHOST_FREE_COLOR
-		current_snap_config = {}
-
-func get_ghost_block_available_connection_points() -> Array[Connector]:
-	var points: Array[Connector] = []
-	if current_ghost_block:
-		var connection_points = current_ghost_block.get_available_connection_points()
-		for point in connection_points:
-			if point is Connector:
-				point.qeck = false
-				points.append(point)
-	return points
-
-func get_current_snap_config() -> Dictionary:
-	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
+# === 网格吸附系统 ===
+func check_connection_snap_for_moving_block(base_grid_pos: Vector2i, block_positions: Array) -> Dictionary:
+	"""检查移动块是否可以与车辆块连接"""
+	if not moving_block_ghost or not selected_vehicle:
 		return {}
-	var best_config = find_best_snap_config()
-	return best_config
-
-func find_best_snap_config() -> Dictionary:
-	var best_config = {}
-	var min_distance = INF
-	var best_ghost_pos = null
-	var best_vehicle_pos = null
 	
-	for vehicle_point in available_vehicle_points:
-		var vehicle_block = vehicle_point.find_parent_block()
-		if not vehicle_block:
-			continue			
-		var vehicle_point_global = get_connection_point_global_position(vehicle_point, vehicle_block)
-		for ghost_point in available_ghost_points:
-			if vehicle_point.connected_to == null:
-				vehicle_point.is_connection_enabled = true
-			var target_rotation = calculate_aligned_rotation_from_base(vehicle_block)
-			if not can_points_connect_with_rotation(vehicle_point, ghost_point, target_rotation):
-				continue
-				
-			var positions = calculate_rotated_grid_positions(vehicle_point, ghost_point)
-			if positions is bool:
-				continue
-			var ghost_local_offset = ghost_point.position.rotated(target_rotation)
-			var ghost_position = vehicle_point_global - ghost_local_offset
-			var mouse_pos = get_viewport().get_mouse_position()
-			var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-			var distance = global_mouse_pos.distance_to(ghost_position)
-			if distance < min_distance:
-				best_vehicle_pos = vehicle_point
-				best_ghost_pos = ghost_point
-				min_distance = distance
-				best_config = {
-					"vehicle_point": vehicle_point,
-					"ghost_point": ghost_point,
-					"ghost_position": ghost_position,
-					"ghost_rotation": target_rotation,
+	# 获取虚影块的连接信息
+	var ghost_connections = calculate_ghost_connections(moving_block_ghost, base_grid_pos)
+	
+	# 查找可能的连接
+	var best_connection = {}
+	
+	for ghost_info in ghost_connections:
+		var ghost_dir = ghost_info["direction"]
+		var ghost_grid_pos = ghost_info["grid_position"]
+		
+		# 计算目标网格位置（根据连接方向）
+		var target_grid_pos = ghost_grid_pos + get_direction_vector(ghost_dir)
+		
+		# 检查目标位置是否有车辆块
+		if selected_vehicle.grid.has(target_grid_pos):
+			var vehicle_block_data = selected_vehicle.grid[target_grid_pos]
+			var vehicle_block = vehicle_block_data["block"]
+			
+			# 获取车辆块在该位置的连接方向
+			var vehicle_connections = vehicle_block_data["connections"]
+			
+			# 检查相反方向是否有连接
+			var opposite_dir = (ghost_dir + 2) % 4
+			
+			if vehicle_connections.size() > opposite_dir and vehicle_connections[opposite_dir]:
+				# 找到连接点！计算详细配置
+				var connection_config = {
 					"vehicle_block": vehicle_block,
-					"positions": positions
+					"vehicle_grid_pos": target_grid_pos,
+					"vehicle_direction": opposite_dir,
+					"ghost_grid_pos": ghost_grid_pos,
+					"ghost_direction": ghost_dir,
+					"connection_type": "grid_snap"
 				}
+				
+				# 如果这是第一个连接，就使用它
+				if best_connection.is_empty():
+					best_connection = connection_config
 	
-	return best_config
+	return best_connection
 
-func calculate_aligned_rotation_from_base(vehicle_block: Block) -> float:
-	var dir = vehicle_block.base_rotation_degree
-	return deg_to_rad(current_ghost_block.base_rotation_degree) + deg_to_rad(-dir) + vehicle_block.global_rotation
-
-func can_points_connect_with_rotation(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
-	if point_a.connection_type != point_b.connection_type:
-		return false
-	if editor.is_editing and not editor.turret_editing_system.is_turret_editing_mode:
-		if point_a.layer != 1:
-			return false
-	if not point_a.is_connection_enabled or not point_b.is_connection_enabled:
-		return false
-	var ghost_point_direction = point_b.rotation + ghost_rotation
-	var angle_diff = are_rotations_opposite_best(ghost_point_direction, point_a.global_rotation)
-	return angle_diff
-
-func are_rotations_opposite_best(rot1: float, rot2: float) -> bool:
-	var dir1 = Vector2(cos(rot1), sin(rot1))
-	var dir2 = Vector2(cos(rot2), sin(rot2))
+func check_grid_connection_snap(base_grid_pos: Vector2i, block_positions: Array, ghost_block: Node2D) -> Dictionary:
+	"""检查虚影块是否可以与车辆块连接（用于放置新块）"""
+	if not ghost_block or not selected_vehicle:
+		return {}
 	
-	var dot_product = dir1.dot(dir2)
-	return dot_product < -0.9
+	# 获取虚影块的连接信息
+	var ghost_connections = calculate_ghost_connections(ghost_block, base_grid_pos)
+	
+	# 查找可能的连接
+	var best_connection = {}
+	
+	for ghost_info in ghost_connections:
+		var ghost_dir = ghost_info["direction"]
+		var ghost_grid_pos = ghost_info["grid_position"]
+		
+		# 计算目标网格位置（根据连接方向）
+		var target_grid_pos = ghost_grid_pos + get_direction_vector(ghost_dir)
+		
+		# 检查目标位置是否有车辆块
+		if selected_vehicle.grid.has(target_grid_pos):
+			var vehicle_block_data = selected_vehicle.grid[target_grid_pos]
+			var vehicle_block = vehicle_block_data["block"]
+			
+			# 获取车辆块在该位置的连接方向
+			var vehicle_connections = vehicle_block_data["connections"]
+			
+			# 检查相反方向是否有连接
+			var opposite_dir = (ghost_dir + 2) % 4
+			
+			if vehicle_connections.size() > opposite_dir and vehicle_connections[opposite_dir]:
+				# 找到连接点！计算详细配置
+				var connection_config = {
+					"vehicle_block": vehicle_block,
+					"vehicle_grid_pos": target_grid_pos,
+					"vehicle_direction": opposite_dir,
+					"ghost_grid_pos": ghost_grid_pos,
+					"ghost_direction": ghost_dir,
+					"connection_type": "grid_snap"
+				}
+				
+				# 如果这是第一个连接，就使用它
+				if best_connection.is_empty():
+					best_connection = connection_config
+	
+	return best_connection
 
-func get_connection_point_global_position(point: Connector, block: Block) -> Vector2:
-	return block.global_position + point.position.rotated(block.global_rotation)
+func calculate_ghost_connections(ghost_block: Node2D, base_grid_pos: Vector2i) -> Array:
+	"""计算虚影块每个小格的连接方向"""
+	var connections = []
+	
+	if not ghost_block:
+		return connections
+	
+	# 获取虚影块的连接点
+	var ghost_connectors = []
+	if ghost_block.has_method("get_available_connection_points"):
+		ghost_connectors = ghost_block.get_available_connection_points()
+	
+	# 获取块的大小和旋转
+	var block_size = ghost_block.size
+	var rotation_deg = ghost_block.base_rotation_degree
+	
+	# 计算左上角网格位置
+	var top_left_grid_pos = base_grid_pos
+	
+	# 遍历虚影块占用的每个小格
+	for x in range(block_size.x):
+		for y in range(block_size.y):
+			# 计算局部网格位置
+			var local_grid_pos = Vector2i(x, y)
+			
+			# 转换为世界网格位置（考虑旋转）
+			var world_grid_pos = calculate_rotated_grid_position(local_grid_pos, top_left_grid_pos, rotation_deg)
+			
+			# 查找该位置的所有连接点
+			for connector in ghost_connectors:
+				if connector.location == local_grid_pos:
+					# 计算连接点的方向（考虑块旋转）
+					var connector_direction = calculate_connector_direction(connector, rotation_deg)
+					
+					# 直接访问属性，假设所有 Connector 都有 connection_type
+					var connection_type = "default"
+					if connector.has_method("get_connection_type"):
+						connection_type = connector.get_connection_type()
+					elif "connection_type" in connector:
+						connection_type = connector.connection_type
+					
+					connections.append({
+						"connector": connector,
+						"local_position": local_grid_pos,
+						"grid_position": world_grid_pos,
+						"direction": connector_direction,
+						"connection_type": connection_type
+					})
+	
+	return connections
 
-func rotate_ghost_connection():
-	if not current_ghost_block:
+func calculate_connector_direction(connector: Connector, block_rotation_deg: int) -> int:
+	"""计算连接点的方向（0-右, 1-下, 2-左, 3-上）"""
+	# 获取连接点相对旋转（相对于块）
+	var connector_rotation_deg = rad_to_deg(connector.rotation)
+	
+	# 计算总旋转（块旋转 + 连接点旋转）
+	var total_rotation_deg = block_rotation_deg + connector_rotation_deg
+	
+	# 归一化到0-360度
+	total_rotation_deg = fmod(total_rotation_deg + 360, 360)
+	
+	# 转换为方向（基于连接点的朝向）
+	# 假设连接点的默认朝向右(0度)
+	if total_rotation_deg >= 315 or total_rotation_deg < 45:
+		return 0  # 右
+	elif total_rotation_deg >= 45 and total_rotation_deg < 135:
+		return 1  # 下
+	elif total_rotation_deg >= 135 and total_rotation_deg < 225:
+		return 2  # 左
+	else:  # 225-315
+		return 3  # 上
+
+func calculate_rotated_grid_position(local_pos: Vector2i, base_pos: Vector2i, rotation_deg: int) -> Vector2i:
+	"""计算旋转后的网格位置"""
+	# 将旋转度转换为标准值（0, 90, 180, 270）
+	var normalized_rotation = int(fmod(rotation_deg + 360, 360))
+	
+	match normalized_rotation:
+		0:
+			return base_pos + local_pos
+		90:
+			return base_pos + Vector2i(-local_pos.y, local_pos.x)
+		180:
+			return base_pos + Vector2i(-local_pos.x, -local_pos.y)
+		270:
+			return base_pos + Vector2i(local_pos.y, -local_pos.x)
+		_:
+			return base_pos + local_pos
+
+func get_direction_vector(direction: int) -> Vector2i:
+	"""将方向转换为向量"""
+	match direction:
+		0: return Vector2i(1, 0)   # 右
+		1: return Vector2i(0, 1)   # 下
+		2: return Vector2i(-1, 0)  # 左
+		3: return Vector2i(0, -1)  # 上
+		_: return Vector2i.ZERO
+
+func establish_grid_connection(block: Block, connection_config: Dictionary):
+	"""基于网格连接配置建立连接"""
+	# 获取车辆块和目标连接点
+	var vehicle_block = connection_config.vehicle_block
+	var vehicle_direction = connection_config.vehicle_direction
+	
+	# 在车辆块上找到对应方向的连接点
+	var vehicle_connector = find_connector_by_direction(vehicle_block, vehicle_direction)
+	
+	if not vehicle_connector:
 		return
 	
-	current_ghost_block.base_rotation_degree += 90
-	current_ghost_block.base_rotation_degree = fmod(current_ghost_block.base_rotation_degree + 90, 360) - 90
+	# 在移动块上找到对应方向的连接点
+	var block_direction = connection_config.ghost_direction
+	var block_connector = find_connector_by_direction(block, block_direction)
 	
-	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
-	
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	update_ghost_block_position(global_mouse_pos)
-
-func try_place_block():
-	if not current_ghost_block or not selected_vehicle:
+	if not block_connector:
 		return
 	
-	if is_first_block and is_new_vehicle:
-		place_first_block()
-		return
-	
-	if not current_snap_config:
-		return
-	
-	var connections_to_disconnect = find_connections_to_disconnect_for_placement()
-	disconnect_connections(connections_to_disconnect)
-	
-	var grid_positions = snap_config.positions
-	var new_block: Block = current_block_scene.instantiate()
-	selected_vehicle.add_child(new_block)
-	new_block.global_position = current_snap_config.ghost_position
-	new_block.global_rotation = current_ghost_block.global_rotation
-	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
-	var control = selected_vehicle.control
-	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
-	selected_vehicle.control = control
-	
-	start_block_placement_with_rotation(current_block_scene.resource_path)
-	
-	editor.update_blueprint_ghosts()
+	# 尝试连接
+	if vehicle_connector.is_connection_enabled and block_connector.is_connection_enabled:
+		vehicle_connector.try_connect(block_connector)
 
-func place_first_block():
-	var new_block: Block = current_block_scene.instantiate()
-	selected_vehicle.add_child(new_block)
-	new_block.global_position = current_ghost_block.global_position
-	new_block.global_rotation = current_ghost_block.global_rotation
-	new_block.base_rotation_degree = current_ghost_block.base_rotation_degree
+func find_connector_by_direction(block: Block, direction: int) -> Connector:
+	"""在块上查找指定方向的连接点"""
+	if not block or not block.has("connection_points"):
+		return null
 	
-	var grid_positions = calculate_free_grid_positions(new_block)
-	
-	var control = selected_vehicle.control
-	selected_vehicle._add_block(new_block, new_block.position, grid_positions)
-	selected_vehicle.control = control
-	
-	is_first_block = false
-	
-	start_block_placement_with_rotation(current_block_scene.resource_path)
+	for connector in block.connection_points:
+		if connector is Connector:
+			# 计算连接点的方向
+			var connector_dir = calculate_connector_direction(connector, block.base_rotation_degree)
+			if connector_dir == direction and not connector.connected_to:
+				return connector
+	return null
 
-func calculate_free_grid_positions(block: Block) -> Array:
+# === 网格计算辅助函数 ===
+func calculate_block_grid_positions_for_moving(base_grid_pos: Vector2i) -> Array:
+	"""计算移动块占用的网格位置"""
+	if not moving_block:
+		return []
+	
+	return calculate_block_grid_positions_for_placement(base_grid_pos, moving_block)
+
+func calculate_block_grid_positions_for_placement(base_grid_pos: Vector2i, block: Node2D) -> Array:
+	"""计算块占用的网格位置"""
 	var grid_positions = []
-	var world_pos = block.global_position
-	var grid_x = int(round(world_pos.x / GRID_SIZE))
-	var grid_y = int(round(world_pos.y / GRID_SIZE))
-	
 	var block_size = block.size
+	var rotation_deg = int(block.base_rotation_degree)
+	
+	# 获取方块左上角的网格位置
+	var top_left_grid_pos = base_grid_pos
+	
 	for x in range(block_size.x):
 		for y in range(block_size.y):
 			var grid_pos: Vector2i
-			match int(block.base_rotation_degree):
+			
+			# 根据方块的旋转计算网格位置
+			match rotation_deg:
 				0:
-					grid_pos = Vector2i(grid_x + x, grid_y + y)
+					grid_pos = top_left_grid_pos + Vector2i(x, y)
 				90:
-					grid_pos = Vector2i(grid_x - y, grid_y + x)
-				-90:
-					grid_pos = Vector2i(grid_x + y, grid_y - x)
+					grid_pos = top_left_grid_pos + Vector2i(-y, x)
+				-90, 270:
+					grid_pos = top_left_grid_pos + Vector2i(y, -x)
 				180, -180:
-					grid_pos = Vector2i(grid_x - x, grid_y - y)
+					grid_pos = top_left_grid_pos + Vector2i(-x, -y)
 				_:
-					grid_pos = Vector2i(grid_x + x, grid_y + y)
+					grid_pos = top_left_grid_pos + Vector2i(x, y)
 			
 			grid_positions.append(grid_pos)
 	
 	return grid_positions
 
-func start_block_placement_with_rotation(scene_path: String):
-	if not editor.is_editing or not selected_vehicle:
-		return
-	
-	var base_rotation_degree = current_ghost_block.base_rotation_degree
-	
-	if current_ghost_block:
-		current_ghost_block.queue_free()
-		current_ghost_block = null
-	
-	current_block_scene = load(scene_path)
-	if not current_block_scene:
-		push_error("无法加载块场景: ", scene_path)
-		return
-	
-	current_ghost_block = current_block_scene.instantiate()
-	get_tree().current_scene.add_child(current_ghost_block)
-	current_ghost_block.modulate = Color(1, 1, 1, 0.5)
-	current_ghost_block.z_index = 100
-	current_ghost_block.do_connect = false
-	
-	current_ghost_block.base_rotation_degree = base_rotation_degree
-	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
-	
-	setup_ghost_block_collision(current_ghost_block)
-	
-	reset_connection_indices()
-	current_snap_config = {}
-
-func establish_connection(vehicle_point: Connector, new_block: Block, ghost_point: Connector):
-	var new_block_points = new_block.find_children("*", "Connector")
-	var target_point = null
-	
-	for point in new_block_points:
-		if point is Connector and point.name == ghost_point.name:
-			target_point = point
-			break
-	
-	if target_point is Connector:
-		target_point.is_connection_enabled = true
-		vehicle_point.try_connect(target_point)
-
-func calculate_rotated_grid_positions(vehiclepoint, ghostpoint):
-	var grid_positions = []
-	var grid_block = {}
-	
+func are_grid_positions_available_for_moving(new_positions: Array) -> bool:
+	"""检查移动块的新位置是否可用"""
 	if not selected_vehicle:
-		return grid_positions
-	
-	var block_size = current_ghost_block.size
-
-	var location_v = vehiclepoint.location
-	
-	var rotation_b = vehiclepoint.find_parent_block().base_rotation_degree
-	var grid_b = {}
-	var grid_b_pos = {}
-	
-	for key in selected_vehicle.grid:
-		if selected_vehicle.grid[key]["block"] == vehiclepoint.find_parent_block():
-			grid_b[key] = selected_vehicle.grid[key]["block"]
-	
-	grid_b_pos = get_rectangle_corners(grid_b)
-	var grid_connect_g
-	if grid_b_pos.is_empty():
 		return false
-	var connect_pos_v
-	if rotation_b == 0:
-		connect_pos_v = Vector2i(grid_b_pos["1"].x + location_v.x, grid_b_pos["1"].y + location_v.y)
-	elif rotation_b == -90:
-		connect_pos_v = Vector2i(grid_b_pos["4"].x + location_v.y, grid_b_pos["4"].y - location_v.x)
-	elif rotation_b == -180 or rotation_b == 180:
-		connect_pos_v = Vector2i(grid_b_pos["3"].x - location_v.x, grid_b_pos["3"].y - location_v.y)
-	elif rotation_b == 90:
-		connect_pos_v = Vector2i(grid_b_pos["2"].x - location_v.y, grid_b_pos["2"].y + location_v.x)
-	grid_connect_g = get_connection_offset(connect_pos_v, vehiclepoint.rotation, vehiclepoint.find_parent_block().base_rotation_degree)
 	
-	if grid_connect_g != null and block_size != null and ghostpoint.location != null:
-		grid_block = to_grid(grid_connect_g, block_size, ghostpoint.location)
+	for pos in new_positions:
+		# 检查是否在其他方块占用
+		if selected_vehicle.grid.has(pos):
+			var existing_block = selected_vehicle.grid[pos]
+			# 允许与原始位置重叠
+			var is_original_position = false
+			for original_pos in moving_block_original_grid_positions:
+				if pos == original_pos:
+					is_original_position = true
+					break
+			
+			if not is_original_position:
+				return false
 	
-	for pos in grid_block:
+	return true
+
+func are_grid_positions_available(positions: Array) -> bool:
+	"""检查位置是否可用（通用）"""
+	if not selected_vehicle:
+		return false
+	
+	for pos in positions:
 		if selected_vehicle.grid.has(pos):
 			return false
-		grid_positions.append(pos)
 	
-	return grid_positions
+	return true
 
-func get_connection_offset(connect_pos_v: Vector2i, _rotation: float, direction: int) -> Vector2i:
-	var rounded_rotation_or = round(rad_to_deg(_rotation))
-	var rounded_rotation = direction + rounded_rotation_or
-	rounded_rotation = wrapf(rounded_rotation, -180, 180)
-	
-	if rounded_rotation == 0:
-		return Vector2i(connect_pos_v.x + 1, connect_pos_v.y)
-	elif rounded_rotation == -90:
-		return Vector2i(connect_pos_v.x, connect_pos_v.y - 1)
-	elif rounded_rotation == -180 or rounded_rotation == 180:
-		return Vector2i(connect_pos_v.x - 1, connect_pos_v.y)
-	elif rounded_rotation == 90:
-		return Vector2i(connect_pos_v.x, connect_pos_v.y + 1)
-	
-	return connect_pos_v
-
-func get_rectangle_corners(grid_data: Dictionary) -> Dictionary:
-	if grid_data.is_empty():
-		return {}
-	
-	var x_coords = []
-	var y_coords = []
-	
-	for coord in grid_data.keys():
-		x_coords.append(coord[0])
-		y_coords.append(coord[1])
-	
-	x_coords.sort()
-	y_coords.sort()
-	
-	var min_x = x_coords[0]
-	var max_x = x_coords[x_coords.size() - 1]
-	var min_y = y_coords[0]
-	var max_y = y_coords[y_coords.size() - 1]
-	
-	var corners = {
-		"1": Vector2i(min_x, min_y),
-		"2": Vector2i(max_x, min_y),
-		"3": Vector2i(max_x, max_y),
-		"4": Vector2i(min_x, max_y)
-	}
-	
-	return corners
-
-func to_grid(grid_connect_g: Vector2i, block_size: Vector2i, connect_pos_g: Vector2i) -> Dictionary:
-	var grid_block = {}
-	for i in block_size.x:
-		for j in block_size.y:
-			if current_ghost_block.base_rotation_degree == 0:
-				var left_up = Vector2i(grid_connect_g.x - connect_pos_g.x, grid_connect_g.y - connect_pos_g.y)
-				grid_block[Vector2i(left_up.x + i, left_up.y + j)] = current_ghost_block
-			elif current_ghost_block.base_rotation_degree == -90:
-				var left_up = Vector2i(grid_connect_g.x - connect_pos_g.y, grid_connect_g.y + connect_pos_g.x)
-				grid_block[Vector2i(left_up.x + j, left_up.y - i)] = current_ghost_block
-			elif current_ghost_block.base_rotation_degree == -180 or current_ghost_block.base_rotation_degree == 180:
-				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.x, grid_connect_g.y + connect_pos_g.y)
-				grid_block[Vector2i(left_up.x - i, left_up.y - j)] = current_ghost_block
-			elif current_ghost_block.base_rotation_degree == 90:
-				var left_up = Vector2i(grid_connect_g.x + connect_pos_g.y, grid_connect_g.y - connect_pos_g.x)
-				grid_block[Vector2i(left_up.x - j, left_up.y + i)] = current_ghost_block
-	return grid_block
-
-func find_connections_to_disconnect_for_placement() -> Array:
-	var connections_to_disconnect = []
-	if current_snap_config.vehicle_point and current_snap_config.vehicle_point.connected_to:
-		connections_to_disconnect.append({
-			"from": current_snap_config.vehicle_point,
-			"to": current_snap_config.vehicle_point.connected_to
-		})
-	return connections_to_disconnect
-
-func disconnect_connections(connections: Array):
-	for connection in connections:
-		if is_instance_valid(connection.from):
-			connection.from.disconnect_joint()
-		if is_instance_valid(connection.to):
-			connection.to.disconnect_joint()
-
-func get_affected_blocks() -> Array:
-	var affected_blocks = []
-	if current_snap_config.vehicle_point:
-		var parent_block = current_snap_config.vehicle_point.find_parent_block()
-		if parent_block:
-			affected_blocks.append(parent_block)
-	return affected_blocks
-
-func enable_connection_points_for_blocks(blocks: Array):
-	for block in blocks:
-		if is_instance_valid(block):
-			for point in block.connection_points:
-				if is_instance_valid(point):
-					point.set_connection_enabled(true)
-
-# === 删除模式功能 ===
-func try_remove_block():
-	if not selected_vehicle:
-		return
-	var mouse_pos = get_viewport().get_mouse_position()
-	var global_mouse_pos = get_viewport().get_canvas_transform().affine_inverse() * mouse_pos
-	
-	var space_state = get_tree().root.get_world_2d().direct_space_state
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = global_mouse_pos
-	query.collision_mask = 1
-	
-	var result = space_state.intersect_point(query)
-	for collision in result:
-		var block = collision.collider
-		if block is Block and block.get_parent() == selected_vehicle:			
-			var block_name = block.block_name
-			var connections_to_disconnect = find_connections_for_block(block)
-			disconnect_connections(connections_to_disconnect)
-			var control = selected_vehicle.control
-			selected_vehicle.remove_block(block, true)
-			selected_vehicle.control = control
-			enable_connection_points_for_blocks(get_affected_blocks_for_removal(block))
-			call_deferred("check_vehicle_stability")
-			
-			editor.update_blueprint_ghosts()
-			var block_count_after = selected_vehicle.blocks.size()
-			if block_count_after == 0:
-				is_first_block = true
-				is_new_vehicle = true 
-			break
-
-func find_connections_for_block(block: Block) -> Array:
-	var connections = []
-	for point in block.connection_points:
-		if point.connected_to:
-			connections.append({
-				"from": point,
-				"to": point.connected_to
-			})
-	return connections
-
-func get_affected_blocks_for_removal(removed_block: Block) -> Array:
-	var affected_blocks = []
-	for point in removed_block.connection_points:
-		if point.connected_to:
-			var connected_block = point.connected_to.find_parent_block()
-			if connected_block:
-				affected_blocks.append(connected_block)
-	return affected_blocks
-
-func cancel_placement():
-	if current_ghost_block:
-		current_ghost_block.queue_free()
-		current_ghost_block = null
-	current_block_scene = null
-	current_snap_config = {}
-	editor.clear_tab_container_selection()
-	editor.update_vehicle_info_display()
-
+# === 辅助函数 ===
 func get_block_at_position(position: Vector2) -> Block:
 	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
@@ -691,28 +979,12 @@ func get_block_grid_positions(block: Block) -> Array:
 	
 	return grid_positions
 
-func get_current_snap_config_for_moving() -> Dictionary:
-	if available_vehicle_points.is_empty() or available_ghost_points.is_empty():
-		return {}
-	
-	var original_ghost = current_ghost_block
-	current_ghost_block = moving_block_ghost
-	
-	var best_config = find_best_snap_config()
-	
-	current_ghost_block = original_ghost
-	
-	return best_config
-
-func get_moving_ghost_available_connection_points() -> Array[Connector]:
-	var points: Array[Connector] = []
-	if moving_block_ghost:
-		var connection_points = moving_block_ghost.get_available_connection_points()
-		for point in connection_points:
-			if point is Connector:
-				point.qeck = false
-				points.append(point)
-	return points
+func enable_connection_points_for_blocks(blocks: Array):
+	for block in blocks:
+		if is_instance_valid(block):
+			for point in block.connection_points:
+				if is_instance_valid(point):
+					point.set_connection_enabled(true)
 
 func enable_all_connection_points_for_editing(open: bool):
 	if not selected_vehicle:
@@ -732,8 +1004,9 @@ func restore_original_connections():
 	await get_tree().process_frame
 
 func reset_connection_indices():
-	current_ghost_connection_index = 0
-	current_vehicle_connection_index = 0
+	"""重置连接点索引（保持兼容性）"""
+	# 这个函数在新系统中不再使用，但为了保持代码兼容性而保留
+	pass
 
 func check_vehicle_stability():
 	if selected_vehicle:
