@@ -27,13 +27,12 @@ func init_layerdata():
 		if tile_info["phase"] == "solid":
 			celldata = {
 				"matter": tile_matter,
-				"max_hp": tile_info["hp"],
-				"current_hp": tile_info["hp"],
+				"data": tile_info["hp"],
 			}
 		elif tile_info["phase"] == "liquid":
 			celldata = {
 				"matter": tile_matter,
-				"mass": tile_info["mass"]
+				"data": tile_info["mass"]
 			}
 		layerdata[cell] = celldata
 
@@ -49,17 +48,9 @@ func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
 	elif dmg_type == "explosive":
 		amount *= explosive_absorb
 	
-	layerdata[cell]["current_hp"] -= amount
+	layerdata[cell]["data"] -= amount
 	
-	if layerdata[cell]["current_hp"] <= layerdata[cell]["max_hp"] * 0.5:
-		pass
-	
-	# phase 2
-	if layerdata[cell]["current_hp"] <= layerdata[cell]["max_hp"] * 0.25:
-		pass
-	
-	# phase 3
-	if layerdata[cell]["current_hp"] <= 0:
+	if layerdata[cell]["data"] <= 0:
 		destroy_tile(cell)
 	
 	#shard particle
@@ -136,9 +127,9 @@ func get_total_liquid_mass(cells:Array[Vector2i]) -> float:
 	for cell in cells:
 		if not layerdata[cell]:
 			return 0.0
-		if not layerdata[cell]["mass"]:
+		if not layerdata[cell]["data"]:
 			return 0.0
-		total_mass += layerdata[cell]["mass"]
+		total_mass += layerdata[cell]["data"]
 	return total_mass
 
 func remove_liquid(cell:Vector2i, mass:float):
@@ -151,11 +142,11 @@ func remove_liquid(cell:Vector2i, mass:float):
 		var farthest_cell = find_farthest_cell(cell, get_connected_liquid(cell))
 		if farthest_cell == null:
 			return
-		elif layerdata[farthest_cell]["mass"] > mass_left:
-			layerdata[farthest_cell]["mass"] -= mass_left
+		elif layerdata[farthest_cell]["data"] > mass_left:
+			layerdata[farthest_cell]["data"] -= mass_left
 			return
 		else:
-			mass_left -= layerdata[farthest_cell]["mass"]
+			mass_left -= layerdata[farthest_cell]["data"]
 			erase_cell(farthest_cell)
 			layerdata.erase(farthest_cell)
 			BetterTerrain.update_terrain_cell(self, farthest_cell, true)
@@ -168,13 +159,13 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 	var mass_left = mass
 	var tile_added:Array[Vector2i] = []
 	for c in get_connected_liquid(cell):
-		if layerdata[c]["mass"] < 1000.0:
-			var m = 1000.0 - layerdata[c]["mass"]
+		if layerdata[c]["data"] < 1000.0:
+			var m = 1000.0 - layerdata[c]["data"]
 			if m >= mass_left:
-				layerdata[c]["mass"] += mass_left
+				layerdata[c]["data"] += mass_left
 				return
 			else:
-				layerdata[c]["mass"] += m
+				layerdata[c]["data"] += m
 				mass_left -= m
 		if mass_left == 0:
 			return
@@ -184,19 +175,19 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 		var closest_cell = find_closest_cell(cell, connected_liquid)
 		if closest_cell == null:
 			for c in connected_liquid:
-				layerdata[c]["mass"] += mass / connected_liquid.size()
+				layerdata[c]["data"] += mass / connected_liquid.size()
 			return
 		elif mass_left <= 1000.0:
 			var celldata = {
 				"matter": matter,
-				"mass": mass_left
+				"data": mass_left
 			}
 			layerdata[closest_cell] = celldata
 			mass_left = 0
 		else:
 			var celldata = {
 				"matter": matter,
-				"mass": 1000.0
+				"data": 1000.0
 			}
 			layerdata[closest_cell] = celldata
 			mass_left -= 1000.0
@@ -205,7 +196,6 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 		BetterTerrain.set_cells(self, tile_added, TileDB.get_tile(matter)["terrain_int"])
 		BetterTerrain.update_terrain_cells(self, tile_added)
 		minimap.update_cellmap(tile_added)
-
 
 func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
 	var farthest = null
@@ -216,7 +206,6 @@ func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
 			max_dist = d
 			farthest = c
 	return farthest
-
 
 func find_closest_cell(cell: Vector2i, from: Array[Vector2i]):
 	if from.is_empty():
@@ -238,3 +227,44 @@ func find_closest_cell(cell: Vector2i, from: Array[Vector2i]):
 					min_dist = dist
 					closest = n
 	return closest
+
+# SAVE AND LOAD
+
+func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
+	const CHUNK_SIZE := 32
+	var bytes := PackedByteArray()
+	for ly in range(CHUNK_SIZE):
+		for lx in range(CHUNK_SIZE):
+			var x := chunk_x * CHUNK_SIZE + lx
+			var y := chunk_y * CHUNK_SIZE + ly
+			var cell := Vector2i(x, y)
+			var celldata = get_celldata(cell)
+			if celldata.is_empty():
+				bytes.append_array([0, 0])    # empty tile
+			else:
+				var terrain_int = TileDB.get_tile(celldata["matter"])["terrain_int"]
+				var data = celldata.get("data", 0)
+				bytes.append_array([terrain_int, data])       
+	return bytes
+
+func load_chunk(chunk_x:int, chunk_y:int, bytes:PackedByteArray, CHUNK_SIZE:int):
+	var i := 0
+	for ly in range(CHUNK_SIZE):
+		for lx in range(CHUNK_SIZE):
+			var terrain := bytes[i]; i += 1
+			var data := bytes[i]; i += 1
+
+			if terrain == 0:
+				continue
+
+			var x := chunk_x * CHUNK_SIZE + lx
+			var y := chunk_y * CHUNK_SIZE + ly
+			var cell := Vector2i(x, y)
+			BetterTerrain.set_cell(self, cell, terrain)
+			var matter = TileDB.get_matter(terrain)
+			layerdata[cell] = {
+				"matter": matter,
+				"data": data
+			}
+	var rect := Rect2i(Vector2i(chunk_x * CHUNK_SIZE, chunk_y * CHUNK_SIZE), Vector2i(CHUNK_SIZE, CHUNK_SIZE))
+	BetterTerrain.update_terrain_area(self, rect)

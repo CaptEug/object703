@@ -90,7 +90,7 @@ func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 	var celldata = tilemap.get_celldata(cell)
 	if celldata:
 		if TileDB.get_tile(celldata["matter"])["phase"] == "solid":
-			textlabel.text = celldata["matter"] + " tile\nHP:" + str(celldata["current_hp"])
+			textlabel.text = celldata["matter"] + " tile\nHP:" + str(celldata["data"])
 		elif TileDB.get_tile(celldata["matter"])["phase"] == "liquid":
 			var total_mass = tilemap.get_total_liquid_mass(tilemap.get_connected_liquid(cell))
 			if total_mass < 1000.0:
