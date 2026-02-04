@@ -8,8 +8,7 @@ var world_files: Array[String] = []
 
 func _ready():
 	refresh_world_list()
-	world_list.add_item("world_namebruh")
-
+	world_list.add_item("dont_load_this")
 
 func refresh_world_list():
 	world_list.clear()
@@ -41,3 +40,17 @@ func scan_worlds() -> Array[String]:
 
 func _on_back_button_pressed() -> void:
 	visible = false
+
+
+func _on_world_list_item_selected(index: int) -> void:
+	$LoadButton.disabled = false
+
+
+func _on_load_button_pressed() -> void:
+	var selected := world_list.get_selected_items()
+	if selected.is_empty():
+		return
+	var idx := selected[0]
+	var file := world_files[idx]
+	GameState.load_game(file)
+	

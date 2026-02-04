@@ -1,16 +1,21 @@
 extends Control
 
-@onready var camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
-@onready var UI = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+@onready var UI:CanvasLayer = get_parent()
+@onready var gamescene:Node2D = UI.get_parent()
 
-var time:String = "00:00"
 
 func _ready():
 	pass
 
 func _process(_delta):
-	$Panel/Clock.text = time
+	$Panel/Clock.text = get_clock_string(gamescene.game_time)
 
+func get_clock_string(time) -> String:
+	var cycle_duration = 600.0
+	var total_minutes = (time / cycle_duration) * 24.0 * 60.0
+	var hour = int(total_minutes / 60.0) % 24
+	var minute = int(total_minutes) % 60
+	return "%02d:%02d" % [hour, minute]
 
 # 创建新车辆
 func create_new_vehicle():

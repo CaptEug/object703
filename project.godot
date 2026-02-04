@@ -11,11 +11,12 @@ config_version=5
 [application]
 
 config/name="Object703"
-run/main_scene="uid://dawkb0e8tm4e8"
+run/main_scene="uid://bhq342vkmfrox"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
 [autoload]
 
+GameState="*res://GameState.gd"
 GlobalTimeManager="*res://GlobalTimeManager.gd"
 ItemDB="*res://items/item_database.gd"
 TileDB="*res://tilemaps/tile_database.gd"

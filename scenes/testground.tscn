@@ -21,6 +21,25 @@ glow_hdr_scale = 1.0
 
 [node name="Testground" type="Node2D"]
 
+[node name="Testfeild" parent="." instance=ExtResource("8_iwiij")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Testfeild"]
+environment = SubResource("Environment_m32x0")
+
+[node name="Object1" parent="Testfeild" instance=ExtResource("2_5du73")]
+position = Vector2(917, 1196)
+rotation = -0.785405
+
+[node name="Object2" parent="Testfeild" instance=ExtResource("7_hie3q")]
+position = Vector2(1470, 909)
+
+[node name="Object3" parent="Testfeild" instance=ExtResource("2_5du73")]
+position = Vector2(1139, 1241)
+script = ExtResource("7_ijxa5")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="Testfeild"]
+script = ExtResource("7_iwiij")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="EditormodeUI" parent="CanvasLayer" instance=ExtResource("1_eun4v")]
@@ -52,25 +71,6 @@ offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 0
 grow_vertical = 0
-
-[node name="Testfeild" parent="." instance=ExtResource("8_iwiij")]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="Testfeild"]
-environment = SubResource("Environment_m32x0")
-
-[node name="Object1" parent="Testfeild" instance=ExtResource("2_5du73")]
-position = Vector2(917, 1196)
-rotation = -0.785405
-
-[node name="Object2" parent="Testfeild" instance=ExtResource("7_hie3q")]
-position = Vector2(1470, 909)
-
-[node name="Object3" parent="Testfeild" instance=ExtResource("2_5du73")]
-position = Vector2(1139, 1241)
-script = ExtResource("7_ijxa5")
-
-[node name="CanvasModulate" type="CanvasModulate" parent="Testfeild"]
-script = ExtResource("7_iwiij")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(1262, 1079)

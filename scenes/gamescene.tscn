@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3 uid="uid://b765c5wg5q6yo"]
+
+[ext_resource type="Script" uid="uid://bytfcwiqedmk8" path="res://scenes/gamescene.gd" id="1_xkbh3"]
+[ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="2_fwly5"]
+[ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_xkbh3"]
+[ext_resource type="PackedScene" uid="uid://dtw2v5sc0o4ng" path="res://ui/map/minimap.tscn" id="4_mulil"]
+[ext_resource type="PackedScene" uid="uid://cv2b5l601kiha" path="res://tilemaps/gamemap.tscn" id="5_7cfj2"]
+[ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="6_xkbh3"]
+
+[node name="Gamescene" type="Node2D"]
+script = ExtResource("1_xkbh3")
+
+[node name="Gamemap" parent="." instance=ExtResource("5_7cfj2")]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Hud" parent="UI" instance=ExtResource("2_fwly5")]
+
+[node name="Tooltip" parent="UI" instance=ExtResource("3_xkbh3")]
+
+[node name="Minimap" parent="UI" instance=ExtResource("4_mulil")]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -320.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("6_xkbh3")

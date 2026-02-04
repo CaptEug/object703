@@ -23,7 +23,7 @@ func _input(event: InputEvent) -> void:
 				target_zoom *= 1.0 + zoom_speed
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				target_zoom *= 1.0 - zoom_speed
-
+	
 			# Clamp zoom to stay within limits
 			target_zoom.x = clamp(target_zoom.x, zoom_min, zoom_max)
 			target_zoom.y = clamp(target_zoom.y, zoom_min, zoom_max)
@@ -60,43 +60,9 @@ func focus_on_vehicle(vehicle: Vehicle):
 			var mouse_pos = get_viewport().get_mouse_position()
 			var mouse_offset = mouse_pos - viewport_center
 			target_pos += mouse_offset
-
-	focused = true
-	update_camera_tween()
-
-# === 添加建筑聚焦函数 ===
-func focus_on_building(building: Building):
-	if not building:
-		return
-	
-	# 将相机聚焦到建筑的质心
-	target_pos = building.global_position
-	
-	# 如果有质心计算函数，使用它
-	if building.has_method("calculate_center_of_mass"):
-		var com = building.calculate_center_of_mass()
-		target_pos = building.global_position + com
 	
 	focused = true
 	update_camera_tween()
-
-# === 添加建筑旋转同步函数 ===
-func sync_rotation_to_building(building: Building):
-	if not building:
-		return
-	
-	# 获取建筑的旋转角度
-	# 从建筑的网格中获取第一个方块的旋转作为参考
-	if building.grid and not building.grid.is_empty():
-		var first_grid_pos = building.grid.keys()[0]
-		var first_block = building.grid[first_grid_pos]
-		if first_block:
-			# 计算基础旋转（减去方块的本地旋转）
-			var building_rotation = first_block.global_rotation - deg_to_rad(first_block.base_rotation_degree)
-			target_rot = building_rotation
-	else:
-		# 如果没有网格，使用建筑本身的旋转
-		target_rot = building.global_rotation
 
 func sync_rotation_to_vehicle(vehicle: Vehicle):
 	if not vehicle:

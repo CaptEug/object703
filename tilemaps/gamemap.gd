@@ -4,6 +4,7 @@ extends Node2D
 @onready var ground:TileMapLayer = $GroundLayer
 @onready var wall:WallLayer = $WallLayer
 @onready var building:BuildingLayer = $BuildingLayer
+@onready var canvas_modulate:CanvasModulate = $CanvasModulate
 var layers:Dictionary[String, TileMapLayer]
 var world_name:String
 var world_height:int = 256
@@ -15,17 +16,21 @@ var mapfolder_path:= "res://tilemaps/savedmaps/"
 
 
 func _ready():
-	world_name = "TestField"
+	var world_file = GameState.world_file
+	world_name = world_file.get_file().get_basename()
 	layers = {
 		"wall": wall,
 	}
 	#generate_world(noise_height_text.noise)
-	load_world("TestField.llh")
+	if world_file.is_empty():
+		world_file = "TestField.llh"
+	
+	load_world(world_file)
 	
 	
 	# 加载蓝图并生成建筑
-	building.load_all_blueprints()
-	building.generate_buildings_from_layerdata(self)
+	#building.load_all_blueprints()
+	#building.generate_buildings_from_layerdata(self)
 	
 	print("=== 游戏地图初始化完成 ===")
 
@@ -49,7 +54,7 @@ func generate_world(noise:Noise):
 				if noise_val > height_dict[matter][0] and noise_val <= height_dict[matter][1]:
 					var terrain_int = TileDB.get_tile(matter)["terrain_int"]
 					BetterTerrain.set_cell(wall, Vector2i(x, y), terrain_int)
-
+	
 	BetterTerrain.update_terrain_area(wall, Rect2i(Vector2i(0, 0), Vector2i(world_width, world_height)))
 	wall.init_layerdata()
 
