@@ -21,7 +21,7 @@ var area:Area2D
 
 
 func _ready():
-	line.visible = true
+	update_line_visibility()  # 初始化时根据状态显示/隐藏
 	setup_detection_area()
 	queue_redraw()
 	
@@ -32,17 +32,28 @@ func _process(_delta):
 			qeck = false
 		else:
 			qeck = true
+		# 更新line可见性
+		update_line_visibility()
 	
 	if area:
 		if area.collision_layer != get_parent().collision_layer:
 			change_layer(area, get_parent().collision_layer)
+	
 	# 即使 is_connection_enabled 为 false，也继续处理已存在的连接
 	for other_point in overlapping_points:
 		# 只处理已经连接的节点，不尝试新连接
 		if connected_to == other_point:
 			# 可以在这里添加维持连接的逻辑
 			pass
-	
+
+func update_line_visibility():
+	"""根据连接点状态更新line可见性"""
+	if line:
+		# 当连接点未连接、启用且qeck为true时显示line
+		line.visible = (connected_to == null and 
+					   is_connection_enabled and 
+					   qeck and
+					   is_instance_valid(self))
 
 func setup_detection_area():
 	detection_area = Area2D.new()
@@ -95,8 +106,9 @@ func try_connect(other_point: Connector) -> bool:
 		if qeck == true:
 			parent_block.create_joint_with(self, other_point, true) 
 			connected_to = other_point
-			line.visible = false
-			connected_to.line.visible = false
+			# 连接成功后更新双方line可见性
+			update_line_visibility()
+			other_point.update_line_visibility()
 	return true
 
 func can_connect_with(other_point: Connector) -> bool:
@@ -140,11 +152,14 @@ func disconnect_joint():
 	connected_to = null
 	joint = null
 	
+	# 更新line可见性
+	update_line_visibility()
+	
 	# 如果对面的连接点仍然有效，也清空它的连接状态
 	if other_point and is_instance_valid(other_point):
 		other_point.connected_to = null
 		other_point.joint = null
-		other_point.queue_redraw()
+		other_point.update_line_visibility()  # 更新对面line可见性
 	
 	queue_redraw()
 
@@ -159,6 +174,7 @@ func set_connection_enabled(enabled: bool, keep_existing: bool = true, protect_i
 			return
 		
 		is_connection_enabled = enabled
+		update_line_visibility()  # 更新line可见性
 		queue_redraw()
 
 func is_internal_connection() -> bool:
@@ -224,6 +240,7 @@ func is_safely_connected() -> bool:
 	if not is_instance_valid(connected_to):
 		connected_to = null
 		joint = null
+		update_line_visibility()  # 更新line可见性
 		return false
 	
 	return true
@@ -232,3 +249,12 @@ func is_safely_connected() -> bool:
 func force_disconnect():
 	"""强制断开连接，忽略内部连接保护"""
 	disconnect_joint()
+
+func get_actual_global_rotation() -> float:
+	# 确保获取正确的全局旋转
+	if get_parent():
+		# 计算连接点的全局旋转：父方块旋转 + 连接点局部旋转
+		var parent_block = get_parent() as Block
+		if parent_block:
+			return fmod(parent_block.global_rotation_degrees + rotation_degrees, 360)
+	return global_rotation_degrees

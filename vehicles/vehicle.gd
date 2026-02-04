@@ -160,28 +160,113 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				if not connection_map.has(local_pos_key):
 					connection_map[local_pos_key] = []
 				
-				var total_rotation = point.global_rotation_degrees + block.base_rotation_degree
+				# 使用与 get_connections_at_position 相同的计算方法
+				# 连接点相对于方块的旋转 + 方块的旋转 = 实际朝向
+				var total_rotation = point.rotation_degrees + block.base_rotation_degree
 				var dir = block.get_direction_from_rotation(total_rotation)
 				connection_map[local_pos_key].append(dir)
 		
+		print("Connection map:", connection_map)
+		
+		# 计算方块的基准位置（最小网格位置）
+		var min_x = grid_positions[0][0]
+		var min_y = grid_positions[0][1]
+		for pos_array in grid_positions:
+			min_x = min(min_x, pos_array[0])
+			min_y = min(min_y, pos_array[1])
+		var actual_base_pos = Vector2i(min_x, min_y)
+		
+		# 更新block.base_pos（如果尚未设置）
+		if block.base_pos == Vector2i.ZERO:
+			block.base_pos = actual_base_pos
+		
+		print("Block base_pos:", block.base_pos, " actual_base_pos:", actual_base_pos, " rotation:", block.base_rotation_degree)
+		
+		# 预计算局部位置到全局位置的映射
+		var local_to_global_map = {}
+		for x in range(block.size.x):
+			for y in range(block.size.y):
+				var local_pos_key = Vector2i(x, y)
+				var global_pos = calculate_global_grid_position(local_pos_key, block, actual_base_pos)
+				local_to_global_map[local_pos_key] = global_pos
+		
+		print("Local to global map:", local_to_global_map)
+		
+		# 构建反向映射：全局位置 -> 局部位置
+		var global_to_local_map = {}
+		for local_pos_key in local_to_global_map:
+			var global_pos = local_to_global_map[local_pos_key]
+			global_to_local_map[global_pos] = local_pos_key
+		
 		for pos_array in grid_positions:
 			# 将数组转换为 Vector2i
-			var pos = Vector2i(pos_array[0], pos_array[1])
+			var global_grid_pos = Vector2i(pos_array[0], pos_array[1])
 			
-			# 计算局部网格位置
-			var local_grid_pos = pos - block.base_pos
+			# 查找对应的局部位置
+			var local_grid_pos = global_to_local_map.get(global_grid_pos, Vector2i(-1, -1))
+			
+			if local_grid_pos == Vector2i(-1, -1):
+				print("Error: Could not find local position for global position:", global_grid_pos)
+				continue
 			
 			# 获取该位置的连接方向列表
 			var dir_list = connection_map.get(local_grid_pos, [])
 			
-			# 创建连接状态数组
+			# 创建连接状态数组 [右, 下, 左, 上]
 			var connections = [false, false, false, false]
-			for dir in dir_list:
+			
+			# 获取该局部位置的所有连接点
+			var connectors_at_position = []
+			for point in block.connection_points:
+				if point is Connector and point.location == local_grid_pos:
+					connectors_at_position.append(point)
+			
+			# 标记连接方向
+			for connector in connectors_at_position:
+				# 计算连接点的方向
+				var total_rotation = connector.rotation_degrees + block.base_rotation_degree
+				var dir = block.get_direction_from_rotation(total_rotation)
+				
+				# 检查连接点是否已连接
 				if dir >= 0 and dir < connections.size():
-					connections[dir] = true
+					if connector.connected_to != null:
+						# 已连接，标记为 false
+						connections[dir] = false
+						
+						
+						# 同时，找到连接的另一个连接点，更新它所在的方块的 grid
+						var other_connector = connector.connected_to
+						if other_connector and is_instance_valid(other_connector):
+							var other_block = other_connector.find_parent_block()
+							if other_block and other_block != block:
+								# 计算另一个连接点的方向
+								var other_total_rotation = other_connector.rotation_degrees + other_block.base_rotation_degree
+								var other_dir = other_block.get_direction_from_rotation(other_total_rotation)
+								
+								# 找到另一个连接点所在的车辆
+								var other_vehicle = other_block.parent_vehicle
+								if other_vehicle and other_vehicle.grid:
+									# 找到另一个连接点所在的全局网格位置
+									# 我们需要找到 other_connector 在 other_block 中的局部位置
+									var other_local_pos = other_connector.location
+									# 计算对应的全局网格位置
+									var other_global_pos = other_vehicle.calculate_global_grid_position(other_local_pos, other_block, other_block.base_pos)
+									
+									# 更新另一个车辆 grid 中的连接方向
+									if other_vehicle.grid.has(other_global_pos):
+										var other_connections = other_vehicle.grid[other_global_pos]["connections"].duplicate()
+										if other_dir >= 0 and other_dir < other_connections.size():
+											other_connections[other_dir] = false
+											other_vehicle.grid[other_global_pos]["connections"] = other_connections
+											
+					else:
+						# 未连接，标记为 true
+						connections[dir] = true
+			
+			print("Global pos:", global_grid_pos, " -> Local pos:", local_grid_pos, " Connections:", connections)
 			
 			# 使用新的grid数据结构
-			grid[pos] = {
+			grid[global_grid_pos] = {
 				"block": block,
 				"connections": connections
 			}
@@ -191,6 +276,32 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 	cached_center_of_mass_dirty = true
 	targets_dirty = true
 	update_vehicle()
+
+func calculate_global_grid_position(local_pos: Vector2i, block: Block, base_pos: Vector2i) -> Vector2i:
+	# 根据方块的旋转角度进行变换
+	var rotation_deg = int(block.base_rotation_degree)
+	
+	# 处理负角度
+	if rotation_deg < 0:
+		rotation_deg = 360 + rotation_deg
+	
+	match rotation_deg:
+		0:
+			# 无旋转
+			return base_pos + local_pos
+		90:
+			# 旋转90度
+			return base_pos + Vector2i(-local_pos.y, local_pos.x)
+		180:
+			# 旋转180度
+			return base_pos + Vector2i(-local_pos.x, -local_pos.y)
+		270:
+			# 旋转270度
+			return base_pos + Vector2i(local_pos.y, -local_pos.x)
+		_:
+			# 其他角度，默认无旋转
+			print("Warning: Unexpected rotation degree:", rotation_deg)
+			return base_pos + local_pos
 
 func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 	blocks.erase(block)
@@ -332,7 +443,8 @@ func load_from_blueprint(bp: Dictionary):
 				
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
 				turret_block.unlock_turret_rotation()
-
+	print(grid)
+	
 func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
 	var target_grid = []
 	for x in block.size.x:
