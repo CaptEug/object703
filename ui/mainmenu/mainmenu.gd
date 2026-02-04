@@ -20,3 +20,7 @@ func mainmenue_is_blank() -> bool:
 func _on_start_game_pressed() -> void:
 	worldpanel.visible = true
 	mainbuttons.hide()
+
+
+func _on_quit_pressed() -> void:
+	get_tree().quit()
