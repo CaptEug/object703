@@ -22,8 +22,8 @@ func _ready():
 		"wall": wall,
 	}
 	#generate_world(noise_height_text.noise)
-	if world_file.is_empty():
-		world_file = "TestField.llh"
+	#if world_file.is_empty():
+		#world_file = "TestField.llh"
 	
 	load_world(world_file)
 	

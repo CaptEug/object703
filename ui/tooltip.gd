@@ -13,6 +13,9 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if get_viewport().gui_get_hovered_control():
+		visible = false
+		return
 	var mouse_pos = get_tree().current_scene.get_local_mouse_position()
 	var space_state = get_world_2d().direct_space_state
 	var query:= PhysicsPointQueryParameters2D.new()
