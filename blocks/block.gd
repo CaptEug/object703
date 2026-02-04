@@ -539,7 +539,7 @@ func get_connections_at_position(local_grid_pos: Vector2i) -> Array[bool]:
 	
 	for point in connection_points:
 		if point is Connector and point.location == local_grid_pos:
-			var total_rotation = point.global_rotation_degrees + base_rotation_degree
+			var total_rotation = point.rotation_degrees + base_rotation_degree
 			var dir = get_direction_from_rotation(total_rotation)
 			if dir >= 0 and dir < connections.size():
 				connections[dir] = true

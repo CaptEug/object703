@@ -990,8 +990,9 @@ func clear_blueprint_ghosts():
 	is_showing_blueprint = false
 
 func update_blueprint_ghosts():
-	if is_showing_blueprint and selected_vehicle and blueprint_data:
-		show_blueprint_ghosts(blueprint_data)
+	#if is_showing_blueprint and selected_vehicle and blueprint_data:
+		#show_blueprint_ghosts(blueprint_data)
+		pass
 
 func get_rectangle_corners(grid_data):
 	if grid_data.is_empty():
@@ -1183,7 +1184,7 @@ func create_blueprint_data(vehicle_name: String) -> Dictionary:
 	
 	# 存储所有块（包括炮塔）
 	for grid_pos in selected_vehicle.grid:
-		var block = selected_vehicle.grid[grid_pos]
+		var block = selected_vehicle.grid[grid_pos]["block"]
 		if not processed_blocks.has(block):
 			var relative_pos = Vector2i(grid_pos.x - min_x, grid_pos.y - min_y)
 			var rotation_str = block.base_rotation_degree

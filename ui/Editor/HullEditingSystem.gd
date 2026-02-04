@@ -222,8 +222,6 @@ func start_block_placement(scene_path: String):
 	current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree)
 	
 	setup_ghost_block_collision(current_ghost_block)
-	
-	reset_connection_indices()
 
 func setup_ghost_block_collision(ghost: Node2D):
 	# 禁用所有碰撞形状
@@ -248,7 +246,7 @@ func update_ghost_block_position(mouse_position: Vector2):
 		# 第一个块自由放置
 		current_ghost_block.global_position = mouse_position
 		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = Color(0.8, 0.8, 1.0, 0.5)
+		current_ghost_block.modulate = editor.GHOST_FREE_COLOR
 		return
 	
 	# 关键修改：计算方块中心相对于左上角的偏移
@@ -289,18 +287,20 @@ func update_ghost_block_position(mouse_position: Vector2):
 		# 设置虚影方块位置（左上角 + 中心偏移 = 中心点）
 		current_ghost_block.global_position = world_pos + center_offset
 		
-		# 检查是否有连接吸附
+		# 检查是否有连接吸附 - 关键修改：这是判断是否可以拼装的依据
 		var snap_config = check_grid_connection_snap(grid_pos, block_positions, current_ghost_block)
 		
 		if snap_config and not snap_config.is_empty():
+			# 可以连接到其他方块 - 显示绿色
 			current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
 		else:
+			# 可以放置但无法连接 - 显示蓝色
 			current_ghost_block.modulate = editor.GHOST_FREE_COLOR
 	else:
 		# 不能放置，跟随鼠标但不吸附（中心点跟随鼠标）
 		current_ghost_block.global_position = mouse_position
 		current_ghost_block.rotation = deg_to_rad(current_ghost_block.base_rotation_degree) + camera.target_rot
-		current_ghost_block.modulate = editor.GHOST_FREE_COLOR
+		current_ghost_block.modulate = Color(1.0, 0.5, 0.5, 0.5)
 
 func rotate_ghost_connection():
 	if not current_ghost_block:
@@ -435,8 +435,6 @@ func start_block_placement_with_rotation(scene_path: String):
 	current_ghost_block.rotation = deg_to_rad(base_rotation_degree)
 	
 	setup_ghost_block_collision(current_ghost_block)
-	
-	reset_connection_indices()
 
 # === 删除模式功能 ===
 func try_remove_block():
@@ -688,20 +686,21 @@ func check_connection_snap_for_moving_block(base_grid_pos: Vector2i, block_posit
 			# 检查相反方向是否有连接
 			var opposite_dir = (ghost_dir + 2) % 4
 			
-			if vehicle_connections.size() > opposite_dir and vehicle_connections[opposite_dir]:
-				# 找到连接点！计算详细配置
-				var connection_config = {
-					"vehicle_block": vehicle_block,
-					"vehicle_grid_pos": target_grid_pos,
-					"vehicle_direction": opposite_dir,
-					"ghost_grid_pos": ghost_grid_pos,
-					"ghost_direction": ghost_dir,
-					"connection_type": "grid_snap"
-				}
-				
-				# 如果这是第一个连接，就使用它
-				if best_connection.is_empty():
-					best_connection = connection_config
+			if vehicle_connections.size() > opposite_dir:
+				if vehicle_connections[opposite_dir]:
+					# 找到连接点！计算详细配置
+					var connection_config = {
+						"vehicle_block": vehicle_block,
+						"vehicle_grid_pos": target_grid_pos,
+						"vehicle_direction": opposite_dir,
+						"ghost_grid_pos": ghost_grid_pos,
+						"ghost_direction": ghost_dir,
+						"connection_type": "grid_snap"
+					}
+					
+					# 如果这是第一个连接，就使用它
+					if best_connection.is_empty():
+						best_connection = connection_config
 	
 	return best_connection
 
@@ -712,6 +711,14 @@ func check_grid_connection_snap(base_grid_pos: Vector2i, block_positions: Array,
 	
 	# 获取虚影块的连接信息
 	var ghost_connections = calculate_ghost_connections(ghost_block, base_grid_pos)
+	
+	# 获取虚影块的连接点
+	var ghost_connectors = []
+	if ghost_block.has_method("get_available_connection_points"):
+		ghost_connectors = ghost_block.get_available_connection_points()
+	
+	if ghost_connections.is_empty():
+		return {}
 	
 	# 查找可能的连接
 	var best_connection = {}
@@ -734,20 +741,21 @@ func check_grid_connection_snap(base_grid_pos: Vector2i, block_positions: Array,
 			# 检查相反方向是否有连接
 			var opposite_dir = (ghost_dir + 2) % 4
 			
-			if vehicle_connections.size() > opposite_dir and vehicle_connections[opposite_dir]:
-				# 找到连接点！计算详细配置
-				var connection_config = {
-					"vehicle_block": vehicle_block,
-					"vehicle_grid_pos": target_grid_pos,
-					"vehicle_direction": opposite_dir,
-					"ghost_grid_pos": ghost_grid_pos,
-					"ghost_direction": ghost_dir,
-					"connection_type": "grid_snap"
-				}
-				
-				# 如果这是第一个连接，就使用它
-				if best_connection.is_empty():
-					best_connection = connection_config
+			if vehicle_connections.size() > opposite_dir:
+				if vehicle_connections[opposite_dir]:
+					# 找到连接点！计算详细配置
+					var connection_config = {
+						"vehicle_block": vehicle_block,
+						"vehicle_grid_pos": target_grid_pos,
+						"vehicle_direction": opposite_dir,
+						"ghost_grid_pos": ghost_grid_pos,
+						"ghost_direction": ghost_dir,
+						"connection_type": "grid_snap"
+					}
+					
+					# 如果这是第一个连接，就使用它
+					if best_connection.is_empty():
+						best_connection = connection_config
 	
 	return best_connection
 
@@ -781,6 +789,9 @@ func calculate_ghost_connections(ghost_block: Node2D, base_grid_pos: Vector2i) -
 			
 			# 查找该位置的所有连接点
 			for connector in ghost_connectors:
+				if not is_instance_valid(connector):
+					continue
+					
 				if connector.location == local_grid_pos:
 					# 计算连接点的方向（考虑块旋转）
 					var connector_direction = calculate_connector_direction(connector, rotation_deg)
@@ -850,6 +861,14 @@ func get_direction_vector(direction: int) -> Vector2i:
 		3: return Vector2i(0, -1)  # 上
 		_: return Vector2i.ZERO
 
+func get_direction_name(direction: int) -> String:
+	match direction:
+		0: return "右"
+		1: return "下"
+		2: return "左"
+		3: return "上"
+		_: return "未知"
+
 func establish_grid_connection(block: Block, connection_config: Dictionary):
 	"""基于网格连接配置建立连接"""
 	# 获取车辆块和目标连接点
@@ -875,13 +894,14 @@ func establish_grid_connection(block: Block, connection_config: Dictionary):
 
 func find_connector_by_direction(block: Block, direction: int) -> Connector:
 	"""在块上查找指定方向的连接点"""
-	if not block or not block.has("connection_points"):
+	if not block:
 		return null
 	
 	for connector in block.connection_points:
 		if connector is Connector:
 			# 计算连接点的方向
 			var connector_dir = calculate_connector_direction(connector, block.base_rotation_degree)
+			
 			if connector_dir == direction and not connector.connected_to:
 				return connector
 	return null
@@ -1002,11 +1022,6 @@ func restore_original_connections():
 	
 	enable_all_connection_points_for_editing(false)
 	await get_tree().process_frame
-
-func reset_connection_indices():
-	"""重置连接点索引（保持兼容性）"""
-	# 这个函数在新系统中不再使用，但为了保持代码兼容性而保留
-	pass
 
 func check_vehicle_stability():
 	if selected_vehicle:
