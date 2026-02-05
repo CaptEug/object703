@@ -1,11 +1,24 @@
+<<<<<<< HEAD
 [gd_scene load_steps=10 format=3 uid="uid://dawkb0e8tm4e8"]
 
 [ext_resource type="PackedScene" uid="uid://8h1qhfeg8qp8" path="res://ui/buidingeditor/buildingeditormode.tscn" id="1_eun4v"]
+=======
+[gd_scene load_steps=14 format=3 uid="uid://dawkb0e8tm4e8"]
+
+[ext_resource type="PackedScene" uid="uid://8h1qhfeg8qp8" path="res://ui/buidingeditor/buildingeditormode.tscn" id="1_eun4v"]
+[ext_resource type="Script" uid="uid://bytfcwiqedmk8" path="res://scenes/gamescene.gd" id="1_ns408"]
+[ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="2_5du73"]
+>>>>>>> f40aa22a8ab53bb006421fadd912a7c3003ff3cc
 [ext_resource type="PackedScene" uid="uid://ca320w2cj51gd" path="res://ui/editor/editormode.tscn" id="2_hie3q"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="2_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="3_hie3q"]
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_m5lm4"]
 [ext_resource type="PackedScene" uid="uid://dtw2v5sc0o4ng" path="res://ui/map/minimap.tscn" id="5_5hkc0"]
+<<<<<<< HEAD
+=======
+[ext_resource type="PackedScene" uid="uid://bl2tikk55bsp1" path="res://vehicles/object2.tscn" id="7_hie3q"]
+[ext_resource type="Script" uid="uid://ds6nuyi20o5ia" path="res://vehicles/object_3.gd" id="7_ijxa5"]
+>>>>>>> f40aa22a8ab53bb006421fadd912a7c3003ff3cc
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scenes/day&night.gd" id="7_iwiij"]
 [ext_resource type="PackedScene" uid="uid://ssbyhbk2l3e3" path="res://tilemaps/testfeild.tscn" id="8_iwiij"]
 
@@ -17,13 +30,27 @@ glow_blend_mode = 0
 glow_hdr_scale = 1.0
 
 [node name="Testground" type="Node2D"]
+script = ExtResource("1_ns408")
+metadata/_custom_type_script = "uid://bytfcwiqedmk8"
 
-[node name="Testfeild" parent="." instance=ExtResource("8_iwiij")]
+[node name="Gamemap" parent="." instance=ExtResource("8_iwiij")]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="Testfeild"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Gamemap"]
 environment = SubResource("Environment_m32x0")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="Testfeild"]
+[node name="Object1" parent="Gamemap" instance=ExtResource("2_5du73")]
+position = Vector2(917, 1196)
+rotation = -0.785405
+
+[node name="Object2" parent="Gamemap" instance=ExtResource("7_hie3q")]
+position = Vector2(1470, 909)
+
+[node name="Object3" parent="Gamemap" instance=ExtResource("2_5du73")]
+position = Vector2(1139, 1241)
+script = ExtResource("7_ijxa5")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="Gamemap"]
 script = ExtResource("7_iwiij")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

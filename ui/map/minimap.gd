@@ -10,10 +10,7 @@ var min_zoom:int = 1
 @onready var map_renderer = $Panel/MapRenderer
 
 func _ready() -> void:
-	# Get current game map
 	map_renderer.map = map
-	map_renderer.loadmap()
-	map_renderer.queue_redraw()
 
 func _process(_delta):
 	#center_cell = map.ground.local_to_map(camera.position)

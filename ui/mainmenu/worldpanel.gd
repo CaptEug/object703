@@ -1,6 +1,6 @@
 extends FloatingPanel
 
-var mapfolder_path := "res://tilemaps/savedmaps/"
+var save_dir:String = "res://saves/"
 
 @onready var world_list: ItemList = $MarginContainer/Panel/VBoxContainer/WorldList
 
@@ -19,19 +19,20 @@ func refresh_world_list():
 
 func scan_worlds() -> Array[String]:
 	var worlds: Array[String] = []
-	var dir := DirAccess.open(mapfolder_path)
+	var dir := DirAccess.open(save_dir)
 	if dir == null:
-		DirAccess.make_dir_recursive_absolute(mapfolder_path)
 		return worlds
 	
 	dir.list_dir_begin()
-	var file_name := dir.get_next()
-	while file_name != "":
-		if not dir.current_is_dir():
-			if file_name.ends_with(".llh"):
-				worlds.append(file_name)
-		file_name = dir.get_next()
-	
+	var name := dir.get_next()
+	while name != "":
+		if dir.current_is_dir():
+			# skip "." and ".."
+			if name != "." and name != "..":
+				# validate save by header.json
+				if FileAccess.file_exists(save_dir + name + "/header.json"):
+					worlds.append(name)
+		name = dir.get_next()
 	dir.list_dir_end()
 	return worlds
 

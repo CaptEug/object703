@@ -1,7 +1,7 @@
 extends Control
 
 @onready var UI:CanvasLayer = get_parent()
-@onready var gamescene:Node2D = UI.get_parent()
+@onready var gamescene:GameScene = UI.get_parent()
 
 
 func _ready():
