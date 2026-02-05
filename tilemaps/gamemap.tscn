@@ -1,0 +1,36 @@
+[gd_scene load_steps=7 format=3 uid="uid://cv2b5l601kiha"]
+
+[ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://tilemaps/gamemap.gd" id="1_ljns0"]
+[ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="2_8k602"]
+[ext_resource type="Script" uid="uid://xoludftp2xyj" path="res://tilemaps/wall_layer.gd" id="2_i3gmg"]
+[ext_resource type="Script" uid="uid://bel0gfv61tk3a" path="res://tilemaps/building_layer.gd" id="3_8k602"]
+[ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scenes/day&night.gd" id="5_y5b6y"]
+
+[sub_resource type="Environment" id="Environment_i3gmg"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 4.0
+glow_blend_mode = 0
+glow_hdr_scale = 1.0
+
+[node name="Gamemap" type="Node2D"]
+script = ExtResource("1_ljns0")
+metadata/_custom_type_script = "uid://cido6cidvw0hw"
+
+[node name="GroundLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_8k602")
+
+[node name="WallLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_8k602")
+script = ExtResource("2_i3gmg")
+metadata/_custom_type_script = "uid://xoludftp2xyj"
+
+[node name="BuildingLayer" type="TileMapLayer" parent="."]
+script = ExtResource("3_8k602")
+metadata/_custom_type_script = "uid://bel0gfv61tk3a"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_i3gmg")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+script = ExtResource("5_y5b6y")

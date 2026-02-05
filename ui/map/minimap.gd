@@ -2,25 +2,18 @@ extends FloatingPanel
 
 @export var view_size_pixels := Vector2i(288, 288) # minimap window size
 var center_cell := Vector2i.ZERO               # camera center
-var map:GameMap
-var camera:Camera2D
 var zoom:int = 2
 var max_zoom:int = 4
 var min_zoom:int = 1
+@onready var map:GameMap = $"../../Gamemap"
+@onready var camera:Camera2D = $"../../Camera2D"
 @onready var map_renderer = $Panel/MapRenderer
 
 func _ready() -> void:
 	# Get current game map
-	for child in get_tree().current_scene.get_children():
-		if child is GameMap:
-			map = child
-			break
 	map_renderer.map = map
-	await map.ready
 	map_renderer.loadmap()
 	map_renderer.queue_redraw()
-	# Get camera
-	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 
 func _process(_delta):
 	center_cell = map.ground.local_to_map(camera.position)

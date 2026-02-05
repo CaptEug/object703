@@ -85,12 +85,14 @@ auto_height = true
 
 [node name="LoadButton" type="Button" parent="."]
 layout_mode = 0
-offset_left = 388.0
+offset_left = 387.0
 offset_top = 433.0
-offset_right = 502.0
+offset_right = 501.0
 offset_bottom = 473.0
 mouse_default_cursor_shape = 2
+disabled = true
 text = "load"
 
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
-[connection signal="pressed" from="LoadButton" to="." method="_on_back_button_pressed"]
+[connection signal="item_selected" from="MarginContainer/Panel/VBoxContainer/WorldList" to="." method="_on_world_list_item_selected"]
+[connection signal="pressed" from="LoadButton" to="." method="_on_load_button_pressed"]
