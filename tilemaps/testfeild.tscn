@@ -1,9 +1,11 @@
-[gd_scene load_steps=7 format=4 uid="uid://ssbyhbk2l3e3"]
+[gd_scene load_steps=9 format=4 uid="uid://ssbyhbk2l3e3"]
 
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="1_df33e"]
 [ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://tilemaps/gamemap.gd" id="1_t0wv1"]
 [ext_resource type="Script" uid="uid://xoludftp2xyj" path="res://tilemaps/wall_layer.gd" id="3_2p7kj"]
 [ext_resource type="Script" uid="uid://bel0gfv61tk3a" path="res://tilemaps/building_layer.gd" id="4_77rb7"]
+[ext_resource type="Script" uid="uid://ctaioxpfddr2c" path="res://tilemaps/vehicle_manager.gd" id="5_serhm"]
+[ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="6_2iykn"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_t0wv1"]
 
@@ -25,3 +27,10 @@ script = ExtResource("3_2p7kj")
 
 [node name="BuildingLayer" type="TileMapLayer" parent="."]
 script = ExtResource("4_77rb7")
+
+[node name="VehicleManager" type="Node2D" parent="."]
+script = ExtResource("5_serhm")
+
+[node name="Object1" parent="VehicleManager" instance=ExtResource("6_2iykn")]
+position = Vector2(1590, 2003)
+rotation = 0.375246

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://cv2b5l601kiha"]
+[gd_scene load_steps=7 format=3 uid="uid://bfe7bj5f8ea2p"]
 
 [ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://tilemaps/gamemap.gd" id="1_ljns0"]
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="2_8k602"]
@@ -28,6 +28,8 @@ metadata/_custom_type_script = "uid://xoludftp2xyj"
 [node name="BuildingLayer" type="TileMapLayer" parent="."]
 script = ExtResource("3_8k602")
 metadata/_custom_type_script = "uid://bel0gfv61tk3a"
+
+[node name="VehicleManager" type="Node2D" parent="."]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_i3gmg")

@@ -166,8 +166,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				var dir = block.get_direction_from_rotation(total_rotation)
 				connection_map[local_pos_key].append(dir)
 		
-		print("Connection map:", connection_map)
-		
 		# 计算方块的基准位置（最小网格位置）
 		var min_x = grid_positions[0][0]
 		var min_y = grid_positions[0][1]
@@ -179,9 +177,7 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 		# 更新block.base_pos（如果尚未设置）
 		if block.base_pos == Vector2i.ZERO:
 			block.base_pos = actual_base_pos
-		
-		print("Block base_pos:", block.base_pos, " actual_base_pos:", actual_base_pos, " rotation:", block.base_rotation_degree)
-		
+
 		# 预计算局部位置到全局位置的映射
 		var local_to_global_map = {}
 		for x in range(block.size.x):
@@ -189,9 +185,7 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				var local_pos_key = Vector2i(x, y)
 				var global_pos = calculate_global_grid_position(local_pos_key, block, actual_base_pos)
 				local_to_global_map[local_pos_key] = global_pos
-		
-		print("Local to global map:", local_to_global_map)
-		
+
 		# 构建反向映射：全局位置 -> 局部位置
 		var global_to_local_map = {}
 		for local_pos_key in local_to_global_map:
@@ -206,7 +200,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 			var local_grid_pos = global_to_local_map.get(global_grid_pos, Vector2i(-1, -1))
 			
 			if local_grid_pos == Vector2i(-1, -1):
-				print("Error: Could not find local position for global position:", global_grid_pos)
 				continue
 			
 			# 获取该位置的连接方向列表
@@ -262,9 +255,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 					else:
 						# 未连接，标记为 true
 						connections[dir] = true
-			
-			print("Global pos:", global_grid_pos, " -> Local pos:", local_grid_pos, " Connections:", connections)
-			
 			# 使用新的grid数据结构
 			grid[global_grid_pos] = {
 				"block": block,
@@ -443,7 +433,6 @@ func load_from_blueprint(bp: Dictionary):
 				
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
 				turret_block.unlock_turret_rotation()
-	print(grid)
 	
 func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
 	var target_grid = []

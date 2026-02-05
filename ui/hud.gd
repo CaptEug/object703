@@ -8,7 +8,8 @@ func _ready():
 	pass
 
 func _process(_delta):
-	$Panel/Clock.text = get_clock_string(gamescene.game_time)
+	#$Panel/Clock.text = get_clock_string(gamescene.game_time)
+	pass
 
 func get_clock_string(time) -> String:
 	var cycle_duration = 600.0

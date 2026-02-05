@@ -5,6 +5,7 @@ extends Node2D
 @onready var wall:WallLayer = $WallLayer
 @onready var building:BuildingLayer = $BuildingLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
+@onready var vehicles:VehicleManager = $VehicleManager
 var layers:Dictionary[String, TileMapLayer]
 var world_name:String
 var world_height:int = 256
@@ -31,12 +32,12 @@ func _ready():
 	# 加载蓝图并生成建筑
 	#building.load_all_blueprints()
 	#building.generate_buildings_from_layerdata(self)
-	
 	print("=== 游戏地图初始化完成 ===")
 
 func _process(delta: float) -> void:
 	#if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
 		#save_world()
+		print(vehicles.get_vehicle_save_data())
 		pass
 
 func generate_world(noise:Noise):
