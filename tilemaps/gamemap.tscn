@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://bfe7bj5f8ea2p"]
+[gd_scene load_steps=8 format=3 uid="uid://bfe7bj5f8ea2p"]
 
 [ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://tilemaps/gamemap.gd" id="1_ljns0"]
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="2_8k602"]
 [ext_resource type="Script" uid="uid://xoludftp2xyj" path="res://tilemaps/wall_layer.gd" id="2_i3gmg"]
 [ext_resource type="Script" uid="uid://bel0gfv61tk3a" path="res://tilemaps/building_layer.gd" id="3_8k602"]
+[ext_resource type="Script" uid="uid://ctaioxpfddr2c" path="res://tilemaps/vehicle_manager.gd" id="5_4qjjh"]
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scenes/day&night.gd" id="5_y5b6y"]
 
 [sub_resource type="Environment" id="Environment_i3gmg"]
@@ -30,6 +31,7 @@ script = ExtResource("3_8k602")
 metadata/_custom_type_script = "uid://bel0gfv61tk3a"
 
 [node name="VehicleManager" type="Node2D" parent="."]
+script = ExtResource("5_4qjjh")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_i3gmg")
