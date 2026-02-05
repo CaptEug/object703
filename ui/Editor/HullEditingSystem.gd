@@ -125,19 +125,20 @@ func update_grid_transform():
 	inverse_grid_transform = grid_transform.affine_inverse()
 
 func world_to_grid_position(world_position: Vector2) -> Vector2i:
-	"""将世界坐标转换为网格坐标"""
+	"""将世界坐标转换为网格坐标（修复版）"""
 	if not selected_vehicle:
 		return Vector2i.ZERO
 	
-	# 更新网格变换
-	update_grid_transform()
+	# 使用车辆的位置作为参考点
+	var vehicle_pos = selected_vehicle.global_position
+	var relative_pos = world_position - vehicle_pos
 	
-	# 使用逆变换将世界坐标转换到网格空间
-	var grid_space = inverse_grid_transform * world_position
+	# 考虑车辆的旋转
+	relative_pos = relative_pos.rotated(-selected_vehicle.global_rotation)
 	
-	# 四舍五入到最近的网格
-	var grid_x = int(round(grid_space.x))
-	var grid_y = int(round(grid_space.y))
+	# 转换为网格坐标（使用整数除法）
+	var grid_x = int(floor(relative_pos.x / GRID_SIZE))
+	var grid_y = int(floor(relative_pos.y / GRID_SIZE))
 	
 	return Vector2i(grid_x, grid_y)
 
@@ -293,9 +294,6 @@ func update_ghost_block_position(mouse_position: Vector2):
 		if snap_config and not snap_config.is_empty():
 			# 可以连接到其他方块 - 显示绿色
 			current_ghost_block.modulate = editor.GHOST_SNAP_COLOR
-		else:
-			# 可以放置但无法连接 - 显示蓝色
-			current_ghost_block.modulate = editor.GHOST_FREE_COLOR
 	else:
 		# 不能放置，跟随鼠标但不吸附（中心点跟随鼠标）
 		current_ghost_block.global_position = mouse_position
