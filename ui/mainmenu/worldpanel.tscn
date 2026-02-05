@@ -93,6 +93,13 @@ mouse_default_cursor_shape = 2
 disabled = true
 text = "load"
 
+[node name="NewWorldButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 31.0
+offset_top = 434.0
+offset_right = 61.0
+offset_bottom = 465.0
+
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="item_selected" from="MarginContainer/Panel/VBoxContainer/WorldList" to="." method="_on_world_list_item_selected"]
 [connection signal="pressed" from="LoadButton" to="." method="_on_load_button_pressed"]

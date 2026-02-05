@@ -5,28 +5,23 @@ extends Node2D
 @onready var wall:WallLayer = $WallLayer
 @onready var building:BuildingLayer = $BuildingLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
+@onready var UI:CanvasLayer = $"../UI"
 var layers:Dictionary[String, TileMapLayer]
-var world_name:String
+var world_seed:String
 var world_height:int = 256
 var world_width:int = 256
 
 @export var noise_height_text:NoiseTexture2D
-var mapfolder_path:= "res://tilemaps/savedmaps/"
-
 
 
 func _ready():
-	var world_file = GameState.world_file
-	world_name = world_file.get_file().get_basename()
 	layers = {
 		"wall": wall,
 	}
+	
 	#generate_world(noise_height_text.noise)
 	#if world_file.is_empty():
 		#world_file = "TestField.llh"
-	
-	load_world(world_file)
-	
 	
 	# 加载蓝图并生成建筑
 	#building.load_all_blueprints()
@@ -35,9 +30,7 @@ func _ready():
 	print("=== 游戏地图初始化完成 ===")
 
 func _process(delta: float) -> void:
-	#if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
-		#save_world()
-		pass
+	pass
 
 func generate_world(noise:Noise):
 	#terrain sets
@@ -58,16 +51,16 @@ func generate_world(noise:Noise):
 	BetterTerrain.update_terrain_area(wall, Rect2i(Vector2i(0, 0), Vector2i(world_width, world_height)))
 	wall.init_layerdata()
 
-func save_world():
+func save_map(world_folder:String):
 	const CHUNK_SIZE := 32
 	assert(world_width % CHUNK_SIZE == 0)
 	assert(world_height % CHUNK_SIZE == 0)
 	var chunks_x := world_width / CHUNK_SIZE
 	var chunks_y := world_height / CHUNK_SIZE
 	
-	var file = FileAccess.open(mapfolder_path + "%s.llh" % world_name, FileAccess.WRITE)
-	 # ---- header ----
-	file.store_buffer("WLD0".to_ascii_buffer()) # magic
+	var file = FileAccess.open(world_folder + "%s.map" % GameState.current_gamescene.world_name, FileAccess.WRITE)
+	# ---- header ----
+	file.store_buffer("MAP0".to_ascii_buffer()) # magic
 	file.store_16(1)                           # version
 	file.store_16(world_width)
 	file.store_16(world_height)
@@ -93,15 +86,15 @@ func save_world():
 	
 	file.close()
 
-func load_world(path: String):
-	var file := FileAccess.open(mapfolder_path + path, FileAccess.READ)
+func load_map(path: String):
+	var file := FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("Failed to open world file")
 		return
 	
 	# ---- header ----
 	var magic := file.get_buffer(4).get_string_from_ascii()
-	if magic != "WLD0":
+	if magic != "MAP0":
 		push_error("Invalid world file")
 		return
 	
@@ -139,48 +132,20 @@ func load_world(path: String):
 			layer.load_chunk(cx, cy, bytes, CHUNK_SIZE)
 		
 	file.close()
+	# load map to minimap
+	UI.minimap.map_renderer.loadmap()
+	UI.minimap.map_renderer.queue_redraw()
 
 
-
-func serialize_layer(layer: TileMapLayer) -> Dictionary:
+func save_buildings() -> Array:
 	var cells := []
-	if layer is BuildingLayer:
-		for cell in layer.layerdata:
-			var celldata = layer.get_celldata(cell)
-			cells.append({
-				"croods": [cell.x, cell.y],
-				"block_name": celldata["block_name"],
-				"block_path": celldata["block_path"],
-				"rotation": celldata["rotation"],
-				"hp": celldata["hp"],
-			})
-	elif layer is WallLayer:
-		for cell in layer.layerdata:
-			var celldata = layer.get_celldata(cell)
-			var tile_info = TileDB.get_tile(celldata["matter"])
-			if tile_info["phase"] == "solid":
-				cells.append({
-					"croods": [cell.x, cell.y],
-					"matter": celldata["matter"],
-					"max_hp": celldata["max_hp"],
-					"current_hp": celldata["current_hp"],
-				})
-			elif tile_info["phase"] == "liquid":
-				cells.append({
-					"croods": [cell.x, cell.y],
-					"matter": celldata["matter"],
-					"mass": celldata["mass"],
-				})
-	else: # GroundLayer
-		for cell in layer.get_used_cells():
-			var source_id = layer.get_cell_source_id(cell)
-			var atlas_coords = layer.get_cell_atlas_coords(cell)
-			cells.append({
-				"croods": [cell.x, cell.y],
-				"source_id": source_id,
-				"atlas_croods": atlas_coords,
-			})
-	
-	return {
-		"cells": cells
-	}
+	for cell in building.layerdata:
+		var celldata = building.get_celldata(cell)
+		cells.append({
+			"croods": [cell.x, cell.y],
+			"block_name": celldata["block_name"],
+			"block_path": celldata["block_path"],
+			"rotation": celldata["rotation"],
+			"hp": celldata["hp"],
+		})
+	return cells

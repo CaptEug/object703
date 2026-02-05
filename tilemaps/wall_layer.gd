@@ -3,12 +3,10 @@ extends TileMapLayer
 
 var layerdata:Dictionary[Vector2i, Dictionary]
 var item_pickup_path = "res://items/item_pickup.tscn"
-var map:Node2D
-var minimap:FloatingPanel
+@onready var gamemap:GameMap = get_parent()
 
 func _ready():
-	map = get_parent()
-	minimap = get_tree().current_scene.find_child("Minimap") as FloatingPanel
+	pass
 
 
 func _process(delta):
@@ -78,7 +76,7 @@ func destroy_tile(cell:Vector2i):
 	erase_cell(cell)
 	layerdata.erase(cell)
 	BetterTerrain.update_terrain_cell(self, cell, true)
-	minimap.update_cellmap([cell])
+	gamemap.UI.minimap.update_cellmap([cell])
 
 
 func spawn_pickup(cell:Vector2i):
@@ -87,7 +85,7 @@ func spawn_pickup(cell:Vector2i):
 	pickup.item_id = item_id
 	pickup.amount = 1
 	pickup.position = map_to_local(cell)
-	map.add_child(pickup)
+	gamemap.add_child(pickup)
 
 # liquid Calculation
 func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
@@ -150,7 +148,7 @@ func remove_liquid(cell:Vector2i, mass:float):
 			erase_cell(farthest_cell)
 			layerdata.erase(farthest_cell)
 			BetterTerrain.update_terrain_cell(self, farthest_cell, true)
-			minimap.update_cellmap([farthest_cell])
+			gamemap.UI.minimap.update_cellmap([farthest_cell])
 
 func add_liquid(cell:Vector2i, matter:String, mass:float):
 	if get_celldata(cell):
@@ -195,7 +193,7 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 	if !tile_added.is_empty():
 		BetterTerrain.set_cells(self, tile_added, TileDB.get_tile(matter)["terrain_int"])
 		BetterTerrain.update_terrain_cells(self, tile_added)
-		minimap.update_cellmap(tile_added)
+		gamemap.UI.minimap.update_cellmap(tile_added)
 
 func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
 	var farthest = null
