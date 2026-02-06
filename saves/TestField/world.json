@@ -1,4 +1,372 @@
 {
 	"buildings": [],
-	"gametime": 31.7981068784541
+	"gametime": 211.42791666666,
+	"vehicles": {
+		"object1": {
+			"blocks": {
+				"1": {
+					"base_pos": [
+						0,
+						7
+					],
+					"current_hp": 400.0,
+					"max_hp": 400.0,
+					"name": "pump",
+					"path": "res://blocks/industrial/pump.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"10": {
+					"base_pos": [
+						3,
+						3
+					],
+					"current_hp": 600.0,
+					"max_hp": 600.0,
+					"name": "ammorack",
+					"path": "res://blocks/auxiliary/ammorack.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"11": {
+					"base_pos": [
+						3,
+						4
+					],
+					"current_hp": 1600.0,
+					"max_hp": 1600.0,
+					"name": "TurretRing1800mm",
+					"path": "res://blocks/structual/turret_ring_1800mm.tscn",
+					"rotation": [
+						0.0
+					],
+					"turret_grid": {
+						"blocks": {
+							"1": {
+								"base_pos": [
+									2,
+									-2
+								],
+								"current_hp": 800.0,
+								"max_hp": 800.0,
+								"name": "122mm D-52T cannon",
+								"path": "res://blocks/firepower/d_52t.tscn",
+								"rotation": [
+									0.0
+								]
+							},
+							"2": {
+								"base_pos": [
+									1,
+									0
+								],
+								"current_hp": 800.0,
+								"max_hp": 800.0,
+								"name": "122mm D-52T cannon",
+								"path": "res://blocks/firepower/d_52t.tscn",
+								"rotation": [
+									0.0
+								]
+							},
+							"3": {
+								"base_pos": [
+									3,
+									0
+								],
+								"current_hp": 800.0,
+								"max_hp": 800.0,
+								"name": "122mm D-52T cannon",
+								"path": "res://blocks/firepower/d_52t.tscn",
+								"rotation": [
+									0.0
+								]
+							}
+						},
+						"grid_size": [
+							3,
+							3
+						]
+					}
+				},
+				"12": {
+					"base_pos": [
+						3,
+						7
+					],
+					"current_hp": 2000.0,
+					"max_hp": 2000.0,
+					"name": "smelter",
+					"path": "res://blocks/industrial/smelter.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"13": {
+					"base_pos": [
+						4,
+						3
+					],
+					"current_hp": 600.0,
+					"max_hp": 600.0,
+					"name": "ammorack",
+					"path": "res://blocks/auxiliary/ammorack.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"14": {
+					"base_pos": [
+						5,
+						1
+					],
+					"current_hp": 800.0,
+					"max_hp": 800.0,
+					"name": "cutter",
+					"path": "res://blocks/auxiliary/cutter.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"15": {
+					"base_pos": [
+						5,
+						3
+					],
+					"current_hp": 600.0,
+					"max_hp": 600.0,
+					"name": "command cupola",
+					"path": "res://blocks/command/cupola.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"16": {
+					"base_pos": [
+						6,
+						3
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"17": {
+					"base_pos": [
+						6,
+						4
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"18": {
+					"base_pos": [
+						6,
+						5
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"19": {
+					"base_pos": [
+						6,
+						6
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"2": {
+					"base_pos": [
+						0,
+						8
+					],
+					"current_hp": 400.0,
+					"max_hp": 400.0,
+					"name": "pump",
+					"path": "res://blocks/industrial/pump.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"20": {
+					"base_pos": [
+						7,
+						2
+					],
+					"current_hp": 800.0,
+					"max_hp": 800.0,
+					"name": "QF 6-pounder gun",
+					"path": "res://blocks/firepower/qf_6_pounder.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"21": {
+					"base_pos": [
+						7,
+						4
+					],
+					"current_hp": 400.0,
+					"max_hp": 400.0,
+					"name": "fueltank",
+					"path": "res://blocks/auxiliary/fueltank.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"22": {
+					"base_pos": [
+						7,
+						5
+					],
+					"current_hp": 600.0,
+					"max_hp": 600.0,
+					"name": "V-7",
+					"path": "res://blocks/mobility/v_7.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"23": {
+					"base_pos": [
+						7,
+						7
+					],
+					"current_hp": 2000.0,
+					"max_hp": 2000.0,
+					"name": "reservoir",
+					"path": "res://blocks/auxiliary/reservoir.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"3": {
+					"base_pos": [
+						1,
+						7
+					],
+					"current_hp": 2000.0,
+					"max_hp": 2000.0,
+					"name": "reservoir",
+					"path": "res://blocks/auxiliary/reservoir.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"4": {
+					"base_pos": [
+						2,
+						2
+					],
+					"current_hp": 500.0,
+					"max_hp": 500.0,
+					"name": "pike armor",
+					"path": "res://blocks/structual/pike_armor.tscn",
+					"rotation": [
+						-90.0
+					]
+				},
+				"5": {
+					"base_pos": [
+						2,
+						3
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"6": {
+					"base_pos": [
+						2,
+						4
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"7": {
+					"base_pos": [
+						2,
+						5
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"8": {
+					"base_pos": [
+						2,
+						6
+					],
+					"current_hp": 300.0,
+					"max_hp": 300.0,
+					"name": "rusty track",
+					"path": "res://blocks/mobility/rusty_track.tscn",
+					"rotation": [
+						0.0
+					]
+				},
+				"9": {
+					"base_pos": [
+						3,
+						0
+					],
+					"current_hp": 1200.0,
+					"max_hp": 1200.0,
+					"name": "drill",
+					"path": "res://blocks/auxiliary/drill.tscn",
+					"rotation": [
+						0.0
+					]
+				}
+			},
+			"center_of_mass": [
+				82.0,
+				99.4782562255859
+			],
+			"name": "object1",
+			"position": [
+				-525.99853515625,
+				210.000061035156
+			],
+			"rotation": [
+				0.112426034316343
+			],
+			"vehicle_size": [
+				9,
+				11
+			]
+		}
+	}
 }
