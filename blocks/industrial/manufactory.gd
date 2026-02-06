@@ -47,7 +47,7 @@ func open_manufactory_panel():
 		panel.visible = true
 		panel.move_to_front()
 	else:
-		var UI = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+		var UI = GameState.current_gamescene.gameUI
 		panel = load(manufactory_panel_path).instantiate()
 		panel.manufactory = self
 		UI.add_child(panel)

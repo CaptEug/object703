@@ -22,7 +22,7 @@ const RECIPES:= [
 var description := ""
 #var outline_tex := preload("res://assets/outlines/pike_outline.png")
 
-@onready var canvas_mod = get_tree().current_scene.find_child("CanvasModulate") as CanvasModulate
+@onready var canvas_mod = map.canvas_modulate as CanvasModulate
 var core_alpha := 0.0
 var time:float
 
