@@ -5,7 +5,6 @@ signal cargo_changed()
 
 const GRID_SIZE:int = 16
 
-# 车辆基本属性
 var vehicle_size:Vector2i
 var vehicle_name:String
 var move_state:String
@@ -38,17 +37,14 @@ var destroyed:bool
 var center_of_mass:Vector2 = Vector2(0,0)
 var ready_connect = true
 
-# 缓存优化
 var cached_center_of_mass: Vector2
 var cached_center_of_mass_dirty: bool = true
 var targets_dirty: bool = true
 
-# 承重系统相关
-var total_mass: float = 0.0  # 车辆总质量
-var track_load_distribution: Dictionary = {}  # 履带承重分布
-var load_check_timer: float = 0.0  # 承重检查计时器
+var total_mass: float = 0.0
+var track_load_distribution: Dictionary = {}
+var load_check_timer: float = 0.0
 
-# ==================== 生命周期方法 ====================
 func _ready():
 	if blueprint:
 		load_blueprint()
@@ -62,11 +58,8 @@ func _process(delta):
 		update_mobility_state(control.call(), delta)
 	
 	update_targets_if_needed()
-	
-	# 更新承重检查
 	update_load_check(delta)
 
-# ==================== 初始化方法 ====================
 func load_blueprint():
 	if blueprint is String:
 		load_from_file(blueprint)
@@ -85,13 +78,13 @@ func initialize_empty_vehicle():
 	powerpacks = []
 	commands = []
 
-# ==================== 块管理方法 ====================
 func _add_block(block: Block, local_pos = null, grid_positions = null):
 	if block not in blocks:
 		blocks.append(block)
 		total_blocks.append(block)
-		block.global_grid_pos = get_rectangle_corners(grid_positions)
-		
+		if grid_positions:
+			block.global_grid_pos = get_rectangle_corners(grid_positions)
+			block.rotation_degrees = block.base_rotation_degree
 		if block is Track:
 			tracks.append(block)
 		elif block is Powerpack:
@@ -106,14 +99,13 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 		if block.parent_vehicle == null:
 			add_child(block)
 			block.parent_vehicle = self
+		
 		block.position = local_pos
 		
-		# 安全等待块准备好
 		if is_inside_tree() and get_tree() != null:
 			if block.has_method("connect_aready"):
 				await block.connect_aready()
 		
-		# 预计算块的连接点位置到方向的映射
 		var connection_map = {}
 		for point in block.connection_points:
 			if point is Connector:
@@ -125,7 +117,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				var dir = block.get_direction_from_rotation(total_rotation)
 				connection_map[local_pos_key].append(dir)
 		
-		# 计算方块的基准位置（最小网格位置）
 		var min_x = grid_positions[0][0]
 		var min_y = grid_positions[0][1]
 		for pos_array in grid_positions:
@@ -133,11 +124,9 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 			min_y = min(min_y, pos_array[1])
 		var actual_base_pos = Vector2i(min_x, min_y)
 		
-		# 更新block.base_pos（如果尚未设置）
 		if block.base_pos == Vector2i.ZERO:
 			block.base_pos = actual_base_pos
 
-		# 预计算局部位置到全局位置的映射
 		var local_to_global_map = {}
 		for x in range(block.size.x):
 			for y in range(block.size.y):
@@ -145,7 +134,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 				var global_pos = calculate_global_grid_position(local_pos_key, block, actual_base_pos)
 				local_to_global_map[local_pos_key] = global_pos
 
-		# 构建反向映射：全局位置 -> 局部位置
 		var global_to_local_map = {}
 		for local_pos_key in local_to_global_map:
 			var global_pos = local_to_global_map[local_pos_key]
@@ -158,16 +146,12 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 			if local_grid_pos == Vector2i(-1, -1):
 				continue
 			
-			# 创建连接状态数组 [右, 下, 左, 上]
 			var connections = [false, false, false, false]
-			
-			# 获取该局部位置的所有连接点
 			var connectors_at_position = []
 			for point in block.connection_points:
 				if point is Connector and point.location == local_grid_pos:
 					connectors_at_position.append(point)
 			
-			# 标记连接方向
 			for connector in connectors_at_position:
 				var total_rotation = connector.rotation_degrees + block.base_rotation_degree
 				var dir = block.get_direction_from_rotation(total_rotation)
@@ -178,7 +162,6 @@ func _add_block(block: Block, local_pos = null, grid_positions = null):
 					else:
 						connections[dir] = true
 			
-			# 使用新的grid数据结构
 			grid[global_grid_pos] = {
 				"block": block,
 				"connections": connections
@@ -202,7 +185,6 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 		total_blocks.erase(block)
 		block.queue_free()
 	
-	# 修改：遍历grid查找要删除的块
 	var keys_to_erase = []
 	for pos in grid:
 		if grid[pos]["block"] == block:
@@ -225,10 +207,8 @@ func remove_block(block: Block, imd: bool = false, _disconnected:bool = false):
 	update_vehicle()
 
 func calculate_global_grid_position(local_pos: Vector2i, block: Block, base_pos: Vector2i) -> Vector2i:
-	# 根据方块的旋转角度进行变换
 	var rotation_deg = int(block.base_rotation_degree)
 	
-	# 处理负角度
 	if rotation_deg < 0:
 		rotation_deg = 360 + rotation_deg
 	
@@ -244,7 +224,6 @@ func calculate_global_grid_position(local_pos: Vector2i, block: Block, base_pos:
 		_:
 			return base_pos + local_pos
 
-# ==================== 车辆加载方法 ====================
 func load_from_file(identifier):
 	var path: String
 	if identifier is String:
@@ -277,7 +256,6 @@ func load_from_blueprint(bp: Dictionary):
 	vehicle_name = _name
 	vehicle_size = Vector2i(bp["vehicle_size"][0], bp["vehicle_size"][1])
 	
-	# 按数字键排序以保证加载顺序一致
 	var block_ids = bp["blocks"].keys()
 	block_ids.sort_custom(func(a, b):
 		var pos_a = Vector2i(bp["blocks"][a]["base_pos"][0], bp["blocks"][a]["base_pos"][1])
@@ -287,11 +265,9 @@ func load_from_blueprint(bp: Dictionary):
 		return pos_a.y < pos_b.y
 	)
 	
-	# 第一遍：加载所有主块（包括炮塔座圈）
 	var loaded_blocks = {}
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
-		# 使用VehicleManager获取路径
 		var block_path = VehicleManager.get_block_scene_path_by_name(block_data["name"])
 		var block_scene = load(block_path)
 		
@@ -301,7 +277,6 @@ func load_from_blueprint(bp: Dictionary):
 			block.rotation = deg_to_rad(block_data["rotation"][0])
 			block.base_rotation_degree = block_data["rotation"][0]
 			
-			# 设置血量
 			block.current_hp = block_data.get("current_hp", block.max_hp)
 			block.max_hp = block_data.get("max_hp", block.max_hp)
 			
@@ -311,7 +286,6 @@ func load_from_blueprint(bp: Dictionary):
 			await _add_block(block, local_pos, target_grid)
 			loaded_blocks[block_id] = block
 	
-	# 第二遍：加载炮塔上的块
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
 		if block_data.has("turret_grid"):
@@ -325,7 +299,6 @@ func load_from_blueprint(bp: Dictionary):
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
 				turret_block.unlock_turret_rotation()
 	
-	# 应用车辆旋转
 	if bp.has("rotation") and bp["rotation"].size() > 0:
 		var vehicle_rotation = bp["rotation"][0]
 		apply_saved_rotation(vehicle_rotation)
@@ -335,18 +308,15 @@ func load_from_blueprint(bp: Dictionary):
 func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
 	var target_grid = []
 	
-	# 根据块的旋转计算网格位置
 	for x in range(block.size.x):
 		for y in range(block.size.y):
 			var grid_pos: Vector2i
 			var rotation_deg = int(block.base_rotation_degree)
 			
-			# 标准化旋转角度
 			rotation_deg = int(fmod(rotation_deg, 360))
 			if rotation_deg < 0:
 				rotation_deg += 360
 			
-			# 根据旋转计算实际位置
 			match rotation_deg:
 				0:
 					grid_pos = Vector2i(base_pos) + Vector2i(x, y)
@@ -357,7 +327,6 @@ func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
 				270:
 					grid_pos = Vector2i(base_pos) + Vector2i(y, -x)
 				_:
-					# 非90度倍数的旋转，使用近似
 					var rotated_x = round(x * cos(deg_to_rad(rotation_deg)) - y * sin(deg_to_rad(rotation_deg)))
 					var rotated_y = round(x * sin(deg_to_rad(rotation_deg)) + y * cos(deg_to_rad(rotation_deg)))
 					grid_pos = Vector2i(base_pos) + Vector2i(rotated_x, rotated_y)
@@ -372,7 +341,6 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 	
 	for block_id in turret_grid_data["blocks"]:
 		var block_data = turret_grid_data["blocks"][block_id]
-		# 使用VehicleManager获取路径
 		var block_path = VehicleManager.get_block_scene_path_by_name(block_data["name"])
 		var block_scene = load(block_path)
 		
@@ -383,7 +351,6 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 			block.collision_layer = 2
 			block.collision_mask = 2
 			
-			# 设置血量
 			block.current_hp = block_data.get("current_hp", block.max_hp)
 			block.max_hp = block_data.get("max_hp", block.max_hp)
 			
@@ -394,7 +361,6 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 			block.global_position = world_pos
 			turret.add_block_to_turret(block, turret_local_positions)
 			block.rotation_degrees = block.base_rotation_degree
-			
 			if block not in total_blocks:
 				total_blocks.append(block)
 			await block.connect_aready()
@@ -409,7 +375,6 @@ func clear_existing_blocks():
 	tracks.clear()
 	powerpacks.clear()
 
-# ==================== 车辆物理计算方法 ====================
 func get_max_engine_power() -> float:
 	var max_power := 0.0
 	for engine in powerpacks:
@@ -442,30 +407,23 @@ func calculate_center_of_mass() -> Vector2:
 				
 				var rid = get_block_grid(body)
 				var geometric_center: Vector2 = get_rectangle_corners(rid)
-				
-				# 使用块的实际重心（考虑偏移）
 				var actual_com: Vector2 = body.get_actual_center_of_mass(geometric_center)
-				
-				# 使用块的实际质量
 				var mass = body.mass
 				
 				weighted_sum += actual_com * mass
 				total_mass += mass
 				has_calculated[body.get_instance_id()] = true
 	
-	# 还要考虑炮塔上的块
 	for block in blocks:
 		if not blocks.has(block) and block is Block and block.functioning:
 			if has_calculated.get(block.get_instance_id(), false):
 				continue
 			var actual_com = Vector2.ZERO
-			# 对于炮塔上的块，需要获取其在车辆坐标系中的位置
 			if block.on_turret:
 				var turret_pos = block.on_turret.global_position - global_position
 				var block_local_pos = block.position - block.on_turret.position
 				actual_com = turret_pos + block_local_pos
 				
-				# 考虑块的旋转和偏移
 				var rotation_rad = deg_to_rad(block.base_rotation_degree)
 				var rotated_offset = block.center_of_mass_offset.rotated(rotation_rad)
 				actual_com += rotated_offset
@@ -512,7 +470,6 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 	var A = []
 	var b = []
 	
-	# 合力方程
 	var eq_force_x = []
 	var eq_force_y = []
 	for point in thrust_points:
@@ -523,7 +480,6 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 	A.append(eq_force_y)
 	b.append(total_thrust * target_dir.y)
 	
-	# 扭矩平衡方程
 	var eq_torque = []
 	for point in thrust_points:
 		var r = point.position - com
@@ -532,7 +488,6 @@ func calculate_thrust_distribution(thrust_points: Array, com: Vector2, total_thr
 	A.append(eq_torque)
 	b.append(0.0)
 	
-	# 最小能量约束
 	for i in range(num_points):
 		var eq_energy = []
 		eq_energy.resize(num_points)
@@ -590,7 +545,6 @@ func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, 
 	var A = []
 	var b = []
 	
-	# 扭矩平衡方程
 	var eq_torque = []
 	for point in thrust_points:
 		var r = point.position - com
@@ -599,7 +553,6 @@ func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, 
 	A.append(eq_torque)
 	b.append(total_thrust)
 	
-	# 合力平衡方程
 	var eq_force_x = []
 	var eq_force_y = []
 	for point in thrust_points:
@@ -610,7 +563,6 @@ func calculate_rotation_thrust_distribution(thrust_points: Array, com: Vector2, 
 	A.append(eq_force_y)
 	b.append(0.0)
 	
-	# 最小能量约束
 	for i in range(num_points):
 		var eq_energy = []
 		eq_energy.resize(num_points)
@@ -729,7 +681,6 @@ func array_zero(size: int) -> Array:
 		arr[i] = 0.0
 	return arr
 
-# ==================== 移动控制方法 ====================
 func update_mobility_state(control_input:Array, delta):
 	var forward_input = control_input[0]
 	var turn_input = control_input[1]
@@ -770,7 +721,6 @@ func calculate_track_forces(forward_input:int, turn_input:int) -> Dictionary:
 		track_forces[track] = move_component + rotate_component
 	return track_forces
 
-# ==================== 承重系统方法 ====================
 func update_load_check(delta: float):
 	load_check_timer += delta
 	
@@ -808,7 +758,6 @@ func check_track_overload_status():
 		calculate_balanced_forces()
 		calculate_rotation_forces()
 
-# ==================== 内部辅助方法 ====================
 func handle_delayed_connections():
 	if not ready_connect:
 		for block:Block in blocks:
@@ -825,23 +774,19 @@ func update_targets_if_needed():
 		targets_dirty = false
 
 func update_vehicle():
-	# 检查块连接性
 	for block:Block in blocks:
 		block.get_all_connected_blocks()
 	
-	# 获取所有总参数
 	get_max_engine_power()
 	get_current_engine_power()
 	update_vehicle_size()
 	
-	# 重新计算物理属性
 	calculate_center_of_mass()
 	calculate_balanced_forces()
 	calculate_rotation_forces()
 	
 	calculate_track_load_distribution()
 	
-	# 重新获取控制方法
 	if not check_control(control.get_method()):
 		if not check_control("AI_control"):
 			if not check_control("remote_control"):
@@ -849,7 +794,6 @@ func update_vehicle():
 			else: control = check_control("remote_control")
 		else: control = check_control("AI_control")
 	
-	# 检查车辆是否被摧毁
 	var has_command:= false
 	for blk in commands:
 		if blk.functioning:
@@ -927,50 +871,46 @@ func apply_saved_rotation(saved_rotation_degrees: float) -> void:
 	if grid.is_empty():
 		return
 	
-	# 获取第一个块作为旋转参考
-	var first_grid_pos = grid.keys()[0]
+	var first_grid_pos = null
+	for pos in grid:
+		if grid[pos] != null and grid[pos]["block"] != null:
+			first_grid_pos = pos
+			break
+	
+	if first_grid_pos == null:
+		return
+	
 	var first_block_data = grid[first_grid_pos]
 	var first_block = first_block_data["block"]
 	
 	if not is_instance_valid(first_block):
 		return
 	
-	# 计算第一个块应该具有的全局旋转
-	var first_block_base_rotation = first_block.base_rotation_degree
-	var target_global_rotation_degrees = first_block_base_rotation + saved_rotation_degrees
+	var target_vehicle_rotation = saved_rotation_degrees
+	var calculated_vehicle_rotation = saved_rotation_degrees - first_block.base_rotation_degree
+	calculated_vehicle_rotation = fmod(calculated_vehicle_rotation + 180.0, 360.0) - 180.0
 	
-	# 计算需要应用的旋转差值
-	var rotation_difference = target_global_rotation_degrees - first_block.global_rotation_degrees
+	rotation_degrees = target_vehicle_rotation
 	
-	# 应用旋转到整个车辆
-	rotation_degrees += rotation_difference
+	var expected_global_rotation = first_block.base_rotation_degree + rotation_degrees
+	expected_global_rotation = fmod(expected_global_rotation + 180.0, 360.0) - 180.0
 	
-	# 确保旋转在 0-360 度范围内
-	rotation_degrees = fmod(rotation_degrees, 360)
-	if rotation_degrees < 0:
-		rotation_degrees += 360
+	if abs(first_block.global_rotation_degrees - expected_global_rotation) > 0.1:
+		var rotation_difference = expected_global_rotation - first_block.global_rotation_degrees
+		rotation_degrees += rotation_difference
 
-# ==================== 保存和加载方法 ====================
 func get_save_data() -> Dictionary:
 	if destroyed:
 		return {}
 	
-	# 计算车辆的基准点：不考虑旋转的原始网格坐标系原点
-	var reference_point = Vector2i.ZERO
-	if not grid.is_empty():
-		var min_x = INF
-		var min_y = INF
-		for grid_pos in grid.keys():
-			min_x = min(min_x, grid_pos.x)
-			min_y = min(min_y, grid_pos.y)
-		reference_point = Vector2i(min_x, min_y)
+	var grid_origin_world_pos = get_grid_origin_world_position()
+	
+	print("保存车辆 position: [", grid_origin_world_pos[0].x, ", ", grid_origin_world_pos[0].y, "]")
 	
 	var save_data := {
 		"name": vehicle_name,
-		"position": [global_position.x, global_position.y],
-		"reference_point": [reference_point.x, reference_point.y],
-		"vehicle_size": [vehicle_size.x, vehicle_size.y],
-		"global_rotation": [rotation_degrees],  # 车辆全局旋转
+		"position": [grid_origin_world_pos[0].x, grid_origin_world_pos[0].y],
+		"global_rotation": [grid_origin_world_pos[1]],
 		"blocks": {}
 	}
 	
@@ -979,67 +919,44 @@ func get_save_data() -> Dictionary:
 		if not is_instance_valid(block):
 			continue
 		
-		var block_data = get_block_save_data(block, reference_point)
+		var block_data = get_block_save_data_simple(block)
 		if block_data:
 			save_data["blocks"][str(block_counter)] = block_data
 			block_counter += 1
 	
 	return save_data
 
-func get_save_rotation() -> float:
-	if grid.is_empty():
-		return 0.0
-	
-	var first_grid_pos = grid.keys()[0]
-	var first_block_data = grid[first_grid_pos]
-	var first_block = first_block_data["block"]
-	
-	if not is_instance_valid(first_block):
-		return 0.0
-	
-	var relative_rotation = rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree
-	return fmod(relative_rotation + 360, 360)
-
-func get_block_save_data(block: Block, reference_point: Vector2i) -> Dictionary:
+func get_block_save_data_simple(block: Block) -> Dictionary:
 	var grid_positions = get_block_grid(block)
 	if grid_positions.is_empty():
 		return {}
 	
-	# 计算块相对于基准点的局部网格坐标
-	var min_x = INF
-	var min_y = INF
-	for pos in grid_positions:
-		min_x = min(min_x, pos.x)
-		min_y = min(min_y, pos.y)
-	
-	var local_grid_pos = Vector2i(min_x - reference_point.x, min_y - reference_point.y)
-	
-	# 使用VehicleManager获取块的路径
+	var base_grid_pos = grid_positions[0]
 	var block_path = VehicleManager.get_block_scene_path_by_name(block.block_name)
 	
 	var block_data = {
-		"local_grid_pos": [local_grid_pos.x, local_grid_pos.y],
+		"grid_pos": [base_grid_pos.x, base_grid_pos.y],
 		"name": block.block_name,
 		"path": block_path,
-		"base_rotation": [block.base_rotation_degree],  # 块的局部旋转
+		"rotation": [block.base_rotation_degree],
 		"current_hp": block.current_hp,
 		"max_hp": block.max_hp
 	}
 	
+	block_data["local_grid_pos"] = [base_grid_pos.x, base_grid_pos.y]
+	
 	if block is TurretRing:
-		var turret_grid = get_turret_save_data(block)
+		var turret_grid = get_turret_save_data_simple(block)
 		if turret_grid:
 			block_data["turret_grid"] = turret_grid
 	
 	return block_data
 
-func get_turret_save_data(turret_ring: TurretRing) -> Dictionary:
+func get_turret_save_data_simple(turret_ring: TurretRing) -> Dictionary:
 	if not is_instance_valid(turret_ring.turret_basket):
 		return {"blocks": {}}
 	
 	var turret_grid = {"blocks": {}}
-	
-	# 直接遍历所有块，找到属于这个炮塔的块
 	var turret_blocks = []
 	for block in total_blocks:
 		if block != turret_ring and block.on_turret == turret_ring:
@@ -1048,31 +965,19 @@ func get_turret_save_data(turret_ring: TurretRing) -> Dictionary:
 	if turret_blocks.is_empty():
 		return {"blocks": {}}
 	
-	var min_x = INF
-	var min_y = INF
-	var max_x = -INF
-	var max_y = -INF
 	var block_counter = 1
 	
 	for block in turret_blocks:
 		if not is_instance_valid(block):
 			continue
 		
-		# 计算块相对于炮塔的局部坐标（以网格为单位）
 		var local_pos = block.position - turret_ring.position
 		var grid_x = int(round(local_pos.x / GRID_SIZE))
 		var grid_y = int(round(local_pos.y / GRID_SIZE))
-		
-		min_x = min(min_x, grid_x)
-		min_y = min(min_y, grid_y)
-		max_x = max(max_x, grid_x)
-		max_y = max(max_y, grid_y)
-		
-		# 使用VehicleManager获取块的路径
 		var block_path = VehicleManager.get_block_scene_path_by_name(block.block_name)
 		
 		turret_grid["blocks"][str(block_counter)] = {
-			"base_pos": [grid_x, grid_y],
+			"grid_pos": [grid_x, grid_y],
 			"name": block.block_name,
 			"path": block_path,
 			"rotation": [block.base_rotation_degree],
@@ -1082,19 +987,19 @@ func get_turret_save_data(turret_ring: TurretRing) -> Dictionary:
 		
 		block_counter += 1
 	
-	if min_x != INF and max_x != -INF:
-		var width = int(max_x - min_x + 1)
-		var height = int(max_y - min_y + 1)
-		turret_grid["grid_size"] = [width, height]
-		
-		# 归一化坐标，使最小坐标为(0,0)
-		if min_x != 0 or min_y != 0:
-			for block_id in turret_grid["blocks"]:
-				var block_data = turret_grid["blocks"][block_id]
-				var pos = block_data["base_pos"]
-				block_data["base_pos"] = [pos[0] - min_x, pos[1] - min_y]
-	
 	return turret_grid
+
+func get_grid_pos_from_data(block_data: Dictionary) -> Vector2i:
+	if block_data.has("grid_pos"):
+		var grid_pos_array = block_data["grid_pos"]
+		if grid_pos_array is Array and grid_pos_array.size() >= 2:
+			return Vector2i(grid_pos_array[0], grid_pos_array[1])
+	elif block_data.has("local_grid_pos"):
+		var grid_pos_array = block_data["local_grid_pos"]
+		if grid_pos_array is Array and grid_pos_array.size() >= 2:
+			return Vector2i(grid_pos_array[0], grid_pos_array[1])
+	
+	return Vector2i(0, 0)
 
 func load_from_save_data(save_data: Dictionary) -> void:
 	ready_connect = false
@@ -1102,39 +1007,36 @@ func load_from_save_data(save_data: Dictionary) -> void:
 	
 	vehicle_name = save_data.get("name", "Unnamed_Vehicle")
 	
-	if save_data.has("vehicle_size"):
-		vehicle_size = Vector2i(save_data["vehicle_size"][0], save_data["vehicle_size"][1])
+	var vehicle_position = Vector2.ZERO
+	if save_data.has("position"):
+		vehicle_position = Vector2(save_data["position"][0], save_data["position"][1])
+		print("加载车辆 position: [", save_data["position"][0], ", ", save_data["position"][1], "]")
 	
-	# 获取基准点
-	var reference_point = Vector2i.ZERO
-	if save_data.has("reference_point"):
-		reference_point = Vector2i(save_data["reference_point"][0], save_data["reference_point"][1])
-	
-	# 获取车辆全局旋转
-	var global_rotation = 0.0
+	var ro_to = 0.0
 	if save_data.has("global_rotation") and save_data["global_rotation"].size() > 0:
-		global_rotation = save_data["global_rotation"][0]
+		ro_to = save_data["global_rotation"][0]
 	
-	# 获取块数据
+	global_position = vehicle_position
+	rotation_degrees = ro_to
+	
 	var blocks_data = save_data.get("blocks", {})
 	var loaded_blocks = {}
 	
-	# 按位置排序以确保正确的加载顺序
 	var block_ids = blocks_data.keys()
 	block_ids.sort_custom(func(a, b):
-		var pos_a = blocks_data[a].get("local_grid_pos", [0, 0])
-		var pos_b = blocks_data[b].get("local_grid_pos", [0, 0])
-		if pos_a[0] != pos_b[0]:
-			return pos_a[0] < pos_b[0]
-		return pos_a[1] < pos_b[1]
+		var pos_a_data = blocks_data[a]
+		var pos_b_data = blocks_data[b]
+		var pos_a = get_grid_pos_from_data(pos_a_data)
+		var pos_b = get_grid_pos_from_data(pos_b_data)
+		if pos_a.x != pos_b.x:
+			return pos_a.x < pos_b.x
+		return pos_a.y < pos_b.y
 	)
 	
-	# 第一遍：加载所有主块（包括炮塔座圈）
 	for block_id in block_ids:
 		var block_data = blocks_data[block_id]
-		await load_block_from_save_data(block_data, loaded_blocks, block_id, reference_point)
+		await load_block_simple(block_data, loaded_blocks, block_id)
 	
-	# 第二遍：处理炮塔上的块
 	for block_id in block_ids:
 		var block_data = blocks_data[block_id]
 		if block_data.has("turret_grid") and loaded_blocks.has(block_id):
@@ -1145,57 +1047,79 @@ func load_from_save_data(save_data: Dictionary) -> void:
 					if point is TurretConnector and point.connected_to == null:
 						point.is_connection_enabled = true
 				
-				await load_turret_blocks_from_save_data(turret_block, block_data["turret_grid"])
+				await load_turret_blocks_simple(turret_block, block_data["turret_grid"])
 				turret_block.unlock_turret_rotation()
-	
-	# 应用车辆全局旋转
-	rotation_degrees = global_rotation
 	
 	ready_connect = true
 	update_vehicle()
 
-func load_block_from_save_data(block_data: Dictionary, loaded_blocks: Dictionary, block_id: String, reference_point: Vector2i) -> void:
+func load_block_simple(block_data: Dictionary, loaded_blocks: Dictionary, block_id: String) -> void:
 	var block_name = block_data.get("name", "")
 	if block_name.is_empty():
 		return
 	
-	# 优先使用保存的路径（如果存在）
 	var block_path = block_data.get("path", "")
 	if block_path.is_empty():
-		# 通过VehicleManager获取路径
 		block_path = VehicleManager.get_block_scene_path_by_name(block_name)
 	
 	var block_scene = load(block_path)
-	
 	if not block_scene:
-		print("错误: 无法加载块场景: ", block_path)
 		return
 	
 	var block: Block = block_scene.instantiate()
 	
-	# 获取块的局部基点和旋转
-	var local_grid_pos = Vector2i(block_data["local_grid_pos"][0], block_data["local_grid_pos"][1])
-	var base_rotation = block_data["base_rotation"][0]
+	var base_rotation = 0.0
+	if block_data.has("rotation"):
+		var rotation_array = block_data["rotation"]
+		if rotation_array is Array and rotation_array.size() > 0:
+			base_rotation = rotation_array[0]
+	elif block_data.has("base_rotation"):
+		var rotation_array = block_data["base_rotation"]
+		if rotation_array is Array and rotation_array.size() > 0:
+			base_rotation = rotation_array[0]
 	
-	# 设置块的属性
 	block.base_rotation_degree = base_rotation
-	block.rotation = deg_to_rad(base_rotation)
-	
-	# 设置血量
 	block.current_hp = block_data.get("current_hp", block.max_hp)
 	block.max_hp = block_data.get("max_hp", block.max_hp)
 	
-	# 计算全局网格位置
-	var global_base_pos = Vector2(local_grid_pos.x + reference_point.x, local_grid_pos.y + reference_point.y)
+	var grid_pos = get_grid_pos_from_data(block_data)
+	var grid_positions = calculate_block_grid_positions_simple(block, grid_pos)
+	var center_pos = get_rectangle_corners(grid_positions)
 	
-	# 计算旋转后的网格位置
-	var target_grid = calculate_block_grid_positions(block, global_base_pos)
-	var local_pos = get_rectangle_corners(target_grid)
-	
-	await _add_block(block, local_pos, target_grid)
+	await _add_block(block, center_pos, grid_positions)
 	loaded_blocks[block_id] = block
 
-func load_turret_blocks_from_save_data(turret_ring: TurretRing, turret_grid_data: Dictionary) -> void:
+func calculate_block_grid_positions_simple(block: Block, base_grid_pos: Vector2) -> Array:
+	var target_grid = []
+	
+	for x in range(block.size.x):
+		for y in range(block.size.y):
+			var grid_pos: Vector2i
+			var rotation_deg = int(block.base_rotation_degree)
+			
+			rotation_deg = int(fmod(rotation_deg, 360))
+			if rotation_deg < 0:
+				rotation_deg += 360
+			
+			match rotation_deg:
+				0:
+					grid_pos = Vector2i(base_grid_pos) + Vector2i(x, y)
+				90:
+					grid_pos = Vector2i(base_grid_pos) + Vector2i(-y, x)
+				180:
+					grid_pos = Vector2i(base_grid_pos) + Vector2i(-x, -y)
+				270:
+					grid_pos = Vector2i(base_grid_pos) + Vector2i(y, -x)
+				_:
+					var rotated_x = round(x * cos(deg_to_rad(rotation_deg)) - y * sin(deg_to_rad(rotation_deg)))
+					var rotated_y = round(x * sin(deg_to_rad(rotation_deg)) + y * cos(deg_to_rad(rotation_deg)))
+					grid_pos = Vector2i(base_grid_pos) + Vector2i(rotated_x, rotated_y)
+			
+			target_grid.append(grid_pos)
+	
+	return target_grid
+
+func load_turret_blocks_simple(turret_ring: TurretRing, turret_grid_data: Dictionary) -> void:
 	if not turret_grid_data.has("blocks"):
 		return
 	
@@ -1206,7 +1130,6 @@ func load_turret_blocks_from_save_data(turret_ring: TurretRing, turret_grid_data
 		if block_name.is_empty():
 			continue
 		
-		# 通过VehicleManager的静态方法获取路径
 		var block_path = VehicleManager.get_block_scene_path_by_name(block_name)
 		var block_scene = load(block_path)
 		
@@ -1214,26 +1137,125 @@ func load_turret_blocks_from_save_data(turret_ring: TurretRing, turret_grid_data
 			continue
 		
 		var block: Block = block_scene.instantiate()
-		var local_base_pos = Vector2i(block_data["base_pos"][0], block_data["base_pos"][1])
-		block.base_rotation_degree = block_data["rotation"][0]
+		
+		var grid_pos = Vector2i(0, 0)
+		if block_data.has("grid_pos"):
+			var grid_pos_array = block_data["grid_pos"]
+			if grid_pos_array is Array and grid_pos_array.size() >= 2:
+				grid_pos = Vector2i(grid_pos_array[0], grid_pos_array[1])
+		elif block_data.has("base_pos"):
+			var grid_pos_array = block_data["base_pos"]
+			if grid_pos_array is Array and grid_pos_array.size() >= 2:
+				grid_pos = Vector2i(grid_pos_array[0], grid_pos_array[1])
+		
+		var base_rotation = 0.0
+		if block_data.has("rotation"):
+			var rotation_array = block_data["rotation"]
+			if rotation_array is Array and rotation_array.size() > 0:
+				base_rotation = rotation_array[0]
+		
+		block.base_rotation_degree = base_rotation
 		block.current_hp = block_data.get("current_hp", block.max_hp)
 		block.max_hp = block_data.get("max_hp", block.max_hp)
 		block.collision_layer = 2
 		block.collision_mask = 2
 		
-		var turret_local_positions = calculate_block_grid_positions(block, local_base_pos)
-		var turretblock_pos = get_rectangle_corners(turret_local_positions) - 0.5 * turret_ring.size * GRID_SIZE
+		var grid_positions = calculate_block_grid_positions_simple(block, grid_pos)
+		var center_pos = get_rectangle_corners(grid_positions)
 		
-		var world_pos = turret_ring.to_global(turretblock_pos)
-		block.global_position = world_pos
-		turret_ring.add_block_to_turret(block, turret_local_positions)
+		block.position = center_pos
+		turret_ring.add_child(block)
+		turret_ring.add_block_to_turret(block, grid_positions)
 		block.rotation_degrees = block.base_rotation_degree
 		
 		if block not in total_blocks:
 			total_blocks.append(block)
-		#await block.connect_aready()
 
-# ==================== 其他公共方法 ====================
+func load_from_save_data_compatible(save_data: Dictionary) -> void:
+	var is_old_format = false
+	if save_data.has("reference_point") or save_data.has("grid_origin"):
+		is_old_format = true
+	
+	if is_old_format:
+		load_from_save_data_old(save_data)
+	else:
+		load_from_save_data(save_data)
+
+func load_from_save_data_old(save_data: Dictionary) -> void:
+	ready_connect = false
+	clear_existing_blocks()
+	
+	vehicle_name = save_data.get("name", "Unnamed_Vehicle")
+	
+	var vehicle_position = Vector2.ZERO
+	if save_data.has("position"):
+		vehicle_position = Vector2(save_data["position"][0], save_data["position"][1])
+		print("加载车辆 position: [", save_data["position"][0], ", ", save_data["position"][1], "]")
+	
+	var global_rotation = 0.0
+	if save_data.has("global_rotation") and save_data["global_rotation"].size() > 0:
+		global_rotation = save_data["global_rotation"][0]
+	
+	global_position = vehicle_position
+	rotation_degrees = global_rotation
+	
+	var blocks_data = save_data.get("blocks", {})
+	var loaded_blocks = {}
+	
+	var block_ids = blocks_data.keys()
+	block_ids.sort_custom(func(a, b):
+		var pos_a = blocks_data[a].get("local_grid_pos", [0, 0])
+		var pos_b = blocks_data[b].get("local_grid_pos", [0, 0])
+		if pos_a[0] != pos_b[0]:
+			return pos_a[0] < pos_b[0]
+		return pos_a[1] < pos_b[1]
+	)
+	
+	for block_id in block_ids:
+		var block_data = blocks_data[block_id]
+		await load_block_simple(block_data, loaded_blocks, block_id)
+	
+	for block_id in block_ids:
+		var block_data = blocks_data[block_id]
+		if block_data.has("turret_grid") and loaded_blocks.has(block_id):
+			var turret_block = loaded_blocks[block_id]
+			if turret_block is TurretRing:
+				await turret_block.lock_turret_rotation()
+				for point in turret_block.turret_basket.get_children():
+					if point is TurretConnector and point.connected_to == null:
+						point.is_connection_enabled = true
+				
+				await load_turret_blocks_simple(turret_block, block_data["turret_grid"])
+				turret_block.unlock_turret_rotation()
+	
+	ready_connect = true
+	update_vehicle()
+
+func get_grid_origin_world_position():
+	if grid.is_empty():
+		return global_position
+	
+	var first_grid_pos = grid.keys()[0]
+	var first_block:Block = grid[first_grid_pos]["block"]
+	
+	if not is_instance_valid(first_block):
+		return global_position
+	
+	var vehicle_actual_rotation = first_block.global_rotation_degrees - first_block.base_rotation_degree
+	vehicle_actual_rotation = fmod(vehicle_actual_rotation + 180.0, 360.0) - 180.0
+	
+	var block_size = Vector2(first_block.size) * GRID_SIZE
+	var block_top_left = first_block.to_global(Vector2(-(block_size / 2).x, -(block_size / 2).y)) 
+	
+	var grid_offset = Vector2(-first_grid_pos.x, -first_grid_pos.y)
+	var pixel_offset_in_grid_space = grid_offset * GRID_SIZE
+	
+	var grid_rotation_rad = deg_to_rad(vehicle_actual_rotation)
+	var rotated_offset = pixel_offset_in_grid_space.rotated(grid_rotation_rad)
+	
+	var grid_00_top_left = block_top_left + rotated_offset
+	return [grid_00_top_left, vehicle_actual_rotation]
+
 func get_available_points_near_position(_position: Vector2, max_distance: float = 30.0) -> Array[Connector]:
 	var temp_points = []
 	var max_distance_squared = max_distance * max_distance
@@ -1312,3 +1334,21 @@ func dfs_traverse(block, visited: Dictionary, component: Array, all_blocks: Arra
 				var connected_id = connected_block.get_instance_id()
 				if not visited.get(connected_id, false):
 					dfs_traverse(connected_block, visited, component, all_blocks)
+
+func get_global_mass_center() -> Vector2:
+	var com = calculate_center_of_mass()
+	if grid.is_empty():
+		return Vector2.ZERO
+	
+	var first_grid_pos = grid.keys()[0]
+	var first_block = grid[first_grid_pos]["block"]
+	var first_grid_positions = get_block_grid(first_block)
+	
+	if first_block is Block:
+		var first_rotation = deg_to_rad(rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree)
+		var first_position = get_rectangle_corners(first_grid_positions)
+		var local_offset = com - first_position
+		var rotated_offset = local_offset.rotated(first_rotation)
+		return first_block.global_position + rotated_offset
+	
+	return Vector2.ZERO
