@@ -13,7 +13,7 @@ func _ready() -> void:
 	map_renderer.map = map
 
 func _process(_delta):
-	#center_cell = map.ground.local_to_map(camera.position)
+	center_cell = map.ground.local_to_map(camera.position)
 	map_renderer.scale = Vector2(zoom, zoom)
 	map_renderer.position = -Vector2(center_cell - view_size_pixels/zoom/2) * zoom
 

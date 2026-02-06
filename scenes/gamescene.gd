@@ -75,7 +75,7 @@ func _write_json(path: String, data: Dictionary):
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
-	
+
 func _read_json(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
