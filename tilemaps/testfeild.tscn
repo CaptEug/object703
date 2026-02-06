@@ -33,5 +33,4 @@ script = ExtResource("4_77rb7")
 script = ExtResource("5_serhm")
 
 [node name="Object1" parent="VehicleManager" instance=ExtResource("6_2iykn")]
-position = Vector2(-523.976, 210.644)
-rotation = 0.375246
+position = Vector2(1.19209e-07, 2.92442e-09)

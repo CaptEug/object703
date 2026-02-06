@@ -1259,7 +1259,7 @@ func open_vehicle_panel():
 		vehicle_panel.visible = true
 		vehicle_panel.move_to_front()
 	else:
-		var UI = get_tree().current_scene.find_child("CanvasLayer") as CanvasLayer
+		var UI = GameState.current_gamescene.gameUI
 		var panel = load("res://ui/tankpanel.tscn").instantiate()
 		panel.selected_vehicle = self
 		vehicle_panel = panel
