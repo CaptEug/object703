@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://b765c5wg5q6yo"]
+[gd_scene load_steps=9 format=3 uid="uid://b765c5wg5q6yo"]
 
 [ext_resource type="Script" uid="uid://bytfcwiqedmk8" path="res://scenes/gamescene.gd" id="1_xkbh3"]
 [ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="2_fwly5"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dtw2v5sc0o4ng" path="res://ui/map/minimap.tscn" id="4_mulil"]
 [ext_resource type="PackedScene" uid="uid://bfe7bj5f8ea2p" path="res://tilemaps/gamemap.tscn" id="5_7cfj2"]
 [ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="6_xkbh3"]
+[ext_resource type="PackedScene" uid="uid://o3aj0yiew54" path="res://ui/settingspanel.tscn" id="7_7cfj2"]
 
 [node name="Gamescene" type="Node2D"]
 script = ExtResource("1_xkbh3")
@@ -32,6 +33,20 @@ offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 0
 grow_vertical = 0
+
+[node name="Settingspanel" parent="UI" instance=ExtResource("7_7cfj2")]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -240.0
+offset_right = 256.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Camera2D" type="Camera2D" parent="."]
 script = ExtResource("6_xkbh3")
