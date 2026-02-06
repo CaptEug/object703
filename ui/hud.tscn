@@ -81,3 +81,4 @@ texture_normal = SubResource("AtlasTexture_en2x2")
 
 [connection signal="pressed" from="Panel/BuildButton" to="." method="_on_build_button_pressed"]
 [connection signal="pressed" from="Panel/TankDexButton" to="." method="_on_tank_dex_button_pressed"]
+[connection signal="pressed" from="Panel/SettingsButton" to="." method="_on_settings_button_pressed"]

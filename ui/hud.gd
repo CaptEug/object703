@@ -8,8 +8,8 @@ func _ready():
 	pass
 
 func _process(_delta):
-	#$Panel/Clock.text = get_clock_string(gamescene.game_time)
-	pass
+	$Panel/Clock.text = get_clock_string(gamescene.game_time)
+
 
 func get_clock_string(time) -> String:
 	var cycle_duration = 600.0
@@ -38,3 +38,7 @@ func _on_tank_dex_button_pressed():
 	else:
 		tankdex = load("res://ui/tankdex.tscn").instantiate()
 		UI.add_child(tankdex)
+
+
+func _on_settings_button_pressed() -> void:
+	UI.settings_panel.visible = true

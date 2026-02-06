@@ -4,18 +4,25 @@ var current_gamescene:GameScene
 var saving_dir:String = "res://saves/"
 var world_path:String
 
+signal save_started
+signal save_finished(success: bool)
 
 func _process(delta: float) -> void:
-	if Input.is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_RIGHT):
-		save_game()
+	pass
 
+func to_mainmenu():
+	save_game()
+	get_tree().change_scene_to_file("res://ui/mainmenu/mainmenu.tscn")
 
 func save_game():
+	save_started.emit()
+	var success:bool = true
 	world_path = saving_dir + current_gamescene.world_name + "/"
 	var dir := DirAccess.open(world_path)
 	if dir == null:
 		DirAccess.make_dir_recursive_absolute(world_path)
 	current_gamescene.save_world(world_path)
+	save_finished.emit(success)
 
 func load_game(world_folder:String):
 	world_path = saving_dir + world_folder + "/"
