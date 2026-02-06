@@ -13,6 +13,7 @@
 noise = SubResource("FastNoiseLite_t0wv1")
 
 [node name="Testfeild" type="Node2D"]
+scale = Vector2(1.00386, 0.996943)
 script = ExtResource("1_t0wv1")
 noise_height_text = SubResource("NoiseTexture2D_2p7kj")
 
@@ -32,5 +33,5 @@ script = ExtResource("4_77rb7")
 script = ExtResource("5_serhm")
 
 [node name="Object1" parent="VehicleManager" instance=ExtResource("6_2iykn")]
-position = Vector2(1590, 2003)
+position = Vector2(-523.976, 210.644)
 rotation = 0.375246

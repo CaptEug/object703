@@ -406,13 +406,19 @@ func load_from_blueprint(bp: Dictionary):
 	var loaded_blocks = {}
 	for block_id in block_ids:
 		var block_data = bp["blocks"][block_id]
-		var block_scene = load(block_data["path"])
+		# 使用VehicleManager获取路径
+		var block_path = VehicleManager.get_block_scene_path_by_name(block_data["name"])
+		var block_scene = load(block_path)
 		
 		if block_scene:
 			var block:Block = block_scene.instantiate()
 			var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
 			block.rotation = deg_to_rad(block_data["rotation"][0])
 			block.base_rotation_degree = block_data["rotation"][0]
+			
+			# 设置血量
+			block.current_hp = block_data.get("current_hp", block.max_hp)
+			block.max_hp = block_data.get("max_hp", block.max_hp)
 			
 			var target_grid = calculate_block_grid_positions(block, base_pos)
 			var local_pos = get_rectangle_corners(target_grid)
@@ -434,6 +440,13 @@ func load_from_blueprint(bp: Dictionary):
 				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
 				turret_block.unlock_turret_rotation()
 	
+	# 应用车辆旋转
+	if bp.has("rotation") and bp["rotation"].size() > 0:
+		var vehicle_rotation = bp["rotation"][0]
+		apply_saved_rotation(vehicle_rotation)
+	
+	update_vehicle()
+
 func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
 	var target_grid = []
 	for x in block.size.x:
@@ -459,7 +472,9 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 	
 	for block_id in turret_grid_data["blocks"]:
 		var block_data = turret_grid_data["blocks"][block_id]
-		var block_scene = load(block_data["path"])
+		# 使用VehicleManager获取路径
+		var block_path = VehicleManager.get_block_scene_path_by_name(block_data["name"])
+		var block_scene = load(block_path)
 		
 		if block_scene:
 			var block:Block = block_scene.instantiate()
@@ -467,6 +482,10 @@ func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded
 			block.base_rotation_degree = block_data["rotation"][0]
 			block.collision_layer = 2
 			block.collision_mask = 2
+			
+			# 设置血量
+			block.current_hp = block_data.get("current_hp", block.max_hp)
+			block.max_hp = block_data.get("max_hp", block.max_hp)
 			
 			var turret_local_positions = calculate_block_grid_positions(block, local_base_pos)
 			var turretblock_pos = get_rectangle_corners(turret_local_positions) - 0.5 * turret.size * GRID_SIZE
@@ -1234,3 +1253,333 @@ func get_actual_total_mass() -> float:
 			total_actual_mass += block.get_actual_mass()
 	
 	return total_actual_mass
+
+########################## 保存和加载相关方法 ##########################
+
+# 获取车辆保存数据
+func get_save_data() -> Dictionary:
+	if destroyed:
+		return {}
+	
+	var save_data := {
+		"name": vehicle_name,
+		"position": [global_position.x, global_position.y],
+		"vehicle_size": [vehicle_size.x, vehicle_size.y],
+		"rotation": [get_save_rotation()],
+		"center_of_mass": [calculate_center_of_mass().x, calculate_center_of_mass().y],
+		"blocks": {}
+	}
+	
+	var block_counter = 1
+	for block in blocks:
+		if not is_instance_valid(block):
+			continue
+		
+		var block_data = get_block_save_data(block)
+		if block_data:
+			save_data["blocks"][str(block_counter)] = block_data
+			block_counter += 1
+	
+	return save_data
+
+func get_save_rotation() -> float:
+	if grid.is_empty():
+		return 0.0
+	
+	var first_grid_pos = grid.keys()[0]
+	var first_block_data = grid[first_grid_pos]
+	var first_block = first_block_data["block"]
+	
+	if not is_instance_valid(first_block):
+		return 0.0
+	
+	var relative_rotation = rad_to_deg(first_block.global_rotation) - first_block.base_rotation_degree
+	return fmod(relative_rotation + 360, 360)
+
+func get_block_save_data(block: Block) -> Dictionary:
+	var grid_positions = get_block_grid(block)
+	if grid_positions.is_empty():
+		return {}
+	
+	var min_x = grid_positions[0].x
+	var min_y = grid_positions[0].y
+	
+	for pos in grid_positions:
+		min_x = min(min_x, pos.x)
+		min_y = min(min_y, pos.y)
+	
+	# 使用VehicleManager获取块的路径
+	var block_path = VehicleManager.get_block_scene_path_by_name(block.block_name)
+	
+	var block_data = {
+		"base_pos": [min_x, min_y],
+		"name": block.block_name,
+		"path": block_path,  # 保存路径信息
+		"rotation": [block.base_rotation_degree],
+		"current_hp": block.current_hp,
+		"max_hp": block.max_hp
+	}
+	
+	if block is TurretRing:
+		var turret_grid = get_turret_save_data(block)
+		if turret_grid:
+			block_data["turret_grid"] = turret_grid
+	
+	return block_data
+
+func get_turret_save_data(turret_ring: TurretRing) -> Dictionary:
+	if not is_instance_valid(turret_ring.turret_basket):
+		return {"grid_size": [0, 0], "blocks": {}}
+	
+	var turret_grid = {"grid_size": [0, 0], "blocks": {}}
+	
+	# 直接遍历所有块，找到属于这个炮塔的块
+	var turret_blocks = []
+	for block in total_blocks:
+		if block != turret_ring and block.on_turret == turret_ring:
+			turret_blocks.append(block)
+	
+	# 如果没有找到炮塔块，返回空
+	if turret_blocks.is_empty():
+		return {"grid_size": [0, 0], "blocks": {}}
+	
+	var min_x = INF
+	var min_y = INF
+	var max_x = -INF
+	var max_y = -INF
+	var block_counter = 1
+	
+	for block in turret_blocks:
+		if not is_instance_valid(block):
+			continue
+		
+		# 计算块相对于炮塔的局部坐标（以网格为单位）
+		var local_pos = block.position - turret_ring.position
+		var grid_x = int(round(local_pos.x / GRID_SIZE))
+		var grid_y = int(round(local_pos.y / GRID_SIZE))
+		
+		min_x = min(min_x, grid_x)
+		min_y = min(min_y, grid_y)
+		max_x = max(max_x, grid_x)
+		max_y = max(max_y, grid_y)
+		
+		# 使用VehicleManager获取块的路径
+		var block_path = VehicleManager.get_block_scene_path_by_name(block.block_name)
+		
+		# 重要：保存原始坐标，不进行归一化
+		turret_grid["blocks"][str(block_counter)] = {
+			"base_pos": [grid_x, grid_y],  # 保存原始坐标
+			"name": block.block_name,
+			"path": block_path,  # 保存路径信息
+			"rotation": [block.base_rotation_degree],
+			"current_hp": block.current_hp,
+			"max_hp": block.max_hp
+		}
+		
+		block_counter += 1
+	
+	if min_x != INF and max_x != -INF:
+		var width = int(max_x - min_x + 1)
+		var height = int(max_y - min_y + 1)
+		turret_grid["grid_size"] = [width, height]
+	
+	print("保存炮塔数据: ", turret_grid["blocks"].size(), " 个块，坐标范围: ", 
+		  min_x, ",", min_y, " 到 ", max_x, ",", max_y)
+	return turret_grid
+
+# 从保存数据加载车辆
+func load_from_save_data(save_data: Dictionary) -> void:
+	ready_connect = false
+	clear_existing_blocks()
+	
+	vehicle_name = save_data.get("name", "Unnamed_Vehicle")
+	
+	if save_data.has("vehicle_size"):
+		vehicle_size = Vector2i(save_data["vehicle_size"][0], save_data["vehicle_size"][1])
+	
+	# 获取块数据
+	var blocks_data = save_data.get("blocks", {})
+	var loaded_blocks = {}
+	
+	# 按位置排序以确保正确的加载顺序
+	var block_ids = blocks_data.keys()
+	block_ids.sort_custom(func(a, b):
+		var pos_a = blocks_data[a].get("base_pos", [0, 0])
+		var pos_b = blocks_data[b].get("base_pos", [0, 0])
+		if pos_a[0] != pos_b[0]:
+			return pos_a[0] < pos_b[0]
+		return pos_a[1] < pos_b[1]
+	)
+	
+	# 第一遍：加载所有主块（包括炮塔座圈）
+	for block_id in block_ids:
+		var block_data = blocks_data[block_id]
+		await load_block_from_save_data(block_data, loaded_blocks, block_id)
+	
+	# 第二遍：处理炮塔上的块
+	for block_id in block_ids:
+		var block_data = blocks_data[block_id]
+		if block_data.has("turret_grid") and loaded_blocks.has(block_id):
+			var turret_block = loaded_blocks[block_id]
+			if turret_block is TurretRing:
+				await turret_block.lock_turret_rotation()
+				for point in turret_block.turret_basket.get_children():
+					if point is TurretConnector and point.connected_to == null:
+						point.is_connection_enabled = true
+				
+				await load_turret_blocks_from_save_data(turret_block, block_data["turret_grid"])
+				turret_block.unlock_turret_rotation()
+	
+	# 应用车辆旋转
+	if save_data.has("rotation") and save_data["rotation"].size() > 0:
+		var vehicle_rotation = save_data["rotation"][0]
+		apply_saved_rotation(vehicle_rotation)
+	
+	ready_connect = true
+	update_vehicle()
+
+func load_block_from_save_data(block_data: Dictionary, loaded_blocks: Dictionary, block_id: String) -> void:
+	var block_name = block_data.get("name", "")
+	if block_name.is_empty():
+		return
+	
+	# 优先使用保存的路径（如果存在）
+	var block_path = block_data.get("path", "")
+	if block_path.is_empty():
+		# 通过VehicleManager获取路径
+		block_path = VehicleManager.get_block_scene_path_by_name(block_name)
+	
+	var block_scene = load(block_path)
+	
+	if not block_scene:
+		print("错误: 无法加载块场景: ", block_path)
+		return
+	
+	var block: Block = block_scene.instantiate()
+	var base_pos = Vector2(block_data["base_pos"][0], block_data["base_pos"][1])
+	block.rotation = deg_to_rad(block_data["rotation"][0])
+	block.base_rotation_degree = block_data["rotation"][0]
+	
+	# 设置血量
+	block.current_hp = block_data.get("current_hp", block.max_hp)
+	block.max_hp = block_data.get("max_hp", block.max_hp)
+	
+	var target_grid = calculate_block_grid_positions_for_save(block, base_pos)
+	var local_pos = get_rectangle_corners_for_save(target_grid)
+	
+	await _add_block(block, local_pos, target_grid)
+	loaded_blocks[block_id] = block
+
+
+func calculate_block_grid_positions_for_save(block: Block, base_pos: Vector2) -> Array:
+	var target_grid = []
+	for x in block.size.x:
+		for y in block.size.y:
+			var grid_pos: Vector2i
+			match int(block.base_rotation_degree):
+				0:
+					grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+				90:
+					grid_pos = Vector2i(base_pos) + Vector2i(-y, x)
+				-90:
+					grid_pos = Vector2i(base_pos) + Vector2i(y, -x)
+				180, -180:
+					grid_pos = Vector2i(base_pos) + Vector2i(-x, -y)
+				_:
+					grid_pos = Vector2i(base_pos) + Vector2i(x, y)
+			target_grid.append(grid_pos)
+	return target_grid
+
+func get_rectangle_corners_for_save(grid_data) -> Vector2:
+	if grid_data.is_empty():
+		return Vector2.ZERO
+	
+	var x_coords = []
+	var y_coords = []
+	
+	for coord in grid_data:
+		x_coords.append(coord[0])
+		y_coords.append(coord[1])
+	
+	x_coords.sort()
+	y_coords.sort()
+	
+	var min_x = x_coords[0]
+	var max_x = x_coords[x_coords.size() - 1]
+	var min_y = y_coords[0]
+	var max_y = y_coords[y_coords.size() - 1]
+	
+	var vc_1 = Vector2(min_x * GRID_SIZE, min_y * GRID_SIZE)
+	var vc_2 = Vector2(max_x * GRID_SIZE + GRID_SIZE, max_y * GRID_SIZE + GRID_SIZE)
+	
+	return (vc_1 + vc_2) / 2
+
+func load_turret_blocks_from_save_data(turret_ring: TurretRing, turret_grid_data: Dictionary) -> void:
+	if not turret_grid_data.has("blocks"):
+		return
+	
+	print("加载炮塔数据，块数量: ", turret_grid_data["blocks"].size())
+	
+	for block_id in turret_grid_data["blocks"]:
+		var block_data = turret_grid_data["blocks"][block_id]
+		var block_name = block_data.get("name", "")
+		
+		if block_name.is_empty():
+			continue
+		
+		# 通过VehicleManager的静态方法获取路径
+		var block_path = VehicleManager.get_block_scene_path_by_name(block_name)
+		var block_scene = load(block_path)
+		
+		if not block_scene:
+			continue
+		
+		var block: Block = block_scene.instantiate()
+		var local_base_pos = Vector2i(block_data["base_pos"][0], block_data["base_pos"][1])
+		block.base_rotation_degree = block_data["rotation"][0]
+		block.current_hp = block_data.get("current_hp", block.max_hp)
+		block.max_hp = block_data.get("max_hp", block.max_hp)
+		block.collision_layer = 2
+		block.collision_mask = 2
+		
+		# 调试信息
+		print("加载炮塔块: ", block_name, " 位置: ", local_base_pos)
+		
+		var turret_local_positions = calculate_block_grid_positions_for_save(block, local_base_pos)
+		var turretblock_pos = get_rectangle_corners_for_save(turret_local_positions) - 0.5 * turret_ring.size * GRID_SIZE
+		
+		var world_pos = turret_ring.to_global(turretblock_pos)
+		block.global_position = world_pos
+		turret_ring.add_block_to_turret(block, turret_local_positions)
+		block.rotation_degrees = block.base_rotation_degree
+		
+		if block not in total_blocks:
+			total_blocks.append(block)
+		await block.connect_aready()
+
+func apply_saved_rotation(saved_rotation_degrees: float) -> void:
+	if grid.is_empty():
+		return
+	
+	# 获取第一个块作为旋转参考
+	var first_grid_pos = grid.keys()[0]
+	var first_block_data = grid[first_grid_pos]
+	var first_block = first_block_data["block"]
+	
+	if not is_instance_valid(first_block):
+		return
+	
+	# 计算第一个块应该具有的全局旋转
+	var first_block_base_rotation = first_block.base_rotation_degree
+	var target_global_rotation_degrees = first_block_base_rotation + saved_rotation_degrees
+	
+	# 计算需要应用的旋转差值
+	var rotation_difference = target_global_rotation_degrees - first_block.global_rotation_degrees
+	
+	# 应用旋转到整个车辆
+	rotation_degrees += rotation_difference
+	
+	# 确保旋转在 0-360 度范围内
+	rotation_degrees = fmod(rotation_degrees, 360)
+	if rotation_degrees < 0:
+		rotation_degrees += 360

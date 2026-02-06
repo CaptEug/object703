@@ -32,14 +32,14 @@ func save_world(dir:String):
 		"name": world_name,
 		"seed": world_data.get("seed", ""),
 		"last_played": Time.get_unix_time_from_system(),
-		"version": 0
+		"version": 1  # 更新版本号以表示包含车辆数据
 	}
 	_write_json(dir + "header.json", header)
 	
-	# WORLD DATA
+	# WORLD DATA - 包含车辆数据
 	var data := {
 		"gametime": game_time,
-		#"vehicles":,
+		"vehicles": gamemap.vehicles.get_all_vehicles_data_for_save(),  # 获取所有车辆数据
 		"buildings": gamemap.save_buildings(),
 		#"technology":,
 	}
@@ -47,6 +47,8 @@ func save_world(dir:String):
 	
 	# TILEMAP
 	gamemap.save_map(dir)
+	
+	print("世界保存完成，包含 %d 辆车辆" % data["vehicles"].size())
 
 func load_world():
 	var path = GameState.world_path
@@ -69,6 +71,29 @@ func load_world():
 	
 	# load tilemap
 	gamemap.load_map(path + world_name + ".map")
+	
+	# 加载车辆数据（从world.json中）
+	if world_data.has("vehicles") and world_data["vehicles"] is Dictionary:
+		print("开始从world.json加载车辆数据...")
+		var vehicles_data: Dictionary = world_data["vehicles"]
+		if vehicles_data.size() > 0:
+			# 清除现有车辆
+			gamemap.vehicles.clear_all_vehicles()
+			# 从保存数据创建车辆
+			gamemap.vehicles.create_vehicles_from_save_data(vehicles_data)
+			print("从world.json加载了 %d 辆车辆" % vehicles_data.size())
+		else:
+			print("world.json中没有车辆数据")
+	else:
+		print("world.json中没有车辆数据字段")
+	
+	# 加载建筑数据（如果需要，从world.json中）
+	if world_data.has("buildings") and world_data["buildings"] is Array:
+		print("开始从world.json加载建筑数据...")
+		var buildings_data: Array = world_data["buildings"]
+		if buildings_data.size() > 0 and gamemap.building and gamemap.building.has_method("load_from_save_data"):
+			gamemap.building.load_from_save_data(buildings_data)
+			print("从world.json加载了 %d 个建筑" % buildings_data.size())
 
 
 func _write_json(path: String, data: Dictionary):

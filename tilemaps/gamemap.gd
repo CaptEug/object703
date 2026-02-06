@@ -20,13 +20,6 @@ func _ready():
 		"wall": wall,
 	}
 	
-	#generate_world(noise_height_text.noise)
-	#if world_file.is_empty():
-		#world_file = "TestField.llh"
-	
-	# 加载蓝图并生成建筑
-	#building.load_all_blueprints()
-	#building.generate_buildings_from_layerdata(self)
 	print("=== 游戏地图初始化完成 ===")
 
 func _process(delta: float) -> void:
@@ -86,6 +79,7 @@ func save_map(world_folder:String):
 				file.store_buffer(bytes)
 	
 	file.close()
+	print("地图文件保存完成")
 
 func load_map(path: String):
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -133,20 +127,23 @@ func load_map(path: String):
 			layer.load_chunk(cx, cy, bytes, CHUNK_SIZE)
 		
 	file.close()
+	
 	# load map to minimap
 	UI.minimap.map_renderer.loadmap()
 	UI.minimap.map_renderer.queue_redraw()
 
-
+# 保存建筑数据
 func save_buildings() -> Array:
 	var cells := []
-	for cell in building.layerdata:
-		var celldata = building.get_celldata(cell)
-		cells.append({
-			"croods": [cell.x, cell.y],
-			"block_name": celldata["block_name"],
-			"block_path": celldata["block_path"],
-			"rotation": celldata["rotation"],
-			"hp": celldata["hp"],
-		})
+	if building and building.layerdata:
+		for cell in building.layerdata:
+			var celldata = building.get_celldata(cell)
+			if celldata:
+				cells.append({
+					"coordinates": [cell.x, cell.y],
+					"block_name": celldata.get("block_name", ""),
+					"block_path": celldata.get("block_path", ""),
+					"rotation": celldata.get("rotation", 0),
+					"hp": celldata.get("hp", 0),
+				})
 	return cells
