@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://b7rtb38fi8atj"]
 
-[ext_resource type="Script" path="res://blocks/auxiliary/large_cargo.gd" id="1_1f020"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_r812u"]
+[ext_resource type="Script" uid="uid://dt0mcqok8yflc" path="res://blocks/auxiliary/large_cargo.gd" id="1_1f020"]
+[ext_resource type="Texture2D" uid="uid://22scdg581sgy" path="res://assets/blocks_log.png" id="2_r812u"]
 [ext_resource type="PackedScene" uid="uid://bhv8oa1gj7wwq" path="res://blocks/Connector.tscn" id="3_r812u"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iayvv"]
@@ -12,7 +12,7 @@ radius = 128.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hihmu"]
 atlas = ExtResource("2_r812u")
-region = Rect2(64, 128, 32, 32)
+region = Rect2(64, 0, 32, 32)
 
 [node name="LargeCargo" type="RigidBody2D"]
 script = ExtResource("1_1f020")
