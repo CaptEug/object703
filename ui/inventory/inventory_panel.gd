@@ -6,6 +6,8 @@ extends Control
 
 var current_tank: Vehicle = null
 var block_to_section := {}  # 记录每个 block -> section 的映射
+var slots_in_sections = {}
+var sections := {}
 
 # ============================================================
 # 面板控制
@@ -29,6 +31,7 @@ func close_inventory():
 	current_tank = null
 	clear_container(section_container)
 	block_to_section.clear()
+	slots_in_sections.clear()
 
 # ============================================================
 # 主刷新逻辑
@@ -37,6 +40,7 @@ func close_inventory():
 func refresh_inventory():
 	clear_container(section_container)
 	block_to_section.clear()
+	slots_in_sections.clear()
 	if not current_tank:
 		return
 	for block in current_tank.blocks:
@@ -50,28 +54,10 @@ func refresh_inventory():
 func add_storage_section(block: Cargo) -> void:
 	var section = storage_section_scene.instantiate()
 	var title_label: Label = section.get_node("Label")
-	var grid: GridContainer = section.get_node("GridContainer")
 
 	title_label.text = "%s (%d slots)" % [block.block_name, int(block.slot_count)]
 
-	grid.columns = min(int(block.slot_count), 6)
-	clear_container(grid)
-
-	for i in range(int(block.slot_count)):
-		var slot = slot_scene.instantiate()
-		slot.slot_index = i
-		slot.storage_ref = block
-		slot.accept = block.ACCEPT
-		slot.inventory_panel_ref = self
-
-		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
-
-		var item = block.get_item(i)
-		if slot.has_method("set_item"):
-			slot.call_deferred("set_item", item)  # ✅ 延迟调用
-		else:
-			slot.item_data = item
-			slot.call_deferred("update_slot_display")
+	_refresh_slots_in_section(section, block)
 
 	section_container.add_child(section)
 	block_to_section[block] = section
@@ -94,25 +80,38 @@ func _on_inventory_changed(block: Cargo) -> void:
 		print("❌ No section found for", block)
 		return
 
-	var grid: GridContainer = section.get_node("GridContainer")
-	clear_container(grid)
+	_update_slots_display(section)
 
-	grid.columns = min(int(block.slot_count), 6)
-	for i in range(int(block.slot_count)):
+func _update_slots_display(section):	
+	var slots = slots_in_sections[section]
+	for i in slots:
+		slots[i].refresh()
+	
+func _refresh_slots_in_section(section, storage_ref: Block) -> void:
+	var grid: GridContainer = section.get_node("GridContainer")
+	var slot_count = int(storage_ref.slot_count)
+	var slots = {}
+	grid.columns = min(slot_count, 6)
+	clear_container(grid)
+	slots_in_sections[section] = {}
+
+	for i in range(slot_count):
 		var slot = slot_scene.instantiate()
 		slot.slot_index = i
-		slot.storage_ref = block
+		slot.storage_ref = storage_ref
+		slot.accept = storage_ref.ACCEPT
 		slot.inventory_panel_ref = self
-
+		slots[i] = slot
 		grid.add_child(slot)  # ✅ 先加入场景树，触发 _ready()
 
-		var item = block.get_item(i)
-		print("getted item:", item)
+		var item = storage_ref.get_item(i)
 		if slot.has_method("set_item"):
 			slot.call_deferred("set_item", item)  # ✅ 延迟调用
 		else:
 			slot.item_data = item
 			slot.call_deferred("update_slot_display")
+	
+	slots_in_sections[section] = slots
 
 func _on_cargo_changed():
 	refresh_inventory()

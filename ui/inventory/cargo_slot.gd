@@ -18,6 +18,7 @@ var drag_source_item: Dictionary = {}    # 当前拖拽物（独立于 item_data
 var drag_from_slot_ref: Node = null      # 源 slot（通常是 self，拆分也来自 self）
 var drag_is_split: bool = false          # 是否为拆分产生的拖拽物
 var slot_under_mouse = null
+var dragging_item: Dictionary = {}
 
 
 # ============================================================
@@ -40,13 +41,22 @@ func _ready():
 	add_to_group("cargo_slot")
 	call_deferred("update_slot_display")
 
+func refresh():
+	item_data = storage_ref.get_item(slot_index)
+	update_slot_display()
 
 # ============================================================
 # 显示逻辑
 # ============================================================
 func set_item(item: Dictionary) -> void:
 	item_data = item
+	if item_data != {} and item_data["count"] < 1:
+		item_data = {}
+	storage_ref.set_item(slot_index ,item_data)
+	#if is_dragging:
+		#_end_drag()
 	update_slot_display()
+	
 
 func update_slot_display() -> void:
 	if item_data.is_empty():
@@ -57,8 +67,8 @@ func update_slot_display() -> void:
 		var count = item_data.get("count", 1)
 		count_label.text = str(count)
 		count_label.visible = count > 0
-		if is_dragging:
-			_end_drag()
+		#if is_dragging:
+			#_end_drag()
 		show_current_icon()
 
 
@@ -67,46 +77,56 @@ func update_slot_display() -> void:
 # ============================================================
 func _gui_input(event: InputEvent) -> void:
 	# 鼠标按键事件
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-
-				# Ctrl + 左键 → 拆分物品（split half）
-				if Input.is_key_pressed(KEY_CTRL):
-					_split_item_half()
-					return  # 不继续执行拖拽
-
-				# 正常左键 → 开始拖拽
-				drag_offset = event.position
-				_start_drag({},false)
-
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			# Ctrl + 左键 → 拆分物品（split half）
+			if Input.is_key_pressed(KEY_CTRL):
+				_pick_item(2)
 			else:
-				# 松开鼠标左键时结束拖拽
-				if is_dragging:
-					_end_drag()
+				_pick_item(1)
 
+			# 正常左键 → 开始拖拽
+			if dragging_item != {}:
+				drag_offset = event.position
+				_start_drag(dragging_item)
+				#_start_drag({},false)
+				accept_event()
+		else:
+			# 松开鼠标左键时结束拖拽
+			if is_dragging:
+				_end_drag()
 	# 鼠标移动事件：拖拽更新
 	elif event is InputEventMouseMotion and is_dragging:
+		print(dragging_item)
 		_update_drag()
+		accept_event()
+		
 
-
-func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
+func _start_drag(from_item: Dictionary) -> void:
 	# 如果没有指定物品，则以当前槽的 item_data 为来源
-	if from_item == {}:
-		if item_data.is_empty():
-			return
-		drag_source_item = item_data.duplicate(true)  # copy to avoid accidental shared refs
-		drag_from_slot_ref = self
-		drag_is_split = false
-	else:
+	#if from_item == {}:
+		#if item_data.is_empty():
+			#return
+		##drag_source_item = item_data.duplicate(true)  # copy to avoid accidental shared refs
+		##drag_from_slot_ref = self
+		##drag_is_split = false
+	#else:
+		#if item_data["count"] < 1:
+			#return
 		# from_item 是拆分产生的新物品
-		drag_source_item = from_item.duplicate(true)
-		drag_from_slot_ref = self
-		drag_is_split = is_split
+	drag_source_item = from_item.duplicate(true)
+	drag_from_slot_ref = self
+	#drag_is_split = is_split
 
 	is_dragging = true
 
-	# 创建跟随鼠标的预览（显示 drag_source_item）
+	# 放到最顶层（挂到 root，保证可见）
+	inventory_panel_ref.add_child(create_drag_preview(drag_source_item))
+	#if not drag_is_split:
+		#hide_current_icon()
+	_update_drag()
+	
+func create_drag_preview(drag_source_item: Dictionary) -> Control:
 	drag_preview = Control.new()
 	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	drag_preview.custom_minimum_size = Vector2(32, 32)
@@ -127,13 +147,8 @@ func _start_drag(from_item: Dictionary, is_split: bool = false) -> void:
 	label.anchor_right = 1.0
 	label.anchor_bottom = 1.0
 	drag_preview.add_child(label)
-
-	# 放到最顶层（挂到 root，保证可见）
-	inventory_panel_ref.add_child(drag_preview)
-	print("drag is split: ", drag_is_split)
-	if not drag_is_split:
-		hide_current_icon()
-	_update_drag()
+	
+	return drag_preview
 
 func _update_drag() -> void:
 	if drag_preview:
@@ -147,14 +162,14 @@ func _update_drag() -> void:
 				slot_under_mouse.hide_forbid()
 
 			slot_under_mouse = current_slot_under_mouse
-			if not _check_slot_availability(slot_under_mouse):
-				slot_under_mouse.show_forbid()
+			#if not _check_slot_availability(slot_under_mouse):
+				#slot_under_mouse.show_forbid()
 					
 		elif slot_under_mouse:
 			slot_under_mouse.hide_forbid()
 			
 func _check_slot_availability(target_slot) -> bool:
-	var source_item = drag_source_item
+	var source_item = dragging_item
 	var source_item_tag = ItemDB.get_item(source_item["id"])["tag"]
 	return source_item_tag in target_slot.accept or "ALL" in target_slot.accept
 
@@ -183,6 +198,7 @@ func _end_drag() -> void:
 		drag_preview = null
 
 	# 清理拖拽临时数据
+	dragging_item = {}
 	drag_source_item = {}
 	drag_from_slot_ref = null
 	drag_is_split = false
@@ -208,7 +224,8 @@ func _perform_drop(target_slot: Node) -> void:
 	if slot_under_mouse:
 		slot_under_mouse.hide_forbid()
 		slot_under_mouse = null
-	var source_item = drag_source_item
+	
+	var source_item = dragging_item
 	var source_item_tag = ItemDB.get_item(source_item["id"])["tag"]
 	var target_item = target_slot.item_data if target_slot.item_data != null else {}
 
@@ -219,14 +236,9 @@ func _perform_drop(target_slot: Node) -> void:
 			# 如果拖拽物来自拆分（drag_is_split），只需把 source_item 放入目标，
 			# 源槽已经在拆分时更新为剩余，不需清空。
 			target_slot.set_item(source_item)
-			if not drag_is_split:
-				# 拖动整个槽（非拆分）时，清空原槽
-				set_item({})
 			# 底层同步
 			if drag_from_slot_ref and drag_from_slot_ref.storage_ref and target_slot.storage_ref:
 				target_slot.storage_ref.set_item(target_slot.slot_index, source_item)
-				if not drag_is_split:
-					drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, {})
 			return
 
 		# 相同 id 且可堆叠 → 叠加逻辑
@@ -238,13 +250,10 @@ func _perform_drop(target_slot: Node) -> void:
 				# 全部合并到目标
 				target_item["count"] = total
 				target_slot.set_item(target_item)
-				if not drag_is_split:
-					set_item({})
+				
 				# 底层同步
 				if drag_from_slot_ref and drag_from_slot_ref.storage_ref and target_slot.storage_ref:
 					target_slot.storage_ref.set_item(target_slot.slot_index, target_item)
-					if not drag_is_split:
-						drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, {})
 				return
 			else:
 				# 部分合并，剩余留在拖拽物或源槽
@@ -278,28 +287,23 @@ func _perform_drop(target_slot: Node) -> void:
 
 		# 不同物品 → 交换
 		# 把拖拽物放到目标，把目标放回源槽（如果拖拽是拆分，则源槽保持原剩余）
+		
+		if drag_is_split:
+			_return_item()
+			return
+			
 		target_slot.set_item(source_item)
-		if not drag_is_split:
-			set_item(target_item)
-		else:
-			# 拆分的情况：源槽已被更新为 remain（不覆盖），但如果你想把目标放回源槽，则做如下：
-			drag_from_slot_ref.set_item(target_item)
+		drag_from_slot_ref.set_item(target_item)
 
 		# 底层同步
 		if target_slot.storage_ref:
 			target_slot.storage_ref.set_item(target_slot.slot_index, source_item)
 		if drag_from_slot_ref and drag_from_slot_ref.storage_ref:
 			# 若拆分则源槽已经被设置过；否则设置为 target_item
-			if not drag_is_split:
-				drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, item_data if not drag_is_split else drag_from_slot_ref.item_data)
-			else:
-				# already handled
-				pass
+			drag_from_slot_ref.storage_ref.set_item(drag_from_slot_ref.slot_index, target_item)
 	#不能放入，如果split需返还item
-	elif drag_is_split:
-		_return_item()
 	else:
-		show_current_icon()
+		_return_item()
 
 func hide_current_icon() -> void:
 	item_icon.modulate.a = 0.0
@@ -311,9 +315,16 @@ func show_current_icon() -> void:
 	count_label.modulate.a = 1.0
 
 func _return_item() -> void:
-	if drag_is_split:
-		item_data["count"] += drag_source_item["count"]
-	show_current_icon()
+	
+	if _check_slot_availability(drag_from_slot_ref) and drag_from_slot_ref.item_data.is_empty():
+		drag_from_slot_ref.set_item(dragging_item.duplicate(true))
+	elif _check_slot_availability(drag_from_slot_ref):
+		if drag_from_slot_ref.item_data["id"] == dragging_item["id"]:
+			drag_from_slot_ref.item_data["count"] += dragging_item["count"]
+		else:
+			storage_ref.add_item(dragging_item["id"], dragging_item["count"])
+	else: #TODO 源槽在拖拽过程中被其他物体占用的情况和箱子满了的情况
+		pass
 	update_slot_display()
 
 func _split_item_half() -> void:
@@ -339,4 +350,34 @@ func _split_item_half() -> void:
 		storage_ref.set_item(slot_index, item_data)
 
 	# 启动拖拽（标记为拆分）
-	_start_drag(new_item, true)
+	_start_drag(new_item)
+
+func _pick_item(split_ratio: int) -> void:
+	if item_data.is_empty():
+		return
+	
+	var count = int(item_data.get("count", 1))
+	
+	# 拆分特殊情况，ratio > 1 为拆分
+	if split_ratio > 1:
+		drag_is_split = true
+		if count <= 1:
+			return
+	elif count < 1:
+		return
+	
+	var picked_num = count / split_ratio
+	var remain = count - picked_num
+	
+	dragging_item = item_data.duplicate(true)
+	dragging_item["count"] = picked_num
+	
+	item_data["count"] = remain
+	
+	if storage_ref:
+		storage_ref.set_item(slot_index, item_data)
+	
+	refresh()
+	
+	
+	

@@ -50,7 +50,12 @@ func set_item(slot_index: int, item_data: Dictionary) -> bool:
 	if slot_index < 0 or slot_index >= slot_count and check_overload():
 		return false
 	inventory[slot_index] = item_data
+	if item_data == {} or item_data.is_empty():
+		return false
+	if item_data["count"] < 1:
+		inventory[slot_index] = {}
 	print("📦 Set item at", slot_index, ":", item_data)
+	emit_signal("inventory_changed", self)
 	return true
 
 
