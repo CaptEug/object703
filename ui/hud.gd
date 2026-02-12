@@ -2,7 +2,7 @@ extends Control
 
 @onready var UI:CanvasLayer = get_parent()
 @onready var gamescene:GameScene = UI.get_parent()
-
+@onready var newvehicle = $Panel/BuildButton
 
 func _ready():
 	pass

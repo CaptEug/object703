@@ -1,155 +1,181 @@
 class_name VehicleManager
 extends Node2D
 
-func get_vehicle_save_data() -> Dictionary:
+# 块名到路径的映射（保留作为备选方案）
+const BLOCK_PATHS := {
+	"122mm D-52T cannon": "res://blocks/firepower/d_52t.tscn",
+	"QF 6-pounder gun": "res://blocks/firepower/qf_6_pounder.tscn",
+	"V-7": "res://blocks/mobility/v_7.tscn",
+	"pike armor": "res://blocks/structual/pike_armor.tscn",
+	"command cupola": "res://blocks/command/cupola.tscn",
+	"rusty track": "res://blocks/mobility/rusty_track.tscn",
+	"TurretRing1800mm": "res://blocks/structual/turret_ring_1800mm.tscn"
+}
+
+# 静态方法：通过块名获取场景路径
+static func get_block_scene_path_by_name(block_name: String) -> String:
+	# 首先尝试从映射中获取
+	if BLOCK_PATHS.has(block_name):
+		return BLOCK_PATHS[block_name]
+	
+	# 如果映射中没有，根据命名规则构建路径
+	var type = get_block_type_by_name(block_name)
+	
+	# 将块名转换为文件名（小写，用下划线替换空格和连字符）
+	var file_name = block_name.to_lower().replace(" ", "_").replace("-", "_")
+	
+	return "res://blocks/%s/%s.tscn" % [type, file_name]
+
+# 根据块名判断类型
+static func get_block_type_by_name(block_name: String) -> String:
+	var name_lower = block_name.to_lower()
+	
+	# 结构块
+	if "armor" in name_lower or "block" in name_lower or "pike" in name_lower:
+		return "structual"
+	# 移动性块
+	elif "track" in name_lower or "wheel" in name_lower or "engine" in name_lower or "v_" in name_lower:
+		return "mobility"
+	# 火力块
+	elif "cannon" in name_lower or "gun" in name_lower or "pounder" in name_lower or "d_52t" in name_lower:
+		return "firepower"
+	# 指挥块
+	elif "command" in name_lower or "cupola" in name_lower or "driver" in name_lower:
+		return "command"
+	# 工业块
+	elif "pump" in name_lower or "smelter" in name_lower or "forge" in name_lower:
+		return "industrial"
+	# 辅助块
+	elif "ammo" in name_lower or "fuel" in name_lower or "turret" in name_lower or "drill" in name_lower or "cutter" in name_lower or "reservoir" in name_lower:
+		return "auxiliary"
+	# 默认结构块
+	else:
+		return "structual"
+
+# 获取所有车辆的保存数据
+func get_all_vehicles_data_for_save() -> Dictionary:
 	var save_data := {}
 	
 	for child in get_children():
 		if child is Vehicle:
 			var vehicle: Vehicle = child
-			save_data[vehicle.vehicle_name] = get_single_vehicle_data(vehicle)
+			save_data[vehicle.vehicle_name] = vehicle.get_save_data()
 	
 	return save_data
 
-func get_single_vehicle_data(vehicle: Vehicle) -> Dictionary:
-	if not is_instance_valid(vehicle) or vehicle.destroyed:
-		return {}
+# 从保存数据创建车辆
+func create_vehicle_from_save_data(vehicle_data: Dictionary) -> Vehicle:
+	var vehicle = Vehicle.new()
 	
-	var blueprint_data := {
-		"name": vehicle.vehicle_name,
-		"vehicle_size": [vehicle.vehicle_size.x, vehicle.vehicle_size.y],
-		"rotation": [get_vehicle_rotation(vehicle)],
-		"center_of_mass": get_center_of_mass_array(vehicle),
-		"blocks": {}
-	}
+	# 设置车辆位置
+	if vehicle_data.has("position"):
+		var pos_array = vehicle_data["position"]
+		vehicle.global_position = Vector2(pos_array[0], pos_array[1])
 	
-	var block_counter = 1
-	for block in vehicle.blocks:
-		if not is_instance_valid(block):
-			continue
-		
-		var block_data = get_block_data_for_save(block, vehicle)
-		if block_data:
-			blueprint_data["blocks"][str(block_counter)] = block_data
-			block_counter += 1
+	# 添加到场景
+	add_child(vehicle)
 	
-	return blueprint_data
+	# 调用Vehicle的加载方法
+	vehicle.load_from_save_data(vehicle_data)
+	
+	return vehicle
 
-func get_vehicle_rotation(vehicle: Vehicle) -> float:
-	if vehicle.grid.is_empty():
-		return 0.0
-	
-	var first_grid_pos = vehicle.grid.keys()[0]
-	var first_block_data = vehicle.grid[first_grid_pos]
-	var first_block = first_block_data["block"]
-	
-	if not is_instance_valid(first_block):
-		return 0.0
-	
-	var block_global_rotation_deg = rad_to_deg(first_block.global_rotation)
-	var relative_rotation = block_global_rotation_deg - first_block.base_rotation_degree
-	return fmod(relative_rotation + 360, 360)
+# 批量创建车辆
+func create_vehicles_from_save_data(vehicles_data: Dictionary) -> void:
+	for vehicle_name in vehicles_data:
+		var vehicle_data = vehicles_data[vehicle_name]
+		create_vehicle_from_save_data(vehicle_data)
 
-func get_center_of_mass_array(vehicle: Vehicle) -> Array:
-	var com = vehicle.calculate_center_of_mass()
-	return [com.x, com.y]
-
-func get_block_data_for_save(block: Block, vehicle: Vehicle) -> Dictionary:
-	var grid_positions = vehicle.get_block_grid(block)
-	if grid_positions.is_empty():
-		return {}
+# 保存游戏数据（包括车辆数据）
+func save_game_data(world_folder: String, world_name: String):
+	print("开始保存车辆数据...")
 	
-	var min_x = grid_positions[0].x
-	var min_y = grid_positions[0].y
-	for pos in grid_positions:
-		min_x = min(min_x, pos.x)
-		min_y = min(min_y, pos.y)
+	# 获取所有车辆的保存数据
+	var vehicles_data = get_all_vehicles_data_for_save()
 	
-	var block_data = {
-		"base_pos": [min_x, min_y],
-		"name": block.block_name,
-		"path": get_block_scene_path(block),
-		"rotation": [block.base_rotation_degree],
-		"current_hp": block.current_hp,
-		"max_hp": block.max_hp
-	}
-	
-	if block is TurretRing:
-		var turret_grid = get_turret_grid_data(block)
-		if turret_grid:
-			block_data["turret_grid"] = turret_grid
-	
-	return block_data
-
-func get_block_scene_path(block: Block) -> String:
-	var block_name = block.block_name
-	var type = "structual"
-	
-	if "track" in block_name.to_lower():
-		type = "mobility"
-	elif "cannon" in block_name.to_lower() or "gun" in block_name.to_lower():
-		type = "firepower"
-	elif "command" in block_name.to_lower():
-		type = "command"
-	elif "armor" in block_name.to_lower():
-		type = "structual"
-	elif "pump" in block_name.to_lower() or "smelter" in block_name.to_lower():
-		type = "industrial"
+	# 如果有车辆，保存到JSON文件
+	if not vehicles_data.is_empty():
+		var vehicles_file_path = world_folder + "%s.vehicles.json" % world_name
+		var vehicles_file = FileAccess.open(vehicles_file_path, FileAccess.WRITE)
+		if vehicles_file:
+			vehicles_file.store_string(JSON.stringify(vehicles_data, "\t"))
+			vehicles_file.close()
+			print("车辆数据保存完成: ", vehicles_data.size(), "辆")
+		else:
+			push_error("无法保存车辆数据")
 	else:
-		type = "auxiliary"
-	
-	return "res://blocks/%s/%s.tscn" % [type, block_name]
+		print("没有车辆需要保存")
 
-func get_turret_grid_data(turret_ring: TurretRing) -> Dictionary:
-	if not is_instance_valid(turret_ring.turret_basket):
-		return {"grid_size": [0, 0], "blocks": {}}
+# 加载游戏数据（包括车辆数据）
+func load_game_data(map_path: String):
+	print("开始加载车辆数据...")
 	
-	var turret_grid = {"grid_size": [0, 0], "blocks": {}}
-	var turret_blocks = []
+	# 首先清空现有车辆
+	clear_all_vehicles()
 	
-	for child in turret_ring.turret_basket.get_children():
-		if child is Block:
-			turret_blocks.append(child)
+	# 根据地图路径构造车辆数据文件路径
+	var map_dir = map_path.get_base_dir()
+	var map_name = map_path.get_file().get_basename()
+	var vehicles_file_path = map_dir + "/" + map_name + ".vehicles.json"
 	
-	var min_x = INF
-	var min_y = INF
-	var max_x = -INF
-	var max_y = -INF
-	var block_counter = 1
-	
-	for block in turret_blocks:
-		if not is_instance_valid(block):
-			continue
-		
-		var local_pos = block.position - turret_ring.position
-		var grid_x = int(round(local_pos.x / Vehicle.GRID_SIZE))
-		var grid_y = int(round(local_pos.y / Vehicle.GRID_SIZE))
-		
-		min_x = min(min_x, grid_x)
-		min_y = min(min_y, grid_y)
-		max_x = max(max_x, grid_x)
-		max_y = max(max_y, grid_y)
-		
-		turret_grid["blocks"][str(block_counter)] = {
-			"base_pos": [grid_x, grid_y],
-			"name": block.block_name,
-			"path": get_block_scene_path(block),
-			"rotation": [block.base_rotation_degree],
-			"current_hp": block.current_hp,
-			"max_hp": block.max_hp
-		}
-		
-		block_counter += 1
-	
-	if min_x != INF and max_x != -INF:
-		var width = int(max_x - min_x + 1)
-		var height = int(max_y - min_y + 1)
-		turret_grid["grid_size"] = [width, height]
-		
-		if min_x != 0 or min_y != 0:
-			for block_id in turret_grid["blocks"]:
-				var block_data = turret_grid["blocks"][block_id]
-				var pos = block_data["base_pos"]
-				block_data["base_pos"] = [pos[0] - min_x, pos[1] - min_y]
-	
-	return turret_grid
+	# 检查车辆数据文件是否存在
+	if FileAccess.file_exists(vehicles_file_path):
+		var vehicles_file = FileAccess.open(vehicles_file_path, FileAccess.READ)
+		if vehicles_file:
+			var json = JSON.new()
+			var error = json.parse(vehicles_file.get_as_text())
+			vehicles_file.close()
+			
+			if error == OK:
+				var vehicles_data = json.data
+				print("找到车辆数据文件，开始加载: ", vehicles_data.size(), "辆")
+				create_vehicles_from_save_data(vehicles_data)
+				print("车辆数据加载完成")
+			else:
+				push_error("解析车辆数据失败: ", json.get_error_message())
+	else:
+		print("未找到车辆数据文件")
+
+# 清除所有车辆
+func clear_all_vehicles() -> void:
+	for child in get_children():
+		if child is Vehicle:
+			child.queue_free()
+	print("所有车辆已清除")
+
+# 删除指定车辆
+func remove_vehicle(vehicle_name: String) -> bool:
+	for child in get_children():
+		if child is Vehicle and child.vehicle_name == vehicle_name:
+			child.queue_free()
+			print("车辆已删除: ", vehicle_name)
+			return true
+	return false
+
+# 获取车辆信息
+func get_vehicles_info() -> Array:
+	var info = []
+	for child in get_children():
+		if child is Vehicle:
+			var vehicle: Vehicle = child
+			info.append({
+				"name": vehicle.vehicle_name,
+				"position": [vehicle.global_position.x, vehicle.global_position.y],
+				"blocks": vehicle.blocks.size(),
+				"destroyed": vehicle.destroyed
+			})
+	return info
+
+# 检查指定名称的车辆是否存在
+func has_vehicle(vehicle_name: String) -> bool:
+	for child in get_children():
+		if child is Vehicle and child.vehicle_name == vehicle_name:
+			return true
+	return false
+
+# 获取指定车辆
+func get_vehicle(vehicle_name: String) -> Vehicle:
+	for child in get_children():
+		if child is Vehicle and child.vehicle_name == vehicle_name:
+			return child
+	return null
