@@ -17,7 +17,7 @@
 				3
 			],
 			"name": "ammorack",
-			"path": "res://blocks/auxiliary/ammorack.tscn",
+			"path": "res://blocks/logistic/ammorack.tscn",
 			"rotation": [
 				0.0
 			]
@@ -58,7 +58,7 @@
 				3
 			],
 			"name": "ammorack",
-			"path": "res://blocks/auxiliary/ammorack.tscn",
+			"path": "res://blocks/logistic/ammorack.tscn",
 			"rotation": [
 				0.0
 			]
@@ -157,7 +157,7 @@
 				4
 			],
 			"name": "fueltank",
-			"path": "res://blocks/auxiliary/fueltank.tscn",
+			"path": "res://blocks/logistic/fueltank.tscn",
 			"rotation": [
 				0.0
 			]
@@ -179,7 +179,7 @@
 				7
 			],
 			"name": "reservoir",
-			"path": "res://blocks/auxiliary/reservoir.tscn",
+			"path": "res://blocks/logistic/reservoir.tscn",
 			"rotation": [
 				0
 			]
@@ -190,7 +190,7 @@
 				7
 			],
 			"name": "reservoir",
-			"path": "res://blocks/auxiliary/reservoir.tscn",
+			"path": "res://blocks/logistic/reservoir.tscn",
 			"rotation": [
 				0.0
 			]

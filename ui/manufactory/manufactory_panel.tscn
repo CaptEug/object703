@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cenhdprrehtha"]
+[gd_scene load_steps=9 format=3 uid="uid://cenhdprrehtha"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_unq2q"]
 [ext_resource type="Script" uid="uid://c6sk0j0qgxxpq" path="res://ui/manufactory/manufactory_panel.gd" id="2_uu5ba"]
@@ -15,9 +15,22 @@ bg_color = Color(0.584314, 0.584314, 0.584314, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_re8kt"]
 bg_color = Color(0.898039, 0.898039, 0.898039, 1)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_uu5ba"]
+atlas = ExtResource("4_32ea0")
+region = Rect2(224, 0, 16, 16)
+
 [node name="ManufactoryPanel" type="Panel"]
-offset_right = 240.0
-offset_bottom = 240.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -120.0
+offset_right = 120.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
 theme = ExtResource("1_unq2q")
 script = ExtResource("2_uu5ba")
 metadata/_custom_type_script = "uid://b2dy5mxgwngh6"
@@ -61,3 +74,14 @@ offset_bottom = 12.0
 theme_override_styles/background = SubResource("StyleBoxFlat_wvc6q")
 theme_override_styles/fill = SubResource("StyleBoxFlat_re8kt")
 show_percentage = false
+
+[node name="TextureButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 218.0
+offset_top = 6.0
+offset_right = 234.0
+offset_bottom = 22.0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_uu5ba")
+
+[connection signal="pressed" from="TextureButton" to="." method="_on_texture_button_pressed"]

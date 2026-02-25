@@ -32,7 +32,11 @@ func draw_pixel(pos: Vector2i, color: Color):
 
 func update_pixels(cells:Array):
 	for cell in cells:
-		var color = TileDB.get_tile(cell_map[cell])["color"]
+		var color:Color
+		if cell_map.has(cell):
+			color = TileDB.get_tile(cell_map[cell])["color"]
+		else:
+			color = Color.TRANSPARENT
 		image.set_pixelv(cell, color)
 	texture.update(image)
 	queue_redraw()

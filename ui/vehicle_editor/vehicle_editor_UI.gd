@@ -8,6 +8,7 @@ extends Control
 @export var RECYCLE_HIGHLIGHT_COLOR = Color(1, 0.3, 0.3, 0.6)
 @export var BLOCK_DIM_COLOR = Color(0.5, 0.5, 0.5, 0.6)
 
+@onready var UI:UI = get_parent()
 @onready var tab_container = $TabContainer
 @onready var description_label = $Panel/RichTextLabel
 @onready var build_vehicle_button = $Panel/SaveButton
@@ -18,6 +19,7 @@ extends Control
 @onready var repair_button = $Panel/RepairButton
 @onready var mode_button = $Panel/ModeButton
 @onready var mass_center_show = $Panel/CoM/TextureButton
+@onready var camera:Camera2D = $"../../Camera2D"
 
 var saw_cursor:Texture = preload("res://assets/icons/saw_cursor.png")
 var panel_instance = null
@@ -32,6 +34,7 @@ const BLOCK_PATHS = {
 	"Command": "res://blocks/command/",
 	"Firepower": "res://blocks/firepower/",
 	"Industrial": "res://blocks/industrial/",
+	"Logistc": "res://blocks/logistic/",
 	"Mobility": "res://blocks/mobility/",
 	"Structual": "res://blocks/structual/",
 }
@@ -49,7 +52,6 @@ var is_ui_interaction: bool = false
 # 编辑器状态变量
 var is_editing := false
 var selected_vehicle: Vehicle = null
-var camera:Camera2D
 
 # 模式变量
 var is_vehicle_mode := true
@@ -75,7 +77,6 @@ func _ready():
 	turret_editing_system.setup(self)
 	
 	_connect_block_buttons()
-	camera = get_tree().current_scene.find_child("Camera2D") as Camera2D
 	build_vehicle_button.pressed.connect(_on_build_vehicle_pressed)
 	save_dialog.get_ok_button().pressed.connect(_on_save_confirmed)
 	save_dialog.close_requested.connect(_on_save_canceled)
@@ -676,26 +677,8 @@ func update_recycle_button():
 		recycle_button.remove_theme_color_override("font_color")
 
 # === 编辑器模式功能 ===
-func find_and_select_vehicle():
-	var testground = get_tree().current_scene
-	if testground:
-		var canvas_layer = testground.find_child("CanvasLayer", false, false)
-		if canvas_layer:
-			var panels = canvas_layer.get_children()
-			for i in range(panels.size() - 1, -1, -1):
-				if panels[i] is TankPanel and panels[i].selected_vehicle != null and panels[i].visible == true:
-					panel_instance = panels[i]
-					break
-	if testground and panel_instance:
-		if panel_instance.selected_vehicle:
-			selected_vehicle = panel_instance.selected_vehicle
-			name_input.text = selected_vehicle.vehicle_name
-
 func enter_editor_mode(vehicle: Vehicle):
-	if is_editing:
-		exit_editor_mode()
 	selected_vehicle = vehicle
-
 	is_editing = true
 	is_vehicle_mode = true
 	update_mode_button_display()
@@ -737,15 +720,13 @@ func _toggle_edit_mode():
 		hull_editing_system.cancel_placement()
 		turret_editing_system.cancel_placement()
 	else:
-		if selected_vehicle == null:
-			find_and_select_vehicle()
-		if selected_vehicle:
-			enter_editor_mode(selected_vehicle)
+		var vehicle = UI.tankpanel.selected_vehicle
+		if vehicle == null:
+			return
+		else:
+			enter_editor_mode(vehicle)
 
 func exit_editor_mode():
-	if not is_editing:
-		return
-	
 	is_vehicle_mode = true
 	update_mode_button_display()
 	

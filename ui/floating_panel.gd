@@ -30,3 +30,9 @@ func any_overlap() -> bool:
 			if r.intersects(Rect2(position, size)):
 				return true
 	return false
+
+func is_frontmost() -> bool:
+	var parent = get_parent()
+	if parent == null:
+		return true  # Root node is always "frontmost" by default
+	return get_index() == parent.get_child_count() - 1

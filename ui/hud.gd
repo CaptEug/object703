@@ -21,10 +21,8 @@ func get_clock_string(time) -> String:
 # 创建新车辆
 func create_new_vehicle():
 	# 获取编辑器引用
-	var editor = UI.find_child("Editorui")
-	if editor:
-		if editor.has_method("create_new_vehicle"):
-			editor.create_new_vehicle()
+	var editor = UI.vehicle_editor
+	editor.create_new_vehicle()
 
 
 func _on_build_button_pressed():

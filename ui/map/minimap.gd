@@ -30,6 +30,7 @@ func update_cellmap(cells:Array):
 		if grounddata:
 			map_renderer.cell_map[cell] = grounddata.get_custom_data("matter")
 			continue
+		map_renderer.cell_map.erase(cell)
 	map_renderer.update_pixels(cells)
 
 func _on_zoom_in_button_pressed() -> void:

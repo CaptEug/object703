@@ -13,7 +13,7 @@ var type:String
 var kinetic_absorb:float = 1.0
 var explosice_absorb:float = 1.0
 var size:Vector2i
-var parent_vehicle: Vehicle = null  
+var parent_vehicle: Vehicle = null
 var parent_building: Building = null
 var connected_blocks := []
 var global_grid_pos
@@ -202,7 +202,6 @@ func get_parent_vehicle():
 func get_parent_building() -> Building:
 	if parent_building != null:
 		return parent_building
-	
 	# 向上查找父建筑
 	var parent = get_parent()
 	while parent != null:
@@ -210,7 +209,6 @@ func get_parent_building() -> Building:
 			parent_building = parent
 			return parent_building
 		parent = parent.get_parent()
-	
 	return null
 
 ## Neighbor and Connectivity System

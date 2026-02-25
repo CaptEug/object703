@@ -21,7 +21,6 @@ var powerpacks:= []
 var tracks:= []
 var cargos:= []
 var commands:= []
-var vehicle_panel:Panel
 var speed_of_increase = 0.05
 var direction = Vector2(0, -1)
 var track_forces:= {}  
@@ -1277,17 +1276,10 @@ func get_available_points_near_position(_position: Vector2, max_distance: float 
 	return available_points
 
 func open_vehicle_panel():
-	if vehicle_panel:
-		vehicle_panel.visible = true
-		vehicle_panel.move_to_front()
-	else:
-		var UI = GameState.current_gamescene.gameUI
-		var panel = load("res://ui/tankpanel.tscn").instantiate()
-		panel.selected_vehicle = self
-		vehicle_panel = panel
-		UI.add_child(panel)
-		while panel.any_overlap():
-			panel.position += Vector2(32, 32)
+	var UI = GameState.current_gamescene.gameUI
+	var panel = UI.tankpanel
+	panel.selected_vehicle = self
+	panel.show()
 
 func check_and_regroup_disconnected_blocks():
 	var valid_blocks = []

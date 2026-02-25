@@ -1,6 +1,7 @@
 class_name TankPanel
 extends FloatingPanel
 
+@onready var UI:CanvasLayer = get_parent()
 @onready var inventory_panel = $InventoryPanel
 @export var health_gradient: Gradient  # Set this from the Inspector
 var time:float = 0
@@ -45,11 +46,7 @@ func _process(delta):
 				exit_focus = true
 		
 		queue_redraw()
-	
-	$CargoButton.visible = is_frontmost()
-	$ModifyButton.visible = is_frontmost()
-	
-	
+
 
 func _draw():
 	if selected_vehicle:
@@ -136,8 +133,9 @@ func draw_grid():
 				draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
 
 func _input(event: InputEvent) -> void:
-	if Input.is_action_just_pressed("Cargo") and visible and is_frontmost():
+	if Input.is_action_just_pressed("Cargo") and visible:
 		toggle_inventory()
+
 
 func has_commend_class_exact(check_blocks):
 	for block in check_blocks:
@@ -145,9 +143,11 @@ func has_commend_class_exact(check_blocks):
 			return true
 	return false
 
+
 func toggle_inventory():
 	print(selected_vehicle)
 	inventory_panel.toggle_inventory(selected_vehicle)
+
 
 func _on_controlbutton_pressed():
 	current_mode = (current_mode + 1) % control_modes.size()
@@ -159,6 +159,11 @@ func _on_controlbutton_pressed():
 			if vehicle != selected_vehicle:
 				if vehicle.control.get_method() == "manual_control":
 					vehicle.control = Callable()
+
+
+func _on_close_button_pressed():
+	visible = false
+	inventory_panel.close_inventory()
 
 
 func normalize_grid(grid: Dictionary) -> Array:
@@ -191,15 +196,3 @@ func normalize_grid(grid: Dictionary) -> Array:
 		grid_new[new_pos] = block
 
 	return [grid_new, max_x - min_x, max_y - min_y]
-
-
-
-func _on_close_button_pressed():
-	visible = false
-	inventory_panel.close_inventory()
-
-func is_frontmost() -> bool:
-	var parent = get_parent()
-	if parent == null:
-		return true  # Root node is always "frontmost" by default
-	return get_index() == parent.get_child_count() - 1

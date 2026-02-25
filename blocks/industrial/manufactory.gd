@@ -51,8 +51,6 @@ func open_manufactory_panel():
 		panel = load(manufactory_panel_path).instantiate()
 		panel.manufactory = self
 		UI.add_child(panel)
-		while panel.any_overlap():
-			panel.position += Vector2(32, 32)
 
 # manufactory code
 func find_recipe():

@@ -33,7 +33,7 @@
 					],
 					"max_hp": 600.0,
 					"name": "ammorack",
-					"path": "res://blocks/auxiliary/ammorack.tscn",
+					"path": "res://blocks/logistic/ammorack.tscn",
 					"rotation": [
 						0.0
 					]
@@ -89,7 +89,7 @@
 					],
 					"max_hp": 600.0,
 					"name": "ammorack",
-					"path": "res://blocks/auxiliary/ammorack.tscn",
+					"path": "res://blocks/logistic/ammorack.tscn",
 					"rotation": [
 						0.0
 					]
@@ -242,7 +242,7 @@
 					],
 					"max_hp": 400.0,
 					"name": "fueltank",
-					"path": "res://blocks/auxiliary/fueltank.tscn",
+					"path": "res://blocks/logistic/fueltank.tscn",
 					"rotation": [
 						0.0
 					]
@@ -276,7 +276,7 @@
 					],
 					"max_hp": 2000.0,
 					"name": "reservoir",
-					"path": "res://blocks/auxiliary/reservoir.tscn",
+					"path": "res://blocks/logistic/reservoir.tscn",
 					"rotation": [
 						0.0
 					]
@@ -293,7 +293,7 @@
 					],
 					"max_hp": 2000.0,
 					"name": "reservoir",
-					"path": "res://blocks/auxiliary/reservoir.tscn",
+					"path": "res://blocks/logistic/reservoir.tscn",
 					"rotation": [
 						0.0
 					]
