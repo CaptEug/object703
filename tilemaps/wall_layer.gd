@@ -9,7 +9,7 @@ func _ready():
 	pass
 
 
-func _process(delta):
+func _process(_delta):
 	pass
 
 
@@ -55,7 +55,7 @@ func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
 	if randf_range(0, 1) < 0.1:
 		if not get_cell_tile_data(cell):
 			return
-		var particle_path = get_cell_tile_data(cell).get_custom_data("particle_path")
+		var particle_path = TileDB.get_tile(layerdata[cell]["matter"])["particle_path"]
 		
 		var shard = load(particle_path).instantiate()
 		shard.position = map_to_local(cell)
@@ -64,7 +64,7 @@ func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
 
 func destroy_tile(cell:Vector2i):
 	#shard particle
-	var particle_path = get_cell_tile_data(cell).get_custom_data("particle_path")
+	var particle_path = TileDB.get_tile(layerdata[cell]["matter"])["particle_path"]
 	var shard = load(particle_path).instantiate()
 	shard.position = map_to_local(cell)
 	shard.emitting = true

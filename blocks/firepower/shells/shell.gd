@@ -144,7 +144,7 @@ func _on_shell_body_entered(body):
 				get_parent().add_child(spark)
 			stop()
 
-func check_shell_enter_tile(delta):
+func check_shell_enter_tile(_delta):
 	var current_pos = global_position
 	var space_state = get_world_2d().direct_space_state
 	var query:= PhysicsRayQueryParameters2D.new()

@@ -1,6 +1,6 @@
 {
 	"buildings": [],
-	"gametime": 255.194421484606,
+	"gametime": 264.111088151275,
 	"vehicles": {
 		"object1": {
 			"blocks": {
@@ -33,7 +33,7 @@
 					],
 					"max_hp": 600.0,
 					"name": "ammorack",
-					"path": "res://blocks/logistic/ammorack.tscn",
+					"path": "res://blocks/auxiliary/ammorack.tscn",
 					"rotation": [
 						0.0
 					]
@@ -89,7 +89,7 @@
 					],
 					"max_hp": 600.0,
 					"name": "ammorack",
-					"path": "res://blocks/logistic/ammorack.tscn",
+					"path": "res://blocks/auxiliary/ammorack.tscn",
 					"rotation": [
 						0.0
 					]
@@ -242,7 +242,7 @@
 					],
 					"max_hp": 400.0,
 					"name": "fueltank",
-					"path": "res://blocks/logistic/fueltank.tscn",
+					"path": "res://blocks/auxiliary/fueltank.tscn",
 					"rotation": [
 						0.0
 					]
@@ -276,7 +276,7 @@
 					],
 					"max_hp": 2000.0,
 					"name": "reservoir",
-					"path": "res://blocks/logistic/reservoir.tscn",
+					"path": "res://blocks/auxiliary/reservoir.tscn",
 					"rotation": [
 						0.0
 					]
@@ -293,7 +293,7 @@
 					],
 					"max_hp": 2000.0,
 					"name": "reservoir",
-					"path": "res://blocks/logistic/reservoir.tscn",
+					"path": "res://blocks/auxiliary/reservoir.tscn",
 					"rotation": [
 						0.0
 					]
@@ -402,12 +402,12 @@
 				}
 			},
 			"global_rotation": [
-				25.5373401641846
+				25.5373821258545
 			],
 			"name": "object1",
 			"position": [
-				52.3337249755859,
-				-225.882598876953
+				52.3338279724121,
+				-225.882583618164
 			]
 		}
 	}

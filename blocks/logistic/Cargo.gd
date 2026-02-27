@@ -84,7 +84,6 @@ func add_item(id: String, count: int) -> bool:
 	return false
 
 func take_item(id: String, count: int) -> bool:
-	var total_item_stored = 0
 	var count_remain = count
 	#Check total numer in inventory
 	if check_amount(id) < count:

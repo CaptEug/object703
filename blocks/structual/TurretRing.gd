@@ -55,7 +55,7 @@ func _physics_process(delta):
 			apply_aim_torque(delta, get_global_mouse_position())
 		apply_sync_torque(delta)
 
-func apply_aim_torque(delta, target_pos):
+func apply_aim_torque(_delta, target_pos):
 	var target_angle = (target_pos - global_position).angle() - parent_vehicle.global_rotation + deg_to_rad(90)
 	var angle_diff = wrapf(target_angle - turret_basket.rotation, -PI, PI)
 	var rev_angvel = turret_basket.angular_velocity - angular_velocity

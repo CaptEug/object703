@@ -10,7 +10,8 @@ var tiles = {
 		"explosive_absorb": 1.0,
 		"drop_item_id": "sandstone",
 		"terrain_int": 1,
-		"color": Color(0.361, 0.137, 0.114)
+		"color": Color(0.361, 0.137, 0.114),
+		"particle_path": "res://assets/particles/sandstone_shard.tscn"
 	},
 	
 	"hematite":{
@@ -21,7 +22,8 @@ var tiles = {
 		"explosive_absorb": 0.5,
 		"drop_item_id": "hematite",
 		"terrain_int": 2,
-		"color": Color.LIGHT_STEEL_BLUE
+		"color": Color.LIGHT_STEEL_BLUE,
+		"particle_path": "res://assets/particles/sandstone_shard.tscn"
 	},
 	
 	# Liquid Tile
@@ -35,6 +37,7 @@ var tiles = {
 	# Floor Tile
 	"sandstone_g":{
 		"layer": "ground",
+		"terrain_int": 4,
 		"color": Color(0.533, 0.251, 0.176)
 	},
 	# Function Tile

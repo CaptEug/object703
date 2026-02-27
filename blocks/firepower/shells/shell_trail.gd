@@ -21,7 +21,7 @@ func fade():
 	tween.tween_property(self, "modulate:a", 0.0, lifetime)
 
 
-func _process(delta):
+func _process(_delta):
 	add_trail_point(global_position)
 	var real_points = []
 	var start = trail_points[-1]

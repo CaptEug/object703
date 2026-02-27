@@ -17,7 +17,9 @@ var world_width:int = 256
 
 func _ready():
 	layers = {
+		"ground": ground,
 		"wall": wall,
+		
 	}
 	
 	print("=== 游戏地图初始化完成 ===")
@@ -36,6 +38,9 @@ func generate_world(noise:Noise):
 	
 	for x in range(world_width):
 		for y in range(world_height):
+			#generate ground
+			
+			#generate wall
 			var noise_val = noise.get_noise_2d(x, y)
 			for matter in height_dict:
 				if noise_val > height_dict[matter][0] and noise_val <= height_dict[matter][1]:
@@ -97,9 +102,6 @@ func load_map(path: String):
 	world_width = file.get_16()
 	world_height = file.get_16()
 	var CHUNK_SIZE := file.get_8()
-	
-	var chunks_x := world_width / CHUNK_SIZE
-	var chunks_y := world_height / CHUNK_SIZE
 	
 	# ---- layers ----
 	var layer_count := file.get_16()

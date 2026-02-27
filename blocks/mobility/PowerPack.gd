@@ -112,7 +112,7 @@ func find_all_connected_cargo():
 
 func has_fuel() -> bool:
 	for item_id in inputs:
-		var total_mass:float
+		var total_mass:float = 0.0
 		if ItemDB.get_item(item_id)["tag"] == "material":
 			var mass_per_unit:float = ItemDB.get_item(item_id)["weight"]
 			for cargo in find_all_connected_cargo():

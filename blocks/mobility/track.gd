@@ -95,10 +95,10 @@ func update_overload_damage(delta: float):
 		
 		# 每5秒造成一次伤害
 		if overload_timer >= 5.0:
-			var damage = min(overload_amount * load_damage_rate, max_hp * 0.02)
-			damage(int(damage))
+			var dmg = min(overload_amount * load_damage_rate, max_hp * 0.02)
+			damage(int(dmg))
 			overload_timer = 0.0
-			overload_damage += damage
+			overload_damage += dmg
 		if overload_amount > 5.0:
 			overloaded = true
 	else:

@@ -43,18 +43,18 @@ func setup(block_node: Block, target: StaticBody2D, connector_ref: TurretConnect
 		# 但不立即设置block.rotation，避免强制对齐导致错位
 		pass
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if not is_instance_valid(block) or not is_instance_valid(target_body):
 		break_connection()
 		return
 	
 	if lock_rotation and is_instance_valid(target_body):
-		apply_rotation_constraint(delta)
+		apply_rotation_constraint()
 	
 	if not check_connection_strength():
 		return
 
-func apply_rotation_constraint(delta: float):
+func apply_rotation_constraint():
 	if not is_instance_valid(block):
 		return
 		

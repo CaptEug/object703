@@ -7,7 +7,7 @@ func _ready():
 	queue_free()
 
 
-func _process(delta):
+func _process(_delta):
 	var c = canvas_mod.color
 	# Compute per-channel inverse, avoid divide by zero
 	var inv = Color(1.0 / max(c.r, 0.001), 1.0 / max(c.g, 0.001), 1.0 / max(c.b, 0.001))

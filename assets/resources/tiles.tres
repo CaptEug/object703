@@ -1,19 +1,14 @@
-[gd_resource type="TileSet" load_steps=5 format=3 uid="uid://dtpjtgfhc1jn5"]
+[gd_resource type="TileSet" load_steps=7 format=3 uid="uid://dtpjtgfhc1jn5"]
 
-[ext_resource type="Texture2D" uid="uid://y51nfhgx5v0l" path="res://assets/tiles.png" id="1_ofktr"]
-[ext_resource type="Texture2D" uid="uid://bmvgluubdkrpw" path="res://assets/tiles_liquid.png" id="2_c7cds"]
+[ext_resource type="Texture2D" uid="uid://y51nfhgx5v0l" path="res://assets/tiles/wall/wall_01.png" id="1_c7cds"]
+[ext_resource type="Texture2D" uid="uid://bmvgluubdkrpw" path="res://assets/tiles/wall/liquid_01.png" id="2_gr8ml"]
+[ext_resource type="Texture2D" uid="uid://bfm1ixppv8f30" path="res://assets/tiles/ground/ground_01.png" id="3_gr8ml"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_t0wv1"]
-texture = ExtResource("1_ofktr")
-0:0/0 = 0
-1:0/0 = 0
-2:0/0 = 0
-7:0/0 = 0
-7:0/0/custom_data_0 = "sandstone_g"
+texture = ExtResource("1_c7cds")
 0:5/0 = 0
 0:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:5/0/custom_data_0 = "sandstone"
-0:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:5/0/metadata/_better_terrain = {
 4: [0],
 12: [0],
@@ -22,7 +17,6 @@ texture = ExtResource("1_ofktr")
 1:5/0 = 0
 1:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:5/0/custom_data_0 = "sandstone"
-1:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:5/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -32,7 +26,6 @@ texture = ExtResource("1_ofktr")
 2:5/0 = 0
 2:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:5/0/custom_data_0 = "sandstone"
-2:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:5/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -43,7 +36,6 @@ texture = ExtResource("1_ofktr")
 3:5/0 = 0
 3:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:5/0/custom_data_0 = "sandstone"
-3:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:5/0/metadata/_better_terrain = {
 4: [0],
 8: [0],
@@ -53,7 +45,6 @@ texture = ExtResource("1_ofktr")
 4:5/0 = 0
 4:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:5/0/custom_data_0 = "sandstone"
-4:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:5/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -64,7 +55,6 @@ texture = ExtResource("1_ofktr")
 0:6/0 = 0
 0:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:6/0/custom_data_0 = "sandstone"
-0:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:6/0/metadata/_better_terrain = {
 12: [0],
 &"type": 1
@@ -72,7 +62,6 @@ texture = ExtResource("1_ofktr")
 4:6/0 = 0
 4:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:6/0/custom_data_0 = "sandstone"
-4:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:6/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -83,14 +72,12 @@ texture = ExtResource("1_ofktr")
 0:7/0 = 0
 0:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:7/0/custom_data_0 = "sandstone"
-0:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:7/0/metadata/_better_terrain = {
 &"type": 1
 }
 2:7/0 = 0
 2:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:7/0/custom_data_0 = "sandstone"
-2:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:7/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -99,7 +86,6 @@ texture = ExtResource("1_ofktr")
 4:7/0 = 0
 4:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:7/0/custom_data_0 = "sandstone"
-4:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:7/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -111,7 +97,6 @@ texture = ExtResource("1_ofktr")
 0:4/0 = 0
 0:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, 8, -8, -8, 8, -8, 8, 8)
 0:4/0/custom_data_0 = "sandstone"
-0:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:4/0/metadata/_better_terrain = {
 4: [0],
 &"type": 1
@@ -119,7 +104,6 @@ texture = ExtResource("1_ofktr")
 1:4/0 = 0
 1:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:4/0/custom_data_0 = "sandstone"
-1:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:4/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -128,7 +112,6 @@ texture = ExtResource("1_ofktr")
 2:4/0 = 0
 2:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:4/0/custom_data_0 = "sandstone"
-2:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:4/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -138,7 +121,6 @@ texture = ExtResource("1_ofktr")
 3:4/0 = 0
 3:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:4/0/custom_data_0 = "sandstone"
-3:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:4/0/metadata/_better_terrain = {
 4: [0],
 8: [0],
@@ -147,7 +129,6 @@ texture = ExtResource("1_ofktr")
 4:4/0 = 0
 4:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:4/0/custom_data_0 = "sandstone"
-4:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:4/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -159,7 +140,6 @@ texture = ExtResource("1_ofktr")
 5:4/0 = 0
 5:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:4/0/custom_data_0 = "sandstone"
-5:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:4/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -170,7 +150,6 @@ texture = ExtResource("1_ofktr")
 6:4/0 = 0
 6:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:4/0/custom_data_0 = "sandstone"
-6:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:4/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -181,7 +160,6 @@ texture = ExtResource("1_ofktr")
 7:4/0 = 0
 7:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:4/0/custom_data_0 = "sandstone"
-7:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:4/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -193,7 +171,6 @@ texture = ExtResource("1_ofktr")
 8:4/0 = 0
 8:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:4/0/custom_data_0 = "sandstone"
-8:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:4/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -203,7 +180,6 @@ texture = ExtResource("1_ofktr")
 9:4/0 = 0
 9:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:4/0/custom_data_0 = "sandstone"
-9:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:4/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -216,7 +192,6 @@ texture = ExtResource("1_ofktr")
 10:4/0 = 0
 10:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:4/0/custom_data_0 = "sandstone"
-10:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 10:4/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -228,7 +203,6 @@ texture = ExtResource("1_ofktr")
 11:4/0 = 0
 11:4/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:4/0/custom_data_0 = "sandstone"
-11:4/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:4/0/metadata/_better_terrain = {
 4: [0],
 7: [0],
@@ -238,7 +212,6 @@ texture = ExtResource("1_ofktr")
 11:5/0 = 0
 11:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:5/0/custom_data_0 = "sandstone"
-11:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:5/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -251,7 +224,6 @@ texture = ExtResource("1_ofktr")
 9:5/0 = 0
 9:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:5/0/custom_data_0 = "sandstone"
-9:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:5/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -264,7 +236,6 @@ texture = ExtResource("1_ofktr")
 8:5/0 = 0
 8:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:5/0/custom_data_0 = "sandstone"
-8:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:5/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -276,7 +247,6 @@ texture = ExtResource("1_ofktr")
 7:5/0 = 0
 7:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:5/0/custom_data_0 = "sandstone"
-7:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:5/0/metadata/_better_terrain = {
 4: [0],
 7: [0],
@@ -287,7 +257,6 @@ texture = ExtResource("1_ofktr")
 6:5/0 = 0
 6:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:5/0/custom_data_0 = "sandstone"
-6:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:5/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -301,7 +270,6 @@ texture = ExtResource("1_ofktr")
 5:5/0 = 0
 5:5/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:5/0/custom_data_0 = "sandstone"
-5:5/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:5/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -315,7 +283,6 @@ texture = ExtResource("1_ofktr")
 1:6/0 = 0
 1:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:6/0/custom_data_0 = "sandstone"
-1:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:6/0/metadata/_better_terrain = {
 0: [0],
 12: [0],
@@ -324,7 +291,6 @@ texture = ExtResource("1_ofktr")
 2:6/0 = 0
 2:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:6/0/custom_data_0 = "sandstone"
-2:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:6/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -334,7 +300,6 @@ texture = ExtResource("1_ofktr")
 3:6/0 = 0
 3:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:6/0/custom_data_0 = "sandstone"
-3:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:6/0/metadata/_better_terrain = {
 8: [0],
 12: [0],
@@ -343,7 +308,6 @@ texture = ExtResource("1_ofktr")
 5:6/0 = 0
 5:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:6/0/custom_data_0 = "sandstone"
-5:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:6/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -357,7 +321,6 @@ texture = ExtResource("1_ofktr")
 6:6/0 = 0
 6:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:6/0/custom_data_0 = "sandstone"
-6:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:6/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -371,7 +334,6 @@ texture = ExtResource("1_ofktr")
 7:6/0 = 0
 7:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:6/0/custom_data_0 = "sandstone"
-7:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:6/0/metadata/_better_terrain = {
 4: [0],
 8: [0],
@@ -382,7 +344,6 @@ texture = ExtResource("1_ofktr")
 8:6/0 = 0
 8:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:6/0/custom_data_0 = "sandstone"
-8:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:6/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -395,7 +356,6 @@ texture = ExtResource("1_ofktr")
 9:6/0 = 0
 9:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:6/0/custom_data_0 = "sandstone"
-9:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:6/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -410,7 +370,6 @@ texture = ExtResource("1_ofktr")
 10:6/0 = 0
 10:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:6/0/custom_data_0 = "sandstone"
-10:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 10:6/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -423,7 +382,6 @@ texture = ExtResource("1_ofktr")
 11:6/0 = 0
 11:6/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:6/0/custom_data_0 = "sandstone"
-11:6/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:6/0/metadata/_better_terrain = {
 4: [0],
 7: [0],
@@ -435,7 +393,6 @@ texture = ExtResource("1_ofktr")
 11:7/0 = 0
 11:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:7/0/custom_data_0 = "sandstone"
-11:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:7/0/metadata/_better_terrain = {
 8: [0],
 11: [0],
@@ -445,7 +402,6 @@ texture = ExtResource("1_ofktr")
 10:7/0 = 0
 10:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:7/0/custom_data_0 = "sandstone"
-10:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 10:7/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -458,7 +414,6 @@ texture = ExtResource("1_ofktr")
 9:7/0 = 0
 9:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:7/0/custom_data_0 = "sandstone"
-9:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:7/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -470,7 +425,6 @@ texture = ExtResource("1_ofktr")
 8:7/0 = 0
 8:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:7/0/custom_data_0 = "sandstone"
-8:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:7/0/metadata/_better_terrain = {
 0: [0],
 12: [0],
@@ -480,7 +434,6 @@ texture = ExtResource("1_ofktr")
 7:7/0 = 0
 7:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:7/0/custom_data_0 = "sandstone"
-7:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:7/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -492,7 +445,6 @@ texture = ExtResource("1_ofktr")
 6:7/0 = 0
 6:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:7/0/custom_data_0 = "sandstone"
-6:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:7/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -503,7 +455,6 @@ texture = ExtResource("1_ofktr")
 5:7/0 = 0
 5:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:7/0/custom_data_0 = "sandstone"
-5:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:7/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -514,7 +465,6 @@ texture = ExtResource("1_ofktr")
 3:7/0 = 0
 3:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:7/0/custom_data_0 = "sandstone"
-3:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:7/0/metadata/_better_terrain = {
 8: [0],
 &"type": 1
@@ -522,22 +472,13 @@ texture = ExtResource("1_ofktr")
 1:7/0 = 0
 1:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:7/0/custom_data_0 = "sandstone"
-1:7/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:7/0/metadata/_better_terrain = {
 0: [0],
 &"type": 1
 }
-3:0/0 = 0
-4:0/0 = 0
-4:0/0/custom_data_0 = "sandstone_g"
-5:0/0 = 0
-5:0/0/custom_data_0 = "sandstone_g"
-6:0/0 = 0
-6:0/0/custom_data_0 = "sandstone_g"
 0:8/0 = 0
 0:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:8/0/custom_data_0 = "hematite"
-0:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:8/0/metadata/_better_terrain = {
 4: [0],
 &"type": 2
@@ -545,7 +486,6 @@ texture = ExtResource("1_ofktr")
 1:8/0 = 0
 1:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:8/0/custom_data_0 = "hematite"
-1:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:8/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -554,7 +494,6 @@ texture = ExtResource("1_ofktr")
 2:9/0 = 0
 2:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:9/0/custom_data_0 = "hematite"
-2:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:9/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -565,7 +504,6 @@ texture = ExtResource("1_ofktr")
 3:9/0 = 0
 3:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:9/0/custom_data_0 = "hematite"
-3:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:9/0/metadata/_better_terrain = {
 4: [0],
 8: [0],
@@ -575,7 +513,6 @@ texture = ExtResource("1_ofktr")
 4:9/0 = 0
 4:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:9/0/custom_data_0 = "hematite"
-4:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:9/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -586,7 +523,6 @@ texture = ExtResource("1_ofktr")
 5:10/0 = 0
 5:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:10/0/custom_data_0 = "hematite"
-5:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:10/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -600,7 +536,6 @@ texture = ExtResource("1_ofktr")
 6:10/0 = 0
 6:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:10/0/custom_data_0 = "hematite"
-6:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:10/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -614,7 +549,6 @@ texture = ExtResource("1_ofktr")
 7:10/0 = 0
 7:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:10/0/custom_data_0 = "hematite"
-7:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:10/0/metadata/_better_terrain = {
 4: [0],
 8: [0],
@@ -625,7 +559,6 @@ texture = ExtResource("1_ofktr")
 8:11/0 = 0
 8:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:11/0/custom_data_0 = "hematite"
-8:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:11/0/metadata/_better_terrain = {
 0: [0],
 12: [0],
@@ -635,7 +568,6 @@ texture = ExtResource("1_ofktr")
 2:8/0 = 0
 2:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:8/0/custom_data_0 = "hematite"
-2:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:8/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -645,7 +577,6 @@ texture = ExtResource("1_ofktr")
 3:8/0 = 0
 3:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:8/0/custom_data_0 = "hematite"
-3:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:8/0/metadata/_better_terrain = {
 4: [0],
 8: [0],
@@ -654,7 +585,6 @@ texture = ExtResource("1_ofktr")
 4:8/0 = 0
 4:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:8/0/custom_data_0 = "hematite"
-4:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:8/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -666,7 +596,6 @@ texture = ExtResource("1_ofktr")
 5:8/0 = 0
 5:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:8/0/custom_data_0 = "hematite"
-5:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:8/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -677,7 +606,6 @@ texture = ExtResource("1_ofktr")
 6:8/0 = 0
 6:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:8/0/custom_data_0 = "hematite"
-6:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:8/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -688,7 +616,6 @@ texture = ExtResource("1_ofktr")
 7:8/0 = 0
 7:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:8/0/custom_data_0 = "hematite"
-7:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:8/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -700,7 +627,6 @@ texture = ExtResource("1_ofktr")
 8:8/0 = 0
 8:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:8/0/custom_data_0 = "hematite"
-8:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:8/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -710,7 +636,6 @@ texture = ExtResource("1_ofktr")
 9:8/0 = 0
 9:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:8/0/custom_data_0 = "hematite"
-9:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:8/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -723,7 +648,6 @@ texture = ExtResource("1_ofktr")
 10:8/0 = 0
 10:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:8/0/custom_data_0 = "hematite"
-10:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 10:8/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -735,7 +659,6 @@ texture = ExtResource("1_ofktr")
 11:8/0 = 0
 11:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:8/0/custom_data_0 = "hematite"
-11:8/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:8/0/metadata/_better_terrain = {
 4: [0],
 7: [0],
@@ -745,7 +668,6 @@ texture = ExtResource("1_ofktr")
 11:9/0 = 0
 11:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:9/0/custom_data_0 = "hematite"
-11:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:9/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -758,7 +680,6 @@ texture = ExtResource("1_ofktr")
 9:9/0 = 0
 9:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:9/0/custom_data_0 = "hematite"
-9:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:9/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -771,7 +692,6 @@ texture = ExtResource("1_ofktr")
 8:9/0 = 0
 8:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:9/0/custom_data_0 = "hematite"
-8:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:9/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -783,7 +703,6 @@ texture = ExtResource("1_ofktr")
 7:9/0 = 0
 7:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:9/0/custom_data_0 = "hematite"
-7:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:9/0/metadata/_better_terrain = {
 4: [0],
 7: [0],
@@ -794,7 +713,6 @@ texture = ExtResource("1_ofktr")
 6:9/0 = 0
 6:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:9/0/custom_data_0 = "hematite"
-6:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:9/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -808,7 +726,6 @@ texture = ExtResource("1_ofktr")
 5:9/0 = 0
 5:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:9/0/custom_data_0 = "hematite"
-5:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:9/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -822,7 +739,6 @@ texture = ExtResource("1_ofktr")
 1:9/0 = 0
 1:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:9/0/custom_data_0 = "hematite"
-1:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:9/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -832,7 +748,6 @@ texture = ExtResource("1_ofktr")
 0:9/0 = 0
 0:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:9/0/custom_data_0 = "hematite"
-0:9/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:9/0/metadata/_better_terrain = {
 4: [0],
 12: [0],
@@ -841,7 +756,6 @@ texture = ExtResource("1_ofktr")
 0:10/0 = 0
 0:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:10/0/custom_data_0 = "hematite"
-0:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:10/0/metadata/_better_terrain = {
 12: [0],
 &"type": 2
@@ -849,7 +763,6 @@ texture = ExtResource("1_ofktr")
 1:10/0 = 0
 1:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:10/0/custom_data_0 = "hematite"
-1:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:10/0/metadata/_better_terrain = {
 0: [0],
 12: [0],
@@ -858,7 +771,6 @@ texture = ExtResource("1_ofktr")
 2:10/0 = 0
 2:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:10/0/custom_data_0 = "hematite"
-2:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:10/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -868,7 +780,6 @@ texture = ExtResource("1_ofktr")
 3:10/0 = 0
 3:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:10/0/custom_data_0 = "hematite"
-3:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:10/0/metadata/_better_terrain = {
 8: [0],
 12: [0],
@@ -877,7 +788,6 @@ texture = ExtResource("1_ofktr")
 4:10/0 = 0
 4:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:10/0/custom_data_0 = "hematite"
-4:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:10/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -888,7 +798,6 @@ texture = ExtResource("1_ofktr")
 8:10/0 = 0
 8:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 8:10/0/custom_data_0 = "hematite"
-8:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 8:10/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -901,7 +810,6 @@ texture = ExtResource("1_ofktr")
 9:10/0 = 0
 9:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:10/0/custom_data_0 = "hematite"
-9:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:10/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -916,7 +824,6 @@ texture = ExtResource("1_ofktr")
 10:10/0 = 0
 10:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:10/0/custom_data_0 = "hematite"
-10:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 10:10/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -929,7 +836,6 @@ texture = ExtResource("1_ofktr")
 11:10/0 = 0
 11:10/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:10/0/custom_data_0 = "hematite"
-11:10/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:10/0/metadata/_better_terrain = {
 4: [0],
 7: [0],
@@ -941,7 +847,6 @@ texture = ExtResource("1_ofktr")
 11:11/0 = 0
 11:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:11/0/custom_data_0 = "hematite"
-11:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 11:11/0/metadata/_better_terrain = {
 8: [0],
 11: [0],
@@ -951,7 +856,6 @@ texture = ExtResource("1_ofktr")
 10:11/0 = 0
 10:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:11/0/custom_data_0 = "hematite"
-10:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 10:11/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -964,7 +868,6 @@ texture = ExtResource("1_ofktr")
 9:11/0 = 0
 9:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 9:11/0/custom_data_0 = "hematite"
-9:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 9:11/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -976,7 +879,6 @@ texture = ExtResource("1_ofktr")
 7:11/0 = 0
 7:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 7:11/0/custom_data_0 = "hematite"
-7:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 7:11/0/metadata/_better_terrain = {
 0: [0],
 3: [0],
@@ -988,7 +890,6 @@ texture = ExtResource("1_ofktr")
 6:11/0 = 0
 6:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 6:11/0/custom_data_0 = "hematite"
-6:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 6:11/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -999,7 +900,6 @@ texture = ExtResource("1_ofktr")
 5:11/0 = 0
 5:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 5:11/0/custom_data_0 = "hematite"
-5:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 5:11/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -1010,7 +910,6 @@ texture = ExtResource("1_ofktr")
 4:11/0 = 0
 4:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 4:11/0/custom_data_0 = "hematite"
-4:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 4:11/0/metadata/_better_terrain = {
 0: [0],
 4: [0],
@@ -1022,7 +921,6 @@ texture = ExtResource("1_ofktr")
 3:11/0 = 0
 3:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:11/0/custom_data_0 = "hematite"
-3:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 3:11/0/metadata/_better_terrain = {
 8: [0],
 &"type": 2
@@ -1030,7 +928,6 @@ texture = ExtResource("1_ofktr")
 2:11/0 = 0
 2:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 2:11/0/custom_data_0 = "hematite"
-2:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 2:11/0/metadata/_better_terrain = {
 0: [0],
 8: [0],
@@ -1039,7 +936,6 @@ texture = ExtResource("1_ofktr")
 1:11/0 = 0
 1:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 1:11/0/custom_data_0 = "hematite"
-1:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 1:11/0/metadata/_better_terrain = {
 0: [0],
 &"type": 2
@@ -1047,13 +943,12 @@ texture = ExtResource("1_ofktr")
 0:11/0 = 0
 0:11/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:11/0/custom_data_0 = "hematite"
-0:11/0/custom_data_1 = "res://assets/particles/sandstone_shard.tscn"
 0:11/0/metadata/_better_terrain = {
 &"type": 2
 }
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_gr8ml"]
-texture = ExtResource("2_c7cds")
+texture = ExtResource("2_gr8ml")
 0:4/0 = 0
 0:4/0/physics_layer_1/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 0:4/0/custom_data_0 = "crude_oil"
@@ -1525,16 +1420,28 @@ texture = ExtResource("2_c7cds")
 &"type": 3
 }
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_b4djy"]
+texture = ExtResource("3_gr8ml")
+0:0/next_alternative_id = 3
+0:0/0 = 0
+0:0/0/custom_data_0 = "sandstone_g"
+1:0/0 = 0
+1:0/0/custom_data_0 = "sandstone_g"
+2:0/0 = 0
+2:0/0/custom_data_0 = "sandstone_g"
+3:0/0 = 0
+3:0/0/custom_data_0 = "sandstone_g"
+4:1/0 = 0
+
 [resource]
 physics_layer_0/collision_layer = 1
 physics_layer_1/collision_layer = 8
 physics_layer_1/collision_mask = 8
 custom_data_layer_0/name = "matter"
 custom_data_layer_0/type = 4
-custom_data_layer_1/name = "particle_path"
-custom_data_layer_1/type = 4
 sources/0 = SubResource("TileSetAtlasSource_t0wv1")
 sources/1 = SubResource("TileSetAtlasSource_gr8ml")
+sources/2 = SubResource("TileSetAtlasSource_b4djy")
 metadata/_better_terrain = {
 &"decoration": ["Decoration", Color(0.411765, 0.411765, 0.411765, 1), 3, [], {
 &"path": "res://addons/better-terrain/icons/Decoration.svg"
