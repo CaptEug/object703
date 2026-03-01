@@ -1,9 +1,9 @@
 extends FloatingPanel
 
-var manufactory:Manufactory
+var factory:Factory
 
 func _ready() -> void:
-	$Label.text = manufactory.block_name
+	$Label.text = factory.block_name
 
 
 func _on_texture_button_pressed():

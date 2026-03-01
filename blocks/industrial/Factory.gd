@@ -1,4 +1,4 @@
-class_name Manufactory
+class_name Factory
 extends Block
 
 var connected_cargos: Array[Cargo]
@@ -16,7 +16,7 @@ var on:bool = true
 var working:bool = false
 var current_recipe:Dictionary
 var panel:FloatingPanel
-var manufactory_panel_path := "res://ui/manufactory/manufactory_panel.tscn"
+var factory_panel_path := "res://ui/factory/factory_panel.tscn"
 
 func _ready():
 	super._ready()
@@ -40,19 +40,19 @@ func _process(delta):
 func _on_input_event(_viewport, event, _shape_idx):
 		if event is InputEventMouseButton:
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-				open_manufactory_panel()
+				open_factory_panel()
 
-func open_manufactory_panel():
+func open_factory_panel():
 	if panel:
 		panel.visible = true
 		panel.move_to_front()
 	else:
 		var UI = GameState.current_gamescene.gameUI
-		panel = load(manufactory_panel_path).instantiate()
-		panel.manufactory = self
+		panel = load(factory_panel_path).instantiate()
+		panel.factory = self
 		UI.add_child(panel)
 
-# manufactory code
+# factory code
 func find_recipe():
 	for recipe in recipes:
 		if recipe_can_run(recipe):

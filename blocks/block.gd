@@ -2,7 +2,7 @@ class_name Block
 extends RigidBody2D
 
 @export var center_of_mass_offset: Vector2 = Vector2.ZERO
-@onready var map:GameMap = GameState.current_gamescene.gamemap
+@onready var map:GameMap
 
 ## Basic Properties
 var current_hp:float
@@ -48,6 +48,8 @@ signal connection_broken(joint: Joint2D)
 signal connections_processed(block: Block)
 
 func _ready():
+	if GameState.current_gamescene:
+		map = GameState.current_gamescene.gamemap
 	# Initialize physics properties
 	mass = weight/1000
 	linear_damp = 5

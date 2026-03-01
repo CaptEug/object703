@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcxvocjd8ml2a"]
+
+[ext_resource type="Script" uid="uid://dg8ljce3b6h7m" path="res://blocks/industrial/Factory.gd" id="1_igoqe"]
+
+[node name="Refinary" type="RigidBody2D"]
+script = ExtResource("1_igoqe")
+metadata/_custom_type_script = "uid://dg8ljce3b6h7m"

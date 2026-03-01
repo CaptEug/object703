@@ -1,4 +1,4 @@
-extends Manufactory
+extends Factory
 
 const HITPOINT:float = 2000
 const WEIGHT:float = 10000
@@ -22,7 +22,7 @@ const RECIPES:= [
 var description := ""
 #var outline_tex := preload("res://assets/outlines/pike_outline.png")
 
-@onready var canvas_mod = map.canvas_modulate as CanvasModulate
+@onready var canvas_mod:CanvasModulate
 var core_alpha := 0.0
 var time:float
 
@@ -37,6 +37,8 @@ func _init():
 
 func _ready() -> void:
 	super._ready()
+	if map:
+		canvas_mod = map.canvas_modulate as CanvasModulate
 
 func _process(delta):
 	super._process(delta)

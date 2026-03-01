@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3 uid="uid://cenhdprrehtha"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_unq2q"]
-[ext_resource type="Script" uid="uid://c6sk0j0qgxxpq" path="res://ui/manufactory/manufactory_panel.gd" id="2_uu5ba"]
+[ext_resource type="Script" uid="uid://c6sk0j0qgxxpq" path="res://ui/factory/factory_panel.gd" id="2_uu5ba"]
 [ext_resource type="PackedScene" uid="uid://dnwpcmifp3o6j" path="res://ui/inventory/cargo_slot.tscn" id="3_uu5ba"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="4_32ea0"]
 
@@ -19,7 +19,7 @@ bg_color = Color(0.898039, 0.898039, 0.898039, 1)
 atlas = ExtResource("4_32ea0")
 region = Rect2(224, 0, 16, 16)
 
-[node name="ManufactoryPanel" type="Panel"]
+[node name="FactoryPanel" type="Panel"]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -41,7 +41,7 @@ offset_left = 6.0
 offset_top = 4.0
 offset_right = 132.0
 offset_bottom = 24.0
-text = "manufactory"
+text = "factory"
 
 [node name="CargoSlot" parent="." instance=ExtResource("3_uu5ba")]
 layout_mode = 1

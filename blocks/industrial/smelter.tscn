@@ -27,7 +27,6 @@ texture = SubResource("AtlasTexture_plyit")
 
 [node name="MoltenCore" type="Sprite2D" parent="Sprite2D"]
 light_mask = 0
-position = Vector2(0, -8)
 texture = SubResource("AtlasTexture_b5kk2")
 
 [node name="Connector" parent="." instance=ExtResource("3_plyit")]
