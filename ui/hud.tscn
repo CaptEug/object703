@@ -1,8 +1,12 @@
-[gd_scene load_steps=7 format=3 uid="uid://cy5y2mqj5bxgy"]
+[gd_scene load_steps=8 format=3 uid="uid://cy5y2mqj5bxgy"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_rbyyf"]
 [ext_resource type="Script" uid="uid://cgxk62odscflu" path="res://ui/hud.gd" id="2_546lt"]
 [ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="3_546lt"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_en2x2"]
+atlas = ExtResource("3_546lt")
+region = Rect2(128, 128, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7ihmi"]
 atlas = ExtResource("3_546lt")
@@ -12,9 +16,9 @@ region = Rect2(0, 160, 32, 32)
 atlas = ExtResource("3_546lt")
 region = Rect2(32, 96, 32, 32)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_en2x2"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_1v5rv"]
 atlas = ExtResource("3_546lt")
-region = Rect2(128, 128, 32, 32)
+region = Rect2(64, 96, 32, 32)
 
 [node name="Hud" type="Control"]
 layout_mode = 3
@@ -34,6 +38,16 @@ offset_right = 2.0
 offset_bottom = 36.0
 grow_horizontal = 2
 
+[node name="SettingsButton" type="TextureButton" parent="Panel"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 36.0
+offset_bottom = 34.0
+tooltip_text = "settings"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_en2x2")
+
 [node name="BuildButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
 offset_left = 343.0
@@ -46,13 +60,24 @@ texture_normal = SubResource("AtlasTexture_7ihmi")
 
 [node name="TankDexButton" type="TextureButton" parent="Panel"]
 layout_mode = 0
-offset_left = 398.0
+offset_left = 383.0
 offset_top = 2.0
-offset_right = 430.0
+offset_right = 415.0
 offset_bottom = 34.0
 tooltip_text = "open TankDex"
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_546lt")
+
+[node name="MapButton" type="TextureButton" parent="Panel"]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 2.0
+offset_right = 335.0
+offset_bottom = 34.0
+tooltip_text = "toggle map
+"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_1v5rv")
 
 [node name="Clock" type="Label" parent="Panel"]
 layout_mode = 1
@@ -69,16 +94,7 @@ grow_horizontal = 0
 grow_vertical = 2
 text = "00:00"
 
-[node name="SettingsButton" type="TextureButton" parent="Panel"]
-layout_mode = 0
-offset_left = 4.0
-offset_top = 2.0
-offset_right = 36.0
-offset_bottom = 34.0
-tooltip_text = "settings"
-mouse_default_cursor_shape = 2
-texture_normal = SubResource("AtlasTexture_en2x2")
-
+[connection signal="pressed" from="Panel/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="Panel/BuildButton" to="." method="_on_build_button_pressed"]
 [connection signal="pressed" from="Panel/TankDexButton" to="." method="_on_tank_dex_button_pressed"]
-[connection signal="pressed" from="Panel/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="Panel/MapButton" to="." method="_on_map_button_pressed"]

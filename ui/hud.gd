@@ -40,3 +40,8 @@ func _on_tank_dex_button_pressed():
 
 func _on_settings_button_pressed() -> void:
 	UI.settings_panel.visible = true
+
+
+func _on_map_button_pressed():
+	var minimap = UI.minimap
+	minimap.show()
