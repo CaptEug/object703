@@ -1,14 +1,17 @@
-extends FloatingPanel
+extends Panel
 
+@onready var world_list: ItemList = $VBoxContainer/WorldList
+var world_files: Array[String] = []
 var save_dir:String = "res://saves/"
 
-@onready var world_list: ItemList = $MarginContainer/Panel/VBoxContainer/WorldList
-
-var world_files: Array[String] = []
 
 func _ready():
 	refresh_world_list()
-	world_list.add_item("dont_load_this")
+
+
+func _process(delta):
+	pass
+
 
 func refresh_world_list():
 	world_list.clear()
@@ -16,6 +19,7 @@ func refresh_world_list():
 	for path in world_files:
 		var world_name:= path.get_file().get_basename()
 		world_list.add_item(world_name)
+
 
 func scan_worlds() -> Array[String]:
 	var worlds: Array[String] = []
@@ -37,16 +41,6 @@ func scan_worlds() -> Array[String]:
 	return worlds
 
 
-
-
-func _on_back_button_pressed() -> void:
-	visible = false
-
-
-func _on_world_list_item_selected(index: int) -> void:
-	$LoadButton.disabled = false
-
-
 func _on_load_button_pressed() -> void:
 	var selected := world_list.get_selected_items()
 	if selected.is_empty():
@@ -54,4 +48,7 @@ func _on_load_button_pressed() -> void:
 	var idx := selected[0]
 	var file := world_files[idx]
 	GameState.load_game(file)
-	
+
+
+func _on_world_list_item_selected(index: int) -> void:
+	$LoadButton.disabled = false

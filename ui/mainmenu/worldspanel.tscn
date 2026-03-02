@@ -1,0 +1,167 @@
+[gd_scene load_steps=13 format=3 uid="uid://c6q0eyudiwwkx"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_xb1gl"]
+[ext_resource type="Script" uid="uid://bc3ncyogrn7w8" path="res://ui/mainmenu/worldspanel.gd" id="2_3pojx"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="3_ciuxl"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="4_dwts5"]
+[ext_resource type="Script" uid="uid://q8r2acapfy7q" path="res://ui/mainmenu/world_selection.gd" id="5_3pojx"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="5_ykphs"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dnvid"]
+atlas = ExtResource("3_ciuxl")
+region = Rect2(208, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xb1gl"]
+atlas = ExtResource("3_ciuxl")
+region = Rect2(192, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_edc7y"]
+atlas = ExtResource("4_dwts5")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dnvid"]
+texture = SubResource("AtlasTexture_edc7y")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0t7f7"]
+atlas = ExtResource("5_ykphs")
+region = Rect2(128, 96, 32, 32)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3pojx"]
+
+[node name="Worldspanel" type="Panel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -240.0
+offset_right = 256.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_xb1gl")
+script = ExtResource("2_3pojx")
+metadata/_custom_type_script = "uid://b2dy5mxgwngh6"
+
+[node name="BackButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 24.0
+offset_bottom = 22.0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_dnvid")
+
+[node name="FowardButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 6.0
+offset_right = 48.0
+offset_bottom = 22.0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_xb1gl")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -3.05176e-05
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 48
+
+[node name="WorldSelection" type="Panel" parent="MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_dnvid")
+script = ExtResource("5_3pojx")
+
+[node name="VBoxContainer" type="MarginContainer" parent="MarginContainer/WorldSelection"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="WorldList" type="ItemList" parent="MarginContainer/WorldSelection/VBoxContainer"]
+layout_mode = 2
+auto_width = true
+auto_height = true
+
+[node name="LoadButton" type="Button" parent="MarginContainer/WorldSelection"]
+layout_mode = 0
+offset_left = 377.0
+offset_top = 401.0
+offset_right = 491.0
+offset_bottom = 441.0
+mouse_default_cursor_shape = 2
+disabled = true
+text = "load"
+
+[node name="NewWorldButton" type="TextureButton" parent="MarginContainer/WorldSelection"]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 408.0
+offset_right = 30.0
+offset_bottom = 440.0
+tooltip_text = "create new world"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_0t7f7")
+
+[node name="WorldGeneration" type="Panel" parent="MarginContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_3pojx")
+
+[node name="Label" type="Label" parent="MarginContainer/WorldGeneration"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -108.0
+offset_top = -10.0
+offset_right = 108.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Seed:"
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/WorldGeneration/Label"]
+layout_mode = 0
+offset_left = 57.0
+offset_top = -17.0
+offset_right = 210.0
+offset_bottom = 35.0
+
+[node name="GenerateButton" type="Button" parent="MarginContainer/WorldGeneration"]
+layout_mode = 0
+offset_left = 377.0
+offset_top = 401.0
+offset_right = 491.0
+offset_bottom = 441.0
+text = "Generate"
+
+[connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
+[connection signal="pressed" from="FowardButton" to="." method="_on_foward_button_pressed"]
+[connection signal="item_selected" from="MarginContainer/WorldSelection/VBoxContainer/WorldList" to="MarginContainer/WorldSelection" method="_on_world_list_item_selected"]
+[connection signal="pressed" from="MarginContainer/WorldSelection/LoadButton" to="MarginContainer/WorldSelection" method="_on_load_button_pressed"]
+[connection signal="pressed" from="MarginContainer/WorldSelection/NewWorldButton" to="." method="_on_new_world_button_pressed"]

@@ -74,7 +74,7 @@ offset_left = 303.0
 offset_top = 2.0
 offset_right = 335.0
 offset_bottom = 34.0
-tooltip_text = "toggle map
+tooltip_text = "map
 "
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_1v5rv")

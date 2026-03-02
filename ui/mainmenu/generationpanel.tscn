@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvfi5r0bbe07s"]
+
+[ext_resource type="Script" uid="uid://b2dy5mxgwngh6" path="res://ui/floating_panel.gd" id="1_pd1xu"]
+
+[node name="Generationpanel" type="Panel"]
+script = ExtResource("1_pd1xu")
+metadata/_custom_type_script = "uid://b2dy5mxgwngh6"

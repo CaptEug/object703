@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=47 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" load_steps=48 format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
@@ -79,6 +79,8 @@ bg_color = Color(0, 1, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4w2ry"]
 bg_color = Color(0, 1, 0, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_edc7y"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4w2ry"]
 atlas = ExtResource("1_4w2ry")
@@ -279,6 +281,7 @@ Label/colors/font_color = Color(0.13145, 0.258068, 0.37867, 1)
 Label/fonts/font = ExtResource("3_4w2ry")
 LineEdit/colors/font_color = Color(0, 1, 0, 1)
 LineEdit/fonts/font = ExtResource("3_4w2ry")
+LineEdit/styles/focus = SubResource("StyleBoxEmpty_edc7y")
 LineEdit/styles/normal = SubResource("StyleBoxTexture_f7ufs")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_d3oid")
