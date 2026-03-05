@@ -54,7 +54,7 @@ func handle_left_click():
 				exit_turret_editing_mode()
 				enter_turret_editing_mode(clicked_turret)
 
-func process(delta):
+func process(_delta):
 	if is_turret_editing_mode and current_ghost_block:
 		update_turret_placement_feedback()
 	
@@ -690,7 +690,7 @@ func calculate_aligned_rotation_for_turret_block(building_block: Block) -> float
 	
 	return world_rotation + base_rotation - self_rotation
 
-func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Connector, ghost_rotation: float) -> bool:
+func can_points_connect_with_rotation_for_turret(point_a: Connector, point_b: Connector, _ghost_rotation: float) -> bool:
 	if point_a.connection_type != point_b.connection_type:
 		return false
 	

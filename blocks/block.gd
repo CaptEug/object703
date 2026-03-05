@@ -45,7 +45,6 @@ var joint_connected_blocks := {}  # Tracks which blocks are connected through wh
 ## Signals
 signal connection_established(from: Connector, to: Connector, joint: Joint2D)
 signal connection_broken(joint: Joint2D)
-signal connections_processed(block: Block)
 
 func _ready():
 	if GameState.current_gamescene:
@@ -133,7 +132,7 @@ func _on_input_event(_viewport, event, _shape_idx):
 			if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 				parent_vehicle.open_vehicle_panel()
 
-func damage(amount:int, dmg_type:String = "",from = null):
+func damage(amount: float, dmg_type: String = "", from = null):
 	if dmg_type == "kinetic":
 		amount *= kinetic_absorb
 	elif dmg_type == "explosive":
@@ -465,7 +464,7 @@ func get_connection_point_by_index(index: int) -> Connector:
 		return available_points[index]
 	return null
 
-func attach_to_staticbody(rigidbody: StaticBody2D, connector: TurretConnector = null, maintain_rotation: bool = true) -> TurretConnectorJoint:
+func attach_to_staticbody(rigidbody: StaticBody2D, connector: TurretConnector = null, _maintain_rotation: bool = true) -> TurretConnectorJoint:
 	var connect_pos = connector.position if connector else Vector2.ZERO
 	return TurretConnectorJoint.connect_to_staticbody(self, rigidbody, connect_pos, rigidbody.joint.node_a)
 
@@ -540,8 +539,8 @@ func get_connections_at_position(local_grid_pos: Vector2i) -> Array[bool]:
 	
 	return connections
 
-func get_direction_from_rotation(rotation_degrees: float) -> int:
-	var normalized = fmod(rotation_degrees + 360, 360)
+func get_direction_from_rotation(rot_degrees: float) -> int:
+	var normalized = fmod(rot_degrees + 360, 360)
 	if normalized >= 315 or normalized < 45:
 		return 0  # Right
 	elif normalized >= 45 and normalized < 135:

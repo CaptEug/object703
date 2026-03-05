@@ -25,24 +25,21 @@ func update_from_layerdata():
 				
 				# 根据方块大小和旋转计算所有格子的位置
 				var block_size = Vector2i(data["block_size"][0], data["block_size"][1])
-				var rotation = data.get("rotation", 0)
+
 				
 				# 为方块的每个格子设置显示
 				for x in range(block_size.x):
 					for y in range(block_size.y):
 						# 根据旋转计算偏移
-						var offset = calculate_offset_by_rotation(Vector2i(x, y), rotation)
-						var base_pos = Vector2i(data["base_grid_pos"][0], data["base_grid_pos"][1])
-						var grid_pos = base_pos + offset
 						set_cell(cell, get_tile_for_block_path(data["block_path"]), Vector2i(0, 0))
 		# 如果没有基准位置信息，直接显示
 		else:
 			set_cell(cell, 0, Vector2i(0, 0))
 	print("224", layerdata)
 
-func calculate_offset_by_rotation(local_pos: Vector2i, rotation: int) -> Vector2i:
+func calculate_offset_by_rotation(local_pos: Vector2i, rot_degrees: int) -> Vector2i:  # 重命名为 rot_degrees
 	"""根据旋转计算偏移"""
-	match rotation:
+	match rot_degrees:
 		0:
 			return local_pos
 		90:
@@ -171,45 +168,35 @@ func _generate_single_building(building_name: String, blocks_data: Array, parent
 	building_node.building_name = building_name
 	
 	# 计算建筑的位置
-	# 使用第一个方块的位置作为参考
-	var first_block_data = blocks_data[0]["data"]
 	var first_tilemap_cell = blocks_data[0]["tilemap_cell"]
-	
-	# 将TileMap网格坐标转换为世界坐标
 	var world_pos = map_to_local(first_tilemap_cell)
 	building_node.global_position = world_pos
-	
 	parent_node.add_child(building_node)
 	print("  建筑位置: ", world_pos)
 	
-	# 处理建筑中的所有方块（去重处理）
 	var processed_blocks = {}
 	
 	for block_info in blocks_data:
 		var data = block_info["data"]
-		var tilemap_cell = block_info["tilemap_cell"]
 		
-		# 获取方块信息
+		# 获取方块信息 - 将rotation重命名为block_rotation
 		var block_path = data["block_path"]
-		var rotation = data.get("rotation", 0)
+		var block_rotation = data.get("rotation", 0)  # 改名为block_rotation
 		var block_size = Vector2i(data["block_size"][0], data["block_size"][1])
 		var building_grid_pos = Vector2i(data["grid_pos"][0], data["grid_pos"][1])
 		var hp = data.get("hp", 100.0)
 		
-		# 计算方块的基准位置（左上角）
-		var base_pos = _calculate_block_base_position(building_grid_pos, block_size, rotation)
-		var block_id = "%s_%d_%d_%d" % [block_path, rotation, base_pos.x, base_pos.y]
+		# 计算方块的基准位置 - 使用block_rotation
+		var base_pos = _calculate_block_base_position(building_grid_pos, block_size, block_rotation)
+		var block_id = "%s_%d_%d_%d" % [block_path, block_rotation, base_pos.x, base_pos.y]
 		
-		# 如果这个方块已经处理过，跳过
 		if processed_blocks.has(block_id):
 			continue
 		
-		# 标记为已处理
 		processed_blocks[block_id] = true
 		
-		print("  生成方块: ", data["block_name"], " 大小: ", block_size, " 旋转: ", rotation)
+		print("  生成方块: ", data["block_name"], " 大小: ", block_size, " 旋转: ", block_rotation)
 		
-		# 加载并实例化方块
 		var scene = load(block_path)
 		if not scene:
 			print("    错误: 无法加载方块场景: ", block_path)
@@ -221,35 +208,27 @@ func _generate_single_building(building_name: String, blocks_data: Array, parent
 			block_instance.queue_free()
 			continue
 		
-		# 设置方块属性
-		block_instance.base_rotation_degree = rotation
-		block_instance.rotation = deg_to_rad(rotation)
+		# 设置方块属性 - 使用block_rotation
+		block_instance.base_rotation_degree = block_rotation
+		block_instance.rotation = deg_to_rad(block_rotation)
 		block_instance.current_hp = hp
 		
-		# 计算方块的世界位置
-		# 使用方块的基准位置（建筑网格坐标）来计算
 		var block_world_pos = _calculate_block_world_position(base_pos, building_node)
 		block_instance.global_position = block_world_pos
-		
-		# 添加到建筑节点
 		building_node.add_child(block_instance)
 		
-		# 收集方块占据的所有建筑网格位置
 		var block_grid_positions = []
 		for x in range(block_size.x):
 			for y in range(block_size.y):
 				var local_pos = Vector2i(x, y)
-				var rotated_offset = calculate_offset_by_rotation(local_pos, rotation)
+				var rotated_offset = calculate_offset_by_rotation(local_pos, block_rotation)
 				var current_building_grid = base_pos + rotated_offset
 				block_grid_positions.append([current_building_grid.x, current_building_grid.y])
 		
-		# 将方块添加到建筑的网格系统中
 		if building_node.has_method("_add_block"):
 			var block_local_pos = Vector2(base_pos) * 16.0
 			building_node._add_block(block_instance, block_local_pos, block_grid_positions)
 			print("    方块已添加到建筑网格系统")
-		else:
-			print("    警告: 建筑节点没有 _add_block 方法")
 	
 	print("  建筑", building_name, "生成完成，包含", processed_blocks.size(), "个方块")
 
@@ -411,7 +390,7 @@ func _process_blueprint_data(blueprint_data: Dictionary, filename: String) -> bo
 			continue
 		
 		var block_name = block_data.get("name", "未知方块")
-		var rotation = block_data.get("rotation", 0)
+		var block_rotation = block_data.get("rotation", 0)
 		var block_size_array = block_data.get("size", [1, 1])
 		var block_size = Vector2i(block_size_array[0], block_size_array[1])
 		var base_pos_array = block_data.get("base_pos", [0, 0])
@@ -419,7 +398,7 @@ func _process_blueprint_data(blueprint_data: Dictionary, filename: String) -> bo
 		var hp = block_data.get("hp", 100.0)
 		var grid_positions = block_data.get("grid_positions", [])
 		
-		print("  处理方块: ", block_name, " 大小: ", block_size, " 旋转: ", rotation)
+		print("  处理方块: ", block_name, " 大小: ", block_size, " 旋转: ", block_rotation)
 		
 		# 处理方块的每个小格
 		for grid_pos_array in grid_positions:
@@ -429,7 +408,7 @@ func _process_blueprint_data(blueprint_data: Dictionary, filename: String) -> bo
 			var local_offset = Vector2i(grid_pos.x - base_pos.x, grid_pos.y - base_pos.y)
 			
 			# 根据旋转计算偏移
-			var rotated_offset = calculate_offset_by_rotation(local_offset, rotation)
+			var rotated_offset = calculate_offset_by_rotation(local_offset, block_rotation)
 			
 			# 计算当前小格在建筑网格中的位置
 			var current_building_grid = base_pos + rotated_offset
@@ -524,14 +503,14 @@ func _generate_building_from_layerdata(building_name: String, blocks_data: Array
 		# 获取方块信息
 		var block_path = data["block_path"]
 		var block_name = data["block_name"]
-		var rotation = data.get("rotation", 0)
+		var block_rotation = data.get("rotation", 0)
 		var block_size = Vector2i(data["block_size"][0], data["block_size"][1])
 		var building_grid_pos = Vector2i(data["grid_pos"][0], data["grid_pos"][1])
 		var hp = data.get("hp", 100.0)
 		
 		# 计算方块的基准位置（左上角）
-		var base_pos = _calculate_block_base_position(building_grid_pos, block_size, rotation)
-		var block_id = "%s_%d_%d_%d" % [block_path, rotation, base_pos.x, base_pos.y]
+		var base_pos = _calculate_block_base_position(building_grid_pos, block_size, block_rotation)
+		var block_id = "%s_%d_%d_%d" % [block_path, block_rotation, base_pos.x, base_pos.y]
 		
 		# 如果这个方块已经处理过，跳过
 		if processed_blocks.has(block_id):
@@ -540,7 +519,7 @@ func _generate_building_from_layerdata(building_name: String, blocks_data: Array
 		# 标记为已处理
 		processed_blocks[block_id] = true
 		
-		print("  生成方块: ", block_name, " 大小: ", block_size, " 旋转: ", rotation)
+		print("  生成方块: ", block_name, " 大小: ", block_size, " 旋转: ", block_rotation)
 		
 		# 加载并实例化方块
 		var scene = load(block_path)
@@ -555,8 +534,8 @@ func _generate_building_from_layerdata(building_name: String, blocks_data: Array
 			continue
 		
 		# 设置方块属性
-		block_instance.base_rotation_degree = rotation
-		block_instance.rotation = deg_to_rad(rotation)
+		block_instance.base_rotation_degree = block_rotation
+		block_instance.rotation = deg_to_rad(block_rotation)
 		block_instance.current_hp = hp
 		
 		# 计算方块的世界位置
@@ -571,7 +550,7 @@ func _generate_building_from_layerdata(building_name: String, blocks_data: Array
 		for x in range(block_size.x):
 			for y in range(block_size.y):
 				var local_pos = Vector2i(x, y)
-				var rotated_offset = calculate_offset_by_rotation(local_pos, rotation)
+				var rotated_offset = calculate_offset_by_rotation(local_pos, block_rotation)
 				var current_building_grid = base_pos + rotated_offset
 				block_grid_positions.append([current_building_grid.x, current_building_grid.y])
 		
@@ -583,9 +562,9 @@ func _generate_building_from_layerdata(building_name: String, blocks_data: Array
 	
 	print("  建筑", building_name, "生成完成")
 
-func _calculate_block_base_position(grid_pos: Vector2i, block_size: Vector2i, rotation: int) -> Vector2i:
+func _calculate_block_base_position(grid_pos: Vector2i, block_size: Vector2i, blo_rotation: int) -> Vector2i:
 	"""计算方块的基准位置（左上角）"""
-	match rotation:
+	match blo_rotation:
 		0:
 			return grid_pos
 		90:

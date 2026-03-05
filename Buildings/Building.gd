@@ -393,14 +393,13 @@ func get_building_stats() -> Dictionary:
 		"is_destroyed": destroyed
 	}
 
-func can_place_block_at(block: Block, position: Vector2) -> bool:
+func can_place_block_at(block: Block, target_grid_pos: Vector2) -> bool:
 	"""检查指定位置是否可以放置块"""
-	var target_grid = calculate_block_grid_positions(block, position)
+	var target_grid = calculate_block_grid_positions(block, target_grid_pos)
 	
 	for pos in target_grid:
 		if grid.has(pos):
 			return false
-		# 可以添加其他检查，如地形限制等
 	
 	return true
 

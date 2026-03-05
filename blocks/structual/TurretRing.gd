@@ -1,7 +1,7 @@
 class_name TurretRing
 extends Block
 
-var load:float
+var current_load:float
 var turret_basket:RigidBody2D
 var joint:PinJoint2D
 var traverse:Array
@@ -130,8 +130,8 @@ func add_block_to_turret(block: Block, grid_positions: Array = []) -> bool:
 	
 	return false
 
-func reparent_block_to_vehicle(block: Block, grid_positions: Array):
-	
+func reparent_block_to_vehicle(block: Block, _grid_positions: Array):
+	# 用下划线前缀标记为有意未使用
 	var global_pos = block.global_position
 	var global_rot = block.global_rotation
 	
@@ -216,12 +216,12 @@ func calculate_block_grid_positions(block: Block) -> Array:
 	# 计算相对于炮塔的局部位置
 	var relative_pos = global_block_pos - turret_global_pos
 	
-	var base_pos = Vector2i(
+	var grid_base_pos = Vector2i(  # 重命名为 grid_base_pos
 		floor(relative_pos.x / 16),
 		floor(relative_pos.y / 16)
 	)
 	
-	print("计算块网格位置: 全局位置=", global_block_pos, " 炮塔位置=", turret_global_pos, " 相对位置=", relative_pos, " 基准位置=", base_pos)
+	print("计算块网格位置: 全局位置=", global_block_pos, " 炮塔位置=", turret_global_pos, " 相对位置=", relative_pos, " 基准位置=", grid_base_pos)
 	
 	for x in range(block.size.x):
 		for y in range(block.size.y):
@@ -229,15 +229,15 @@ func calculate_block_grid_positions(block: Block) -> Array:
 			
 			match int(block.base_rotation_degree):
 				0:
-					grid_pos = base_pos + Vector2i(x, y)
+					grid_pos = grid_base_pos + Vector2i(x, y)
 				90:
-					grid_pos = base_pos + Vector2i(-y, x)
+					grid_pos = grid_base_pos + Vector2i(-y, x)
 				-90:
-					grid_pos = base_pos + Vector2i(y, -x)
+					grid_pos = grid_base_pos + Vector2i(y, -x)
 				180, -180:
-					grid_pos = base_pos + Vector2i(-x, -y)
+					grid_pos = grid_base_pos + Vector2i(-x, -y)
 				_:
-					grid_pos = base_pos + Vector2i(x, y)
+					grid_pos = grid_base_pos + Vector2i(x, y)
 			
 			positions.append(grid_pos)
 	

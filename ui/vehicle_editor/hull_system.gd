@@ -655,7 +655,7 @@ func cleanup_moving_block():
 	moving_snap_config = {}
 
 # === 网格吸附系统 ===
-func check_connection_snap_for_moving_block(base_grid_pos: Vector2i, block_positions: Array) -> Dictionary:
+func check_connection_snap_for_moving_block(base_grid_pos: Vector2i, _block_positions: Array) -> Dictionary:
 	"""检查移动块是否可以与车辆块连接"""
 	if not moving_block_ghost or not selected_vehicle:
 		return {}
@@ -702,7 +702,7 @@ func check_connection_snap_for_moving_block(base_grid_pos: Vector2i, block_posit
 	
 	return best_connection
 
-func check_grid_connection_snap(base_grid_pos: Vector2i, block_positions: Array, ghost_block: Node2D) -> Dictionary:
+func check_grid_connection_snap(base_grid_pos: Vector2i, _block_positions: Array, ghost_block: Node2D) -> Dictionary:
 	"""检查虚影块是否可以与车辆块连接（用于放置新块）"""
 	if not ghost_block or not selected_vehicle:
 		return {}
@@ -950,7 +950,6 @@ func are_grid_positions_available_for_moving(new_positions: Array) -> bool:
 	for pos in new_positions:
 		# 检查是否在其他方块占用
 		if selected_vehicle.grid.has(pos):
-			var existing_block = selected_vehicle.grid[pos]
 			# 允许与原始位置重叠
 			var is_original_position = false
 			for original_pos in moving_block_original_grid_positions:

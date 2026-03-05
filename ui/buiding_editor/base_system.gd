@@ -46,7 +46,7 @@ func handle_left_click():
 		try_remove_block()
 		return
 
-func process(delta):
+func process(_delta):
 	# 确保引用最新
 	selected_building = editor.selected_building
 	camera = editor.camera
@@ -264,7 +264,6 @@ func place_first_block():
 	start_block_placement_with_rotation(current_block_scene.resource_path)
 
 func calculate_free_grid_positions(block: Block) -> Array:
-	var grid_positions = []
 	var world_pos = block.global_position
 	var grid_x = int(round(world_pos.x / GRID_SIZE))
 	var grid_y = int(round(world_pos.y / GRID_SIZE))

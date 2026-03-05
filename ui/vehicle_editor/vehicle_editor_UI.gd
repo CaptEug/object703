@@ -8,7 +8,7 @@ extends Control
 @export var RECYCLE_HIGHLIGHT_COLOR = Color(1, 0.3, 0.3, 0.6)
 @export var BLOCK_DIM_COLOR = Color(0.5, 0.5, 0.5, 0.6)
 
-@onready var UI:UI = get_parent()
+@onready var ui_ref:UI = get_parent()
 @onready var tab_container = $TabContainer
 @onready var description_label = $Panel/RichTextLabel
 @onready var build_vehicle_button = $Panel/SaveButton
@@ -251,10 +251,10 @@ func update_description(scene_path: String):
 			description_label.append_text("DESCRIPTION: %s\n" % block.get_description())
 		block.queue_free()
 
-func _set_font_sizes(size: int):
+func _set_font_sizes(font_size: int):
 	var font_sizes = ["normal_font_size", "bold_font_size", "italics_font_size", "bold_italics_font_size", "mono_font_size"]
-	for font_size in font_sizes:
-		description_label.add_theme_font_size_override(font_size, size)
+	for size_name in font_sizes:
+		description_label.add_theme_font_size_override(size_name, font_size)
 
 # === 车辆信息显示 ===
 func update_vehicle_info_display():
@@ -565,12 +565,12 @@ func apply_hover_highlight_if_needed():
 	if hovered_block:
 		hovered_block.modulate = RECYCLE_HIGHLIGHT_COLOR
 
-func get_hovered_block(position: Vector2) -> Block:
+func get_hovered_block(world_position: Vector2) -> Block:
 	"""获取鼠标悬停的方块"""
 	if turret_editing_system.is_turret_editing_mode:
-		return turret_editing_system.get_turret_block_at_position(position)
+		return turret_editing_system.get_turret_block_at_position(world_position)
 	else:
-		return get_block_at_position(position)
+		return get_block_at_position(world_position)
 
 # === 状态变更接口 ===
 func on_mode_changed():
@@ -720,7 +720,7 @@ func _toggle_edit_mode():
 		hull_editing_system.cancel_placement()
 		turret_editing_system.cancel_placement()
 	else:
-		var vehicle = UI.tankpanel.selected_vehicle
+		var vehicle = ui_ref.tankpanel.selected_vehicle
 		if vehicle == null:
 			return
 		else:
@@ -1274,10 +1274,10 @@ func get_turret_blocks() -> Array:
 	
 	return turrets
 
-func get_block_at_position(position: Vector2) -> Block:
+func get_block_at_position(world_position: Vector2) -> Block:
 	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = position
+	query.position = world_position
 	query.collision_mask = 1
 	
 	var result = space_state.intersect_point(query)

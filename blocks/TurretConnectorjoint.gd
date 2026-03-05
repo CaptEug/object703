@@ -119,26 +119,26 @@ func break_connection():
 	queue_free()
 
 # 创建函数 - 需要传入lock_rot参数
-static func connect_to_staticbody(block: Block, staticbody: StaticBody2D, connector_ref: TurretConnector, turret_ring: TurretRing, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
+static func connect_to_staticbody(block_node: Block, staticbody: StaticBody2D, connector_ref: TurretConnector, turret_ring: TurretRing, lock_rot: bool = true, maintain_pos: bool = true) -> TurretConnectorJoint:
 	var joint = TurretConnectorJoint.new()
 	
 	# 使用传入的参数设置属性
-	joint.lock_rotation = lock_rot  # 关键：使用参数而不是硬编码的true
+	joint.lock_rotation = lock_rot
 	joint.maintain_position = maintain_pos
 	
 	# 设置节点路径
-	joint.node_a = block.get_path()
+	joint.node_a = block_node.get_path()
 	joint.node_b = staticbody.get_path()
-	joint.setup(block, staticbody, connector_ref)
+	joint.setup(block_node, staticbody, connector_ref)
 	
 	# 最后添加为子节点
 	staticbody.add_child(joint)
 	
 	# 保持原有的连接关系管理
 	if turret_ring is TurretRing:
-		if not block.joint_connected_blocks.has(turret_ring):
-			block.joint_connected_blocks[joint] = turret_ring
-		if not turret_ring.joint_connected_blocks.has(block):
-			turret_ring.joint_connected_blocks[joint] = block
+		if not block_node.joint_connected_blocks.has(turret_ring):
+			block_node.joint_connected_blocks[joint] = turret_ring
+		if not turret_ring.joint_connected_blocks.has(block_node):
+			turret_ring.joint_connected_blocks[joint] = block_node
 	
 	return joint

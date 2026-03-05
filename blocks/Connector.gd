@@ -254,7 +254,6 @@ func get_actual_global_rotation() -> float:
 	# 确保获取正确的全局旋转
 	if get_parent():
 		# 计算连接点的全局旋转：父方块旋转 + 连接点局部旋转
-		var parent_block = get_parent() as Block
 		if parent_block:
 			return fmod(parent_block.global_rotation_degrees + rotation_degrees, 360)
 	return global_rotation_degrees

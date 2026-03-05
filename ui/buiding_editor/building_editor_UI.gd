@@ -240,10 +240,10 @@ func update_description(scene_path: String):
 			description_label.append_text("DESCRIPTION: %s\n" % block.get_description())
 		block.queue_free()
 
-func _set_font_sizes(size: int):
+func _set_font_sizes(font_size: int):
 	var font_sizes = ["normal_font_size", "bold_font_size", "italics_font_size", "bold_italics_font_size", "mono_font_size"]
-	for font_size in font_sizes:
-		description_label.add_theme_font_size_override(font_size, size)
+	for size_name in font_sizes:
+		description_label.add_theme_font_size_override(size_name, font_size)
 
 # === 建筑信息显示 ===
 func update_building_info_display():
@@ -506,12 +506,12 @@ func apply_hover_highlight_if_needed():
 	if hovered_block:
 		hovered_block.modulate = RECYCLE_HIGHLIGHT_COLOR
 
-func get_hovered_block(position: Vector2) -> Block:
+func get_hovered_block(world_position: Vector2) -> Block:
 	"""获取鼠标悬停的方块"""
 	if turret_editing_system.is_turret_editing_mode:
-		return turret_editing_system.get_turret_block_at_position(position)
+		return turret_editing_system.get_turret_block_at_position(world_position)
 	else:
-		return get_block_at_position(position)
+		return get_block_at_position(world_position)
 
 # === 状态变更接口 ===
 func on_mode_changed():
@@ -1052,13 +1052,13 @@ func enter_editor_mode_with_new_building(building: Building):
 	enter_editor_mode(building)
 
 # === 地图对齐辅助函数 ===
-func align_position_to_tilemap(position: Vector2) -> Vector2:
+func align_position_to_tilemap(use_position: Vector2) -> Vector2:
 	"""将位置对齐到TileMap的格子"""
 	if not tilemap_layer:
-		return position
+		return use_position
 	
 	# 将世界坐标转换为TileMap的格子坐标
-	var cell = tilemap_layer.local_to_map(position)
+	var cell = tilemap_layer.local_to_map(use_position)
 	
 	# 计算格子中心的世界坐标
 	var aligned_position = tilemap_layer.map_to_local(cell)
@@ -1069,11 +1069,11 @@ func align_position_to_tilemap(position: Vector2) -> Vector2:
 	
 	return aligned_position
 
-func align_block_position(position: Vector2) -> Vector2:
+func align_block_position(use_position: Vector2) -> Vector2:
 	"""将方块位置对齐到格子"""
 	# 确保对齐到GRID_SIZE的倍数
-	var aligned_x = round(position.x / GRID_SIZE) * GRID_SIZE
-	var aligned_y = round(position.y / GRID_SIZE) * GRID_SIZE
+	var aligned_x = round(use_position.x / GRID_SIZE) * GRID_SIZE
+	var aligned_y = round(use_position.y / GRID_SIZE) * GRID_SIZE
 	return Vector2(aligned_x, aligned_y)
 
 # === 保存功能 ===
@@ -1141,33 +1141,11 @@ func update_block_to_tilemap(block: Block, grid_positions: Array):
 	if not building_name or building_name.is_empty():
 		building_name = "Unnamed_" + str(selected_building.get_instance_id())
 		selected_building.building_name = building_name
-	
-	# 获取TileMap的单元格大小（默认16x16）
-	var tile_size = building_layer.tile_set.tile_size if building_layer.tile_set else Vector2i(16, 16)
-	
-	# 获取建筑的世界位置
-	var building_world_pos = selected_building.global_position
-	
+
 	# 遍历方块的每个小格
 	for i in range(grid_positions.size()):
 		var grid_pos_array = grid_positions[i]
 		var grid_pos = Vector2i(grid_pos_array[0], grid_pos_array[1])
-		
-		# 1. 计算建筑局部坐标
-		var building_local = Vector2(grid_pos) * GRID_SIZE
-		
-		# 2. 考虑建筑的旋转
-		var rotated_local = building_local.rotated(selected_building.global_rotation)
-		
-		# 3. 计算世界坐标
-		var world_pos = building_world_pos + rotated_local
-		
-		# 4. 计算相对于TileMap的坐标
-		var tilemap_global_pos = building_layer.global_position
-		var relative_to_tilemap = world_pos - tilemap_global_pos
-		
-		# 5. 转换为TileMap网格坐标
-		var tilemap_grid_pos = building_layer.local_to_map(relative_to_tilemap)
 		
 		# 存储数据
 		building_layer.layerdata[grid_pos] = {
@@ -1183,7 +1161,7 @@ func update_block_to_tilemap(block: Block, grid_positions: Array):
 	# 更新TileMap显示
 	building_layer.update_from_layerdata()
 
-func find_base_grid_position(grid_positions: Array, block: Block) -> Vector2i:
+func find_base_grid_position(grid_positions: Array, _block: Block) -> Vector2i:
 	"""找到方块的基准网格位置（通常是左上角）"""
 	if grid_positions.is_empty():
 		return Vector2i(0, 0)
@@ -1357,10 +1335,10 @@ func get_turret_blocks() -> Array:
 	
 	return turrets
 
-func get_block_at_position(position: Vector2) -> Block:
+func get_block_at_position(world_position: Vector2) -> Block:
 	var space_state = get_tree().root.get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
-	query.position = position
+	query.position = world_position
 	query.collision_mask = 1
 	
 	var result = space_state.intersect_point(query)
@@ -1370,14 +1348,15 @@ func get_block_at_position(position: Vector2) -> Block:
 			return block
 	return null
 
+
 # === 虚影数据类 ===
 class GhostData:
 	var grid_positions: Array
 	var rotation_deg:  float
 
-func calculate_offset_by_rotation(local_pos: Vector2i, rotation: int) -> Vector2i:
+func calculate_offset_by_rotation(local_pos: Vector2i, rot_degrees: int) -> Vector2i:
 	"""根据旋转计算偏移"""
-	match rotation:
+	match rot_degrees:
 		0:
 			return local_pos
 		90:

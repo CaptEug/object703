@@ -54,7 +54,7 @@ func _process(delta):
 	handle_delayed_connections()
 	
 	if control:
-		update_mobility_state(control.call(), delta)
+		update_mobility_state(control.call())
 	
 	update_targets_if_needed()
 	update_load_check(delta)
@@ -295,7 +295,7 @@ func load_from_blueprint(bp: Dictionary):
 					if point is TurretConnector and point.connected_to == null:
 						point.is_connection_enabled = true
 				
-				await load_turret_blocks(turret_block, block_data["turret_grid"], loaded_blocks)
+				await load_turret_blocks(turret_block, block_data["turret_grid"])
 				turret_block.unlock_turret_rotation()
 	
 	if bp.has("rotation") and bp["rotation"].size() > 0:
@@ -334,7 +334,7 @@ func calculate_block_grid_positions(block: Block, base_pos: Vector2) -> Array:
 	
 	return target_grid
 
-func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary, loaded_blocks: Dictionary):
+func load_turret_blocks(turret: TurretRing, turret_grid_data: Dictionary):
 	if not turret_grid_data.has("blocks"):
 		return
 	
@@ -393,7 +393,7 @@ func calculate_center_of_mass() -> Vector2:
 	if not cached_center_of_mass_dirty:
 		return cached_center_of_mass
 	
-	var total_mass := 0.0
+	var total_mass_value := 0.0
 	var weighted_sum := Vector2.ZERO
 	var has_calculated := {}
 	
@@ -410,7 +410,7 @@ func calculate_center_of_mass() -> Vector2:
 				var mass = body.mass
 				
 				weighted_sum += actual_com * mass
-				total_mass += mass
+				total_mass_value += mass
 				has_calculated[body.get_instance_id()] = true
 	
 	for block in blocks:
@@ -429,10 +429,10 @@ func calculate_center_of_mass() -> Vector2:
 			
 			var mass = block.get_actual_mass()
 			weighted_sum += actual_com * mass
-			total_mass += mass
+			total_mass_value += mass
 			has_calculated[block.get_instance_id()] = true
 	
-	cached_center_of_mass = weighted_sum / total_mass if total_mass > 0 else Vector2.ZERO
+	cached_center_of_mass = weighted_sum / total_mass_value if total_mass_value > 0 else Vector2.ZERO
 	cached_center_of_mass_dirty = false
 	return cached_center_of_mass
 
@@ -680,7 +680,7 @@ func array_zero(size: int) -> Array:
 		arr[i] = 0.0
 	return arr
 
-func update_mobility_state(control_input:Array, delta):
+func update_mobility_state(control_input:Array):
 	var forward_input = control_input[0]
 	var turn_input = control_input[1]
 	
@@ -701,9 +701,10 @@ func update_mobility_state(control_input:Array, delta):
 		else:
 			track.set_state_force('idle', 0)
 
-func calculate_track_forces(forward_input:int, turn_input:int) -> Dictionary:
-	var track_forces:Dictionary = {}
+func calculate_track_forces(forward_input: int, turn_input: int) -> Dictionary:
+	var track_forces_result: Dictionary = {}
 	var total_power = get_current_engine_power()
+	
 	for track in tracks:
 		var forward_power_ratio = 0.0
 		var rotate_power_ratio = 0.0
@@ -717,8 +718,9 @@ func calculate_track_forces(forward_input:int, turn_input:int) -> Dictionary:
 		
 		var move_component = balanced_forces[track] * total_power * forward_power_ratio * forward_input
 		var rotate_component = rotation_forces[track] * total_power * rotate_power_ratio * turn_input
-		track_forces[track] = move_component + rotate_component
-	return track_forces
+		track_forces_result[track] = move_component + rotate_component
+	
+	return track_forces_result
 
 func update_load_check(delta: float):
 	load_check_timer += delta
@@ -1046,7 +1048,7 @@ func load_from_save_data(save_data: Dictionary) -> void:
 					if point is TurretConnector and point.connected_to == null:
 						point.is_connection_enabled = true
 				
-				await load_turret_blocks_simple(turret_block, block_data["turret_grid"])
+				load_turret_blocks_simple(turret_block, block_data["turret_grid"])
 				turret_block.unlock_turret_rotation()
 	
 	ready_connect = true
@@ -1191,12 +1193,12 @@ func load_from_save_data_old(save_data: Dictionary) -> void:
 		vehicle_position = Vector2(save_data["position"][0], save_data["position"][1])
 		print("加载车辆 position: [", save_data["position"][0], ", ", save_data["position"][1], "]")
 	
-	var global_rotation = 0.0
+	var vehicle_rotation = 0.0
 	if save_data.has("global_rotation") and save_data["global_rotation"].size() > 0:
-		global_rotation = save_data["global_rotation"][0]
+		vehicle_rotation = save_data["global_rotation"][0]
 	
-	global_position = vehicle_position
-	rotation_degrees = global_rotation
+	vehicle_rotation = vehicle_position
+	rotation_degrees = vehicle_rotation
 	
 	var blocks_data = save_data.get("blocks", {})
 	var loaded_blocks = {}
@@ -1224,7 +1226,7 @@ func load_from_save_data_old(save_data: Dictionary) -> void:
 					if point is TurretConnector and point.connected_to == null:
 						point.is_connection_enabled = true
 				
-				await load_turret_blocks_simple(turret_block, block_data["turret_grid"])
+				load_turret_blocks_simple(turret_block, block_data["turret_grid"])
 				turret_block.unlock_turret_rotation()
 	
 	ready_connect = true
@@ -1276,8 +1278,8 @@ func get_available_points_near_position(_position: Vector2, max_distance: float 
 	return available_points
 
 func open_vehicle_panel():
-	var UI = GameState.current_gamescene.gameUI
-	var panel = UI.tankpanel
+	var game_ui = GameState.current_gamescene.gameUI
+	var panel = game_ui.tankpanel
 	panel.selected_vehicle = self
 	panel.show()
 

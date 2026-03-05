@@ -63,7 +63,7 @@ func _physics_process(delta):
 		update_overload_damage(delta)
 	
 	apply_track_force()
-	update_track_sprite(delta)
+	update_track_sprite()
 	prev_position = global_position
 
 func _on_received_state_force_signal(state_force_signal):
@@ -125,7 +125,7 @@ func get_load_status() -> Dictionary:
 		"overload_timer": overload_timer
 	}
 
-func update_track_sprite(delta):
+func update_track_sprite():
 	#identify track edges
 	if track_up_clear() and track_down_clear():
 		mask.texture = load(mask_single_path)
