@@ -12,8 +12,6 @@ var world_seed:String
 var world_height:int = 256
 var world_width:int = 256
 
-@export var noise_height_text:NoiseTexture2D
-
 
 func _ready():
 	layers = {
@@ -28,7 +26,10 @@ func _process(delta: float) -> void:
 	pass
 
 
-func generate_world(noise:Noise):
+func generate_world():
+	var noise := FastNoiseLite.new()
+	noise.seed = int(world_seed)
+	noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	#terrain sets
 	var height_dict = {
 		"sandstone": [0, 0.5],
@@ -49,6 +50,10 @@ func generate_world(noise:Noise):
 	
 	BetterTerrain.update_terrain_area(wall, Rect2i(Vector2i(0, 0), Vector2i(world_width, world_height)))
 	wall.init_layerdata()
+	
+	# load map to minimap
+	UI.minimap.map_renderer.loadmap()
+	UI.minimap.map_renderer.queue_redraw()
 
 func save_map(world_folder:String):
 	const CHUNK_SIZE := 32

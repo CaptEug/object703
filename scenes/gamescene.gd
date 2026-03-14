@@ -16,7 +16,14 @@ const CYCLE_DURATION := 600.0
 
 func _ready() -> void:
 	GameState.current_gamescene = self
-	load_world()
+	if GameState.world_gen_data:
+		# New world: generate
+		gen_world()
+	else:
+		# Existing world, load it
+		load_world()
+	
+
 
 func _process(delta: float) -> void:
 	update_game_time(delta)
@@ -26,11 +33,19 @@ func update_game_time(delta):
 	game_time = fmod(game_time + delta, CYCLE_DURATION)
 	gamemap.canvas_modulate.time = game_time
 
+
+func gen_world():
+	world_name = GameState.world_gen_data["name"]
+	world_seed = GameState.world_gen_data["seed"]
+	gamemap.world_seed = world_seed
+	gamemap.generate_world()
+
+
 func save_world(dir:String):
 	# HEADER
 	var header := {
 		"name": world_name,
-		"seed": world_data.get("seed", ""),
+		"seed": world_seed,
 		"last_played": Time.get_unix_time_from_system(),
 		"version": 1  # 更新版本号以表示包含车辆数据
 	}
@@ -49,6 +64,7 @@ func save_world(dir:String):
 	gamemap.save_map(dir)
 	
 	print("世界保存完成，包含 %d 辆车辆" % data["vehicles"].size())
+
 
 func load_world():
 	var path = GameState.world_path
@@ -70,6 +86,7 @@ func load_world():
 	game_time = world_data.get("gametime", 0)
 	
 	# load tilemap
+	gamemap.world_seed = world_seed
 	gamemap.load_map(path + world_name + ".map")
 	
 	# 加载车辆数据（从world.json中）
@@ -100,6 +117,7 @@ func _write_json(path: String, data: Dictionary):
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
+
 
 func _read_json(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)

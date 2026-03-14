@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://c6q0eyudiwwkx"]
+[gd_scene load_steps=14 format=3 uid="uid://c6q0eyudiwwkx"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_xb1gl"]
 [ext_resource type="Script" uid="uid://bc3ncyogrn7w8" path="res://ui/mainmenu/worldspanel.gd" id="2_3pojx"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="4_dwts5"]
 [ext_resource type="Script" uid="uid://q8r2acapfy7q" path="res://ui/mainmenu/world_selection.gd" id="5_3pojx"]
 [ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="5_ykphs"]
+[ext_resource type="Script" uid="uid://ovt2mmi6rrtq" path="res://ui/mainmenu/world_generation.gd" id="7_ciuxl"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dnvid"]
 atlas = ExtResource("3_ciuxl")
@@ -129,8 +130,35 @@ texture_normal = SubResource("AtlasTexture_0t7f7")
 visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_3pojx")
+script = ExtResource("7_ciuxl")
 
-[node name="Label" type="Label" parent="MarginContainer/WorldGeneration"]
+[node name="Warning" type="Label" parent="MarginContainer/WorldGeneration"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -40.0
+offset_right = 40.0
+offset_bottom = 20.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+
+[node name="WorldName" type="Label" parent="MarginContainer/WorldGeneration"]
+layout_mode = 0
+offset_left = 69.0
+offset_top = 125.0
+offset_right = 191.0
+offset_bottom = 145.0
+text = "World name:"
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/WorldGeneration/WorldName"]
+layout_mode = 0
+offset_left = 127.0
+offset_top = -16.0
+offset_right = 322.0
+offset_bottom = 36.0
+
+[node name="WorldSeed" type="Label" parent="MarginContainer/WorldGeneration"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -145,7 +173,7 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Seed:"
 
-[node name="LineEdit" type="LineEdit" parent="MarginContainer/WorldGeneration/Label"]
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/WorldGeneration/WorldSeed"]
 layout_mode = 0
 offset_left = 57.0
 offset_top = -17.0
@@ -165,3 +193,5 @@ text = "Generate"
 [connection signal="item_selected" from="MarginContainer/WorldSelection/VBoxContainer/WorldList" to="MarginContainer/WorldSelection" method="_on_world_list_item_selected"]
 [connection signal="pressed" from="MarginContainer/WorldSelection/LoadButton" to="MarginContainer/WorldSelection" method="_on_load_button_pressed"]
 [connection signal="pressed" from="MarginContainer/WorldSelection/NewWorldButton" to="." method="_on_new_world_button_pressed"]
+[connection signal="text_changed" from="MarginContainer/WorldGeneration/WorldName/LineEdit" to="MarginContainer/WorldGeneration" method="_on_line_edit_text_changed"]
+[connection signal="pressed" from="MarginContainer/WorldGeneration/GenerateButton" to="MarginContainer/WorldGeneration" method="_on_generate_button_pressed"]
