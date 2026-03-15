@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://cm0v65jmp7f6n"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_corl5"]
+[ext_resource type="Script" uid="uid://oqgndqn6q2ut" path="res://ui/vehicle_editor/block_palette.gd" id="1_o6jai"]
+[ext_resource type="PackedScene" uid="uid://b1mvxfwjerdxa" path="res://blocks/mobility/track/metal_track.tscn" id="2_q8o37"]
+
+[node name="BlockPalette" type="Control" unique_id=664557349]
+layout_mode = 3
+anchors_preset = 0
+theme = ExtResource("1_corl5")
+script = ExtResource("1_o6jai")
+metadata/_custom_type_script = "uid://oqgndqn6q2ut"
+
+[node name="MetalTrack" parent="." unique_id=800238747 instance=ExtResource("2_q8o37")]
+position = Vector2(16, 16)

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=48 format=3 uid="uid://djb1bkq82a1wy"]
+[gd_resource type="Theme" format=3 uid="uid://djb1bkq82a1wy"]
 
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dtw2v5sc0o4ng"]
+[gd_scene format=3 uid="uid://dtw2v5sc0o4ng"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_auusx"]
 [ext_resource type="Script" uid="uid://b37n3npklkyok" path="res://ui/map/minimap.gd" id="2_auusx"]
@@ -44,14 +44,14 @@ region = Rect2(192, 32, 16, 16)
 atlas = ExtResource("3_ki044")
 region = Rect2(224, 0, 16, 16)
 
-[node name="Minimap" type="Panel"]
+[node name="Minimap" type="Panel" unique_id=413400483]
 offset_right = 260.0
 offset_bottom = 276.0
 theme = ExtResource("1_auusx")
 script = ExtResource("2_auusx")
 metadata/_custom_type_script = "uid://b2dy5mxgwngh6"
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1129595626]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -63,40 +63,42 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 2
 theme_override_constants/margin_bottom = 4
 
-[node name="Screen" type="Panel" parent="MarginContainer"]
+[node name="Screen" type="Panel" parent="MarginContainer" unique_id=1494684169]
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_dv67h")
 
-[node name="Clipper" type="Panel" parent="MarginContainer"]
+[node name="Clipper" type="Panel" parent="MarginContainer/Screen" unique_id=499903848]
 clip_children = 1
 clip_contents = true
-layout_mode = 2
+layout_mode = 0
+offset_right = 254.0
+offset_bottom = 252.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_r0vt8")
 
-[node name="MapRenderer" type="Node2D" parent="MarginContainer/Clipper"]
+[node name="MapRenderer" type="Node2D" parent="MarginContainer/Screen/Clipper" unique_id=815745828]
 script = ExtResource("4_2tcx1")
 
-[node name="ZoomInButton" type="TextureButton" parent="."]
+[node name="ZoomInButton" type="TextureButton" parent="." unique_id=761580982]
 layout_mode = 0
-offset_left = 6.0
-offset_top = 4.0
-offset_right = 22.0
-offset_bottom = 20.0
+offset_left = 11.0
+offset_top = 249.0
+offset_right = 27.0
+offset_bottom = 265.0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_c3in5")
 
-[node name="ZoomOutButton" type="TextureButton" parent="."]
+[node name="ZoomOutButton" type="TextureButton" parent="." unique_id=1787150155]
 layout_mode = 0
-offset_left = 25.0
-offset_top = 4.0
-offset_right = 41.0
-offset_bottom = 20.0
+offset_left = 30.0
+offset_top = 249.0
+offset_right = 46.0
+offset_bottom = 265.0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_2tcx1")
 
-[node name="CloseButton" type="TextureButton" parent="."]
+[node name="CloseButton" type="TextureButton" parent="." unique_id=1267215932]
 layout_mode = 0
 offset_left = 240.0
 offset_top = 4.0

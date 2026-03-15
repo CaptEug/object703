@@ -6,7 +6,7 @@ extends Area2D
 
 var item_id:String
 var amount:int
-var target: Cargo = null
+var target
 var attracting := false
 var velocity:Vector2
 var bursting := true
@@ -49,7 +49,7 @@ func burst():
 
 
 func _on_area_entered(area):
-	var cargo := area.get_parent() as Cargo
+	var cargo = area.get_parent()
 	if not cargo:
 		return
 	if cargo.can_accept_item(item_id):
@@ -58,7 +58,7 @@ func _on_area_entered(area):
 
 
 func _on_area_exited(area):
-	var cargo := area.get_parent() as Cargo
+	var cargo = area.get_parent()
 	if not cargo:
 		return
 	if cargo == target:

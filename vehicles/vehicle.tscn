@@ -1,6 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://bpcjybb04athw"]
+[gd_scene format=3 uid="uid://bpq4tbinyp3rv"]
 
-[ext_resource type="Script" uid="uid://bd6kccmkxqjkk" path="res://vehicles/Vehicle.gd" id="1_1cp1r"]
+[ext_resource type="Script" uid="uid://bqcqepxvgt6bt" path="res://vehicles/Vehicle.gd" id="1_1cp1r"]
 
-[node name="Vehicle" type="Node2D"]
+[node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
 script = ExtResource("1_1cp1r")
+metadata/_custom_type_script = "uid://bqcqepxvgt6bt"
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=2031404310]
+
+[node name="CollisionRoot" type="Node2D" parent="." unique_id=753440605]
+
+[node name="Blocks" type="Node2D" parent="." unique_id=1086676098]

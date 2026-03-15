@@ -1,14 +1,14 @@
-extends Control
+extends Panel
 
 @onready var UI:CanvasLayer = get_parent()
 @onready var gamescene:GameScene = UI.get_parent()
-@onready var newvehicle = $Panel/BuildButton
+@onready var newvehicle = $BuildButton
 
 func _ready():
 	pass
 
 func _process(_delta):
-	$Panel/Clock.text = get_clock_string(gamescene.game_time)
+	$Clock.text = get_clock_string(gamescene.game_time)
 
 
 func get_clock_string(time) -> String:

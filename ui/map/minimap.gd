@@ -7,7 +7,7 @@ var max_zoom:int = 4
 var min_zoom:int = 1
 @onready var map:GameMap = $"../../Gamemap"
 @onready var camera:Camera2D = $"../../Camera2D"
-@onready var map_renderer = $MarginContainer/Clipper/MapRenderer
+@onready var map_renderer = $MarginContainer/Screen/Clipper/MapRenderer
 
 func _ready() -> void:
 	map_renderer.map = map
@@ -35,11 +35,11 @@ func update_cellmap(cells:Array):
 	map_renderer.update_pixels(cells)
 
 func _on_zoom_in_button_pressed() -> void:
-	zoom = clampi(zoom * 2, min_zoom, max_zoom)
+	zoom = clampi(zoom + 1, min_zoom, max_zoom)
 
 
 func _on_zoom_out_button_pressed() -> void:
-	zoom = clampi(zoom / 2, min_zoom, max_zoom)
+	zoom = clampi(zoom - 1, min_zoom, max_zoom)
 
 
 func _on_close_button_pressed():

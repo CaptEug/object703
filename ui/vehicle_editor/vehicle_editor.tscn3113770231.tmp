@@ -1,0 +1,164 @@
+[gd_scene format=3 uid="uid://dwajf8k5snhav"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_elhvm"]
+[ext_resource type="Script" uid="uid://n3fvr1twwrri" path="res://ui/vehicle_editor/vehicle_editor.gd" id="1_iwo6t"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="3_lngvx"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="4_ub5pq"]
+[ext_resource type="PackedScene" uid="uid://cm0v65jmp7f6n" path="res://ui/vehicle_editor/block_palette.tscn" id="5_lngvx"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lngvx"]
+atlas = ExtResource("4_ub5pq")
+region = Rect2(0, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ub5pq"]
+atlas = ExtResource("4_ub5pq")
+region = Rect2(0, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_elhvm"]
+atlas = ExtResource("4_ub5pq")
+region = Rect2(32, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xro47"]
+atlas = ExtResource("4_ub5pq")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fe6ux"]
+atlas = ExtResource("4_ub5pq")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0vt8"]
+atlas = ExtResource("3_lngvx")
+region = Rect2(240, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_br16q"]
+texture = SubResource("AtlasTexture_r0vt8")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nwa0d"]
+atlas = ExtResource("3_lngvx")
+region = Rect2(192, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ub5pq"]
+texture = SubResource("AtlasTexture_nwa0d")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="VehicleEditor" type="Control" unique_id=554690041]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_elhvm")
+script = ExtResource("1_iwo6t")
+
+[node name="Panel" type="Panel" parent="." unique_id=1831523635]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -256.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="LineEdit" type="LineEdit" parent="Panel" unique_id=273578417]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 246.0
+offset_bottom = 56.0
+text = "new vehicle"
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Panel" unique_id=928524835]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 56.0
+offset_right = 246.0
+offset_bottom = 250.0
+
+[node name="SaveButton" type="TextureButton" parent="Panel" unique_id=1214818365]
+layout_mode = 0
+offset_left = 251.0
+offset_top = 10.0
+offset_right = 283.0
+offset_bottom = 42.0
+tooltip_text = "save blueprint"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_lngvx")
+
+[node name="LoadButton" type="TextureButton" parent="Panel" unique_id=256813557]
+layout_mode = 0
+offset_left = 251.0
+offset_top = 46.0
+offset_right = 283.0
+offset_bottom = 78.0
+tooltip_text = "load from blueprint"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_ub5pq")
+
+[node name="DismantleButton" type="TextureButton" parent="Panel" unique_id=980256029]
+layout_mode = 0
+offset_left = 251.0
+offset_top = 83.0
+offset_right = 283.0
+offset_bottom = 115.0
+tooltip_text = "Dismantle Part"
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_elhvm")
+
+[node name="CoM" type="Label" parent="Panel" unique_id=254677884]
+layout_mode = 0
+offset_left = 251.0
+offset_top = 225.0
+offset_right = 271.0
+offset_bottom = 235.0
+theme_override_colors/font_color = Color(1, 0.403922, 0, 1)
+theme_override_font_sizes/font_size = 8
+text = "CoM"
+
+[node name="TextureButton" type="TextureButton" parent="Panel/CoM" unique_id=635731804]
+layout_mode = 0
+offset_left = 18.0
+offset_top = -3.0
+offset_right = 34.0
+offset_bottom = 13.0
+toggle_mode = true
+texture_normal = SubResource("AtlasTexture_xro47")
+texture_pressed = SubResource("AtlasTexture_fe6ux")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=132539960]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 288
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 10
+
+[node name="Panel" type="Panel" parent="Panel/MarginContainer" unique_id=1298576198]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_br16q")
+
+[node name="Clipper" type="Panel" parent="Panel/MarginContainer" unique_id=1166719000]
+clip_children = 1
+clip_contents = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_ub5pq")
+
+[node name="BlockPalette" parent="Panel/MarginContainer/Clipper" unique_id=664557349 instance=ExtResource("5_lngvx")]
+layout_mode = 0

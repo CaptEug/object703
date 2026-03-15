@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://b1mvxfwjerdxa"]
+
+[ext_resource type="Script" uid="uid://ge55320u7fra" path="res://blocks/mobility/track/Track.gd" id="1_6ufjl"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_vjw7s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_d2quv"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_47qcn"]
+atlas = ExtResource("2_vjw7s")
+region = Rect2(32, 96, 16, 16)
+
+[node name="MetalTrack" type="Node2D" unique_id=800238747]
+script = ExtResource("1_6ufjl")
+block_name = "Metal Track"
+metadata/_custom_type_script = "uid://ctpxqu3nqhwhe"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1365564482]
+shape = SubResource("RectangleShape2D_d2quv")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=514505656]
+texture = SubResource("AtlasTexture_47qcn")
