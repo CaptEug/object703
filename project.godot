@@ -20,10 +20,11 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 
 [autoload]
 
+Globals="*uid://txmi1b8smg1j"
 GameState="*res://GameState.gd"
 GlobalTimeManager="*res://GlobalTimeManager.gd"
 ItemDB="*res://items/item_database.gd"
-TileDB="*res://tilemaps/tile_database.gd"
+TileDB="*res://maps/tilemap/tile_database.gd"
 BetterTerrain="*res://addons/better-terrain/BetterTerrain.gd"
 
 [display]

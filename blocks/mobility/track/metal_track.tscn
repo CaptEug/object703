@@ -13,7 +13,6 @@ region = Rect2(32, 96, 16, 16)
 [node name="MetalTrack" type="Node2D" unique_id=800238747]
 script = ExtResource("1_6ufjl")
 block_name = "Metal Track"
-metadata/_custom_type_script = "uid://ctpxqu3nqhwhe"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1365564482]
 shape = SubResource("RectangleShape2D_d2quv")

@@ -5,7 +5,7 @@ extends Node2D
 @onready var wall:WallLayer = $WallLayer
 @onready var building:BuildingLayer = $BuildingLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
-@onready var vehicles:VehicleManager = $VehicleManager
+@onready var vehicle_root: = $VehicleRoot
 @onready var UI:CanvasLayer = $"../UI"
 var layers:Dictionary[String, TileMapLayer]
 var world_seed:String

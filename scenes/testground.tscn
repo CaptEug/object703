@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dcdunrn7h83ab"]
+[gd_scene format=3 uid="uid://dcdunrn7h83ab"]
 
 [ext_resource type="PackedScene" uid="uid://8h1qhfeg8qp8" path="res://ui/buiding_editor/building_editor_UI.tscn" id="1_eun4v"]
 [ext_resource type="Script" uid="uid://bytfcwiqedmk8" path="res://scenes/gamescene.gd" id="1_ijxa5"]
@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://dtw2v5sc0o4ng" path="res://ui/map/minimap.tscn" id="5_5hkc0"]
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scenes/day&night.gd" id="7_iwiij"]
 [ext_resource type="PackedScene" uid="uid://o3aj0yiew54" path="res://ui/settingspanel.tscn" id="8_5hkc0"]
-[ext_resource type="PackedScene" uid="uid://ssbyhbk2l3e3" path="res://tilemaps/testfeild.tscn" id="8_iwiij"]
+[ext_resource type="PackedScene" uid="uid://ssbyhbk2l3e3" path="res://maps/testfeild.tscn" id="8_iwiij"]
 
 [sub_resource type="Environment" id="Environment_m32x0"]
 background_mode = 3

@@ -1,22 +1,25 @@
 extends FloatingPanel
 
-@export var view_size_pixels : Vector2i # minimap window size
 var center_cell := Vector2i.ZERO               # camera center
 var zoom:int = 2
 var max_zoom:int = 4
 var min_zoom:int = 1
-@onready var map:GameMap = $"../../Gamemap"
-@onready var camera:Camera2D = $"../../Camera2D"
+@export var map:GameMap
+@export var camera:Camera2D
 @onready var map_renderer = $MarginContainer/Screen/Clipper/MapRenderer
+@onready var view_screen = $MarginContainer/Screen
+
 
 func _ready() -> void:
 	map_renderer.map = map
 
+
 func _process(_delta):
-	view_size_pixels = $MarginContainer/Screen.size
+	var screen_size = view_screen.size
 	center_cell = map.ground.local_to_map(camera.position)
 	map_renderer.scale = Vector2(zoom, zoom)
-	map_renderer.position = -Vector2(center_cell - view_size_pixels/zoom/2) * zoom
+	map_renderer.position = - Vector2(center_cell * zoom) - (screen_size/2)
+
 
 func update_cellmap(cells:Array):
 	for cell in cells:
@@ -33,6 +36,7 @@ func update_cellmap(cells:Array):
 			continue
 		map_renderer.cell_map.erase(cell)
 	map_renderer.update_pixels(cells)
+
 
 func _on_zoom_in_button_pressed() -> void:
 	zoom = clampi(zoom + 1, min_zoom, max_zoom)

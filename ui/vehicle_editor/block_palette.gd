@@ -1,6 +1,8 @@
 class_name BlockPalette
 extends Control
 
+@export var editor : VehicleEditor
+
 var blocks : Array = []
 var selected_block : Block
 var zoom:int = 2
@@ -14,14 +16,9 @@ func _ready():
 		create_button(block)
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	scale = Vector2(zoom, zoom)
-
-
 func create_button(block : Block):
 	var button = BlockButton.new()
-	button.block_scene = block
+	button.block = block
 	button.intiatialize()
 	add_child(button)
 
@@ -34,7 +31,9 @@ func clamp_position():
 
 func _on_zoom_in_button_pressed():
 	zoom = clampi(zoom + 1, min_zoom, max_zoom)
+	scale = Vector2(zoom, zoom)
 
 
 func _on_zoom_out_button_pressed():
 	zoom = clampi(zoom - 1, min_zoom, max_zoom)
+	scale = Vector2(zoom, zoom)

@@ -69,6 +69,8 @@ axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4w2ry"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6vqaq"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edc7y"]
 bg_color = Color(0, 1, 0, 1)
 
@@ -156,6 +158,12 @@ texture_margin_bottom = 16.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_d55uv"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_edc7y"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_o6fga"]
@@ -195,6 +203,8 @@ texture_margin_top = 8.0
 texture_margin_right = 16.0
 texture_margin_bottom = 8.0
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kwu70"]
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_d3oid"]
 atlas = ExtResource("1_4w2ry")
 region = Rect2(192, 48, 48, 48)
@@ -216,6 +226,14 @@ region = Rect2(240, 16, 16, 16)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vwcpp"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qdf78"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o6fga"]
+bg_color = Color(0, 1, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_we4p1"]
+bg_color = Color(0, 1, 0, 1)
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i6524"]
 texture = SubResource("AtlasTexture_edc7y")
 texture_margin_left = 16.0
@@ -224,6 +242,9 @@ texture_margin_right = 16.0
 texture_margin_bottom = 16.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p64gu"]
+bg_color = Color(0, 1, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vwcpp"]
 bg_color = Color(0, 1, 0, 1)
@@ -273,6 +294,8 @@ ItemList/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
 ItemList/colors/guide_color = Color(0, 0, 0, 0)
 ItemList/fonts/font = ExtResource("3_4w2ry")
 ItemList/styles/focus = SubResource("StyleBoxEmpty_4w2ry")
+ItemList/styles/hovered = SubResource("StyleBoxEmpty_6vqaq")
+ItemList/styles/hovered_selected = SubResource("StyleBoxFlat_edc7y")
 ItemList/styles/hovered_selected_focus = SubResource("StyleBoxFlat_edc7y")
 ItemList/styles/panel = SubResource("StyleBoxTexture_o6fga")
 ItemList/styles/selected = SubResource("StyleBoxFlat_6vqaq")
@@ -296,22 +319,32 @@ TabContainer/colors/font_unselected_color = Color(0.125911, 0.125911, 0.125911, 
 TabContainer/constants/side_margin = 0
 TabContainer/fonts/font = ExtResource("3_4w2ry")
 TabContainer/styles/panel = SubResource("StyleBoxTexture_d55uv")
+TabContainer/styles/tab_disabled = SubResource("StyleBoxEmpty_d55uv")
 TabContainer/styles/tab_focus = SubResource("StyleBoxTexture_edc7y")
 TabContainer/styles/tab_hovered = SubResource("StyleBoxTexture_we4p1")
 TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_qdf78")
 TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_kwu70")
+TabContainer/styles/tabbar_background = SubResource("StyleBoxEmpty_kwu70")
+TextEdit/colors/font_color = Color(0, 1, 0, 1)
+TextEdit/fonts/font = ExtResource("3_4w2ry")
+TextEdit/styles/normal = SubResource("StyleBoxTexture_f7ufs")
 TooltipLabel/colors/font_color = Color(1, 1, 1, 1)
 TooltipLabel/font_sizes/font_size = 8
 TooltipPanel/styles/panel = SubResource("StyleBoxTexture_vrn5i")
 Tree/colors/font_color = Color(0, 1, 0, 1)
 Tree/colors/font_hovered_color = Color(0, 1, 0, 1)
+Tree/colors/font_hovered_selected_color = Color(0.13333334, 0.1254902, 0.20392157, 1)
 Tree/colors/font_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
 Tree/colors/guide_color = Color(0, 0.701961, 0, 0)
 Tree/fonts/font = ExtResource("3_4w2ry")
 Tree/icons/arrow = SubResource("AtlasTexture_6vqaq")
 Tree/icons/arrow_collapsed = SubResource("AtlasTexture_2u1il")
 Tree/styles/focus = SubResource("StyleBoxEmpty_vwcpp")
+Tree/styles/hovered = SubResource("StyleBoxEmpty_qdf78")
+Tree/styles/hovered_selected = SubResource("StyleBoxFlat_o6fga")
+Tree/styles/hovered_selected_focus = SubResource("StyleBoxFlat_we4p1")
 Tree/styles/panel = SubResource("StyleBoxTexture_i6524")
+Tree/styles/selected = SubResource("StyleBoxFlat_p64gu")
 Tree/styles/selected_focus = SubResource("StyleBoxFlat_vwcpp")
 Window/colors/title_color = Color(0.129412, 0.258824, 0.376471, 1)
 Window/fonts/title_font = ExtResource("3_4w2ry")

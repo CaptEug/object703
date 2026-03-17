@@ -24,3 +24,7 @@ func _on_main_menu_button_pressed() -> void:
 
 func _on_back_button_pressed() -> void:
 	hide()
+
+func _unhandled_input(event):
+	if event.is_action_pressed("ui_cancel"):
+		visible = ! visible

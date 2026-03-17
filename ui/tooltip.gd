@@ -78,9 +78,9 @@ func show_block(block:Block):
 		_clear_grid()
 	call_deferred("update_panel_size")
 	#LiquidTank
-	if block is LiquidTank:
-		textlabel.text += ("\n" + "%.f" % block.stored_amount + " kg " + block.stored_liquid + " stored")
-	_last_block = block
+	#if block is LiquidTank:
+		#textlabel.text += ("\n" + "%.f" % block.stored_amount + " kg " + block.stored_liquid + " stored")
+	#_last_block = block
 
 
 func show_pickup(pickup:Area2D):

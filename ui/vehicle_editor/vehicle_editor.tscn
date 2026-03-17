@@ -8,6 +8,10 @@
 [ext_resource type="Script" uid="uid://ddh6jgn0kda8a" path="res://ui/vehicle_editor/palette_panel.gd" id="5_ub5pq"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="7_br16q"]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_br16q"]
+atlas = ExtResource("7_br16q")
+region = Rect2(224, 32, 16, 16)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_lngvx"]
 atlas = ExtResource("4_ub5pq")
 region = Rect2(0, 96, 32, 32)
@@ -69,8 +73,12 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme = ExtResource("1_elhvm")
 script = ExtResource("1_iwo6t")
+
+[node name="COMicon" type="Sprite2D" parent="." unique_id=1259128418]
+texture = SubResource("AtlasTexture_br16q")
 
 [node name="Panel" type="Panel" parent="." unique_id=1831523635]
 layout_mode = 1
