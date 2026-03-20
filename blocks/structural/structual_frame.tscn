@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://owwanqi4qnav"]
+
+[ext_resource type="Script" uid="uid://b6mbfygkc0phu" path="res://blocks/Block.gd" id="1_q3stu"]
+[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_m3rtp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_txt2h"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a7ine"]
+atlas = ExtResource("2_m3rtp")
+region = Rect2(0, 144, 16, 16)
+
+[node name="StructualFrame" type="Node2D" unique_id=40607816]
+script = ExtResource("1_q3stu")
+block_name = "Structual Frame"
+metadata/_custom_type_script = "uid://b6mbfygkc0phu"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1141750609]
+shape = SubResource("RectangleShape2D_txt2h")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1170026243]
+texture = SubResource("AtlasTexture_a7ine")

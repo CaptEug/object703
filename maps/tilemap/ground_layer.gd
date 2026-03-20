@@ -4,14 +4,9 @@ extends TileMapLayer
 @onready var gamemap:GameMap = get_parent()
 var ground_tiles:= {}
 
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	build_ground_cache()
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
 
 
 func build_ground_cache():

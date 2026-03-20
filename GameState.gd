@@ -8,14 +8,17 @@ var world_gen_data:Dictionary
 signal save_started
 signal save_finished(success: bool)
 
+var mainmenu_path := "res://ui/mainmenu/mainmenu.tscn"
+var gamescene_path := "res://scenes/gamescene.tscn"
 
-func _process(delta: float) -> void:
+
+func _process(_delta: float) -> void:
 	pass
 
 
 func to_mainmenu():
 	save_game()
-	get_tree().change_scene_to_file("res://ui/mainmenu/mainmenu.tscn")
+	get_tree().change_scene_to_file(mainmenu_path)
 
 
 func save_game():
@@ -31,7 +34,7 @@ func save_game():
 
 func load_game(world_folder:String):
 	world_path = saving_dir + world_folder + "/"
-	get_tree().change_scene_to_file("res://scenes/gamescene.tscn")
+	get_tree().change_scene_to_file(gamescene_path)
 
 
 func world_gen(world_name:String, world_seed:String):
@@ -40,11 +43,12 @@ func world_gen(world_name:String, world_seed:String):
 	var dir := DirAccess.open(world_path)
 	if dir == null:
 		DirAccess.make_dir_recursive_absolute(world_path)
+	
 	# 2. Store seed & name in a temporary dictionary
-	var seed_int = int(world_seed)
 	world_gen_data = {
 		"name": world_name,
 		"seed": world_seed
 	}
+	
 	# 3. Switch to GameScene
-	get_tree().change_scene_to_file("res://scenes/gamescene.tscn")
+	get_tree().change_scene_to_file(gamescene_path)

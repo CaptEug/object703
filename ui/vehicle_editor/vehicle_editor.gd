@@ -22,18 +22,24 @@ func _process(_delta):
 	selected_block = palette.selected_block
 	update_preview()
 	if vehicle:
-		COM_icon.position = world_to_screen(vehicle.to_global(vehicle.com))
+		COM_icon.position = world_to_screen(vehicle.to_global(vehicle.center_of_mass))
 
 
 func _unhandled_input(event):
+	if event.is_action_pressed("EDITMODE"):
+		toggle_editor()
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			place_block()
 		if event.button_index == MOUSE_BUTTON_RIGHT:
-			remove_block()
+			clear_preview_block()
 
 
 # UI functions
+
+func toggle_editor():
+	visible = !visible
+
 
 func update_preview():
 	if selected_block == null or vehicle == null:

@@ -34,6 +34,7 @@ offset_left = 2.0
 offset_right = 34.0
 offset_bottom = 32.0
 tooltip_text = "settings"
+focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_en2x2")
 
@@ -43,6 +44,7 @@ offset_left = 339.0
 offset_right = 371.0
 offset_bottom = 32.0
 tooltip_text = "new tank"
+focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_7ihmi")
 
@@ -52,6 +54,7 @@ offset_left = 379.0
 offset_right = 411.0
 offset_bottom = 32.0
 tooltip_text = "open TankDex"
+focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_546lt")
 
@@ -62,6 +65,7 @@ offset_right = 331.0
 offset_bottom = 32.0
 tooltip_text = "map
 "
+focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_1v5rv")
 

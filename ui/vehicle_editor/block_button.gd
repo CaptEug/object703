@@ -1,13 +1,12 @@
 class_name BlockButton
 extends Control
 
-const TILE_SIZE := 16
 
 var block : Block
 
 
 func intiatialize():
-	size = block.size * TILE_SIZE
+	size = block.size * Globals.TILE_SIZE
 	position = block.position - (size / 2)
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	tooltip_text = block.block_name

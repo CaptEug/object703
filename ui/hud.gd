@@ -6,12 +6,14 @@ extends Panel
 @export var settings_panel : FloatingPanel
 @export var minimap : FloatingPanel
 
+@onready var clock = $Clock
 
 func _ready():
 	pass
 
 func _process(_delta):
-	$Clock.text = get_clock_string(gamescene.game_time)
+	if gamescene:
+		clock.text = get_clock_string(gamescene.game_time)
 
 
 func get_clock_string(time) -> String:
@@ -23,6 +25,7 @@ func get_clock_string(time) -> String:
 
 
 func _on_build_button_pressed():
+	vehicle_editor.show()
 	vehicle_editor.create_new_vehicle()
 
 

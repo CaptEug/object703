@@ -23,21 +23,8 @@ vehicle_editor = NodePath("../VehicleEditor")
 settings_panel = NodePath("../Settingspanel")
 minimap = NodePath("../Minimap")
 
-[node name="Tooltip" parent="UI" unique_id=1228810280 instance=ExtResource("3_xkbh3")]
-
-[node name="Settingspanel" parent="UI" unique_id=1825337146 instance=ExtResource("7_7cfj2")]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -256.0
-offset_top = -240.0
-offset_right = 256.0
-offset_bottom = 240.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VehicleEditor" parent="UI" unique_id=554690041 node_paths=PackedStringArray("gamemap") instance=ExtResource("8_5ntrk")]
+gamemap = NodePath("../../Gamemap")
 
 [node name="Minimap" parent="UI" unique_id=2006042141 node_paths=PackedStringArray("map", "camera") instance=ExtResource("4_mulil")]
 anchors_preset = 3
@@ -54,8 +41,21 @@ grow_vertical = 0
 map = NodePath("../../Gamemap")
 camera = NodePath("../../Camera2D")
 
-[node name="VehicleEditor" parent="UI" unique_id=554690041 node_paths=PackedStringArray("gamemap") instance=ExtResource("8_5ntrk")]
-gamemap = NodePath("../../Gamemap")
+[node name="Tooltip" parent="UI" unique_id=1228810280 instance=ExtResource("3_xkbh3")]
+
+[node name="Settingspanel" parent="UI" unique_id=1825337146 instance=ExtResource("7_7cfj2")]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -240.0
+offset_right = 256.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=337657255]
 ignore_rotation = false
