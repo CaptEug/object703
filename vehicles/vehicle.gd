@@ -13,7 +13,7 @@ var blocks : Array = []
 # basic property
 var total_mass := 0.0
 var total_engine_power: float = 0.0
-var engines: Array[Engine] = []
+var engines: Array[PowerPack] = []
 var tracks: Array[Track] = []
 var move_coeffs: Dictionary = {}   # Track -> float
 var pivot_coeffs: Dictionary = {}   # Track -> float
@@ -30,6 +30,7 @@ func update_vehicle():
 		mass_sum += block.mass
 	total_mass = mass_sum
 	rebuild_drive_distribution()
+	rebuild_tracks_connections()
 
 
 func get_drive_input() -> Dictionary:
@@ -56,16 +57,36 @@ func get_drive_input() -> Dictionary:
 # Block Management
 
 func can_place_block(block:Block, cell:Vector2i) -> bool:
+	# 1. overlap check
 	block.origin_cell = cell
 	for c in block.get_occupied_cells():
 		if grid.has(c):
-			block.queue_free()
+			#block.queue_free()
 			return false
+	
+	# 2. per-edge connectivity check
+	var block_edges := block.get_transformed_edges()
+	for edge_cell in block_edges.keys():
+		var side_dict: Dictionary = block_edges[edge_cell]
+		for side in side_dict.keys():
+			var my_connectable: bool = side_dict[side]
+			var neighbor_cell : Vector2i = edge_cell + Block.SIDE_DIRS[side]
+			var neighbor := get_block(neighbor_cell)
+	
+			if neighbor == null:
+				continue
+	
+			var opposite: int = Block.OPPOSITE_SIDE[side]
+			var neighbor_connectable := neighbor.is_edge_connectable(neighbor_cell, opposite)
+
+			if not my_connectable or not neighbor_connectable:
+				return false
+	
 	return true
 
 
-func place_block(block_prototype:Block, cell:Vector2i, rotation_i:int):
-	var block := block_prototype.duplicate() as Block
+func place_block(block_scene:PackedScene, cell:Vector2i, rotation_i:int):
+	var block := block_scene.instantiate() as Block
 	block.update_transform(self, cell, rotation_i)
 	# check space
 	if not can_place_block(block, cell):
@@ -88,6 +109,7 @@ func create_collision(block:Block):
 	if block.collision != null:
 		block.remove_child(block.collision)
 		block.collision.position = block.position
+		block.collision.rotation = block.rotation
 		add_child(block.collision)
 
 
@@ -101,23 +123,53 @@ func destroy_block(block:Block):
 	update_vehicle()
 
 
-func get_block(cell:Vector2i):
-	if grid.has(cell):
-		return grid[cell]
-	return null
+func get_block(cell: Vector2i) -> Block:
+	return grid.get(cell, null)
 
 
 func refresh_system_lists() -> void:
 	tracks.clear()
 	engines.clear()
-	total_engine_power = 1000.0
+	total_engine_power = 0.0
 	for block in blocks:
 		if block is Track:
 			tracks.append(block as Track)
-		elif block is Engine:
-			var engine := block as Engine
+		elif block is PowerPack:
+			var engine := block as PowerPack
 			engines.append(engine)
 			total_engine_power += engine.power_output
+
+
+# tracks
+func rebuild_tracks_connections() -> void:
+	var unvisited: Dictionary = {}
+	for track in tracks:
+		unvisited[track] = true
+		track.update_local_neighbors()
+	while not unvisited.is_empty():
+		var start: Track = unvisited.keys()[0]
+		var component := get_track_component(start)
+		for track in component:
+			track.connected_tracks = component.duplicate()
+			unvisited.erase(track)
+
+
+func get_track_component(start: Track) -> Array[Track]:
+	var result: Array[Track] = []
+	var visited: Dictionary = {}
+	var queue: Array[Track] = [start]
+	
+	while not queue.is_empty():
+		var current: Track = queue.pop_front()
+		if visited.has(current):
+			continue
+		visited[current] = true
+		result.append(current)
+		if current.front_track != null and not visited.has(current.front_track):
+			queue.append(current.front_track)
+		if current.back_track != null and not visited.has(current.back_track):
+			queue.append(current.back_track)
+	return result
 
 
 # Physics Calculation
@@ -187,7 +239,6 @@ func solve_distribution(data: Array, target: Vector2) -> Array:
 	var det := m00 * m11 - m01 * m01
 	
 	if absf(det) == 0:
-		print("NOT INVERTIBLE 2x2 MATRIX")
 		for i in range(data.size()):
 			coeffs.append(0.0)
 		return coeffs

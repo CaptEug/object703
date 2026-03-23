@@ -1,21 +1,33 @@
 [gd_scene format=3 uid="uid://b1mvxfwjerdxa"]
 
 [ext_resource type="Script" uid="uid://ge55320u7fra" path="res://blocks/mobility/track/Track.gd" id="1_6ufjl"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks_ger.png" id="2_vjw7s"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_track.png" id="2_4yfob"]
+[ext_resource type="Texture2D" uid="uid://dcg5j0hl0gr37" path="res://assets/masks/metai_track_front.png" id="2_lejlx"]
+[ext_resource type="Texture2D" uid="uid://ctig6s6lnlklm" path="res://assets/masks/metal_track_back.png" id="3_gx4qe"]
+[ext_resource type="Texture2D" uid="uid://b3ixwgoj42722" path="res://assets/masks/metal_track_single.png" id="4_wi0xm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_d2quv"]
 size = Vector2(16, 16)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_47qcn"]
-atlas = ExtResource("2_vjw7s")
-region = Rect2(32, 96, 16, 16)
+[sub_resource type="AtlasTexture" id="AtlasTexture_hae06"]
+resource_local_to_scene = true
+atlas = ExtResource("2_4yfob")
+region = Rect2(0, 0, 16, 16)
 
-[node name="MetalTrack" type="Node2D" unique_id=800238747]
+[node name="MetalTrack" type="Node2D" unique_id=800238747 node_paths=PackedStringArray("track_sprite", "sprite_mask")]
 script = ExtResource("1_6ufjl")
+track_sprite = NodePath("Mask/Sprite2D")
+sprite_mask = NodePath("Mask")
+mask_front = ExtResource("2_lejlx")
+mask_back = ExtResource("3_gx4qe")
+mask_single = ExtResource("4_wi0xm")
 block_name = "Metal Track"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1365564482]
 shape = SubResource("RectangleShape2D_d2quv")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=514505656]
-texture = SubResource("AtlasTexture_47qcn")
+[node name="Mask" type="Sprite2D" parent="." unique_id=514505656]
+clip_children = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="Mask" unique_id=1025274119]
+texture = SubResource("AtlasTexture_hae06")

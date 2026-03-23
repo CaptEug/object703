@@ -14,6 +14,7 @@ func _ready():
 	blocks = get_children()
 	for block in blocks:
 		create_button(block)
+	scale = Vector2(zoom, zoom)
 
 
 func create_button(block : Block):

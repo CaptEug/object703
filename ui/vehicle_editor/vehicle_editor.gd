@@ -28,10 +28,14 @@ func _process(_delta):
 func _unhandled_input(event):
 	if event.is_action_pressed("EDITMODE"):
 		toggle_editor()
+	if event.is_action_pressed("ROTATE"):
+		preview_rotation = wrapi(preview_rotation + 1, 0, 4)
+	
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			place_block()
 		if event.button_index == MOUSE_BUTTON_RIGHT:
+			palette.selected_block = null
 			clear_preview_block()
 
 
@@ -109,7 +113,8 @@ func place_block():
 		return
 	if selected_block == null:
 		return
-	vehicle.place_block(selected_block, preview_cell, preview_rotation)
+	var block_scene = load(selected_block.scene_file_path)
+	vehicle.place_block(block_scene, preview_cell, preview_rotation)
 
 
 func remove_block():

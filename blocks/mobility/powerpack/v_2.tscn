@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://vbegrifblqog"]
+
+[ext_resource type="Script" uid="uid://bicc471ql4ger" path="res://blocks/mobility/powerpack/Powerpack.gd" id="1_lx61b"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_wdfkh"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_we1dh"]
+size = Vector2(16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i74i7"]
+atlas = ExtResource("2_wdfkh")
+region = Rect2(16, 64, 16, 32)
+
+[node name="V2" type="Node2D" unique_id=1612667147]
+script = ExtResource("1_lx61b")
+size = Vector2i(1, 2)
+block_name = "Kharkiv model V-2"
+metadata/_custom_type_script = "uid://bicc471ql4ger"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=145307305]
+shape = SubResource("RectangleShape2D_we1dh")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1073615765]
+texture = SubResource("AtlasTexture_i74i7")

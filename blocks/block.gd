@@ -5,9 +5,29 @@ const TILE_SIZE := Globals.TILE_SIZE
 
 var vehicle : Vehicle
 var origin_cell : Vector2i
+var local_cells : Array[Vector2i]
 @export var size : Vector2i = Vector2i(1,1)
 var rotation_index : int = 0          # 0:0 1:90 2:180 3:270 degree
 @onready var collision : CollisionShape2D = $CollisionShape2D
+enum Side {
+	UP,
+	RIGHT,
+	DOWN,
+	LEFT
+}
+const SIDE_DIRS := {
+	Side.UP: Vector2i(0, -1),
+	Side.RIGHT: Vector2i(1, 0),
+	Side.DOWN: Vector2i(0, 1),
+	Side.LEFT: Vector2i(-1, 0),
+}
+const OPPOSITE_SIDE := {
+	Side.UP: Side.DOWN,
+	Side.RIGHT: Side.LEFT,
+	Side.DOWN: Side.UP,
+	Side.LEFT: Side.RIGHT,
+}
+@export var edge_sockets: Dictionary = {}    # { local_cell: { side:int -> bool } }
 
 # game property
 @export var block_name : String
@@ -26,6 +46,8 @@ func update_transform(v, cell:Vector2i, rotation_i:int):
 	rotation_index = rotation_i
 	position = (Vector2(origin_cell) * TILE_SIZE) + (Vector2(get_rotated_size()) * TILE_SIZE) / 2
 	rotation = rotation_index * PI * 0.5
+	if edge_sockets.is_empty():
+		build_default_edge_sockets()
 
 
 func get_rotated_size() -> Vector2i:
@@ -41,6 +63,83 @@ func get_occupied_cells() -> Array[Vector2i]:
 		for y in range(rs.y):
 			cells.append(origin_cell + Vector2i(x, y))
 	return cells
+
+
+func build_local_cells() -> void:
+	local_cells.clear()
+	for x in range(size.x):
+		for y in range(size.y):
+			local_cells.append(Vector2i(x, y))
+
+
+func build_default_edge_sockets() -> void:
+	build_local_cells()
+	edge_sockets.clear()
+	var occupied := {}
+	for c in local_cells:
+		occupied[c] = true
+	
+	for c in local_cells:
+		var sides := {}
+		for side in Side.values():
+			var n : Vector2i = c + SIDE_DIRS[side]
+			if not occupied.has(n):
+				sides[side] = true
+		if not sides.is_empty():
+			edge_sockets[c] = sides
+
+
+func rotate_cell_raw(cell: Vector2i, rot: int) -> Vector2i:
+	match rot % 4:
+		0: return cell
+		1: return Vector2i(-cell.y, cell.x)
+		2: return Vector2i(-cell.x, -cell.y)
+		3: return Vector2i(cell.y, -cell.x)
+	return cell
+
+
+func rotate_side(side: int, rot: int) -> int:
+	return wrapi(side + rot, 0, 4)
+
+
+func get_transformed_edges() -> Dictionary:
+	var result: Dictionary = {}
+	var raw_cells: Array[Vector2i] = []
+	
+	for local_cell in edge_sockets.keys():
+		raw_cells.append(rotate_cell_raw(local_cell, rotation_index))
+	
+	if raw_cells.is_empty():
+		return result
+	
+	var min_x := raw_cells[0].x
+	var min_y := raw_cells[0].y
+	
+	for c in raw_cells:
+		min_x = min(min_x, c.x)
+		min_y = min(min_y, c.y)
+	
+	for local_cell in edge_sockets.keys():
+		var local_side_dict: Dictionary = edge_sockets[local_cell]
+		var raw_cell := rotate_cell_raw(local_cell, rotation_index)
+		var rotated_cell := raw_cell - Vector2i(min_x, min_y)
+		var world_cell := origin_cell + rotated_cell
+		if not result.has(world_cell):
+			result[world_cell] = {}
+		var world_side_dict: Dictionary = result[world_cell]
+		for local_side in local_side_dict.keys():
+			var world_side: int = rotate_side(local_side, rotation_index)
+			world_side_dict[world_side] = local_side_dict[local_side]
+	
+	return result
+
+
+func is_edge_connectable(cell: Vector2i, side: int) -> bool:
+	var edges := get_transformed_edges()
+	if not edges.has(cell):
+		return false
+	var side_dict: Dictionary = edges[cell]
+	return side_dict.get(side, false)
 
 
 # Block Status
