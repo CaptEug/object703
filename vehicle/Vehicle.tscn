@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bpq4tbinyp3rv"]
+
+[ext_resource type="Script" uid="uid://bqcqepxvgt6bt" path="res://vehicle/Vehicle.gd" id="1_1cp1r"]
+[ext_resource type="Script" uid="uid://3qyo3rkt1l5x" path="res://vehicle/power_system.gd" id="2_vsmxc"]
+
+[node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
+center_of_mass_mode = 1
+can_sleep = false
+linear_damp = 2.0
+angular_damp = 5.0
+script = ExtResource("1_1cp1r")
+metadata/_custom_type_script = "uid://bqcqepxvgt6bt"
+
+[node name="PowerSystem" type="Node2D" parent="." unique_id=534518037 node_paths=PackedStringArray("vehicle")]
+script = ExtResource("2_vsmxc")
+vehicle = NodePath("..")
+
+[node name="Blocks" type="Node2D" parent="." unique_id=1086676098]

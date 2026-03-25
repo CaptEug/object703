@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://b765c5wg5q6yo"]
 
-[ext_resource type="Script" uid="uid://bytfcwiqedmk8" path="res://scenes/gamescene.gd" id="1_xkbh3"]
+[ext_resource type="Script" uid="uid://bytfcwiqedmk8" path="res://scene/gamescene.gd" id="1_xkbh3"]
 [ext_resource type="PackedScene" uid="uid://cy5y2mqj5bxgy" path="res://ui/hud.tscn" id="2_fwly5"]
 [ext_resource type="PackedScene" uid="uid://cd31gfs2al3t6" path="res://ui/tooltip.tscn" id="3_xkbh3"]
 [ext_resource type="PackedScene" uid="uid://dtw2v5sc0o4ng" path="res://ui/map/minimap.tscn" id="4_mulil"]
-[ext_resource type="PackedScene" uid="uid://bfe7bj5f8ea2p" path="res://maps/gamemap.tscn" id="5_7cfj2"]
-[ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scenes/camera.gd" id="6_xkbh3"]
+[ext_resource type="PackedScene" uid="uid://bfe7bj5f8ea2p" path="res://map/gamemap.tscn" id="5_7cfj2"]
+[ext_resource type="Script" uid="uid://bch4fughs7pje" path="res://scene/camera.gd" id="6_xkbh3"]
 [ext_resource type="PackedScene" uid="uid://o3aj0yiew54" path="res://ui/settingspanel.tscn" id="7_7cfj2"]
 [ext_resource type="PackedScene" uid="uid://dwajf8k5snhav" path="res://ui/vehicle_editor/vehicle_editor.tscn" id="8_5ntrk"]
 

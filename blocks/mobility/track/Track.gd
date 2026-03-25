@@ -6,6 +6,7 @@ var drive_force : float = 0.0
 @export var max_force : float = 100.0
 @export var grip : float = 0.8
 @export var slip_threshold : float = 100.0
+@export var shaft_port : Vector2i = Vector2i.ZERO
 
 @export var track_sprite : Sprite2D
 @export var sprite_mask : Sprite2D
@@ -77,6 +78,18 @@ func update_local_neighbors() -> void:
 	var dir := get_forward_cell_dir()
 	front_track = get_track_at(origin_cell + dir)
 	back_track = get_track_at(origin_cell - dir)
+	update_mask()
+
+
+func update_mask():
+	if front_track and back_track:
+		sprite_mask.texture = null
+	elif front_track:
+		sprite_mask.texture = mask_back
+	elif back_track:
+		sprite_mask.texture = mask_front
+	else:
+		sprite_mask.texture = mask_single
 
 
 func update_scroll(delta) -> void:
@@ -85,7 +98,7 @@ func update_scroll(delta) -> void:
 	var tangent := Vector2(-offset.y, offset.x) * vehicle.angular_velocity
 	var point_velocity := vehicle.linear_velocity + tangent
 	var drive_dir := (-global_transform.y).normalized()
-	scroll += point_velocity.dot(drive_dir) * delta
+	scroll += point_velocity.dot(drive_dir) * delta / grip
 
 
 func get_average_track_scroll() -> float:
@@ -98,17 +111,6 @@ func get_average_track_scroll() -> float:
 
 
 func update_track_sprite() -> void:
-	# update mask
-	if front_track and back_track:
-		sprite_mask.texture = null
-	elif front_track:
-		sprite_mask.texture = mask_back
-	elif back_track:
-		sprite_mask.texture = mask_front
-	else:
-		sprite_mask.texture = mask_single
-	
-	# update animemation
 	var average_scroll = get_average_track_scroll()
 	# Wrap around texture region vertically
 	var wrapped_y = wrapf(average_scroll, 0, TILE_SIZE * size.y)

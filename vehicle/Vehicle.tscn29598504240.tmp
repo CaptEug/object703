@@ -1,0 +1,160 @@
+[gd_scene format=3 uid="uid://bpq4tbinyp3rv"]
+
+[ext_resource type="Script" uid="uid://bqcqepxvgt6bt" path="res://vehicle/Vehicle.gd" id="1_1cp1r"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_jkabe"]
+[ext_resource type="Script" uid="uid://3qyo3rkt1l5x" path="res://vehicle/power_shaft_overlay.gd" id="2_vsmxc"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w7aos"]
+texture = ExtResource("2_jkabe")
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+0:3/next_alternative_id = 4
+0:3/0 = 0
+0:3/0/metadata/_better_terrain = {
+0: [0],
+&"type": 0
+}
+0:3/1 = 1
+0:3/1/flip_h = true
+0:3/1/metadata/_better_terrain = {
+8: [0],
+&"type": 0
+}
+0:3/2 = 2
+0:3/2/transpose = true
+0:3/2/metadata/_better_terrain = {
+4: [0],
+&"type": 0
+}
+0:3/3 = 3
+0:3/3/flip_v = true
+0:3/3/transpose = true
+0:3/3/metadata/_better_terrain = {
+12: [0],
+&"type": 0
+}
+1:3/next_alternative_id = 4
+1:3/0 = 0
+1:3/0/metadata/_better_terrain = {
+0: [0],
+4: [0],
+8: [0],
+&"type": 0
+}
+1:3/1 = 1
+1:3/1/flip_v = true
+1:3/1/metadata/_better_terrain = {
+0: [0],
+8: [0],
+12: [0],
+&"type": 0
+}
+1:3/2 = 2
+1:3/2/transpose = true
+1:3/2/metadata/_better_terrain = {
+0: [0],
+4: [0],
+12: [0],
+&"type": 0
+}
+1:3/3 = 3
+1:3/3/flip_h = true
+1:3/3/transpose = true
+1:3/3/metadata/_better_terrain = {
+4: [0],
+8: [0],
+12: [0],
+&"type": 0
+}
+2:3/next_alternative_id = 4
+2:3/0 = 0
+2:3/0/metadata/_better_terrain = {
+4: [0],
+8: [0],
+&"type": 0
+}
+2:3/1 = 1
+2:3/1/flip_h = true
+2:3/1/metadata/_better_terrain = {
+0: [0],
+4: [0],
+&"type": 0
+}
+2:3/2 = 2
+2:3/2/flip_h = true
+2:3/2/flip_v = true
+2:3/2/metadata/_better_terrain = {
+0: [0],
+12: [0],
+&"type": 0
+}
+2:3/3 = 3
+2:3/3/flip_v = true
+2:3/3/metadata/_better_terrain = {
+8: [0],
+12: [0],
+&"type": 0
+}
+0:4/0 = 0
+0:4/0/metadata/_better_terrain = {
+&"type": 0
+}
+1:4/0 = 0
+1:4/0/metadata/_better_terrain = {
+0: [0],
+4: [0],
+8: [0],
+12: [0],
+&"type": 0
+}
+2:4/next_alternative_id = 2
+2:4/0 = 0
+2:4/0/metadata/_better_terrain = {
+4: [0],
+12: [0],
+&"type": 0
+}
+2:4/1 = 1
+2:4/1/transpose = true
+2:4/1/metadata/_better_terrain = {
+0: [0],
+8: [0],
+&"type": 0
+}
+1:5/0 = 0
+1:5/0/metadata/_better_terrain = {
+4: [0],
+12: [0],
+&"type": 0
+}
+
+[sub_resource type="TileSet" id="TileSet_w4tt5"]
+sources/0 = SubResource("TileSetAtlasSource_w7aos")
+metadata/_better_terrain = {
+&"decoration": ["Decoration", Color(0.4117647, 0.4117647, 0.4117647, 1), 3, [], {
+&"path": "res://addons/better-terrain/icons/Decoration.svg"
+}],
+&"terrains": [["Shaft", Color(0.9254902, 0.3784927, 0.3058824, 1), 0, [], {
+&"path": ""
+}]],
+&"version": "0.2"
+}
+
+[node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
+center_of_mass_mode = 1
+can_sleep = false
+linear_damp = 2.0
+angular_damp = 5.0
+script = ExtResource("1_1cp1r")
+metadata/_custom_type_script = "uid://bqcqepxvgt6bt"
+
+[node name="PowerShaftOverlay" type="TileMapLayer" parent="." unique_id=935862009 node_paths=PackedStringArray("vehicle")]
+tile_set = SubResource("TileSet_w4tt5")
+script = ExtResource("2_vsmxc")
+vehicle = NodePath("..")
+
+[node name="Blocks" type="Node2D" parent="." unique_id=1086676098]

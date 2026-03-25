@@ -1,11 +1,11 @@
 [gd_scene format=4 uid="uid://ssbyhbk2l3e3"]
 
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="1_df33e"]
-[ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://maps/gamemap.gd" id="1_t0wv1"]
-[ext_resource type="Script" uid="uid://xoludftp2xyj" path="res://maps/tilemap/wall_layer.gd" id="3_2p7kj"]
-[ext_resource type="Script" uid="uid://bel0gfv61tk3a" path="res://maps/tilemap/building_layer.gd" id="4_77rb7"]
-[ext_resource type="Script" uid="uid://ctaioxpfddr2c" path="res://maps/vehicle_manager.gd" id="5_serhm"]
-[ext_resource type="PackedScene" uid="uid://bna702djki3qu" path="res://vehicles/object1.tscn" id="6_2iykn"]
+[ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://map/gamemap.gd" id="1_t0wv1"]
+[ext_resource type="Script" uid="uid://xoludftp2xyj" path="res://map/tilemap/wall_layer.gd" id="3_2p7kj"]
+[ext_resource type="Script" uid="uid://bel0gfv61tk3a" path="res://map/tilemap/building_layer.gd" id="4_77rb7"]
+[ext_resource type="Script" path="res://maps/vehicle_manager.gd" id="5_serhm"]
+[ext_resource type="PackedScene" path="res://vehicles/object1.tscn" id="6_2iykn"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_t0wv1"]
 

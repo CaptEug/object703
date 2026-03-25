@@ -9,7 +9,7 @@ signal save_started
 signal save_finished(success: bool)
 
 var mainmenu_path := "res://ui/mainmenu/mainmenu.tscn"
-var gamescene_path := "res://scenes/gamescene.tscn"
+var gamescene_path := "res://scene/gamescene.tscn"
 
 
 func _process(_delta: float) -> void:

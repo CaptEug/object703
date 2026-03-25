@@ -16,10 +16,10 @@ enum Side {
 	LEFT
 }
 const SIDE_DIRS := {
-	Side.UP: Vector2i(0, -1),
-	Side.RIGHT: Vector2i(1, 0),
-	Side.DOWN: Vector2i(0, 1),
-	Side.LEFT: Vector2i(-1, 0),
+	Side.UP: Vector2i.UP,
+	Side.RIGHT: Vector2i.RIGHT,
+	Side.DOWN: Vector2i.DOWN,
+	Side.LEFT: Vector2i.LEFT,
 }
 const OPPOSITE_SIDE := {
 	Side.UP: Side.DOWN,
@@ -98,6 +98,22 @@ func rotate_cell_raw(cell: Vector2i, rot: int) -> Vector2i:
 	return cell
 
 
+func get_transformd_cell(cell:Vector2i):
+	var raw_cells : Array[Vector2i] = []
+	for c in local_cells:
+		raw_cells.append(rotate_cell_raw(c, rotation_index))
+	
+	var min_x := raw_cells[0].x
+	var min_y := raw_cells[0].y
+	for c in raw_cells:
+		min_x = min(min_x, c.x)
+		min_y = min(min_y, c.y)
+	
+	var rotated_cell = rotate_cell_raw(cell, rotation_index) - Vector2i(min_x, min_y)
+	
+	return origin_cell + rotated_cell
+
+
 func rotate_side(side: int, rot: int) -> int:
 	return wrapi(side + rot, 0, 4)
 
@@ -114,7 +130,6 @@ func get_transformed_edges() -> Dictionary:
 	
 	var min_x := raw_cells[0].x
 	var min_y := raw_cells[0].y
-	
 	for c in raw_cells:
 		min_x = min(min_x, c.x)
 		min_y = min(min_y, c.y)

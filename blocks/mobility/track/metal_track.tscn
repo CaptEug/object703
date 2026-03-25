@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b1mvxfwjerdxa"]
 
 [ext_resource type="Script" uid="uid://ge55320u7fra" path="res://blocks/mobility/track/Track.gd" id="1_6ufjl"]
-[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_track.png" id="2_4yfob"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_4yfob"]
 [ext_resource type="Texture2D" uid="uid://dcg5j0hl0gr37" path="res://assets/masks/metai_track_front.png" id="2_lejlx"]
 [ext_resource type="Texture2D" uid="uid://ctig6s6lnlklm" path="res://assets/masks/metal_track_back.png" id="3_gx4qe"]
 [ext_resource type="Texture2D" uid="uid://b3ixwgoj42722" path="res://assets/masks/metal_track_single.png" id="4_wi0xm"]

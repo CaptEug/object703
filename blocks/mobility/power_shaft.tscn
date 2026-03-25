@@ -1,0 +1,53 @@
+[gd_scene format=3 uid="uid://emtdbbypccpr"]
+
+[ext_resource type="Script" uid="uid://cxg1fdh5mqqyc" path="res://blocks/mobility/power_shaft.gd" id="1_ulgn6"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_04e5i"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ulgn6"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(32, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_04e5i"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(0, 80, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7oohd"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(0, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xa3ql"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(16, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_si5h0"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(16, 80, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ke84"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(0, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c66ie"]
+atlas = ExtResource("2_04e5i")
+region = Rect2(16, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_egiog"]
+resource_local_to_scene = true
+atlas = ExtResource("2_04e5i")
+region = Rect2(16, 64, 16, 16)
+
+[node name="PowerShaft" type="Node2D" unique_id=1678176765]
+script = ExtResource("1_ulgn6")
+single = SubResource("AtlasTexture_ulgn6")
+end = SubResource("AtlasTexture_04e5i")
+straight = SubResource("AtlasTexture_7oohd")
+straight2 = SubResource("AtlasTexture_xa3ql")
+corner = SubResource("AtlasTexture_si5h0")
+T = SubResource("AtlasTexture_8ke84")
+cross = SubResource("AtlasTexture_c66ie")
+block_name = "Power Shaft"
+metadata/_custom_type_script = "uid://b6mbfygkc0phu"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=926132372]
+z_index = 1
+texture = SubResource("AtlasTexture_egiog")
