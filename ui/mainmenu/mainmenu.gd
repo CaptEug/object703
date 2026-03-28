@@ -6,7 +6,7 @@ extends Control
 func _ready() -> void:
 	pass
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if mainmenue_is_blank():
 		mainbuttons.show()
 	
@@ -16,6 +16,7 @@ func mainmenue_is_blank() -> bool:
 		if child.visible:
 			return false
 	return true
+
 
 func _on_start_game_pressed() -> void:
 	worldpanel.visible = true

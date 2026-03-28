@@ -1,3 +1,4 @@
+class_name PowerSystem
 extends Node2D
 
 @export var vehicle : Vehicle
@@ -9,6 +10,7 @@ var shaft_groups: Array[Array] = []
 var block_group_map: Dictionary[Block, int] = {}  # block -> group_index
 var group_power_map: Dictionary[int, float] = {}  # group_index -> power
 
+var avaliable_engines : Array[PowerPack] = []
 var active_tracks : Array[Track] = []
 var move_coeffs: Dictionary[Track, float] = {}
 var pivot_coeffs: Dictionary[Track, float] = {}
@@ -95,9 +97,13 @@ func rebuild_shaft_groups() -> Array[Array]:
 	return groups
 
 
-func rebuild_block_group_map() -> void:
+func rebuild_shaft_network() -> void:
 	shaft_groups = rebuild_shaft_groups()
 	block_group_map.clear()
+	group_power_map.clear()
+	for group_index in range(shaft_groups.size()):
+		group_power_map[group_index] = 0.0
+	avaliable_engines.clear()
 	active_tracks.clear()
 	
 	for group_index in range(shaft_groups.size()):
@@ -109,26 +115,17 @@ func rebuild_block_group_map() -> void:
 				var world_port: Vector2i = block.get_transformd_cell(block.shaft_port)
 				if group_set.has(world_port):
 					block_group_map[block] = group_index
+					
+					if block is PowerPack:
+						avaliable_engines.append(block)
+						group_power_map[group_index] += block.power_available
+					
 					if block is Track:
-						active_tracks.append(block)
+						if active_tracks.has(block):
+							continue
 						for track in block.connected_tracks:
-							if not block_group_map.has(track):
-								block_group_map[track] = group_index
-								active_tracks.append(track)
-
-
-func rebuild_group_power_map() -> void:
-	group_power_map.clear()
-	rebuild_block_group_map()
-	
-	for group_index in range(shaft_groups.size()):
-		group_power_map[group_index] = 0.0
-	
-	for engine in vehicle.engines:
-		var group_index: int = block_group_map.get(engine, -1)
-		if group_index == -1:
-			continue
-		group_power_map[group_index] += engine.power_output
+							block_group_map[track] = group_index
+							active_tracks.append(track)
 
 
 # =========================
@@ -138,7 +135,7 @@ func rebuild_group_power_map() -> void:
 func rebuild_drive_distribution() -> void:
 	move_coeffs.clear()
 	pivot_coeffs.clear()
-	rebuild_group_power_map()
+	rebuild_shaft_network()
 	
 	if active_tracks.is_empty():
 		return
@@ -240,10 +237,15 @@ func apply_drive_input() -> void:
 		raw_cmds[track] = cmd
 	
 	var final_scale := INF
-	
+	var group_cmd_sum_map : Dictionary[int, float] = {}
 	for group_index in range(shaft_groups.size()):
+		var group_power: float = group_power_map.get(group_index, 0.0)
+		if group_power == 0:
+			continue
+			
 		var group_cmd_sum := 0.0
 		var group_track_limit := INF
+		
 		for track in active_tracks:
 			if block_group_map.get(track, -1) != group_index:
 				continue
@@ -252,15 +254,32 @@ func apply_drive_input() -> void:
 			var track_limit := track.max_force / absf(cmd)
 			group_track_limit = minf(group_track_limit, track_limit)
 		
-		var group_power: float = group_power_map.get(group_index, 0.0)
 		var group_power_limit := group_power / group_cmd_sum
 		var group_scale := minf(group_power_limit, group_track_limit)
-		
 		final_scale = minf(final_scale, group_scale)
+		group_cmd_sum_map[group_index] = group_cmd_sum
 	
 	if final_scale == INF:
 		final_scale = 0.0
 	
+	# apply track force
 	for track in active_tracks:
 		var cmd: float = raw_cmds.get(track, 0.0)
 		track.drive_force = cmd * final_scale
+	
+	update_engine_output(final_scale, group_cmd_sum_map)
+
+
+func update_engine_output(final_scale: float, group_cmd_sum_map: Dictionary) -> void:
+	for group_index in range(shaft_groups.size()):
+		
+		var group_power: float = group_power_map.get(group_index, 0.0)
+		var group_cmd_sum : float = group_cmd_sum_map.get(group_index, 0.0)
+		var group_used_power := group_cmd_sum * final_scale
+		group_used_power = minf(group_used_power, group_power)
+		
+		for engine in avaliable_engines:
+			if block_group_map.get(engine, -1) != group_index:
+				continue
+			var ratio : float = engine.power_available / group_power
+			engine.power_output = group_used_power * ratio

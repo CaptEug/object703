@@ -3,35 +3,35 @@ extends Node
 var items = {
 	### Material ###
 	"scrap": {
-		"tag": "material",
+		"type":"solid",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/scrap.png"),
 		"max_stack": 999,
 	},
 	
 	"metal": {
-		"tag": "material",
+		"type":"solid",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/metal.png"),
 		"max_stack": 999,
 	},
 	
 	"sandstone": {
-		"tag": "material",
+		"type":"solid",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/sandstone.png"),
 		"max_stack": 999,
 	},
 	
 	"hematite": {
-		"tag": "material",
+		"type":"solid",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/hematite.png"),
 		"max_stack": 999,
 	},
 	
 	"coal": {
-		"tag": "material",
+		"type":"solid",
 		"weight": 100,
 		"icon": preload("res://assets/icons/items/coal.png"),
 		"max_stack": 999,
@@ -40,12 +40,12 @@ var items = {
 	### Liquid ###
 	
 	"crude_oil": {
-		"tag": "liquid",
+		"type":"liquid",
 		"icon": preload("res://assets/icons/items/crude_oil.png"),
 	},
 	
 	"petroleum": {
-		"tag": "fuel",
+		"type":"liquid",
 		"icon": preload("res://assets/icons/items/petroleum.png"),
 	},
 	

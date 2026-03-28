@@ -12,7 +12,8 @@
 [node name="Gamescene" type="Node2D" unique_id=1552924313]
 script = ExtResource("1_xkbh3")
 
-[node name="Gamemap" parent="." unique_id=1989801514 instance=ExtResource("5_7cfj2")]
+[node name="Gamemap" parent="." unique_id=1989801514 node_paths=PackedStringArray("minimap") instance=ExtResource("5_7cfj2")]
+minimap = NodePath("../UI/Minimap")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=706726229]
 

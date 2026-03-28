@@ -6,7 +6,8 @@ extends Node2D
 @onready var building:BuildingLayer = $BuildingLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
 @onready var vehicle_root: = $VehicleRoot
-@onready var UI:CanvasLayer = $"../UI"
+
+@export var minimap : MiniMap
 var layers:Dictionary[String, TileMapLayer]
 var world_seed:String
 var world_height:int = 256
@@ -22,7 +23,8 @@ func _ready():
 	
 	print("=== 游戏地图初始化完成 ===")
 
-func _process(delta: float) -> void:
+
+func _process(_delta: float) -> void:
 	pass
 
 
@@ -52,8 +54,8 @@ func generate_world():
 	wall.init_layerdata()
 	
 	# load map to minimap
-	UI.minimap.map_renderer.loadmap()
-	UI.minimap.map_renderer.queue_redraw()
+	minimap.map_renderer.loadmap()
+	minimap.map_renderer.queue_redraw()
 
 func save_map(world_folder:String):
 	const CHUNK_SIZE := 32
@@ -136,8 +138,8 @@ func load_map(path: String):
 	file.close()
 	
 	# load map to minimap
-	UI.minimap.map_renderer.loadmap()
-	UI.minimap.map_renderer.queue_redraw()
+	minimap.map_renderer.loadmap()
+	minimap.map_renderer.queue_redraw()
 
 # 保存建筑数据
 func save_buildings() -> Array:

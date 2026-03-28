@@ -138,7 +138,7 @@ func refresh_system_lists() -> void:
 		elif block is PowerPack:
 			var engine := block as PowerPack
 			engines.append(engine)
-			total_engine_power += engine.power_output
+			total_engine_power += engine.max_power
 	
 	rebuild_tracks_connections()
 	

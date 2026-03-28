@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bu15modawyg62"]
+
+[ext_resource type="Script" uid="uid://chbfkkbd8kf8m" path="res://blocks/logistic/liquid_pipe.gd" id="1_0kv5g"]
+
+[node name="LiquidPipe" type="Node2D" unique_id=1480042268]
+script = ExtResource("1_0kv5g")
+metadata/_custom_type_script = "uid://b6mbfygkc0phu"

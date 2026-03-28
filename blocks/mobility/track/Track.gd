@@ -22,36 +22,47 @@ var scroll: float = 0.0
 
 func _physics_process(delta):
 	if vehicle:
+		print(drive_force)
 		update_scroll(delta)
 		update_track_sprite()
-		if absf(drive_force) > 0.0001:
+		if absf(drive_force) > 0:
 			apply_drive_force()
 		apply_side_friction()
 
 
 # Physics
 
+func get_point_velocity() -> Vector2:
+	var com_global: Vector2 = vehicle.to_global(vehicle.center_of_mass)
+	var r: Vector2 = global_position - com_global
+	var tangent := Vector2(-r.y, r.x) * vehicle.angular_velocity
+	return vehicle.linear_velocity + tangent
+
+
 func apply_drive_force():
-	var forward = -global_transform.y
-	var vehicle_vel = vehicle.linear_velocity
-	# lateral slip (sideways movement)
-	var sideways_speed = vehicle_vel.dot(global_transform.x)
-	var slip_factor = clamp(1.0 - abs(sideways_speed) / slip_threshold, 0.2, 1.0)
-	var traction = grip * slip_factor
-	var force = forward * drive_force  * traction
-	var offset := global_position - vehicle.global_position
-	vehicle.apply_force(force, offset)
+	var forward: Vector2 = (-global_transform.y).normalized()
+	var sideways: Vector2 = global_transform.x.normalized()
+	
+	var point_velocity := get_point_velocity()
+	var sideways_speed := point_velocity.dot(sideways)
+	
+	var slip_factor : float = clamp(1.0 - absf(sideways_speed) / slip_threshold, 0.2, 1.0)
+	var traction := grip * slip_factor
+	
+	var force := forward * drive_force * traction
+	vehicle.apply_force(force, global_position - vehicle.global_position)
 
 
 func apply_side_friction():
-	var sideways = global_transform.x
-	var vel = vehicle.linear_velocity
-	var side_speed = vel.dot(sideways)
-	var friction_force = -sideways * side_speed * grip
-	vehicle.apply_force(friction_force, position)
+	var sideways: Vector2 = global_transform.x.normalized()
+	var point_velocity := get_point_velocity()
+	var side_speed := point_velocity.dot(sideways)
+	var friction_force := -sideways * side_speed * grip
+	vehicle.apply_force(friction_force, global_position - vehicle.global_position)
 
 
 # Visual
+
 func get_forward_cell_dir() -> Vector2i:
 	match rotation_index % 4:
 		0: return Vector2i(0, -1)
@@ -93,10 +104,7 @@ func update_mask():
 
 
 func update_scroll(delta) -> void:
-	var offset := global_position - vehicle.to_global(vehicle.center_of_mass)
-	# point velocity = linear + angular contribution
-	var tangent := Vector2(-offset.y, offset.x) * vehicle.angular_velocity
-	var point_velocity := vehicle.linear_velocity + tangent
+	var point_velocity := get_point_velocity()
 	var drive_dir := (-global_transform.y).normalized()
 	scroll += point_velocity.dot(drive_dir) * delta / grip
 

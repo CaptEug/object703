@@ -1,0 +1,4 @@
+[gd_scene format=3 uid="uid://db5q6xew8l8yd"]
+
+[node name="FuelTank" type="Node2D" unique_id=1601861186]
+metadata/_custom_type_script = "uid://pnfcsef3bfk8"

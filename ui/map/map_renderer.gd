@@ -18,8 +18,8 @@ func loadmap():
 		cell_map[cell] = map.ground.get_cell_tile_data(cell).get_custom_data("matter")
 	for cell in map.wall.get_used_cells():
 		cell_map[cell] = map.wall.get_cell_tile_data(cell).get_custom_data("matter")
-	for cell in map.building.layerdata:
-		cell_map[cell] = "building"
+	#for cell in map.building.layerdata:
+		#cell_map[cell] = "building"
 	
 	for cell in cell_map:
 		var color = TileDB.get_tile(cell_map[cell])["color"]

@@ -1,3 +1,4 @@
+class_name MiniMap
 extends FloatingPanel
 
 var center_cell := Vector2i.ZERO               # camera center
@@ -18,7 +19,7 @@ func _process(_delta):
 	var screen_size = view_screen.size
 	center_cell = map.ground.local_to_map(camera.position)
 	map_renderer.scale = Vector2(zoom, zoom)
-	map_renderer.position = - Vector2(center_cell * zoom) - (screen_size/2)
+	map_renderer.position = - Vector2(center_cell * zoom) + (screen_size/2)
 
 
 func update_cellmap(cells:Array):
