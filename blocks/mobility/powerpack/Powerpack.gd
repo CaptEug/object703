@@ -59,7 +59,6 @@ func request_fuel(delta: float) -> bool:
 			solids_ok = vehicle.supply_system.can_supply_items(self, solid_requests)
 		
 		if not liquids_ok or not solids_ok:
-			print("INSUFFICIENT FUEL")
 			continue
 		
 		var liquids_taken := true

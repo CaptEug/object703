@@ -9,6 +9,11 @@ extends Block
 @export var liquid : String = ""
 
 
+func _physics_process(delta):
+	if vehicle:
+		print("FUEL LEFT: " + str(stored))
+
+
 func has_liquid(liquid_type: String, amount: float) -> bool:
 	return liquid == liquid_type and stored >= amount
 

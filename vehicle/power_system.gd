@@ -287,8 +287,10 @@ func distribute_device_power(group_index: int, power_budget:float) -> float:
 	return 0.0
 
 
-func distribute_track_power(raw_cmds: Dictionary[Track, float], power_scale: float) -> void:
+func distribute_track_power(group_index: int, raw_cmds: Dictionary[Track, float], power_scale: float) -> void:
 	for track in active_tracks:
+		if block_group_map.get(track, -1) != group_index:
+			continue
 		var cmd: float = raw_cmds.get(track, 0.0)
 		track.drive_force = cmd * power_scale
 
@@ -355,10 +357,16 @@ func update_power_system() -> void:
 		
 		# Findout Track Power Scale
 		var group_power := get_group_power(group_index)
-		var device_used: float = distribute_device_power(group_index, group_power)
-		var remaining_power := maxf(0.0, group_power - device_used)
-		var track_cmd_sum: float = get_group_cmd_sum(group_index, raw_cmds)
+		if group_power == 0.0:
+			continue
 		
+		var device_used: float = distribute_device_power(group_index, group_power)
+		
+		var remaining_power := maxf(0.0, group_power - device_used)
+		if remaining_power == 0.0:
+			continue
+		
+		var track_cmd_sum: float = get_group_cmd_sum(group_index, raw_cmds)
 		var power_limit := remaining_power / track_cmd_sum
 		var group_scale := minf(power_limit, track_limit)
 		
@@ -370,4 +378,8 @@ func update_power_system() -> void:
 	final_power_scale = maxf(final_power_scale, 0.0)
 	
 	# apply the same scale to all groups, then update engines
-	distribute_track_power(raw_cmds, final_power_scale)
+	for group_index in range(shaft_groups.size()):
+		if get_group_power(group_index) == 0.0:
+			distribute_track_power(group_index, raw_cmds, 0.0)
+			continue
+		distribute_track_power(group_index, raw_cmds, final_power_scale)
