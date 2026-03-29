@@ -1,4 +1,24 @@
 [gd_scene format=3 uid="uid://db5q6xew8l8yd"]
 
-[node name="FuelTank" type="Node2D" unique_id=1601861186]
+[ext_resource type="Script" uid="uid://pnfcsef3bfk8" path="res://blocks/logistic/liquid_storage.gd" id="1_v2fc7"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="1_vd1ly"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v2fc7"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8tech"]
+atlas = ExtResource("1_vd1ly")
+region = Rect2(96, 80, 16, 16)
+
+[node name="FuelTank" type="Node2D" unique_id=418363344]
+script = ExtResource("1_v2fc7")
+stored = 20.0
+liquid = "petroleum"
+block_name = "Fuel Tank"
 metadata/_custom_type_script = "uid://pnfcsef3bfk8"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1091049743]
+shape = SubResource("RectangleShape2D_v2fc7")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=199387219]
+texture = SubResource("AtlasTexture_8tech")

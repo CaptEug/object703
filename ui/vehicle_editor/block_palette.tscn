@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://owwanqi4qnav" path="res://blocks/structural/structual_frame.tscn" id="4_2ommr"]
 [ext_resource type="PackedScene" uid="uid://vbegrifblqog" path="res://blocks/mobility/powerpack/v_2.tscn" id="5_jt0gd"]
 [ext_resource type="PackedScene" uid="uid://emtdbbypccpr" path="res://blocks/mobility/power_shaft.tscn" id="6_gqcie"]
+[ext_resource type="PackedScene" uid="uid://bu15modawyg62" path="res://blocks/logistic/liquid_pipe.tscn" id="7_626jr"]
+[ext_resource type="PackedScene" uid="uid://db5q6xew8l8yd" path="res://blocks/logistic/fuel_tank.tscn" id="8_tk1tn"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3
@@ -15,13 +17,19 @@ script = ExtResource("1_o6jai")
 metadata/_custom_type_script = "uid://oqgndqn6q2ut"
 
 [node name="MetalTrack" parent="." unique_id=800238747 instance=ExtResource("2_q8o37")]
-position = Vector2(12, 12)
+position = Vector2(56, 24)
 
 [node name="StructualFrame" parent="." unique_id=40607816 instance=ExtResource("4_2ommr")]
-position = Vector2(32, 12)
+position = Vector2(24, 24)
 
 [node name="V2" parent="." unique_id=1612667147 instance=ExtResource("5_jt0gd")]
-position = Vector2(12, 40)
+position = Vector2(24, 64)
+
+[node name="FuelTank" parent="." unique_id=418363344 instance=ExtResource("8_tk1tn")]
+position = Vector2(56, 56)
 
 [node name="PowerShaft" parent="." unique_id=1678176765 instance=ExtResource("6_gqcie")]
-position = Vector2(32, 32)
+position = Vector2(88, 24)
+
+[node name="LiquidPipe" parent="." unique_id=1480042268 instance=ExtResource("7_626jr")]
+position = Vector2(120, 24)

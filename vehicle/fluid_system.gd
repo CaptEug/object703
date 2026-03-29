@@ -3,7 +3,7 @@ extends Node2D
 
 @export var vehicle: Vehicle
 
-var pipe_scene: PackedScene = load("res://blocks/mobility/power_pipe.tscn")
+var pipe_scene: PackedScene = load("res://blocks/logistic/liquid_pipe.tscn")
 var pipe_grid: Dictionary = {}    # cell -> Pipe
 var pipe_groups: Array = []    # Array[Array[Vector2i]]
 var block_group_map: Dictionary[Block, int] = {}    # Block -> group_index
@@ -108,8 +108,8 @@ func rebuild_pipe_network() -> void:
 		for cell in pipe_groups[group_index]:
 			group_set[cell] = true
 		for block in vehicle.blocks:
-			if "shaft_port" in block:
-				var world_port: Vector2i = block.get_transformed_cell(block.shaft_port)
+			if "liquid_port" in block:
+				var world_port: Vector2i = block.get_transformed_cell(block.liquid_port)
 				if group_set.has(world_port):
 					block_group_map[block] = group_index
 
@@ -127,7 +127,7 @@ func can_supply_liquids(requester: Block, liquids: Dictionary) -> bool:
 
 
 func can_supply_liquid(requester: Block, liquid_type: String, amount: float) -> bool:
-	var storages: Array[LiquidStorage] = get_connected_storages(requester)
+	var storages: Array = get_connected_storages(requester)
 	if storages.is_empty():
 		return false
 	
@@ -135,7 +135,7 @@ func can_supply_liquid(requester: Block, liquid_type: String, amount: float) -> 
 	
 	for storage in storages:
 		if storage.liquid == liquid_type:
-			var available := storage.stored
+			var available : float = storage.stored
 			total_available += available
 	
 	return total_available >= amount
@@ -158,13 +158,10 @@ func supply_liquids(requester: Block, liquids: Dictionary) -> bool:
 
 
 func supply_liquid(requester: Block, liquid_type: String, amount: float) -> bool:
-	if amount <= 0.0:
-		return 0.0
-	var storages: Array[LiquidStorage] = get_connected_storages(requester)
+	var storages: Array = get_connected_storages(requester)
 	if storages.is_empty():
 		return false
 	
-	var total_available := 0.0
 	var valid_storages: Array[LiquidStorage] = []
 	
 	for storage in storages:
@@ -173,10 +170,7 @@ func supply_liquid(requester: Block, liquid_type: String, amount: float) -> bool
 		if storage.stored <= 0.0:
 			continue
 		valid_storages.append(storage)
-		total_available += storage.stored
 	
-	if total_available < amount:
-		return false
 	
 	var remaining := amount
 	
@@ -185,6 +179,7 @@ func supply_liquid(requester: Block, liquid_type: String, amount: float) -> bool
 			break
 		var taken := storage.take_liquid(liquid_type, remaining)
 		remaining -= taken
+	
 	
 	return remaining <= 0.0
 
@@ -234,7 +229,6 @@ func receive_liquid(requester: Block, liquid_type: String, amount: float) -> flo
 		remaining -= accepted
 	
 	return amount - remaining
-
 
 
 # =========================

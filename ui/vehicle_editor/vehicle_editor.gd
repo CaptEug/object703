@@ -16,8 +16,8 @@ var overlay: Overlay = Overlay.NONE
 enum Overlay {
 	NONE,
 	SHAFT,
-	CONVEYOR,
 	PIPE,
+	CONVEYOR,
 }
 
 @onready var palette := $Panel/MarginContainer/Panel/Clipper/BlockPalette
@@ -35,11 +35,7 @@ func _ready():
 func _process(_delta):
 	selected_block = palette.selected_block
 	
-	if selected_block is Shaft:
-		set_overlay(Overlay.SHAFT)
-	else:
-		set_overlay(Overlay.NONE)
-		
+	update_overlay()
 	update_preview()
 	
 	if vehicle:
@@ -58,38 +54,19 @@ func _unhandled_input(event):
 	
 	# MOUSE
 	if event is InputEventMouseButton and event.pressed:
-		match overlay:
+		match edit_mode:
 			
-			Overlay.NONE:
-				match edit_mode:
-					
-					EditMode.BUILD:
-						if event.button_index == MOUSE_BUTTON_LEFT:
-							place_block()
-						elif event.button_index == MOUSE_BUTTON_RIGHT:
-							palette.selected_block = null
-					
-					EditMode.DISMANTLE:
-						if event.button_index == MOUSE_BUTTON_LEFT:
-							remove_block()
-						elif event.button_index == MOUSE_BUTTON_RIGHT:
-							set_mode(EditMode.BUILD)
+			EditMode.BUILD:
+				if event.button_index == MOUSE_BUTTON_LEFT:
+					place_block()
+				elif event.button_index == MOUSE_BUTTON_RIGHT:
+					palette.selected_block = null
 			
-			Overlay.SHAFT:
-				match edit_mode:
-					
-					EditMode.BUILD:
-						if event.button_index == MOUSE_BUTTON_LEFT:
-							place_shaft()
-						elif event.button_index == MOUSE_BUTTON_RIGHT:
-							palette.selected_block = null
-					
-					EditMode.DISMANTLE:
-						if event.button_index == MOUSE_BUTTON_LEFT:
-							remove_shaft()
-							vehicle.power_system.remove_shaft(preview_cell)
-						elif event.button_index == MOUSE_BUTTON_RIGHT:
-							set_mode(EditMode.BUILD)
+			EditMode.DISMANTLE:
+				if event.button_index == MOUSE_BUTTON_LEFT:
+					remove_block()
+				elif event.button_index == MOUSE_BUTTON_RIGHT:
+					set_mode(EditMode.BUILD)
 
 
 # UI functions
@@ -135,7 +112,19 @@ func update_cursor() -> void:
 
 
 func update_vehicle_visuals() -> void:
-		vehicle.power_system.visible = overlay == Overlay.SHAFT
+	if vehicle == null:
+		return
+	vehicle.power_system.visible = overlay == Overlay.SHAFT
+	#vehicle.fluid_system.visible = overlay == Overlay.PIPE
+
+
+func update_overlay():
+	if selected_block is Shaft:
+		set_overlay(Overlay.SHAFT)
+	elif selected_block is Pipe:
+		set_overlay(Overlay.PIPE)
+	else:
+		set_overlay(Overlay.NONE)
 
 
 func update_preview():
@@ -213,8 +202,14 @@ func place_block():
 		return
 	if selected_block == null:
 		return
-	var block_scene = load(selected_block.scene_file_path)
-	vehicle.place_block(block_scene, preview_cell, preview_rotation)
+	
+	if selected_block is Shaft:
+		vehicle.power_system.place_shaft(preview_cell)
+	elif selected_block is Pipe:
+		vehicle.fluid_system.place_pipe(preview_cell)
+	else:
+		var block_scene = load(selected_block.scene_file_path)
+		vehicle.place_block(block_scene, preview_cell, preview_rotation)
 	
 	update_vehicle_info()
 
@@ -222,27 +217,18 @@ func place_block():
 func remove_block():
 	if vehicle == null:
 		return
-	var block = vehicle.get_block(preview_cell)
-	if block != null:
-		vehicle.destroy_block(block)
-	
-	update_vehicle_info()
-
-
-func place_shaft():
-	if vehicle == null:
-		return
-	if selected_block == null:
-		return
-	vehicle.power_system.place_shaft(preview_cell)
-	
-	update_vehicle_info()
-
-
-func remove_shaft():
-	if vehicle == null:
-		return
-	vehicle.power_system.remove_shaft(preview_cell)
+	match overlay:
+		
+		Overlay.NONE:
+			var block = vehicle.get_block(preview_cell)
+			if block != null:
+				vehicle.destroy_block(block)
+		
+		Overlay.SHAFT:
+			vehicle.power_system.remove_shaft(preview_cell)
+		
+		Overlay.PIPE:
+			vehicle.fluid_system.remove_pipe(preview_cell)
 	
 	update_vehicle_info()
 

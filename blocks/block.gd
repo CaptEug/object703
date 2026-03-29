@@ -98,7 +98,7 @@ func rotate_cell_raw(cell: Vector2i, rot: int) -> Vector2i:
 	return cell
 
 
-func get_transformd_cell(cell:Vector2i):
+func get_transformed_cell(cell:Vector2i):
 	var raw_cells : Array[Vector2i] = []
 	for c in local_cells:
 		raw_cells.append(rotate_cell_raw(c, rotation_index))

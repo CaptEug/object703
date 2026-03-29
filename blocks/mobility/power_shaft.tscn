@@ -32,7 +32,6 @@ atlas = ExtResource("2_04e5i")
 region = Rect2(16, 64, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_egiog"]
-resource_local_to_scene = true
 atlas = ExtResource("2_04e5i")
 region = Rect2(16, 64, 16, 16)
 

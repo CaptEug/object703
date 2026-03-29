@@ -10,28 +10,43 @@ extends Block
 # - solid: units per second (consumed from internal buffer)
 @export var fuel_choices: Array[Dictionary] = [{"petroleum": 1.0}]
 
-var power_available : float = max_power
-var power_output : float = 0.0
-var current_fuel : Dictionary = {}
 var is_running: bool = false
+var power_output : float = 0.0
+var power_target : float = 0.0
+var efficiency : float = power_output / max_power
+var current_fuel : Dictionary = {}
 var solid_fuel_buffer: Dictionary = {}    # item_name -> buffered solid amount
 
 
 func _physics_process(delta: float) -> void:
-	if vehicle:
-		print("engine" + str(power_output))
-	#is_running = request_fuel(delta)
+	if vehicle == null:
+		return
+	
+	# 1. set this frame's intended output first
+	power_output = minf(power_target, max_power)
+	
+	# 2. update efficiency from THIS frame output
+	efficiency = power_output / max_power
+	
+	# 3. consume fuel based on THIS frame output
+	is_running = request_fuel(delta)
+	
+	# 4. if fuel failed, kill output
+	if not is_running:
+		power_output = 0.0
+		current_fuel.clear()
+	
+	#print("engine on: " + str(is_running))
+	#print("engIne target: " + str(power_target))
+	#print("engIne output: " + str(power_output))
 
 
 # Fuel Calculation
 
 func request_fuel(delta: float) -> bool:
-	if vehicle == null:
-		return false
-	
 	for recipe in fuel_choices:
-		var split := split_recipe(recipe, delta)
-		var liquid_requests: Dictionary = split["liquids_request"]
+		var split := preprocess_recipe(recipe, delta)
+		var liquid_requests: Dictionary = split["liquid_requests"]
 		var solid_needs: Dictionary = split["solid_needs"]
 		var solid_requests: Dictionary = split["solid_requests"]
 		
@@ -44,15 +59,16 @@ func request_fuel(delta: float) -> bool:
 			solids_ok = vehicle.supply_system.can_supply_items(self, solid_requests)
 		
 		if not liquids_ok or not solids_ok:
+			print("INSUFFICIENT FUEL")
 			continue
 		
 		var liquids_taken := true
 		var solids_taken := true
 		
 		if not liquid_requests.is_empty():
-			liquids_taken = vehicle.fluid_system.request_liquids(self, liquid_requests)
+			liquids_taken = vehicle.fluid_system.supply_liquids(self, liquid_requests)
 		if not solid_requests.is_empty():
-			solids_taken = vehicle.supply_system.request_items(self, solid_requests)
+			solids_taken = vehicle.supply_system.supply_items(self, solid_requests)
 		
 		if not liquids_taken or not solids_taken:
 			continue
@@ -73,7 +89,7 @@ func request_fuel(delta: float) -> bool:
 	return false
 
 
-func split_recipe(recipe: Dictionary, delta: float) -> Dictionary:
+func preprocess_recipe(recipe: Dictionary, delta: float) -> Dictionary:
 	var liquid_requests := {}
 	var solid_needs := {}
 	var solid_requests := {}
@@ -85,9 +101,9 @@ func split_recipe(recipe: Dictionary, delta: float) -> Dictionary:
 		
 		var rate := float(recipe[item])
 		if item_data["type"] == "liquid":
-			liquid_requests[item] = rate * delta
+			liquid_requests[item] = rate * delta * efficiency
 		elif item_data["type"] == "solid":
-			var need: float = rate * delta
+			var need: float = rate * delta * efficiency
 			solid_needs[item] = need
 			var buffered: float = solid_fuel_buffer.get(item, 0.0)
 			if buffered < need:
@@ -101,13 +117,3 @@ func split_recipe(recipe: Dictionary, delta: float) -> Dictionary:
 		"solid_needs": solid_needs,
 		"solid_requests": solid_requests
 	}
-
-
-func start_engine() -> void:
-	is_running = true
-	power_output = max_power
-
-
-func stop_engine() -> void:
-	is_running = false
-	power_output = 0.0

@@ -5,7 +5,6 @@ extends Block
 @export var single : Texture2D
 @export var end : Texture2D
 @export var straight : Texture2D
-@export var straight2 : Texture2D
 @export var corner : Texture2D
 @export var T : Texture2D
 @export var cross : Texture2D
@@ -25,7 +24,7 @@ func get_bit_mask(cell: Vector2i, pipe_grid: Dictionary) -> int:
 
 
 func update_sprite() -> void:
-	match get_bit_mask(origin_cell, vehicle.power_system.pipe_grid):
+	match get_bit_mask(origin_cell, vehicle.fluid_system.pipe_grid):
 		5:
 			sprite.texture = straight   # vertical
 			sprite.rotation = 0

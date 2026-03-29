@@ -56,6 +56,7 @@ func _physics_process(_delta: float) -> void:
 	call_deferred("update_panel_size")
 	_last_block = null
 
+
 func show_block(block:Block):
 	visible = true
 	# --- 基本信息 ---
@@ -66,6 +67,7 @@ func show_block(block:Block):
 		textlabel.text = block.block_name
 	else:
 		textlabel.text = block.block_name + ": debris"
+	
 	# --- Cargo 特殊内容 ---
 	# 尝试按优先级取 items：
 	var items: Array = []
@@ -77,10 +79,11 @@ func show_block(block:Block):
 	else:
 		_clear_grid()
 	call_deferred("update_panel_size")
-	#LiquidTank
-	#if block is LiquidTank:
-		#textlabel.text += ("\n" + "%.f" % block.stored_amount + " kg " + block.stored_liquid + " stored")
-	#_last_block = block
+	
+	# Liquid Storage
+	if block is LiquidStorage:
+		textlabel.text += ("\n" + "%.f" % block.stored + " L " + block.liquid + " stored")
+	_last_block = block
 
 
 func show_pickup(pickup:Area2D):

@@ -1,7 +1,47 @@
 [gd_scene format=3 uid="uid://bu15modawyg62"]
 
 [ext_resource type="Script" uid="uid://chbfkkbd8kf8m" path="res://blocks/logistic/liquid_pipe.gd" id="1_0kv5g"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_85uda"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8x3v7"]
+atlas = ExtResource("2_85uda")
+region = Rect2(80, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fdtpo"]
+atlas = ExtResource("2_85uda")
+region = Rect2(48, 80, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o8h15"]
+atlas = ExtResource("2_85uda")
+region = Rect2(48, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6d2f6"]
+atlas = ExtResource("2_85uda")
+region = Rect2(64, 80, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7a5mp"]
+atlas = ExtResource("2_85uda")
+region = Rect2(48, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ccya8"]
+atlas = ExtResource("2_85uda")
+region = Rect2(64, 64, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kstcs"]
+atlas = ExtResource("2_85uda")
+region = Rect2(64, 64, 16, 16)
 
 [node name="LiquidPipe" type="Node2D" unique_id=1480042268]
+z_index = 1
 script = ExtResource("1_0kv5g")
+single = SubResource("AtlasTexture_8x3v7")
+end = SubResource("AtlasTexture_fdtpo")
+straight = SubResource("AtlasTexture_o8h15")
+corner = SubResource("AtlasTexture_6d2f6")
+T = SubResource("AtlasTexture_7a5mp")
+cross = SubResource("AtlasTexture_ccya8")
+block_name = "Liquid Pipe"
 metadata/_custom_type_script = "uid://b6mbfygkc0phu"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2056732436]
+texture = SubResource("AtlasTexture_kstcs")

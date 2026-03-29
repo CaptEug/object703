@@ -6,8 +6,7 @@ extends Block
 
 @export var capacity: float = 100.0
 @export var stored: float = 0.0
-
-var liquid : String = ""
+@export var liquid : String = ""
 
 
 func has_liquid(liquid_type: String, amount: float) -> bool:

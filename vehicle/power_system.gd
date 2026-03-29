@@ -8,7 +8,6 @@ var shaft_grid : Dictionary[Vector2i, Shaft] = { }   # Cell -> shaft
 var shaft_groups: Array[Array] = []
 
 var block_group_map: Dictionary[Block, int] = {}  # block -> group_index
-var group_power_map: Dictionary[int, float] = {}  # group_index -> power
 
 var avaliable_engines : Array[PowerPack] = []
 var active_tracks : Array[Track] = []
@@ -27,7 +26,7 @@ func _ready():
 	pass
 
 func _process(_delta):
-	apply_drive_input()
+	update_power_system()
 
 
 func can_palce_shaft(cell:Vector2i) -> bool:
@@ -100,9 +99,6 @@ func rebuild_shaft_groups() -> Array[Array]:
 func rebuild_shaft_network() -> void:
 	shaft_groups = rebuild_shaft_groups()
 	block_group_map.clear()
-	group_power_map.clear()
-	for group_index in range(shaft_groups.size()):
-		group_power_map[group_index] = 0.0
 	avaliable_engines.clear()
 	active_tracks.clear()
 	
@@ -112,13 +108,12 @@ func rebuild_shaft_network() -> void:
 			group_set[cell] = true
 		for block in vehicle.blocks:
 			if "shaft_port" in block:
-				var world_port: Vector2i = block.get_transformd_cell(block.shaft_port)
+				var world_port: Vector2i = block.get_transformed_cell(block.shaft_port)
 				if group_set.has(world_port):
 					block_group_map[block] = group_index
 					
 					if block is PowerPack:
 						avaliable_engines.append(block)
-						group_power_map[group_index] += block.power_available
 					
 					if block is Track:
 						if active_tracks.has(block):
@@ -218,68 +213,161 @@ func normalize_coeffs_abs(coeffs: Array) -> Array:
 
 
 # =========================
-# APPLY INPUT
+# UPDATE POWER SYSTEM
 # =========================
 
-func apply_drive_input() -> void:
-	if active_tracks.is_empty():
+func get_group_power(group_index:int) -> float:
+	var group_power := 0.0
+	for engine in avaliable_engines:
+		if block_group_map.get(engine, -1) != group_index:
+			continue
+		group_power += engine.power_output
+	
+	return group_power
+
+
+func get_group_cmd_sum(group_index: int, raw_cmds: Dictionary[Track, float]) -> float:
+	var sum := 0.0
+	
+	for track in active_tracks:
+		if block_group_map.get(track, -1) != group_index:
+			continue
+		sum += absf(raw_cmds.get(track, 0.0))
+	
+	return sum
+
+
+func get_device_power_demand(group_index: int) -> float:
+	var demand := 0.0
+	
+	for block in block_group_map.keys():
+		if block_group_map[block] != group_index:
+			continue
+		if block is PowerPack:
+			continue
+		if block is Track:
+			continue
+		
+		if block.has_method("get_power_demand"):
+			demand += block.get_power_demand()
+	
+	return demand
+
+
+func get_track_scale_limit(group_index: int, raw_cmds: Dictionary[Track, float]) -> float:
+	var limit := INF
+	
+	for track in active_tracks:
+		if block_group_map.get(track, -1) != group_index:
+			continue
+		var cmd: float = raw_cmds.get(track, 0.0)
+		if absf(cmd) == 0.0:
+			continue
+		var track_limit := track.max_force / absf(cmd)
+		limit = minf(limit, track_limit)
+	
+	return limit
+
+
+func get_track_power_demand(group_index: int, raw_cmds: Dictionary[Track, float], scale_limit: float) -> float:
+	var power_demand := 0.0
+	if scale_limit == INF:
+		scale_limit = 0.0
+	
+	for track in active_tracks:
+		if block_group_map.get(track, -1) != group_index:
+			continue
+		var cmd: float = raw_cmds.get(track, 0.0)
+		power_demand += abs(cmd) * scale_limit
+	
+	return power_demand
+
+
+func distribute_device_power(group_index: int, power_budget:float) -> float:
+	return 0.0
+
+
+func distribute_track_power(raw_cmds: Dictionary[Track, float], power_scale: float) -> void:
+	for track in active_tracks:
+		var cmd: float = raw_cmds.get(track, 0.0)
+		track.drive_force = cmd * power_scale
+
+
+func update_engine_targets(group_index: int, group_used_power: float) -> void:
+	var group_engines: Array[PowerPack] = []
+	
+	for engine in avaliable_engines:
+		if block_group_map.get(engine, -1) == group_index:
+			engine.power_target = 0.0
+			group_engines.append(engine)
+	
+	var remaining := group_used_power
+	var active: Array[PowerPack] = group_engines.duplicate()
+	
+	while remaining > 0.0 and not active.is_empty():
+		var share := remaining / active.size()
+		var next_active: Array[PowerPack] = []
+		var given_this_round := 0.0
+		
+		for engine in active:
+			var headroom := engine.max_power - engine.power_target
+			if headroom <= 0.0:
+				continue
+			
+			var give := minf(share, headroom)
+			engine.power_target += give
+			given_this_round += give
+			
+			if engine.max_power - engine.power_target > 0.0:
+				next_active.append(engine)
+		
+		if given_this_round <= 0.0:
+			break
+		
+		remaining -= given_this_round
+		active = next_active
+
+
+func update_power_system() -> void:
+	if shaft_groups.is_empty():
 		return
 	
 	var drive_input := vehicle.get_drive_input()
 	var move_input: float = drive_input["move"]
 	var pivot_input: float = drive_input["pivot"]
-	var raw_cmds : Dictionary[Track, float] = {}
+	var raw_cmds: Dictionary[Track, float] = {}
 	
 	for track in active_tracks:
 		var move_c: float = move_coeffs.get(track, 0.0)
 		var pivot_c: float = pivot_coeffs.get(track, 0.0)
-		var cmd := move_input * move_c + pivot_input * pivot_c
-		raw_cmds[track] = cmd
+		raw_cmds[track] = move_input * move_c + pivot_input * pivot_c
 	
-	var final_scale := INF
-	var group_cmd_sum_map : Dictionary[int, float] = {}
+	var final_power_scale := INF
+	
 	for group_index in range(shaft_groups.size()):
-		var group_power: float = group_power_map.get(group_index, 0.0)
-		if group_power == 0:
-			continue
-			
-		var group_cmd_sum := 0.0
-		var group_track_limit := INF
+		# Update Engine Targets Based On Power Demands
+		var device_demand: float = get_device_power_demand(group_index)
 		
-		for track in active_tracks:
-			if block_group_map.get(track, -1) != group_index:
-				continue
-			var cmd: float = raw_cmds[track]
-			group_cmd_sum += absf(cmd)
-			var track_limit := track.max_force / absf(cmd)
-			group_track_limit = minf(group_track_limit, track_limit)
+		var track_limit := get_track_scale_limit(group_index, raw_cmds)
+		var track_demand: float = get_track_power_demand(group_index, raw_cmds, track_limit)
 		
-		var group_power_limit := group_power / group_cmd_sum
-		var group_scale := minf(group_power_limit, group_track_limit)
-		final_scale = minf(final_scale, group_scale)
-		group_cmd_sum_map[group_index] = group_cmd_sum
+		update_engine_targets(group_index, device_demand + track_demand)
+		
+		# Findout Track Power Scale
+		var group_power := get_group_power(group_index)
+		var device_used: float = distribute_device_power(group_index, group_power)
+		var remaining_power := maxf(0.0, group_power - device_used)
+		var track_cmd_sum: float = get_group_cmd_sum(group_index, raw_cmds)
+		
+		var power_limit := remaining_power / track_cmd_sum
+		var group_scale := minf(power_limit, track_limit)
+		
+		final_power_scale = minf(final_power_scale, group_scale)
 	
-	if final_scale == INF:
-		final_scale = 0.0
+	if final_power_scale == INF:
+		final_power_scale = 0.0
 	
-	# apply track force
-	for track in active_tracks:
-		var cmd: float = raw_cmds.get(track, 0.0)
-		track.drive_force = cmd * final_scale
+	final_power_scale = maxf(final_power_scale, 0.0)
 	
-	update_engine_output(final_scale, group_cmd_sum_map)
-
-
-func update_engine_output(final_scale: float, group_cmd_sum_map: Dictionary) -> void:
-	for group_index in range(shaft_groups.size()):
-		
-		var group_power: float = group_power_map.get(group_index, 0.0)
-		var group_cmd_sum : float = group_cmd_sum_map.get(group_index, 0.0)
-		var group_used_power := group_cmd_sum * final_scale
-		group_used_power = minf(group_used_power, group_power)
-		
-		for engine in avaliable_engines:
-			if block_group_map.get(engine, -1) != group_index:
-				continue
-			var ratio : float = engine.power_available / group_power
-			engine.power_output = group_used_power * ratio
+	# apply the same scale to all groups, then update engines
+	distribute_track_power(raw_cmds, final_power_scale)

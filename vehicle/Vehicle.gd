@@ -6,6 +6,7 @@ const TILE_SIZE := Globals.TILE_SIZE
 @onready var blocks_root : Node2D = $Blocks
 # overlays
 @onready var power_system := $PowerSystem
+@onready var fluid_system := $FluidSystem
 
 # grid storage
 var grid : Dictionary = {}      # Vector2i -> Block
@@ -143,6 +144,7 @@ func refresh_system_lists() -> void:
 	rebuild_tracks_connections()
 	
 	# systems update
+	fluid_system.rebuild_pipe_network()
 	power_system.rebuild_drive_distribution()
 
 

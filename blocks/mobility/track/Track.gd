@@ -22,7 +22,6 @@ var scroll: float = 0.0
 
 func _physics_process(delta):
 	if vehicle:
-		print(drive_force)
 		update_scroll(delta)
 		update_track_sprite()
 		if absf(drive_force) > 0:
