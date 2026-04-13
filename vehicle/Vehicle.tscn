@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bqcqepxvgt6bt" path="res://vehicle/Vehicle.gd" id="1_1cp1r"]
 [ext_resource type="Script" uid="uid://3qyo3rkt1l5x" path="res://vehicle/power_system.gd" id="2_vsmxc"]
 [ext_resource type="Script" uid="uid://c2cjx5glmjkqn" path="res://vehicle/fluid_system.gd" id="3_jkabe"]
+[ext_resource type="Script" uid="uid://c03cd3morat2n" path="res://vehicle/supply_system.gd" id="4_w7aos"]
 
 [node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
 center_of_mass_mode = 1
@@ -21,4 +22,6 @@ vehicle = NodePath("..")
 script = ExtResource("3_jkabe")
 vehicle = NodePath("..")
 
-[node name="SupplySystem" type="Node2D" parent="." unique_id=1073856846]
+[node name="SupplySystem" type="Node2D" parent="." unique_id=1073856846 node_paths=PackedStringArray("vehicle")]
+script = ExtResource("4_w7aos")
+vehicle = NodePath("..")

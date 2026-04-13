@@ -27,7 +27,11 @@ func _physics_process(delta):
 		if absf(drive_force) > 0:
 			apply_drive_force()
 		apply_side_friction()
+		queue_redraw()
 
+
+func _draw():
+	draw_line(Vector2.ZERO, Vector2.ZERO + Vector2(0, -drive_force), Color.RED)
 
 # Physics
 

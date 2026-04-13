@@ -17,7 +17,8 @@ enum Overlay {
 	NONE,
 	SHAFT,
 	PIPE,
-	CONVEYOR,
+	TUBE,
+	GAS
 }
 
 @onready var palette := $Panel/MarginContainer/Panel/Clipper/BlockPalette
@@ -115,7 +116,8 @@ func update_vehicle_visuals() -> void:
 	if vehicle == null:
 		return
 	vehicle.power_system.visible = overlay == Overlay.SHAFT
-	#vehicle.fluid_system.visible = overlay == Overlay.PIPE
+	vehicle.fluid_system.visible = overlay == Overlay.PIPE
+	vehicle.supply_system.visible = overlay == Overlay.TUBE
 
 
 func update_overlay():
@@ -123,6 +125,8 @@ func update_overlay():
 		set_overlay(Overlay.SHAFT)
 	elif selected_block is Pipe:
 		set_overlay(Overlay.PIPE)
+	elif selected_block is Tube:
+		set_overlay(Overlay.TUBE)
 	else:
 		set_overlay(Overlay.NONE)
 
@@ -207,6 +211,8 @@ func place_block():
 		vehicle.power_system.place_shaft(preview_cell)
 	elif selected_block is Pipe:
 		vehicle.fluid_system.place_pipe(preview_cell)
+	elif selected_block is Tube:
+		vehicle.supply_system.place_tube(preview_cell)
 	else:
 		var block_scene = load(selected_block.scene_file_path)
 		vehicle.place_block(block_scene, preview_cell, preview_rotation)
@@ -229,6 +235,9 @@ func remove_block():
 		
 		Overlay.PIPE:
 			vehicle.fluid_system.remove_pipe(preview_cell)
+		
+		Overlay.TUBE:
+			vehicle.supply_system.remove_tube(preview_cell)
 	
 	update_vehicle_info()
 

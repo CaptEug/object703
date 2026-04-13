@@ -7,6 +7,8 @@ const TILE_SIZE := Globals.TILE_SIZE
 # overlays
 @onready var power_system := $PowerSystem
 @onready var fluid_system := $FluidSystem
+@onready var supply_system := $SupplySystem
+@onready var ventilation_system := $VentilationSystem
 
 # grid storage
 var grid : Dictionary = {}      # Vector2i -> Block
@@ -58,30 +60,11 @@ func get_drive_input() -> Dictionary:
 # Block Management
 
 func can_place_block(block:Block, cell:Vector2i) -> bool:
-	# 1. overlap check
+	# overlap check
 	block.origin_cell = cell
 	for c in block.get_occupied_cells():
 		if grid.has(c):
-			#block.queue_free()
 			return false
-	
-	# 2. per-edge connectivity check
-	var block_edges := block.get_transformed_edges()
-	for edge_cell in block_edges.keys():
-		var side_dict: Dictionary = block_edges[edge_cell]
-		for side in side_dict.keys():
-			var my_connectable: bool = side_dict[side]
-			var neighbor_cell : Vector2i = edge_cell + Block.SIDE_DIRS[side]
-			var neighbor := get_block(neighbor_cell)
-			if neighbor == null:
-				continue
-			
-			var opposite: int = Block.OPPOSITE_SIDE[side]
-			var neighbor_connectable := neighbor.is_edge_connectable(neighbor_cell, opposite)
-			
-			if not my_connectable or not neighbor_connectable:
-				return false
-	
 	return true
 
 
@@ -108,8 +91,8 @@ func place_block(block_scene:PackedScene, cell:Vector2i, rotation_i:int):
 func create_collision(block:Block):
 	if block.collision != null:
 		block.remove_child(block.collision)
-		block.collision.position = block.position
-		block.collision.rotation = block.rotation
+		block.collision.position += block.position
+		block.collision.rotation += block.rotation
 		add_child(block.collision)
 
 
@@ -145,7 +128,9 @@ func refresh_system_lists() -> void:
 	
 	# systems update
 	fluid_system.rebuild_pipe_network()
+	supply_system.rebuild_tube_network()
 	power_system.rebuild_drive_distribution()
+	
 
 
 # tracks

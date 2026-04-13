@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://fepyv18c3ivq"]
+
+[ext_resource type="Script" uid="uid://m8wmouvo876a" path="res://blocks/logistic/supply_tube.gd" id="1_l8b3r"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_avy8d"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nr7j1"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(80, 96, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_et7sr"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(48, 128, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_843y5"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(48, 96, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qxun7"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(64, 128, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ajho5"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(48, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ldrur"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(64, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rv8px"]
+atlas = ExtResource("2_avy8d")
+region = Rect2(64, 112, 16, 16)
+
+[node name="SupplyTube" type="Node2D" unique_id=1221185336]
+script = ExtResource("1_l8b3r")
+single = SubResource("AtlasTexture_nr7j1")
+end = SubResource("AtlasTexture_et7sr")
+straight = SubResource("AtlasTexture_843y5")
+corner = SubResource("AtlasTexture_qxun7")
+T = SubResource("AtlasTexture_ajho5")
+cross = SubResource("AtlasTexture_ldrur")
+metadata/_custom_type_script = "uid://b6mbfygkc0phu"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=568497905]
+texture = SubResource("AtlasTexture_rv8px")

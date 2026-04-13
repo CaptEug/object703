@@ -188,7 +188,7 @@ func supply_liquid(requester: Block, liquid_type: String, amount: float) -> bool
 # LIQUID INSERT (ADD)
 # =========================
 
-func reveive_liquids(requester: Block, liquids: Dictionary) -> float:
+func receive_liquids(requester: Block, liquids: Dictionary) -> float:
 	var total_added := 0.0
 	
 	for liquid_type in liquids.keys():

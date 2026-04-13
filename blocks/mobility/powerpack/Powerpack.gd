@@ -2,6 +2,8 @@ class_name PowerPack
 extends Block
 
 @export var max_power : float = 100.0
+@export var liquid_port : Vector2i = Vector2i.ZERO
+@export var supply_port : Vector2i = Vector2i.ZERO
 @export var shaft_port : Vector2i = Vector2i.ZERO
 
 # Each dictionary is one alternative recipe.

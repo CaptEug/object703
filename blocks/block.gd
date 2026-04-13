@@ -7,7 +7,7 @@ var vehicle : Vehicle
 var origin_cell : Vector2i
 var local_cells : Array[Vector2i]
 @export var size : Vector2i = Vector2i(1,1)
-var rotation_index : int = 0          # 0:0 1:90 2:180 3:270 degree
+var rotation_index : int = 0   # 0:0 1:90 2:180 3:270 degree
 @onready var collision : CollisionShape2D = $CollisionShape2D
 enum Side {
 	UP,
@@ -27,7 +27,8 @@ const OPPOSITE_SIDE := {
 	Side.DOWN: Side.UP,
 	Side.LEFT: Side.RIGHT,
 }
-@export var edge_sockets: Dictionary = {}    # { local_cell: { side:int -> bool } }
+@export var edge_sockets: Dictionary[Vector2i,Dictionary] = {}    # { local_cell: { side:int -> bool } }
+var connected : bool = false
 
 # game property
 @export var block_name : String
@@ -38,6 +39,12 @@ var hp : int
 @export var mass : int = 1
 
 
+func _ready():
+	build_local_cells()
+	if edge_sockets.is_empty():
+		build_default_edge_sockets()
+
+
 # Block Placement
 
 func update_transform(v, cell:Vector2i, rotation_i:int):
@@ -46,8 +53,6 @@ func update_transform(v, cell:Vector2i, rotation_i:int):
 	rotation_index = rotation_i
 	position = (Vector2(origin_cell) * TILE_SIZE) + (Vector2(get_rotated_size()) * TILE_SIZE) / 2
 	rotation = rotation_index * PI * 0.5
-	if edge_sockets.is_empty():
-		build_default_edge_sockets()
 
 
 func get_rotated_size() -> Vector2i:
@@ -73,7 +78,6 @@ func build_local_cells() -> void:
 
 
 func build_default_edge_sockets() -> void:
-	build_local_cells()
 	edge_sockets.clear()
 	var occupied := {}
 	for c in local_cells:
@@ -100,6 +104,7 @@ func rotate_cell_raw(cell: Vector2i, rot: int) -> Vector2i:
 
 func get_transformed_cell(cell:Vector2i):
 	var raw_cells : Array[Vector2i] = []
+	
 	for c in local_cells:
 		raw_cells.append(rotate_cell_raw(c, rotation_index))
 	
@@ -155,6 +160,28 @@ func is_edge_connectable(cell: Vector2i, side: int) -> bool:
 		return false
 	var side_dict: Dictionary = edges[cell]
 	return side_dict.get(side, false)
+
+
+func update_connectivity():
+	var has_connection := false
+	var block_edges := get_transformed_edges()
+	
+	for edge_cell in block_edges.keys():
+		var side_dict: Dictionary = block_edges[edge_cell]
+		for side in side_dict.keys():
+			var my_connectable: bool = side_dict[side]
+			var neighbor_cell : Vector2i = edge_cell + Block.SIDE_DIRS[side]
+			var neighbor := vehicle.get_block(neighbor_cell)
+			if neighbor == null:
+				continue
+			
+			var opposite: int = Block.OPPOSITE_SIDE[side]
+			var neighbor_connectable := neighbor.is_edge_connectable(neighbor_cell, opposite)
+			
+			if my_connectable and neighbor_connectable:
+				has_connection = true
+	
+	connected = has_connection
 
 
 # Block Status

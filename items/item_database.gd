@@ -52,7 +52,7 @@ var items = {
 	### AMMO ###
 	
 	#"57mmAP": {
-		#"tag": "ammo",
+		#"type": "ammo",
 		#"weight": 4,
 		#"icon": preload("res://assets/icons/items/ap57mm.png"),
 		#"max_stack": 999,
@@ -60,15 +60,23 @@ var items = {
 	#},
 	#
 	#"PZGR75": {
-		#"tag": "ammo",
+		#"type": "ammo",
 		#"weight": 7,
 		#"icon": preload("res://assets/icons/items/pzgr75.png"),
 		#"max_stack": 999,
 		#"shell_scene": preload("res://blocks/firepower/shells/pzgr_75.tscn")
 	#},
-	#
+	
+	"88mmPZGR": {
+		"type": "ammo",
+		"weight": 7,
+		"icon": preload("res://assets/icons/items/pzgr75.png"),
+		"max_stack": 999,
+		#"shell_scene": preload()
+	},
+	
 	#"122mmAPHE": {
-		#"tag": "ammo",
+		#"type": "ammo",
 		#"weight": 25,
 		#"icon": preload("res://assets/icons/items/aphe122mm.png"),
 		#"max_stack": 999,
@@ -76,7 +84,7 @@ var items = {
 	#},
 	#
 	#"122mmHE": {
-		#"tag": "ammo",
+		#"type": "ammo",
 		#"weight": 25,
 		#"icon": preload("res://assets/icons/items/he122mm.png"),
 		#"max_stack": 999,
@@ -84,7 +92,7 @@ var items = {
 	#},
 	#
 	#"380mmrocket": {
-		#"tag": "ammo",
+		#"type": "ammo",
 		#"weight": 350,
 		#"icon": preload("res://assets/icons/items/rocket380mm.png"),
 		#"max_stack": 999,

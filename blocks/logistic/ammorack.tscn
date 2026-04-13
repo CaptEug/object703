@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://lkeivlyyrf1d"]
+
+[ext_resource type="Script" uid="uid://dpymnvjcr8b1p" path="res://blocks/logistic/ItemStorage.gd" id="1_n8eu8"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_7tefv"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7hbv3"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kkphu"]
+atlas = ExtResource("2_7tefv")
+region = Rect2(96, 64, 16, 16)
+
+[node name="Ammorack" type="Node2D" unique_id=239388327]
+script = ExtResource("1_n8eu8")
+accept = Array[String](["ammo"])
+block_name = "Ammorack"
+metadata/_custom_type_script = "uid://dpymnvjcr8b1p"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1427953572]
+shape = SubResource("RectangleShape2D_7hbv3")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=964715795]
+texture = SubResource("AtlasTexture_kkphu")

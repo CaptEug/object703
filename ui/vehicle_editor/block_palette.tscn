@@ -8,6 +8,9 @@
 [ext_resource type="PackedScene" uid="uid://emtdbbypccpr" path="res://blocks/mobility/power_shaft.tscn" id="6_gqcie"]
 [ext_resource type="PackedScene" uid="uid://bu15modawyg62" path="res://blocks/logistic/liquid_pipe.tscn" id="7_626jr"]
 [ext_resource type="PackedScene" uid="uid://db5q6xew8l8yd" path="res://blocks/logistic/fuel_tank.tscn" id="8_tk1tn"]
+[ext_resource type="PackedScene" uid="uid://lkeivlyyrf1d" path="res://blocks/logistic/ammorack.tscn" id="9_hpgwb"]
+[ext_resource type="PackedScene" uid="uid://fepyv18c3ivq" path="res://blocks/logistic/supply_tube.tscn" id="9_n63x8"]
+[ext_resource type="PackedScene" uid="uid://cxis8u1udc8hr" path="res://blocks/weapon/KwK_43.tscn" id="11_ulxes"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3
@@ -33,3 +36,12 @@ position = Vector2(88, 24)
 
 [node name="LiquidPipe" parent="." unique_id=1480042268 instance=ExtResource("7_626jr")]
 position = Vector2(120, 24)
+
+[node name="SupplyTube" parent="." unique_id=1221185336 instance=ExtResource("9_n63x8")]
+position = Vector2(152, 24)
+
+[node name="Ammorack" parent="." unique_id=239388327 instance=ExtResource("9_hpgwb")]
+position = Vector2(88, 56)
+
+[node name="KwK43" parent="." unique_id=460751282 instance=ExtResource("11_ulxes")]
+position = Vector2(184, 78)

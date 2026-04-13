@@ -11,7 +11,7 @@ var world_data:Dictionary
 
 # In-Game Time Management
 var game_time:= 200.0
-const CYCLE_DURATION := 600.0
+const CYCLE_DURATION := Globals.CYCLE_DURATION
 
 
 func _ready() -> void:

@@ -2,16 +2,16 @@ class_name LiquidStorage
 extends Block
 
 @export var liquid_port: Vector2i = Vector2i.ZERO
-@export var accept: Array[String] = ["petroleum", "water"]
+@export var accept: Array[String] = ["petroleum", "water"]   # empty = accept all items
 
 @export var capacity: float = 100.0
 @export var stored: float = 0.0
 @export var liquid : String = ""
 
 
-func _physics_process(delta):
-	if vehicle:
-		print("FUEL LEFT: " + str(stored))
+#func _physics_process(delta):
+	#if vehicle:
+		#print("FUEL LEFT: " + str(stored))
 
 
 func has_liquid(liquid_type: String, amount: float) -> bool:
@@ -37,9 +37,11 @@ func take_liquid(liquid_type: String, amount: float) -> float:
 func add_liquid(liquid_type: String, amount: float) -> float:
 	if not accept.has(liquid_type):
 		return 0.0
+	
 	# if empty, adopt type
 	if stored == 0:
 		liquid = liquid_type
+	
 	# prevent mixing
 	if liquid != liquid_type:
 		return 0.0

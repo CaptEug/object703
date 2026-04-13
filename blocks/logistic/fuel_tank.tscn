@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://db5q6xew8l8yd"]
 
-[ext_resource type="Script" uid="uid://pnfcsef3bfk8" path="res://blocks/logistic/liquid_storage.gd" id="1_v2fc7"]
+[ext_resource type="Script" uid="uid://pnfcsef3bfk8" path="res://blocks/logistic/LiquidStorage.gd" id="1_v2fc7"]
 [ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="1_vd1ly"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v2fc7"]
