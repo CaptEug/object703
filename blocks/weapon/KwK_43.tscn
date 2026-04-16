@@ -18,10 +18,51 @@ region = Rect2(192, 112, 16, 128)
 atlas = ExtResource("2_6k1qu")
 region = Rect2(208, 192, 16, 32)
 
-[node name="KwK43" type="Node2D" unique_id=460751282 node_paths=PackedStringArray("muzzles")]
+[sub_resource type="Animation" id="Animation_6k1qu"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Barrel:offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_07ofb"]
+resource_name = "recoil0"
+length = 0.7
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Barrel:offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 7), Vector2(0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_8w0kc"]
+_data = {
+&"RESET": SubResource("Animation_6k1qu"),
+&"recoil0": SubResource("Animation_07ofb")
+}
+
+[node name="KwK43" type="Node2D" unique_id=460751282 node_paths=PackedStringArray("muzzles", "animplayer")]
 script = ExtResource("1_rgnjj")
 supply_port = Vector2i(0, 7)
+reload = 5.0
+shells = Array[String](["PZGR88mm"])
 muzzles = [NodePath("Barrel/Marker2D")]
+muzzle_energy = 10000.0
+animplayer = NodePath("AnimationPlayer")
 size = Vector2i(1, 8)
 edge_sockets = Dictionary[Vector2i, Dictionary]({
 Vector2i(0, 0): {
@@ -79,3 +120,6 @@ position = Vector2(0, -62)
 [node name="Recoiler" type="Sprite2D" parent="." unique_id=1054046162]
 position = Vector2(0, 32)
 texture = SubResource("AtlasTexture_nh6n7")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1360011288]
+libraries/ = SubResource("AnimationLibrary_8w0kc")

@@ -13,6 +13,7 @@ region = Rect2(0, 144, 16, 16)
 [node name="StructualFrame" type="Node2D" unique_id=40607816]
 script = ExtResource("1_q3stu")
 block_name = "Structual Frame"
+max_hp = 50
 metadata/_custom_type_script = "uid://b6mbfygkc0phu"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1141750609]

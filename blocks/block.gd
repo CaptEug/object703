@@ -32,14 +32,15 @@ var connected : bool = false
 
 # game property
 @export var block_name : String
-@export var max_hp : int
-var hp : int
+@export var max_hp : float = 100.0
+var hp : float
 @export var k_a : float = 1.0
 @export var e_a : float = 1.0
 @export var mass : int = 1
 
 
 func _ready():
+	hp = max_hp
 	build_local_cells()
 	if edge_sockets.is_empty():
 		build_default_edge_sockets()
@@ -187,11 +188,12 @@ func update_connectivity():
 # Block Status
 
 func damage(amount:int, type:String):
+	
 	var dmg_taken = amount
 	match type:
 		"KINETIC": dmg_taken *= k_a
 		"EXPLOSIVE": dmg_taken *= e_a
-	 
+	print(block_name + " took " + str(dmg_taken) + "damage")
 	hp -= dmg_taken
-	if hp <= 0:
+	if hp <= 0.0:
 		vehicle.destroy_block(self)

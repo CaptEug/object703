@@ -26,21 +26,21 @@ func _physics_process(_delta: float) -> void:
 	global_position = get_viewport().get_mouse_position() + Vector2(16, 16)
 	
 	var results = space_state.intersect_point(query)
-	var block:Block
+	var vehicle:Vehicle
 	var pickup:Pickup
 	var maplayer:TileMapLayer
 
 	for hit in results:
 		var c = hit.collider
-		if c is Block:
-			block = c
+		if c is Vehicle:
+			vehicle = c
 		elif c is Pickup:
 			pickup = c
 		elif c is TileMapLayer:
 			maplayer = c
 
-	if block:
-		show_block(block)
+	if vehicle:
+		show_block_in_vehicle(vehicle, query.position)
 		return
 	elif pickup:
 		show_pickup(pickup)
@@ -57,28 +57,25 @@ func _physics_process(_delta: float) -> void:
 	_last_block = null
 
 
-func show_block(block:Block):
+func show_block_in_vehicle(vehicle:Vehicle, pos:Vector2):
 	visible = true
+	var cell_pos := vehicle.world_to_cell(pos)
+	var block := vehicle.get_block(cell_pos)
 	# --- 基本信息 ---
-	var vehicle = null
-	if block.has_method("get_parent_vehicle"):
-		vehicle = block.get_parent_vehicle() as Vehicle
-	if vehicle:
-		textlabel.text = block.block_name
-	else:
-		textlabel.text = block.block_name + ": debris"
+	if block:
+		textlabel.text = block.block_name + "\n" + "hp: " + str(block.hp)
 	
-	# --- Cargo 特殊内容 ---
-	# 尝试按优先级取 items：
-	var items: Array = []
-	var cargo_inventory = block.get("inventory")  # Object.get(property_name) 在属性不存在时通常返回 null
-	if cargo_inventory != null and cargo_inventory is Array:
-		items = cargo_inventory
-	if items.size() > 0:
-		_update_cargo_items(items)
-	else:
-		_clear_grid()
-	call_deferred("update_panel_size")
+	## --- Cargo 特殊内容 ---
+	## 尝试按优先级取 items：
+	#var items: Array = []
+	#var cargo_inventory = block.get("inventory")  # Object.get(property_name) 在属性不存在时通常返回 null
+	#if cargo_inventory != null and cargo_inventory is Array:
+		#items = cargo_inventory
+	#if items.size() > 0:
+		#_update_cargo_items(items)
+	#else:
+		#_clear_grid()
+	#call_deferred("update_panel_size")
 	
 	# Liquid Storage
 	if block is LiquidStorage:

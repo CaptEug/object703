@@ -88,12 +88,27 @@ func place_block(block_scene:PackedScene, cell:Vector2i, rotation_i:int):
 	return true
 
 
-func create_collision(block:Block):
+func create_collision(block: Block) -> void:
 	if block.collision != null:
-		block.remove_child(block.collision)
-		block.collision.position += block.position
-		block.collision.rotation += block.rotation
-		add_child(block.collision)
+		var collision := block.collision
+		var old_global := collision.global_transform
+		
+		block.remove_child(collision)
+		add_child(collision)
+		
+		collision.global_transform = old_global
+
+
+func damage_block(cell: Vector2i, amount: int, type: String):
+	var block := get_block(cell)
+	if block == null:
+		return false
+	
+	if amount <= 0.0:
+		return false
+	
+	# apply damage
+	block.damage(amount, type)
 
 
 func destroy_block(block:Block):

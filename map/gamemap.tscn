@@ -35,6 +35,8 @@ metadata/_custom_type_script = "uid://bel0gfv61tk3a"
 [node name="VehicleRoot" type="Node2D" parent="." unique_id=1036498771]
 script = ExtResource("6_ldbmw")
 
+[node name="ProjectileRoot" type="Node2D" parent="." unique_id=473234968]
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1733025566]
 environment = SubResource("Environment_i3gmg")
 

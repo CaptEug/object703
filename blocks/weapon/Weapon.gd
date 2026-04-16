@@ -5,7 +5,7 @@ extends Block
 @export var shoot_range: float
 @export var reload: float
 @export var spread: float
-@export var shells: Array
+@export var shells: Array[String]
 # SHOOTING
 @export var muzzles: Array[Marker2D]
 @export var muzzle_energy: float
@@ -26,22 +26,25 @@ var targeting:= Callable()
 
 func _physics_process(delta):
 	if vehicle:
-		print(edge_sockets)
+		fire()
 		if not loading and not loaded:
-			if request_ammo():
-				start_reload()
+			request_ammo()
 
 
-func request_ammo() -> bool:
+func request_ammo() -> void:
 	var ammo_recived : bool
 	for shell in shells:
 		var ammo_request := {shell: 1}
 		ammo_recived = vehicle.supply_system.supply_items(self, ammo_request)
-	return ammo_recived
+		if !ammo_recived:
+			var shell_scene = ItemDB.get_item(shell)["shell_scene"]
+			start_reload(shell_scene)
+			return
 
 
-func start_reload():
+func start_reload(shell_scene: PackedScene):
 	loading = true
+	shell_loaded = shell_scene
 	reload_timer.start()
 
 
@@ -62,31 +65,46 @@ func _on_reload_timer_timeout():
 func fire():
 	if not loaded:
 		return
+		
 	shoot(muzzles[current_muzzle], shell_loaded)
+	
 	if animplayer:
 		animplayer.play('recoil'+str(current_muzzle))
+	
 	current_muzzle = current_muzzle+1 if current_muzzle+1 < muzzles.size() else 0
+	
 	if gun_fire_sound:
 		gun_fire_sound.play()
+	
 	shell_loaded = null
 	loaded = false
 
 
-func shoot(muz:Marker2D, shell_picked:PackedScene):
-	var shell = shell_picked.instantiate()
-	shell.from = vehicle
-	var gun_rotation = muz.global_rotation
+func shoot(muz: Marker2D, shell_scene: PackedScene) -> void:
+	var shell := shell_scene.instantiate() as Projectile
+	shell.vehicle = vehicle
 	shell.global_position = muz.global_position
-	#map.add_child(shell)
 	
-	if shell.max_thrust:
-		shell.target_dir = Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread))
+	var gun_rotation := muz.global_rotation
+	var dir := Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread)).normalized()
 	
-	await get_tree().physics_frame
-	await get_tree().physics_frame
+	# align shell so -Y is forward
+	shell.rotation = dir.angle() + PI / 2.0
 	
-	var dir = Vector2.UP.rotated(gun_rotation).rotated(randf_range(-spread, spread))
-	shell.apply_impulse(dir * muzzle_energy)
+	get_tree().current_scene.add_child(shell)
 	
-	# recoil force simulation
+	# compute velocity from muzzle energy
+	var shell_mass := maxf(shell.weight, 0.001)
+	var v := sqrt((2.0 * muzzle_energy) / shell_mass)
+	
+	# impulse = m * v
+	var impulse := dir * shell_mass * v
+	
+	# apply impulse at center
+	shell.apply_impulse(impulse)
+	
+	# recoil on vehicle (opposite direction)
+	var recoil_impulse := -impulse
+	var recoil_offset := muz.global_position - vehicle.global_position
+	vehicle.apply_impulse(recoil_impulse, recoil_offset)
 	

@@ -67,12 +67,12 @@ var items = {
 		#"shell_scene": preload("res://blocks/firepower/shells/pzgr_75.tscn")
 	#},
 	
-	"88mmPZGR": {
+	"PZGR88mm": {
 		"type": "ammo",
 		"weight": 7,
 		"icon": preload("res://assets/icons/items/pzgr75.png"),
 		"max_stack": 999,
-		#"shell_scene": preload()
+		"shell_scene": preload("res://items/shells/ger/pzgr_88mm.tscn")
 	},
 	
 	#"122mmAPHE": {
