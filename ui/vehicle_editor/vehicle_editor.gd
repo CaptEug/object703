@@ -24,6 +24,8 @@ enum Overlay {
 @onready var palette := $Panel/MarginContainer/Panel/Clipper/BlockPalette
 @onready var COM_icon := $COMicon
 @onready var vehicle_info_label := $Panel/RichTextLabel
+@onready var vehicle_name_input: LineEdit = $Panel/LineEdit
+@onready var blueprint_dialog: FileDialog = $BlueprintDialog
 @export var saw_cursor: Texture2D
 var vehicle_scene : PackedScene = load("res://vehicle/Vehicle.tscn")
 @export var gamemap : GameMap
@@ -255,6 +257,7 @@ func create_new_vehicle(world_pos: Vector2 = Vector2.ZERO, replace_old: bool = t
 		get_tree().current_scene.add_child(vehicle)
 	vehicle.global_position = world_pos
 	vehicle.rotation = 0.0
+	update_vehicle_info()
 
 
 # Signals
@@ -265,3 +268,57 @@ func _on_COM_button_pressed():
 
 func _on_dismantle_button_pressed():
 	toggle_mode()
+
+
+func _on_save_button_pressed() -> void:
+	var result := VehicleBlueprint.save(vehicle, vehicle_name_input.text)
+	if result["ok"]:
+		_show_status("Blueprint saved: %s" % result["name"])
+	else:
+		_show_status(result["error"])
+
+
+func _on_load_button_pressed() -> void:
+	var directory_result := VehicleBlueprint.ensure_directory()
+	if not directory_result["ok"]:
+		_show_status(directory_result["error"])
+		return
+	blueprint_dialog.access = FileDialog.ACCESS_USERDATA
+	blueprint_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	blueprint_dialog.current_dir = VehicleBlueprint.DIRECTORY
+	blueprint_dialog.popup_centered_ratio(0.7)
+
+
+func _on_blueprint_file_selected(path: String) -> void:
+	var result := VehicleBlueprint.load_path(path)
+	if not result["ok"]:
+		_show_status(result["error"])
+		return
+
+	var parent: Node = gamemap if gamemap != null else get_tree().current_scene
+	var old_transform := Transform2D.IDENTITY
+	if is_instance_valid(vehicle):
+		old_transform = vehicle.global_transform
+
+	var built := VehicleBlueprint.build(
+		result["data"],
+		parent,
+		vehicle_scene,
+		old_transform
+	)
+	if not built["ok"]:
+		_show_status(built["error"])
+		return
+
+	clear_preview_block()
+	var old_vehicle := vehicle
+	vehicle = built["vehicle"]
+	vehicle_name_input.text = built["name"]
+	if is_instance_valid(old_vehicle):
+		old_vehicle.queue_free()
+	update_vehicle_info()
+	_show_status("Blueprint loaded: %s" % built["name"])
+
+
+func _show_status(message: String) -> void:
+	vehicle_info_label.text = message

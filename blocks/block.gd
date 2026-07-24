@@ -8,7 +8,7 @@ var origin_cell : Vector2i
 var local_cells : Array[Vector2i]
 @export var size : Vector2i = Vector2i(1,1)
 var rotation_index : int = 0   # 0:0 1:90 2:180 3:270 degree
-@onready var collision : CollisionShape2D = $CollisionShape2D
+@onready var collision := get_node_or_null("CollisionShape2D") as CollisionShape2D
 enum Side {
 	UP,
 	RIGHT,

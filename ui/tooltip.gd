@@ -65,18 +65,6 @@ func show_block_in_vehicle(vehicle:Vehicle, pos:Vector2):
 	if block:
 		textlabel.text = block.block_name + "\n" + "hp: " + str(block.hp)
 	
-	## --- Cargo 特殊内容 ---
-	## 尝试按优先级取 items：
-	#var items: Array = []
-	#var cargo_inventory = block.get("inventory")  # Object.get(property_name) 在属性不存在时通常返回 null
-	#if cargo_inventory != null and cargo_inventory is Array:
-		#items = cargo_inventory
-	#if items.size() > 0:
-		#_update_cargo_items(items)
-	#else:
-		#_clear_grid()
-	#call_deferred("update_panel_size")
-	
 	# Liquid Storage
 	if block is LiquidStorage:
 		textlabel.text += ("\n" + "%.f" % block.stored + " L " + block.liquid + " stored")
@@ -100,40 +88,13 @@ func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 				textlabel.text = celldata["matter"] + "\nTotal mass: " + "%.f" % total_mass + " kg"
 			else:
 				textlabel.text = celldata["matter"] + "\nTotal mass: " + "%.1f" % (total_mass/1000) + " T"
-# 清空 grid（无 cargo 或空内容时）
+# Clear the optional detail grid.
 func _clear_grid() -> void:
 	for c in grid_container.get_children():
 		c.queue_free()
 	grid_container.visible = false
 
 
-# 显示 cargo 内物品（仅显示 count > 0 的）
-func _update_cargo_items(items: Array) -> void:
-	# 清空旧格子
-	for c in grid_container.get_children():
-		c.queue_free()
-
-	# 过滤非空物品
-	var non_empty: Array = []
-	for item in items:
-		if item is Dictionary and item.has("count") and item.count > 0:
-			non_empty.append(item)
-
-	if non_empty.is_empty():
-		grid_container.visible = false
-		return
-
-	grid_container.columns = min(non_empty.size(), 6)
-	grid_container.visible = true
-	# 创建显示格
-	for item_data in non_empty:
-		var slot = _create_item_slot(item_data)
-		grid_container.add_child(slot)
-
-	call_deferred("update_panel_size")
-
-
-# 动态调整 panel 尺寸
 func update_panel_size() -> void:
 	var text_size: Vector2 = textlabel.get_size()
 	var grid_size: Vector2 = Vector2.ZERO
@@ -146,20 +107,3 @@ func update_panel_size() -> void:
 		content_height += grid_size.y
 
 	size = Vector2(content_width, content_height) + padding
-
-func _create_item_slot(item_data):
-	var slot = Control.new()
-	slot.custom_minimum_size = Vector2(32, 32)
-
-	# 如果你原来在 .tscn 里有个 TextureRect:
-	var icon = TextureRect.new()
-	icon.texture = ItemDB.get_item(item_data.get("id")).get("icon")
-	slot.add_child(icon)
-
-	# 可选：添加数量标签
-	var label = Label.new()
-	label.text = str(item_data.count)
-	label.position = Vector2(16, 16)
-	slot.add_child(label)
-
-	return slot

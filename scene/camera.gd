@@ -52,14 +52,13 @@ func focus_on_vehicle(vehicle: Vehicle):
 	if not vehicle:
 		return
 		
-	target_pos = vehicle.get_global_mass_center()
+	target_pos = vehicle.to_global(vehicle.center_of_mass)
 	
-	if vehicle.control.get_method() == "manual_control":
-		if Input.is_action_pressed("AIMING"):
-			var viewport_center = Vector2(get_viewport().size / 2)
-			var mouse_pos = get_viewport().get_mouse_position()
-			var mouse_offset = mouse_pos - viewport_center
-			target_pos += mouse_offset
+	if Input.is_action_pressed("AIMING"):
+		var viewport_center = Vector2(get_viewport().size / 2)
+		var mouse_pos = get_viewport().get_mouse_position()
+		var mouse_offset = mouse_pos - viewport_center
+		target_pos += mouse_offset
 	
 	focused = true
 	update_camera_tween()
@@ -67,12 +66,7 @@ func focus_on_vehicle(vehicle: Vehicle):
 func sync_rotation_to_vehicle(vehicle: Vehicle):
 	if not vehicle:
 		return
-		
-	for pos in vehicle.grid.keys():
-		var block = vehicle.grid[pos]["block"]
-		var vehicle_rotation = block.global_rotation - deg_to_rad(block.base_rotation_degree)
-		target_rot = vehicle_rotation
-		break
+	target_rot = vehicle.global_rotation
 
 func sync_rotation_with(delta, target_rotation: float) -> void:
 	var angle_diff = wrapf(target_rotation - global_rotation, -PI, PI)
@@ -96,11 +90,3 @@ func movement(delta):
 		target_pos += input * move_speed * delta
 		# 手动移动时取消聚焦状态
 		focused = false
-
-func get_rotation_angle(dir: String) -> float:
-	match dir:
-		"left":    return PI/2
-		"up":      return 0
-		"right":   return -PI/2
-		"down":    return PI
-		_:         return 0

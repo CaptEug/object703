@@ -12,10 +12,6 @@ region = Rect2(128, 128, 32, 32)
 atlas = ExtResource("3_546lt")
 region = Rect2(0, 160, 32, 32)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_546lt"]
-atlas = ExtResource("3_546lt")
-region = Rect2(32, 96, 32, 32)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_1v5rv"]
 atlas = ExtResource("3_546lt")
 region = Rect2(64, 96, 32, 32)
@@ -48,16 +44,6 @@ focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_7ihmi")
 
-[node name="TankDexButton" type="TextureButton" parent="." unique_id=445461674]
-layout_mode = 0
-offset_left = 379.0
-offset_right = 411.0
-offset_bottom = 32.0
-tooltip_text = "open TankDex"
-focus_mode = 0
-mouse_default_cursor_shape = 2
-texture_normal = SubResource("AtlasTexture_546lt")
-
 [node name="MapButton" type="TextureButton" parent="." unique_id=2059256106]
 layout_mode = 0
 offset_left = 299.0
@@ -86,5 +72,4 @@ text = "00:00"
 
 [connection signal="pressed" from="SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="BuildButton" to="." method="_on_build_button_pressed"]
-[connection signal="pressed" from="TankDexButton" to="." method="_on_tank_dex_button_pressed"]
 [connection signal="pressed" from="MapButton" to="." method="_on_map_button_pressed"]

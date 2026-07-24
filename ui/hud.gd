@@ -29,15 +29,6 @@ func _on_build_button_pressed():
 	vehicle_editor.create_new_vehicle()
 
 
-func _on_tank_dex_button_pressed():
-	var tankdex = UI_root.find_child("TankDex", true, false) as FloatingPanel
-	if tankdex:
-		tankdex.visible = true
-	else:
-		tankdex = load("res://ui/tankdex.tscn").instantiate()
-		UI_root.add_child(tankdex)
-
-
 func _on_settings_button_pressed() -> void:
 	settings_panel.visible = true
 

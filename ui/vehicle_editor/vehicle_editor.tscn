@@ -82,6 +82,14 @@ theme = ExtResource("1_elhvm")
 script = ExtResource("1_iwo6t")
 saw_cursor = SubResource("AtlasTexture_j0nic")
 
+[node name="BlueprintDialog" type="FileDialog" parent="." unique_id=2103376601]
+title = "Load Vehicle Blueprint"
+initial_position = 2
+size = Vector2i(720, 520)
+access = 1
+file_mode = 0
+filters = PackedStringArray("*.json ; Vehicle Blueprints")
+
 [node name="COMicon" type="Sprite2D" parent="." unique_id=1259128418]
 texture = SubResource("AtlasTexture_br16q")
 
@@ -211,6 +219,9 @@ mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_65cy6")
 
 [connection signal="pressed" from="Panel/DismantleButton" to="." method="_on_dismantle_button_pressed"]
+[connection signal="pressed" from="Panel/SaveButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="Panel/LoadButton" to="." method="_on_load_button_pressed"]
+[connection signal="file_selected" from="BlueprintDialog" to="." method="_on_blueprint_file_selected"]
 [connection signal="pressed" from="Panel/CoM/TextureButton" to="." method="_on_COM_button_pressed"]
 [connection signal="pressed" from="Panel/MarginContainer/Panel/ZoomInButton" to="Panel/MarginContainer/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
 [connection signal="pressed" from="Panel/MarginContainer/Panel/ZoomOutButton" to="Panel/MarginContainer/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]

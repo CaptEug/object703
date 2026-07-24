@@ -16,13 +16,13 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Object703"
 run/main_scene="uid://bhq342vkmfrox"
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
 Globals="*uid://txmi1b8smg1j"
 GameState="*res://GameState.gd"
-BlockDB="*uid://cncy7amfvc2wr"
+BlockDB="*res://blocks/block_database.gd"
 ItemDB="*res://items/item_database.gd"
 TileDB="*res://map/tilemap/tile_database.gd"
 BetterTerrain="*res://addons/better-terrain/BetterTerrain.gd"
@@ -42,14 +42,10 @@ enabled=PackedStringArray("res://addons/better-terrain/plugin.cfg")
 [file_customization]
 
 folder_colors={
-"res://blocks/auxiliary/": "green",
-"res://blocks/command/": "yellow",
-"res://blocks/firepower/": "red",
-"res://blocks/industrial/": "purple",
-"res://blocks/infrastruture/": "pink",
 "res://blocks/logistic/": "pink",
 "res://blocks/mobility/": "orange",
-"res://blocks/structual/": "blue"
+"res://blocks/structural/": "blue",
+"res://blocks/weapon/": "red"
 }
 
 [importer_defaults]

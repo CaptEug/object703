@@ -51,22 +51,6 @@ var items = {
 	
 	### AMMO ###
 	
-	#"57mmAP": {
-		#"type": "ammo",
-		#"weight": 4,
-		#"icon": preload("res://assets/icons/items/ap57mm.png"),
-		#"max_stack": 999,
-		#"shell_scene": preload("res://blocks/firepower/shells/ap_57_mm.tscn")
-	#},
-	#
-	#"PZGR75": {
-		#"type": "ammo",
-		#"weight": 7,
-		#"icon": preload("res://assets/icons/items/pzgr75.png"),
-		#"max_stack": 999,
-		#"shell_scene": preload("res://blocks/firepower/shells/pzgr_75.tscn")
-	#},
-	
 	"PZGR88mm": {
 		"type": "ammo",
 		"weight": 7,
@@ -74,30 +58,6 @@ var items = {
 		"max_stack": 999,
 		"shell_scene": preload("res://items/shells/ger/pzgr_88mm.tscn")
 	},
-	
-	#"122mmAPHE": {
-		#"type": "ammo",
-		#"weight": 25,
-		#"icon": preload("res://assets/icons/items/aphe122mm.png"),
-		#"max_stack": 999,
-		#"shell_scene": preload("res://blocks/firepower/shells/aphe_122_mm.tscn")
-	#},
-	#
-	#"122mmHE": {
-		#"type": "ammo",
-		#"weight": 25,
-		#"icon": preload("res://assets/icons/items/he122mm.png"),
-		#"max_stack": 999,
-		#"shell_scene": preload("res://blocks/firepower/shells/aphe_122_mm.tscn")
-	#},
-	#
-	#"380mmrocket": {
-		#"type": "ammo",
-		#"weight": 350,
-		#"icon": preload("res://assets/icons/items/rocket380mm.png"),
-		#"max_stack": 999,
-		#"shell_scene": preload("res://blocks/firepower/shells/rocket_380_mm.tscn")
-	#},
 }
 
 func get_item(id: String) -> Dictionary:

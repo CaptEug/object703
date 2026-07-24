@@ -3,7 +3,6 @@ extends Node2D
 
 @onready var ground:TileMapLayer = $GroundLayer
 @onready var wall:WallLayer = $WallLayer
-@onready var building:BuildingLayer = $BuildingLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
 @onready var vehicle_root: = $VehicleRoot
 
@@ -140,19 +139,3 @@ func load_map(path: String):
 	# load map to minimap
 	minimap.map_renderer.loadmap()
 	minimap.map_renderer.queue_redraw()
-
-# 保存建筑数据
-func save_buildings() -> Array:
-	var cells := []
-	if building and building.layerdata:
-		for cell in building.layerdata:
-			var celldata = building.get_celldata(cell)
-			if celldata:
-				cells.append({
-					"coordinates": [cell.x, cell.y],
-					"block_name": celldata.get("block_name", ""),
-					"block_path": celldata.get("block_path", ""),
-					"rotation": celldata.get("rotation", 0),
-					"hp": celldata.get("hp", 0),
-				})
-	return cells

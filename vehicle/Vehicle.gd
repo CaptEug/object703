@@ -8,7 +8,6 @@ const TILE_SIZE := Globals.TILE_SIZE
 @onready var power_system := $PowerSystem
 @onready var fluid_system := $FluidSystem
 @onready var supply_system := $SupplySystem
-@onready var ventilation_system := $VentilationSystem
 
 # grid storage
 var grid : Dictionary = {}      # Vector2i -> Block
