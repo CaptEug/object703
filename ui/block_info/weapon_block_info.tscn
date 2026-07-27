@@ -1,0 +1,62 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/block_info/weapon_block_info.gd" id="1_script"]
+[ext_resource type="Theme" path="res://assets/resources/UI_theme.tres" id="2_theme"]
+
+[node name="WeaponBlockInfo" type="VBoxContainer"]
+theme_override_constants/separation = 6
+script = ExtResource("1_script")
+
+[node name="State" type="Label" parent="."]
+layout_mode = 2
+text = "State: Empty"
+
+[node name="Ammo" type="Label" parent="."]
+layout_mode = 2
+text = "Chambered: None"
+
+[node name="Selection" type="Label" parent="."]
+layout_mode = 2
+text = "Ammo selection: First available"
+
+[node name="ReloadBar" type="ProgressBar" parent="."]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+max_value = 100.0
+show_percentage = false
+
+[node name="AmmoButton" type="Button" parent="."]
+layout_mode = 2
+text = "Choose ammunition"
+
+[node name="AmmoPopup" type="PopupPanel" parent="."]
+size = Vector2i(340, 300)
+theme = ExtResource("2_theme")
+
+[node name="Margin" type="MarginContainer" parent="AmmoPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="AmmoPopup/Margin"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="AmmoPopup/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Choose ammunition"
+
+[node name="Tree" type="Tree" parent="AmmoPopup/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+hide_root = true
+
+[connection signal="pressed" from="AmmoButton" to="." method="_on_ammo_button_pressed"]
+[connection signal="item_selected" from="AmmoPopup/Margin/VBox/Tree" to="." method="_on_ammo_tree_item_selected"]

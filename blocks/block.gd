@@ -1,6 +1,10 @@
 class_name Block
 extends Node2D
 
+signal health_changed
+signal block_destroyed
+signal connectivity_changed
+
 const TILE_SIZE := Globals.TILE_SIZE
 
 var vehicle : Vehicle
@@ -187,7 +191,7 @@ func update_connectivity():
 
 # Block Status
 
-func damage(amount:int, type:String):
+func damage(amount: float, type: String):
 	
 	var dmg_taken = amount
 	match type:
@@ -195,5 +199,7 @@ func damage(amount:int, type:String):
 		"EXPLOSIVE": dmg_taken *= e_a
 	print(block_name + " took " + str(dmg_taken) + "damage")
 	hp -= dmg_taken
+	health_changed.emit()
 	if hp <= 0.0:
+		block_destroyed.emit()
 		vehicle.destroy_block(self)

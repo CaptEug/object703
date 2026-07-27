@@ -7,20 +7,13 @@ var preview_cell : Vector2i
 var preview_block: Block
 var preview_rotation: int = 0
 var design_mode : bool
+var updating_name_field := false
+var new_vehicle_index := 1
 var edit_mode: EditMode = EditMode.BUILD
 enum EditMode {
 	BUILD,
 	DISMANTLE
 }
-var overlay: Overlay = Overlay.NONE
-enum Overlay {
-	NONE,
-	SHAFT,
-	PIPE,
-	TUBE,
-	GAS
-}
-
 @onready var palette := $Panel/MarginContainer/Panel/Clipper/BlockPalette
 @onready var COM_icon := $COMicon
 @onready var vehicle_info_label := $Panel/RichTextLabel
@@ -31,17 +24,19 @@ var vehicle_scene : PackedScene = load("res://vehicle/Vehicle.tscn")
 @export var gamemap : GameMap
 
 
-func _ready():
-	pass # Replace with function body.
+func _ready() -> void:
+	vehicle_name_input.text_changed.connect(_on_vehicle_name_changed)
+	set_selected_vehicle(null)
 
 
 func _process(_delta):
+	if vehicle != null and not is_instance_valid(vehicle):
+		set_selected_vehicle(null)
 	selected_block = palette.selected_block
 	
-	update_overlay()
 	update_preview()
 	
-	if vehicle:
+	if is_instance_valid(vehicle):
 		COM_icon.position = world_to_screen(vehicle.to_global(vehicle.center_of_mass))
 
 
@@ -54,9 +49,19 @@ func _unhandled_input(event):
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_X:
 			toggle_mode()
+	if not visible:
+		return
 	
 	# MOUSE
 	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			var clicked_vehicle := _get_vehicle_under_mouse()
+			if clicked_vehicle != null and clicked_vehicle != vehicle:
+				set_selected_vehicle(clicked_vehicle)
+				get_viewport().set_input_as_handled()
+				return
+			if not is_instance_valid(vehicle):
+				return
 		match edit_mode:
 			
 			EditMode.BUILD:
@@ -92,13 +97,6 @@ func set_mode(new_mode: EditMode) -> void:
 	update_cursor()
 
 
-func set_overlay(new_overlay: Overlay) -> void:
-	if overlay == new_overlay:
-		return
-	overlay = new_overlay
-	update_vehicle_visuals()
-
-
 func update_cursor() -> void:
 	match edit_mode:
 		
@@ -114,31 +112,15 @@ func update_cursor() -> void:
 				)
 
 
-func update_vehicle_visuals() -> void:
-	if vehicle == null:
-		return
-	vehicle.power_system.visible = overlay == Overlay.SHAFT
-	vehicle.fluid_system.visible = overlay == Overlay.PIPE
-	vehicle.supply_system.visible = overlay == Overlay.TUBE
-
-
-func update_overlay():
-	if selected_block is Shaft:
-		set_overlay(Overlay.SHAFT)
-	elif selected_block is Pipe:
-		set_overlay(Overlay.PIPE)
-	elif selected_block is Tube:
-		set_overlay(Overlay.TUBE)
-	else:
-		set_overlay(Overlay.NONE)
-
-
 func update_preview():
-	if vehicle == null:
+	if not is_instance_valid(vehicle):
 		clear_preview_block()
 		return
-	
-	var mouse := get_viewport().get_camera_2d().get_global_mouse_position()
+	var camera := get_viewport().get_camera_2d()
+	if camera == null:
+		clear_preview_block()
+		return
+	var mouse := camera.get_global_mouse_position()
 	preview_cell = vehicle.world_to_cell(mouse)
 	
 	if selected_block == null or edit_mode != EditMode.BUILD:
@@ -196,6 +178,9 @@ func world_to_screen(world_pos: Vector2):
 
 
 func update_vehicle_info():
+	if not is_instance_valid(vehicle):
+		vehicle_info_label.clear()
+		return
 	vehicle_info_label.clear()
 	vehicle_info_label.append_text("weight: " + "%.1f" % (vehicle.total_mass / 1) + " T\n")
 	vehicle_info_label.append_text("total power: " + str(vehicle.total_engine_power) + " kW") 
@@ -204,60 +189,111 @@ func update_vehicle_info():
 # Vehicle Building
 
 func place_block():
-	if vehicle == null:
+	if not is_instance_valid(vehicle):
 		return
 	if selected_block == null:
 		return
 	
-	if selected_block is Shaft:
-		vehicle.power_system.place_shaft(preview_cell)
-	elif selected_block is Pipe:
-		vehicle.fluid_system.place_pipe(preview_cell)
-	elif selected_block is Tube:
-		vehicle.supply_system.place_tube(preview_cell)
-	else:
-		var block_scene = load(selected_block.scene_file_path)
-		vehicle.place_block(block_scene, preview_cell, preview_rotation)
+	var block_scene = load(selected_block.scene_file_path)
+	vehicle.place_block(block_scene, preview_cell, preview_rotation)
 	
 	update_vehicle_info()
 
 
 func remove_block():
-	if vehicle == null:
+	if not is_instance_valid(vehicle):
 		return
-	match overlay:
-		
-		Overlay.NONE:
-			var block = vehicle.get_block(preview_cell)
-			if block != null:
-				vehicle.destroy_block(block)
-		
-		Overlay.SHAFT:
-			vehicle.power_system.remove_shaft(preview_cell)
-		
-		Overlay.PIPE:
-			vehicle.fluid_system.remove_pipe(preview_cell)
-		
-		Overlay.TUBE:
-			vehicle.supply_system.remove_tube(preview_cell)
+	var block = vehicle.get_block(preview_cell)
+	if block != null:
+		vehicle.destroy_block(block)
 	
 	update_vehicle_info()
 
 
-func create_new_vehicle(world_pos: Vector2 = Vector2.ZERO, replace_old: bool = true) -> void:
+func create_new_vehicle(
+	world_pos: Vector2 = Vector2(INF, INF),
+	replace_old: bool = false
+) -> void:
 	clear_preview_block()
-	if replace_old and is_instance_valid(vehicle):
-		vehicle.queue_free()
-		vehicle = null
-	var inst := vehicle_scene.instantiate()
-	vehicle = inst as Vehicle
+	var previous_vehicle := vehicle
+	var spawn_position := world_pos
+	if not spawn_position.is_finite():
+		if replace_old and is_instance_valid(previous_vehicle):
+			spawn_position = previous_vehicle.global_position
+		else:
+			spawn_position = _get_new_vehicle_spawn_position(previous_vehicle)
+	if replace_old and is_instance_valid(previous_vehicle):
+		previous_vehicle.queue_free()
+	var new_vehicle := vehicle_scene.instantiate() as Vehicle
+	new_vehicle.vehicle_name = "New Vehicle %d" % new_vehicle_index
+	new_vehicle_index += 1
 	if gamemap != null:
-		gamemap.add_child(vehicle)
+		gamemap.add_child(new_vehicle)
 	else:
-		get_tree().current_scene.add_child(vehicle)
-	vehicle.global_position = world_pos
-	vehicle.rotation = 0.0
+		get_tree().current_scene.add_child(new_vehicle)
+	new_vehicle.global_position = spawn_position
+	new_vehicle.rotation = 0.0
+	set_selected_vehicle(new_vehicle)
+
+
+func _get_new_vehicle_spawn_position(reference_vehicle: Vehicle) -> Vector2:
+	if is_instance_valid(reference_vehicle):
+		var rightmost_cell := 0
+		for block: Block in reference_vehicle.blocks:
+			for cell: Vector2i in block.get_occupied_cells():
+				rightmost_cell = maxi(rightmost_cell, cell.x)
+		var local_offset := Vector2(
+			(rightmost_cell + 3) * Globals.TILE_SIZE,
+			0.0
+		)
+		return reference_vehicle.to_global(local_offset)
+	var camera := get_viewport().get_camera_2d()
+	if camera != null:
+		return camera.get_screen_center_position()
+	return Vector2.ZERO
+
+
+func set_selected_vehicle(new_vehicle: Vehicle) -> void:
+	clear_preview_block()
+	vehicle = new_vehicle if is_instance_valid(new_vehicle) else null
+	updating_name_field = true
+	if is_instance_valid(vehicle):
+		vehicle_name_input.editable = true
+		vehicle_name_input.remove_theme_color_override("font_color")
+		vehicle_name_input.remove_theme_color_override("font_uneditable_color")
+		vehicle_name_input.text = vehicle.vehicle_name
+		COM_icon.visible = $Panel/CoM/TextureButton.button_pressed
+	else:
+		vehicle_name_input.editable = false
+		var no_selection_color := Color(1.0, 0.2, 0.15)
+		vehicle_name_input.add_theme_color_override("font_color", no_selection_color)
+		vehicle_name_input.add_theme_color_override("font_uneditable_color", no_selection_color)
+		vehicle_name_input.text = "No vehicle selected"
+		COM_icon.hide()
+	updating_name_field = false
 	update_vehicle_info()
+
+
+func _get_vehicle_under_mouse() -> Vehicle:
+	var camera := get_viewport().get_camera_2d()
+	if camera == null:
+		return null
+	var query := PhysicsPointQueryParameters2D.new()
+	query.position = camera.get_global_mouse_position()
+	query.collision_mask = 1
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	for result: Dictionary in get_viewport().world_2d.direct_space_state.intersect_point(query, 32):
+		var collider: Variant = result.get("collider")
+		if collider is Vehicle:
+			return collider as Vehicle
+	return null
+
+
+func _on_vehicle_name_changed(new_name: String) -> void:
+	if updating_name_field or not is_instance_valid(vehicle):
+		return
+	vehicle.vehicle_name = new_name
 
 
 # Signals
@@ -312,11 +348,9 @@ func _on_blueprint_file_selected(path: String) -> void:
 
 	clear_preview_block()
 	var old_vehicle := vehicle
-	vehicle = built["vehicle"]
-	vehicle_name_input.text = built["name"]
+	set_selected_vehicle(built["vehicle"])
 	if is_instance_valid(old_vehicle):
 		old_vehicle.queue_free()
-	update_vehicle_info()
 	_show_status("Blueprint loaded: %s" % built["name"])
 
 

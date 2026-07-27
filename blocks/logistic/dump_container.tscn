@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://blocks/logistic/ItemStorage.gd" id="1_storage"]
+[ext_resource type="Texture2D" path="res://assets/blocks_basic.png" id="2_blocks"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dump"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dump"]
+atlas = ExtResource("2_blocks")
+region = Rect2(80, 64, 16, 16)
+
+[node name="DumpContainer" type="Node2D"]
+script = ExtResource("1_storage")
+storage_kind = 0
+max_load = 2000
+block_name = "Dump Container"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_dump")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("AtlasTexture_dump")

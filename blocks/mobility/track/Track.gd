@@ -6,8 +6,6 @@ var drive_force : float = 0.0
 @export var max_force : float = 100.0
 @export var grip : float = 0.8
 @export var slip_threshold : float = 100.0
-@export var shaft_port : Vector2i = Vector2i.ZERO
-
 @export var track_sprite : Sprite2D
 @export var sprite_mask : Sprite2D
 @export var mask_front : CompressedTexture2D

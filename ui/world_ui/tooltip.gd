@@ -67,7 +67,7 @@ func show_block_in_vehicle(vehicle:Vehicle, pos:Vector2):
 	
 	# Liquid Storage
 	if block is LiquidStorage:
-		textlabel.text += ("\n" + "%.f" % block.stored + " L " + block.liquid + " stored")
+		textlabel.text += ("\n" + "%.2f" % block.stored + " mass " + block.liquid + " stored")
 	_last_block = block
 
 

@@ -12,8 +12,8 @@ region = Rect2(16, 64, 16, 32)
 
 [node name="V2" type="Node2D" unique_id=1612667147]
 script = ExtResource("1_wdfkh")
-shaft_port = Vector2i(0, 1)
 size = Vector2i(1, 2)
+block_name = "V2"
 metadata/_custom_type_script = "uid://bicc471ql4ger"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=145307305]

@@ -8,7 +8,7 @@ var blocks := {
 		"path": "res://blocks/logistic/fuel_tank.tscn",
 	},
 	3: {
-		"path": "res://blocks/logistic/ammorack.tscn",
+		"path": "res://blocks/logistic/cargo_container.tscn",
 	},
 	4: {
 		"path": "res://blocks/mobility/powerpack/v_2.tscn",
@@ -18,6 +18,9 @@ var blocks := {
 	},
 	6: {
 		"path": "res://blocks/weapon/KwK_43.tscn",
+	},
+	7: {
+		"path": "res://blocks/logistic/dump_container.tscn",
 	},
 }
 

@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://dmbiltj5ojfl2"]
+
+[ext_resource type="Script" uid="uid://dpymnvjcr8b1p" path="res://blocks/logistic/ItemStorage.gd" id="1_storage"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_blocks"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cargo"]
+size = Vector2(16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cargo"]
+atlas = ExtResource("2_blocks")
+region = Rect2(96, 64, 16, 16)
+
+[node name="CargoContainer" type="Node2D" unique_id=1017669523]
+script = ExtResource("1_storage")
+max_load = 1000
+block_name = "Cargo Container"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1637510050]
+shape = SubResource("RectangleShape2D_cargo")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1744632637]
+texture = SubResource("AtlasTexture_cargo")

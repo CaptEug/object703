@@ -11,6 +11,7 @@ linear_damp = 0.1
 angular_damp = 1.0
 script = ExtResource("1_cxorx")
 max_K_DMG = 100.0
+max_E_DMG = 0.0
 max_range = 99999
 metadata/_custom_type_script = "uid://m2gu1d4dl3q1"
 

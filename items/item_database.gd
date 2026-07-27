@@ -1,66 +1,90 @@
 extends Node
 
-var items = {
-	### Material ###
+enum ItemType {
+	MINERAL,
+	MATERIAL,
+	LIQUID,
+}
+
+enum ItemSubclass {
+	RAW_ORE,
+	AMMO,
+	FUEL,
+}
+
+var items := {
 	"scrap": {
-		"type": "solid",
-		"weight": 100,
+		"name": "Scrap",
+		"type": ItemType.MATERIAL,
+		"subclasses": [],
+		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/scrap.png"),
-		"max_stack": 999,
 	},
-	
 	"metal": {
-		"type": "solid",
-		"weight": 100,
+		"name": "Metal",
+		"type": ItemType.MATERIAL,
+		"subclasses": [],
+		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/metal.png"),
-		"max_stack": 999,
 	},
-	
 	"sandstone": {
-		"type": "solid",
-		"weight": 100,
+		"name": "Sandstone",
+		"type": ItemType.MINERAL,
+		"subclasses": [],
+		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/sandstone.png"),
-		"max_stack": 999,
 	},
-	
 	"hematite": {
-		"type": "solid",
-		"weight": 100,
+		"name": "Hematite",
+		"type": ItemType.MINERAL,
+		"subclasses": [ItemSubclass.RAW_ORE],
+		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/hematite.png"),
-		"max_stack": 999,
 	},
-	
 	"coal": {
-		"type": "solid",
-		"weight": 100,
+		"name": "Coal",
+		"type": ItemType.MINERAL,
+		"subclasses": [ItemSubclass.FUEL],
+		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/coal.png"),
-		"max_stack": 999,
 	},
-	
-	### Liquid ###
-	
 	"crude_oil": {
-		"type": "liquid",
+		"name": "Crude Oil",
+		"type": ItemType.LIQUID,
+		"subclasses": [],
 		"icon": preload("res://assets/icons/items/crude_oil.png"),
 	},
-	
 	"petroleum": {
-		"type": "liquid",
+		"name": "Petroleum",
+		"type": ItemType.LIQUID,
+		"subclasses": [ItemSubclass.FUEL],
 		"icon": preload("res://assets/icons/items/petroleum.png"),
 	},
-	
-	### AMMO ###
-	
 	"PZGR88mm": {
-		"type": "ammo",
-		"weight": 7,
+		"name": "PzGr. 88 mm",
+		"type": ItemType.MATERIAL,
+		"subclasses": [ItemSubclass.AMMO],
+		"weight": 7.0,
 		"icon": preload("res://assets/icons/items/pzgr75.png"),
 		"max_stack": 999,
-		"shell_scene": preload("res://items/shells/ger/pzgr_88mm.tscn")
+		"shell_scene": preload("res://items/shells/ger/pzgr_88mm.tscn"),
 	},
 }
 
-func get_item(id: String) -> Dictionary:
-	if items.has(id):
-		return items[id]
-	return {}
+func get_item(item_id: String) -> Dictionary:
+	return items.get(item_id, {})
+
+func get_display_name(item_id: String) -> String:
+	return get_item(item_id).get("name", item_id)
+
+func get_items_by_type(item_type: int) -> Array[String]:
+	var result: Array[String] = []
+	for item_id: String in items:
+		if items[item_id].get("type", -1) == item_type:
+			result.append(item_id)
+	result.sort()
+	return result
+
+func has_subclass(item_id: String, subclass: int) -> bool:
+	var subclasses: Array = get_item(item_id).get("subclasses", [])
+	return subclasses.has(subclass)

@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://c03cd3morat2n" path="res://vehicle/supply_system.gd" id="4_w7aos"]
 
 [node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
+input_pickable = true
 center_of_mass_mode = 1
 linear_damp = 2.0
 angular_damp = 5.0

@@ -2,14 +2,10 @@ class_name PowerPack
 extends Block
 
 @export var max_power : float = 100.0
-@export var liquid_port : Vector2i = Vector2i.ZERO
-@export var supply_port : Vector2i = Vector2i.ZERO
-@export var shaft_port : Vector2i = Vector2i.ZERO
-
 # Each dictionary is one alternative recipe.
 # Values are consumption rates:
-# - liquid: Litre per second
-# - solid: units per second (consumed from internal buffer)
+# - liquid: mass per second
+# - mineral/material: units per second (consumed from internal buffer)
 @export var fuel_choices: Array[Dictionary] = [{"petroleum": 1.0}]
 
 var is_running: bool = false
@@ -101,9 +97,9 @@ func preprocess_recipe(recipe: Dictionary, delta: float) -> Dictionary:
 			continue
 		
 		var rate := float(recipe[item])
-		if item_data["type"] == "liquid":
+		if item_data["type"] == ItemDB.ItemType.LIQUID:
 			liquid_requests[item] = rate * delta * efficiency
-		elif item_data["type"] == "solid":
+		elif ItemDB.has_subclass(item, ItemDB.ItemSubclass.FUEL):
 			var need: float = rate * delta * efficiency
 			solid_needs[item] = need
 			var buffered: float = solid_fuel_buffer.get(item, 0.0)

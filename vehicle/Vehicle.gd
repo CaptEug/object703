@@ -4,7 +4,6 @@ extends RigidBody2D
 const TILE_SIZE := Globals.TILE_SIZE
 
 @onready var blocks_root : Node2D = $Blocks
-# overlays
 @onready var power_system := $PowerSystem
 @onready var fluid_system := $FluidSystem
 @onready var supply_system := $SupplySystem
@@ -12,8 +11,11 @@ const TILE_SIZE := Globals.TILE_SIZE
 # grid storage
 var grid : Dictionary = {}      # Vector2i -> Block
 var blocks : Array[Block] = []
+var block_components: Array[Array] = []
+var block_component_map: Dictionary[Block, int] = {}
 
 # basic property
+@export var vehicle_name := "New Vehicle"
 var total_mass := 0.0
 var total_engine_power: float = 0.0
 var engines: Array[PowerPack] = []
@@ -22,6 +24,35 @@ var tracks: Array[Track] = []
 
 func _process(_delta):
 	pass
+
+
+func _input_event(viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if not event is InputEventMouseButton:
+		return
+	if not event.pressed or event.button_index != MOUSE_BUTTON_RIGHT:
+		return
+	if _open_block_panel_at_mouse():
+		viewport.set_input_as_handled()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event is InputEventMouseButton:
+		return
+	if not event.pressed or event.button_index != MOUSE_BUTTON_RIGHT:
+		return
+	if _open_block_panel_at_mouse():
+		get_viewport().set_input_as_handled()
+
+
+func _open_block_panel_at_mouse() -> bool:
+	var block := get_block(world_to_cell(get_global_mouse_position()))
+	if block == null:
+		return false
+	var panel := get_tree().get_first_node_in_group("block_information_panel")
+	if panel != null and panel.has_method("open_for_block"):
+		panel.open_for_block(block, get_viewport().get_mouse_position())
+		return true
+	return false
 
 
 func update_vehicle():
@@ -114,7 +145,8 @@ func destroy_block(block:Block):
 	blocks.erase(block)
 	for c in block.get_occupied_cells():
 		grid.erase(c)
-	block.collision.queue_free()
+	if block.collision != null:
+		block.collision.queue_free()
 	block.queue_free()
 	
 	update_vehicle()
@@ -138,12 +170,75 @@ func refresh_system_lists() -> void:
 			engines.append(engine)
 			total_engine_power += engine.max_power
 	
+	rebuild_block_connectivity()
 	rebuild_tracks_connections()
-	
-	# systems update
-	fluid_system.rebuild_pipe_network()
-	supply_system.rebuild_tube_network()
 	power_system.rebuild_drive_distribution()
+
+
+func rebuild_block_connectivity() -> void:
+	block_components.clear()
+	block_component_map.clear()
+	var unvisited := {}
+	for block in blocks:
+		unvisited[block] = true
+
+	while not unvisited.is_empty():
+		var start: Block = unvisited.keys()[0]
+		var component: Array[Block] = []
+		var queue: Array[Block] = [start]
+		var component_index := block_components.size()
+
+		while not queue.is_empty():
+			var current: Block = queue.pop_front()
+			if not unvisited.has(current):
+				continue
+			unvisited.erase(current)
+			component.append(current)
+			block_component_map[current] = component_index
+
+			for neighbor in get_directly_connected_blocks(current):
+				if unvisited.has(neighbor):
+					queue.append(neighbor)
+
+		block_components.append(component)
+
+	for block in blocks:
+		block.connected = get_connected_blocks(block, false).size() > 0
+		block.connectivity_changed.emit()
+
+
+func get_directly_connected_blocks(block: Block) -> Array[Block]:
+	var result: Array[Block] = []
+	for cell in block.get_occupied_cells():
+		for side in Block.Side.values():
+			var neighbor_cell: Vector2i = cell + Block.SIDE_DIRS[side]
+			var neighbor := get_block(neighbor_cell)
+			if neighbor == null or neighbor == block or result.has(neighbor):
+				continue
+			var opposite: int = Block.OPPOSITE_SIDE[side]
+			if block.is_edge_connectable(cell, side) and neighbor.is_edge_connectable(neighbor_cell, opposite):
+				result.append(neighbor)
+	return result
+
+
+func get_component_index(block: Block) -> int:
+	return block_component_map.get(block, -1)
+
+
+func are_blocks_connected(first: Block, second: Block) -> bool:
+	var first_component := get_component_index(first)
+	return first_component >= 0 and first_component == get_component_index(second)
+
+
+func get_connected_blocks(block: Block, include_self: bool = true) -> Array[Block]:
+	var component_index := get_component_index(block)
+	if component_index < 0 or component_index >= block_components.size():
+		return []
+	var result: Array[Block] = []
+	for connected_block in block_components[component_index]:
+		if include_self or connected_block != block:
+			result.append(connected_block)
+	return result
 	
 
 

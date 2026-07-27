@@ -3,124 +3,30 @@ extends Node2D
 
 @export var vehicle : Vehicle
 
-var shaft_scene : PackedScene = load("res://blocks/mobility/power_shaft.tscn")
-var shaft_grid : Dictionary[Vector2i, Shaft] = { }   # Cell -> shaft
-var shaft_groups: Array[Array] = []
-
-var block_group_map: Dictionary[Block, int] = {}  # block -> group_index
+var block_group_map: Dictionary[Block, int] = {}
 
 var avaliable_engines : Array[PowerPack] = []
 var active_tracks : Array[Track] = []
 var move_coeffs: Dictionary[Track, float] = {}
 var pivot_coeffs: Dictionary[Track, float] = {}
 
-const DIRS := [
-	Vector2i.UP,
-	Vector2i.RIGHT,
-	Vector2i.DOWN,
-	Vector2i.LEFT
-]
-
-
-func _ready():
-	pass
-
 func _process(_delta):
 	update_power_system()
 
 
-func can_palce_shaft(cell:Vector2i) -> bool:
-	# must on block
-	if not vehicle.grid.has(cell):
-		return false
-	# check occupied
-	if shaft_grid.has(cell):
-		return false
-	return true
-
-
-func place_shaft(cell:Vector2i):
-	if not can_palce_shaft(cell):
-		return
-	var shaft := shaft_scene.instantiate() as Shaft
-	shaft.update_transform(vehicle, cell, 0)
-	add_child(shaft)
-	
-	shaft_grid[cell] = shaft
-	
-	rebuild_drive_distribution()
-
-
-func remove_shaft(cell:Vector2i):
-	if shaft_grid.has(cell):
-		shaft_grid[cell].queue_free()
-		shaft_grid.erase(cell)
-	
-	rebuild_drive_distribution()
-
- 
-func update_shaft_visuals():
-	for shaft in shaft_grid.values():
-		shaft.update_sprite()  
-
-
-# =========================
-# SHAFT GROUP BUILD
-# =========================
-
-func rebuild_shaft_groups() -> Array[Array]:
-	update_shaft_visuals()
-	var groups: Array[Array] = []
-	var visited := {}
-	for start_cell in shaft_grid.keys():
-		if visited.has(start_cell):
-			continue
-		var group: Array[Vector2i] = []
-		var queue: Array[Vector2i] = [start_cell]
-		visited[start_cell] = true
-		
-		while queue.size() > 0:
-			var cell: Vector2i = queue.pop_front()
-			group.append(cell)
-			for dir in DIRS:
-				var next: Vector2i = cell + dir
-				if not shaft_grid.has(next):
-					continue
-				if visited.has(next):
-					continue
-				visited[next] = true
-				queue.append(next)
-		
-		groups.append(group)
-	
-	return groups
-
-
-func rebuild_shaft_network() -> void:
-	shaft_groups = rebuild_shaft_groups()
+func rebuild_component_network() -> void:
 	block_group_map.clear()
 	avaliable_engines.clear()
 	active_tracks.clear()
-	
-	for group_index in range(shaft_groups.size()):
-		var group_set := {}
-		for cell in shaft_groups[group_index]:
-			group_set[cell] = true
-		for block in vehicle.blocks:
-			if "shaft_port" in block:
-				var world_port: Vector2i = block.get_transformed_cell(block.shaft_port)
-				if group_set.has(world_port):
-					block_group_map[block] = group_index
-					
-					if block is PowerPack:
-						avaliable_engines.append(block)
-					
-					if block is Track:
-						if active_tracks.has(block):
-							continue
-						for track in block.connected_tracks:
-							block_group_map[track] = group_index
-							active_tracks.append(track)
+	for block in vehicle.blocks:
+		var component_index := vehicle.get_component_index(block)
+		if component_index < 0:
+			continue
+		block_group_map[block] = component_index
+		if block is PowerPack:
+			avaliable_engines.append(block)
+		elif block is Track:
+			active_tracks.append(block)
 
 
 # =========================
@@ -130,7 +36,7 @@ func rebuild_shaft_network() -> void:
 func rebuild_drive_distribution() -> void:
 	move_coeffs.clear()
 	pivot_coeffs.clear()
-	rebuild_shaft_network()
+	rebuild_component_network()
 	
 	if active_tracks.is_empty():
 		return
@@ -247,7 +153,7 @@ func get_device_power_demand(group_index: int) -> float:
 			continue
 		if block is Track:
 			continue
-		
+
 		if block.has_method("get_power_demand"):
 			demand += block.get_power_demand()
 	
@@ -331,7 +237,7 @@ func update_engine_targets(group_index: int, group_used_power: float) -> void:
 
 
 func update_power_system() -> void:
-	if shaft_groups.is_empty():
+	if vehicle == null or vehicle.block_components.is_empty():
 		return
 	
 	var drive_input := vehicle.get_drive_input()
@@ -344,42 +250,28 @@ func update_power_system() -> void:
 		var pivot_c: float = pivot_coeffs.get(track, 0.0)
 		raw_cmds[track] = move_input * move_c + pivot_input * pivot_c
 	
-	var final_power_scale := INF
-	
-	for group_index in range(shaft_groups.size()):
-		# Update Engine Targets Based On Power Demands
+	for group_index in range(vehicle.block_components.size()):
 		var device_demand: float = get_device_power_demand(group_index)
-		
 		var track_limit := get_track_scale_limit(group_index, raw_cmds)
 		var track_demand: float = get_track_power_demand(group_index, raw_cmds, track_limit)
-		
 		update_engine_targets(group_index, device_demand + track_demand)
 		
-		# Findout Track Power Scale
 		var group_power := get_group_power(group_index)
 		if group_power == 0.0:
+			distribute_track_power(group_index, raw_cmds, 0.0)
 			continue
 		
 		var device_used: float = distribute_device_power(group_index, group_power)
-		
 		var remaining_power := maxf(0.0, group_power - device_used)
 		if remaining_power == 0.0:
+			distribute_track_power(group_index, raw_cmds, 0.0)
 			continue
 		
 		var track_cmd_sum: float = get_group_cmd_sum(group_index, raw_cmds)
-		var power_limit := remaining_power / track_cmd_sum
-		var group_scale := minf(power_limit, track_limit)
-		
-		final_power_scale = minf(final_power_scale, group_scale)
-	
-	if final_power_scale == INF:
-		final_power_scale = 0.0
-	
-	final_power_scale = maxf(final_power_scale, 0.0)
-	
-	# apply the same scale to all groups, then update engines
-	for group_index in range(shaft_groups.size()):
-		if get_group_power(group_index) == 0.0:
+		if track_cmd_sum <= 0.0:
 			distribute_track_power(group_index, raw_cmds, 0.0)
 			continue
-		distribute_track_power(group_index, raw_cmds, final_power_scale)
+
+		var power_limit := remaining_power / track_cmd_sum
+		var group_scale := maxf(0.0, minf(power_limit, track_limit))
+		distribute_track_power(group_index, raw_cmds, group_scale)

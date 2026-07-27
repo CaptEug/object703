@@ -9,7 +9,7 @@ extends Area2D
 
 func _ready() -> void:
 	var shape := collision_shape.shape as CircleShape2D
-	shape.radius = radius * Globals.TILE_SIZE
+	shape.radius = maxf(radius * Globals.TILE_SIZE, 1.0)
 	
 	call_deferred("apply_explosion")
 
@@ -25,6 +25,11 @@ func apply_explosion() -> void:
 func apply_explosion_to_vehicle(vehicle: Vehicle) -> void:
 	var center_cell: Vector2i = vehicle.world_to_cell(global_position)
 	var hit_blocks: Dictionary = {}
+	if radius <= 0:
+		var direct_block := vehicle.get_block(center_cell)
+		if direct_block != null:
+			direct_block.damage(max_damage, "EXPLOSIVE")
+		return
 	
 	for y in range(-radius, radius + 1):
 		for x in range(-radius, radius + 1):
