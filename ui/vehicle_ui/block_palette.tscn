@@ -1,14 +1,15 @@
 [gd_scene format=3 uid="uid://cm0v65jmp7f6n"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_corl5"]
-[ext_resource type="Script" uid="uid://oqgndqn6q2ut" path="res://ui/vehicle_editor/block_palette.gd" id="1_o6jai"]
+[ext_resource type="Script" uid="uid://oqgndqn6q2ut" path="res://ui/vehicle_ui/block_palette.gd" id="1_o6jai"]
 [ext_resource type="PackedScene" uid="uid://b1mvxfwjerdxa" path="res://blocks/mobility/track/metal_track.tscn" id="2_q8o37"]
 [ext_resource type="PackedScene" uid="uid://owwanqi4qnav" path="res://blocks/structural/structual_frame.tscn" id="4_2ommr"]
 [ext_resource type="PackedScene" uid="uid://vbegrifblqog" path="res://blocks/mobility/powerpack/v_2.tscn" id="5_jt0gd"]
 [ext_resource type="PackedScene" uid="uid://db5q6xew8l8yd" path="res://blocks/logistic/fuel_tank.tscn" id="8_tk1tn"]
-[ext_resource type="PackedScene" path="res://blocks/logistic/cargo_container.tscn" id="9_hpgwb"]
+[ext_resource type="PackedScene" uid="uid://dmbiltj5ojfl2" path="res://blocks/logistic/cargo_container.tscn" id="9_hpgwb"]
 [ext_resource type="PackedScene" path="res://blocks/logistic/dump_container.tscn" id="10_dump"]
 [ext_resource type="PackedScene" uid="uid://cxis8u1udc8hr" path="res://blocks/weapon/KwK_43.tscn" id="11_ulxes"]
+[ext_resource type="PackedScene" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3
@@ -34,6 +35,9 @@ position = Vector2(88, 56)
 
 [node name="DumpContainer" parent="." instance=ExtResource("10_dump")]
 position = Vector2(120, 56)
+
+[node name="ManualCockpit" parent="." instance=ExtResource("12_cockpit")]
+position = Vector2(152, 56)
 
 [node name="KwK43" parent="." unique_id=460751282 instance=ExtResource("11_ulxes")]
 position = Vector2(184, 78)

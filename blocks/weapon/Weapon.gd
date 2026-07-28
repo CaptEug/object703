@@ -21,7 +21,6 @@ signal weapon_status_changed
 @export var spread: float = 0.0 # radians
 @export var shells: Array[String] = []
 @export var muzzle_energy: float = 10000.0
-@export var direct_player_control := true # control block can disable this later
 
 @export_category("Firing")
 @export var muzzles: Array[Marker2D] = []
@@ -57,8 +56,11 @@ func _physics_process(delta: float) -> void:
 	if vehicle == null:
 		return
 
-	if direct_player_control:
-		_read_prototype_player_input()
+	if vehicle.has_aim_command():
+		set_aim_target(vehicle.get_aim_target())
+	else:
+		clear_aim_target()
+	set_trigger_held(vehicle.get_fire_command())
 	if mount_type == MountType.INTEGRATED_TURRET:
 		_update_integrated_turret(delta)
 
@@ -113,18 +115,6 @@ func get_reload_progress() -> float:
 	if reload_timer.wait_time <= 0.0:
 		return 1.0
 	return clampf(1.0 - reload_timer.time_left / reload_timer.wait_time, 0.0, 1.0)
-
-func _read_prototype_player_input() -> void:
-	var input_blocked := false
-	var current_scene := get_tree().current_scene
-	if current_scene != null:
-		var editor := current_scene.get_node_or_null("UI/VehicleEditor") as Control
-		input_blocked = editor != null and editor.visible
-	if get_viewport().gui_get_hovered_control() != null:
-		input_blocked = true
-
-	set_aim_target(get_global_mouse_position())
-	set_trigger_held(not input_blocked and Input.is_action_pressed("FIRE_MAIN"))
 
 func _update_integrated_turret(delta: float) -> void:
 	if turret == null or not has_aim_target:

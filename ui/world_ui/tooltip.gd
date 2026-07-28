@@ -27,23 +27,17 @@ func _physics_process(_delta: float) -> void:
 	
 	var results = space_state.intersect_point(query)
 	var vehicle:Vehicle
-	var pickup:Pickup
 	var maplayer:TileMapLayer
 
 	for hit in results:
 		var c = hit.collider
 		if c is Vehicle:
 			vehicle = c
-		elif c is Pickup:
-			pickup = c
 		elif c is TileMapLayer:
 			maplayer = c
 
 	if vehicle:
 		show_block_in_vehicle(vehicle, query.position)
-		return
-	elif pickup:
-		show_pickup(pickup)
 		return
 	elif maplayer:
 		show_tile(maplayer, query.position)
@@ -69,11 +63,6 @@ func show_block_in_vehicle(vehicle:Vehicle, pos:Vector2):
 	if block is LiquidStorage:
 		textlabel.text += ("\n" + "%.2f" % block.stored + " mass " + block.liquid + " stored")
 	_last_block = block
-
-
-func show_pickup(pickup:Area2D):
-	visible = true
-	textlabel.text = pickup.item_id + " x " + str(pickup.amount)
 
 func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 	visible = true

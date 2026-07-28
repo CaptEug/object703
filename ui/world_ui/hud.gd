@@ -25,8 +25,8 @@ func get_clock_string(time) -> String:
 
 
 func _on_build_button_pressed():
-	vehicle_editor.show()
 	vehicle_editor.create_new_vehicle()
+	vehicle_editor.enter_edit_mode()
 
 
 func _on_settings_button_pressed() -> void:

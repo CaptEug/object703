@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://b66evl72jh85e"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://yvcfifdd3ryk" path="res://ui/vehicle_ui/vehicle_panel.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="3_mso78"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jsdmi"]
+atlas = ExtResource("3_mso78")
+region = Rect2(224, 0, 16, 16)
+
+[node name="VehiclePanel" type="Panel" unique_id=2075585242]
+custom_minimum_size = Vector2(256, 256)
+offset_right = 256.0
+offset_bottom = 256.0
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="CloseButton" type="TextureButton" parent="." unique_id=1177145659]
+layout_mode = 0
+offset_left = 234.0
+offset_top = 6.0
+offset_right = 250.0
+offset_bottom = 22.0
+tooltip_text = "Close vehicle panel"
+focus_mode = 0
+texture_normal = SubResource("AtlasTexture_jsdmi")
+
+[node name="VehicleName" type="LineEdit" parent="." unique_id=1176771286]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 230.0
+offset_bottom = 56.0
+placeholder_text = "Vehicle name"
+
+[node name="VehicleInfo" type="RichTextLabel" parent="." unique_id=514932097]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 57.0
+offset_right = 250.0
+offset_bottom = 181.0
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 8
+bbcode_enabled = true
+text = "Weight: --
+Speed: --
+Control: --"
+fit_content = true
+
+[node name="Status" type="Label" parent="." unique_id=1717030739]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 183.0
+offset_right = 250.0
+offset_bottom = 205.0
+theme_override_font_sizes/font_size = 8
+vertical_alignment = 2
+text_overrun_behavior = 3
+
+[node name="EditButton" type="Button" parent="." unique_id=1661453248]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 209.0
+offset_right = 250.0
+offset_bottom = 249.0
+focus_mode = 0
+text = "Edit Vehicle"
+
+[connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="EditButton" to="." method="_on_edit_button_pressed"]

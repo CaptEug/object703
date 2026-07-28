@@ -20,6 +20,8 @@ var total_mass := 0.0
 var total_engine_power: float = 0.0
 var engines: Array[PowerPack] = []
 var tracks: Array[Track] = []
+var control_blocks: Array[ControlBlock] = []
+var active_control_block: ControlBlock
 
 
 func _process(_delta):
@@ -67,24 +69,39 @@ func update_vehicle():
 
 
 func get_drive_input() -> Dictionary:
-	var v := 0.0
-	if Input.is_action_pressed("FORWARD"):
-		v += 1.0
-	if Input.is_action_pressed("BACKWARD"):
-		v -= 1.0
-	
-	var h := 0.0
-	if Input.is_action_pressed("PIVOT_RIGHT"):
-		h += 1.0
-	if Input.is_action_pressed("PIVOT_LEFT"):
-		h -= 1.0
-	
-	var input = {
-		"move": clampf(v, -1.0, 1.0),
-		"pivot": clamp(h, -1.0, 1.0)
+	if not is_instance_valid(active_control_block):
+		return {
+			"move": 0.0,
+			"pivot": 0.0,
 		}
-	
-	return input
+	return active_control_block.get_drive_command()
+
+
+func has_aim_command() -> bool:
+	return (
+		is_instance_valid(active_control_block)
+		and active_control_block.has_aim_command()
+	)
+
+
+func get_aim_target() -> Vector2:
+	if not is_instance_valid(active_control_block):
+		return global_position
+	return active_control_block.get_aim_target()
+
+
+func get_fire_command() -> bool:
+	return (
+		is_instance_valid(active_control_block)
+		and active_control_block.get_fire_command()
+	)
+
+
+func set_active_control_block(control_block: ControlBlock) -> bool:
+	if not is_instance_valid(control_block) or not control_blocks.has(control_block):
+		return false
+	active_control_block = control_block
+	return true
 
 
 # Block Management
@@ -157,18 +174,28 @@ func get_block(cell: Vector2i) -> Block:
 
 
 func refresh_system_lists() -> void:
+	var previous_control := active_control_block
 	tracks.clear()
 	engines.clear()
+	control_blocks.clear()
 	
 	total_engine_power = 0.0
 	
 	for block in blocks:
-		if block is Track:
+		if block is ControlBlock:
+			control_blocks.append(block as ControlBlock)
+		elif block is Track:
 			tracks.append(block as Track)
 		elif block is PowerPack:
 			var engine := block as PowerPack
 			engines.append(engine)
 			total_engine_power += engine.max_power
+	if is_instance_valid(previous_control) and control_blocks.has(previous_control):
+		active_control_block = previous_control
+	elif control_blocks.is_empty():
+		active_control_block = null
+	else:
+		active_control_block = control_blocks[0]
 	
 	rebuild_block_connectivity()
 	rebuild_tracks_connections()

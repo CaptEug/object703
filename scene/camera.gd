@@ -48,13 +48,13 @@ func update_camera_tween():
 	move_tween = get_tree().create_tween()
 	move_tween.tween_property(self, "global_position", target_pos, 0.5)
 
-func focus_on_vehicle(vehicle: Vehicle):
+func focus_on_vehicle(vehicle: Vehicle, include_aim_offset: bool = false):
 	if not vehicle:
 		return
 		
 	target_pos = vehicle.to_global(vehicle.center_of_mass)
 	
-	if Input.is_action_pressed("AIMING"):
+	if include_aim_offset and Input.is_action_pressed("AIMING"):
 		var viewport_center = Vector2(get_viewport().size / 2)
 		var mouse_pos = get_viewport().get_mouse_position()
 		var mouse_offset = mouse_pos - viewport_center

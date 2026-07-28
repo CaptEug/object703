@@ -1,0 +1,240 @@
+[gd_scene format=3 uid="uid://dwajf8k5snhav"]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://n3fvr1twwrri" path="res://ui/vehicle_ui/vehicle_editor.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="3_style"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="4_buttons"]
+[ext_resource type="PackedScene" uid="uid://cm0v65jmp7f6n" path="res://ui/vehicle_ui/block_palette.tscn" id="5_palette"]
+[ext_resource type="Script" uid="uid://ddh6jgn0kda8a" path="res://ui/vehicle_ui/palette_panel.gd" id="6_palette_panel"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="7_symbols"]
+[ext_resource type="PackedScene" uid="uid://b66evl72jh85e" path="res://ui/vehicle_ui/vehicle_panel.tscn" id="8_vehicle_panel"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_saw"]
+atlas = ExtResource("7_symbols")
+region = Rect2(240, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_com"]
+atlas = ExtResource("7_symbols")
+region = Rect2(224, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_save"]
+atlas = ExtResource("4_buttons")
+region = Rect2(0, 96, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_load"]
+atlas = ExtResource("4_buttons")
+region = Rect2(0, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dismantle"]
+atlas = ExtResource("4_buttons")
+region = Rect2(32, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_com_off"]
+atlas = ExtResource("4_buttons")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_com_on"]
+atlas = ExtResource("4_buttons")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame"]
+atlas = ExtResource("3_style")
+region = Rect2(240, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_frame"]
+texture = SubResource("AtlasTexture_frame")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_inner"]
+atlas = ExtResource("3_style")
+region = Rect2(192, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_inner"]
+texture = SubResource("AtlasTexture_inner")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_zoom_in"]
+atlas = ExtResource("7_symbols")
+region = Rect2(176, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_zoom_out"]
+atlas = ExtResource("7_symbols")
+region = Rect2(192, 32, 16, 16)
+
+[node name="VehicleEditor" type="Control" unique_id=95526822]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+saw_cursor = SubResource("AtlasTexture_saw")
+
+[node name="BlueprintDialog" type="FileDialog" parent="." unique_id=112732168]
+oversampling_override = 1.0
+title = "Open a File"
+initial_position = 2
+size = Vector2i(720, 520)
+file_mode = 0
+access = 1
+filters = PackedStringArray("*.json ; Vehicle Blueprints")
+
+[node name="COMicon" type="Sprite2D" parent="." unique_id=861271777]
+visible = false
+texture = SubResource("AtlasTexture_com")
+
+[node name="EditorDock" type="Panel" parent="." unique_id=71289046]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -256.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VehiclePanel" parent="EditorDock" unique_id=720144941 instance=ExtResource("8_vehicle_panel")]
+layout_mode = 0
+
+[node name="EditorTools" type="VBoxContainer" parent="EditorDock" unique_id=1572984606]
+layout_mode = 0
+offset_left = 266.0
+offset_top = 12.0
+offset_right = 298.0
+offset_bottom = 180.0
+theme_override_constants/separation = 6
+
+[node name="SaveButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=990060592]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Save vehicle blueprint"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_save")
+
+[node name="LoadButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=1001972702]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Load vehicle blueprint"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_load")
+
+[node name="DismantleButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=149098939]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Toggle dismantling"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_dismantle")
+
+[node name="CoMButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=865704074]
+layout_mode = 2
+size_flags_horizontal = 8
+tooltip_text = "Show center of mass"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+button_pressed = true
+texture_normal = SubResource("AtlasTexture_com_off")
+texture_pressed = SubResource("AtlasTexture_com_on")
+
+[node name="Label" type="Label" parent="EditorDock/EditorTools/CoMButton" unique_id=1048243373]
+layout_mode = 0
+offset_left = -19.0
+offset_top = 3.0
+offset_right = 1.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 0.40392157, 0, 1)
+theme_override_font_sizes/font_size = 8
+text = "CoM"
+
+[node name="PaletteArea" type="MarginContainer" parent="EditorDock" unique_id=215437762]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 304
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 10
+
+[node name="Panel" type="Panel" parent="EditorDock/PaletteArea" unique_id=1885308309]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_frame")
+script = ExtResource("6_palette_panel")
+
+[node name="Clipper" type="Panel" parent="EditorDock/PaletteArea/Panel" unique_id=760432201]
+clip_children = 1
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_inner")
+
+[node name="BlockPalette" parent="EditorDock/PaletteArea/Panel/Clipper" unique_id=224940383 instance=ExtResource("5_palette")]
+layout_mode = 0
+
+[node name="ZoomInButton" type="TextureButton" parent="EditorDock/PaletteArea/Panel" unique_id=1780858044]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -44.0
+offset_top = -21.0
+offset_right = -28.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_zoom_in")
+
+[node name="ZoomOutButton" type="TextureButton" parent="EditorDock/PaletteArea/Panel" unique_id=1350119024]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -21.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_zoom_out")
+
+[connection signal="file_selected" from="BlueprintDialog" to="." method="_on_blueprint_file_selected"]
+[connection signal="pressed" from="EditorDock/EditorTools/SaveButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="EditorDock/EditorTools/LoadButton" to="." method="_on_load_button_pressed"]
+[connection signal="pressed" from="EditorDock/EditorTools/DismantleButton" to="." method="_on_dismantle_button_pressed"]
+[connection signal="toggled" from="EditorDock/EditorTools/CoMButton" to="." method="_on_com_visibility_changed"]
+[connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomInButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
+[connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomOutButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]

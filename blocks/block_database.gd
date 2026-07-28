@@ -22,6 +22,9 @@ var blocks := {
 	7: {
 		"path": "res://blocks/logistic/dump_container.tscn",
 	},
+	8: {
+		"path": "res://blocks/control/manual_cockpit.tscn",
+	},
 }
 
 

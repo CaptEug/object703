@@ -2,7 +2,6 @@ class_name WallLayer
 extends TileMapLayer
 
 var layerdata:Dictionary[Vector2i, Dictionary]
-var item_pickup_path = "res://items/item_pickup.tscn"
 @onready var gamemap:GameMap = get_parent()
 
 func _ready():
@@ -70,23 +69,10 @@ func destroy_tile(cell:Vector2i):
 	shard.emitting = true
 	get_tree().current_scene.add_child(shard)
 	
-	#pickup
-	spawn_pickup(cell)
-	
 	erase_cell(cell)
 	layerdata.erase(cell)
 	BetterTerrain.update_terrain_cell(self, cell, true)
 	gamemap.UI.minimap.update_cellmap([cell])
-
-
-func spawn_pickup(cell:Vector2i):
-	var item_id = layerdata[cell]["matter"]
-	var pickup = load(item_pickup_path).instantiate() as Pickup
-	pickup.item_id = item_id
-	pickup.amount = 1
-	pickup.position = map_to_local(cell)
-	gamemap.add_child(pickup)
-
 
 # liquid Calculation
 func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:

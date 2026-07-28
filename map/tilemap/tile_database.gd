@@ -8,7 +8,7 @@ var tiles = {
 		"hp": 400,
 		"kinetic_aborb": 1.0,
 		"explosive_absorb": 1.0,
-		"drop_item_id": "sandstone",
+		"mined_item_id": "sandstone",
 		"terrain_int": 1,
 		"color": Color(0.361, 0.137, 0.114),
 		"particle_path": "res://assets/particles/sandstone_shard.tscn"
@@ -20,7 +20,7 @@ var tiles = {
 		"hp": 800,
 		"kinetic_aborb": 1.0,
 		"explosive_absorb": 0.5,
-		"drop_item_id": "hematite",
+		"mined_item_id": "hematite",
 		"terrain_int": 2,
 		"color": Color.LIGHT_STEEL_BLUE,
 		"particle_path": "res://assets/particles/sandstone_shard.tscn"
