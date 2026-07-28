@@ -3,6 +3,7 @@ extends FloatingPanel
 
 const STORAGE_DETAIL := preload("res://ui/block_info/storage_block_info.tscn")
 const WEAPON_DETAIL := preload("res://ui/block_info/weapon_block_info.tscn")
+const CONTROL_DETAIL := preload("res://ui/block_info/control_block_info.tscn")
 
 var target_block: Block
 var detail_section: Node
@@ -59,7 +60,10 @@ func _refresh_general() -> void:
 func _create_detail_section() -> void:
 	var detail_scene: PackedScene
 	var panel_height := 150.0
-	if target_block is Weapon:
+	if target_block is ControlBlock:
+		detail_scene = CONTROL_DETAIL
+		panel_height = 230.0
+	elif target_block is Weapon:
 		detail_scene = WEAPON_DETAIL
 		panel_height = 330.0
 	elif target_block is ItemStorage or target_block is LiquidStorage:

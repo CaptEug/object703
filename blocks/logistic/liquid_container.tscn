@@ -8,13 +8,11 @@ size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8tech"]
 atlas = ExtResource("1_vd1ly")
-region = Rect2(96, 80, 16, 16)
+region = Rect2(128, 64, 16, 16)
 
-[node name="FuelTank" type="Node2D" unique_id=418363344]
+[node name="LiquidContainer" type="Node2D" unique_id=418363344]
 script = ExtResource("1_v2fc7")
-stored = 20.0
-liquid = "petroleum"
-block_name = "Fuel Tank"
+block_name = "Liquid Container"
 metadata/_custom_type_script = "uid://pnfcsef3bfk8"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1091049743]

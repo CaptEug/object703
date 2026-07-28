@@ -5,7 +5,7 @@ var blocks := {
 		"path": "res://blocks/structural/structual_frame.tscn",
 	},
 	2: {
-		"path": "res://blocks/logistic/fuel_tank.tscn",
+		"path": "res://blocks/logistic/liquid_container.tscn",
 	},
 	3: {
 		"path": "res://blocks/logistic/cargo_container.tscn",

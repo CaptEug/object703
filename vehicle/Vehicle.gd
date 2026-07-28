@@ -1,6 +1,8 @@
 class_name Vehicle
 extends RigidBody2D
 
+signal vehicle_split(fragments: Array)
+
 const TILE_SIZE := Globals.TILE_SIZE
 
 @onready var blocks_root : Node2D = $Blocks
@@ -62,6 +64,7 @@ func update_vehicle():
 	for block in blocks:
 		mass_sum += block.mass
 	total_mass = mass_sum
+	mass = maxf(total_mass, 0.01)
 	
 	center_of_mass = calculate_center_of_mass()
 	
@@ -115,12 +118,34 @@ func can_place_block(block:Block, cell:Vector2i) -> bool:
 	return true
 
 
-func place_block(block_scene:PackedScene, cell:Vector2i, rotation_i:int):
+func place_block(
+	block_scene: PackedScene,
+	cell: Vector2i,
+	rotation_i: int,
+	block_size: Vector2i = Vector2i.ZERO,
+	merge_containers: bool = true
+):
 	var block := block_scene.instantiate() as Block
+	if block == null:
+		return false
+	if block is ExpandableContainer:
+		var container_size := (
+			block.size
+			if block_size == Vector2i.ZERO
+			else block_size
+		)
+		if not (block as ExpandableContainer).configure_blueprint_size(
+			container_size
+		):
+			block.free()
+			return false
+	elif block_size != Vector2i.ZERO and block_size != block.size:
+		block.free()
+		return false
 	block.update_transform(self, cell, rotation_i)
 	# check space
 	if not can_place_block(block, cell):
-		block.queue_free()
+		block.free()
 		return false
 	# register cells
 	for c in block.get_occupied_cells():
@@ -130,6 +155,8 @@ func place_block(block_scene:PackedScene, cell:Vector2i, rotation_i:int):
 	blocks.append(block)
 	create_collision(block)
 	
+	if merge_containers:
+		merge_rectangular_containers()
 	update_vehicle()
 	
 	return true
@@ -146,6 +173,136 @@ func create_collision(block: Block) -> void:
 		collision.global_transform = old_global
 
 
+func merge_rectangular_containers() -> int:
+	var unvisited := {}
+	for block: Block in blocks:
+		if block is ExpandableContainer:
+			unvisited[block] = true
+
+	var merged_count := 0
+	while not unvisited.is_empty():
+		var start := unvisited.keys()[0] as ExpandableContainer
+		var component := _get_container_component(start, unvisited)
+		if component.size() <= 1:
+			continue
+		var rectangle := _get_complete_container_rectangle(component)
+		if rectangle.size == Vector2i.ZERO:
+			continue
+		if not start.can_merge_storage_members(component):
+			continue
+		_merge_container_component(component, rectangle)
+		merged_count += 1
+	return merged_count
+
+
+func _get_container_component(
+	start: ExpandableContainer,
+	unvisited: Dictionary
+) -> Array:
+	var result: Array = []
+	var queue: Array[ExpandableContainer] = [start]
+	var merge_key := start.get_container_merge_key()
+	var merge_rotation := start.rotation_index
+	while not queue.is_empty():
+		var current := queue.pop_front() as ExpandableContainer
+		if not unvisited.has(current):
+			continue
+		unvisited.erase(current)
+		result.append(current)
+		for occupied_cell: Vector2i in current.get_occupied_cells():
+			for direction: Vector2i in Block.SIDE_DIRS.values():
+				var neighbor := get_block(occupied_cell + direction)
+				if (
+					neighbor is ExpandableContainer
+					and neighbor != current
+					and unvisited.has(neighbor)
+					and (
+						neighbor as ExpandableContainer
+					).get_container_merge_key() == merge_key
+					and (
+						neighbor as ExpandableContainer
+					).rotation_index == merge_rotation
+				):
+					queue.append(neighbor as ExpandableContainer)
+	return result
+
+
+func _get_complete_container_rectangle(component: Array) -> Rect2i:
+	var occupied := {}
+	var has_cell := false
+	var min_cell := Vector2i.ZERO
+	var max_cell := Vector2i.ZERO
+	for value: Variant in component:
+		var container := value as ExpandableContainer
+		if container == null:
+			continue
+		for cell: Vector2i in container.get_occupied_cells():
+			occupied[cell] = true
+			if not has_cell:
+				min_cell = cell
+				max_cell = cell
+				has_cell = true
+			else:
+				min_cell.x = mini(min_cell.x, cell.x)
+				min_cell.y = mini(min_cell.y, cell.y)
+				max_cell.x = maxi(max_cell.x, cell.x)
+				max_cell.y = maxi(max_cell.y, cell.y)
+	if not has_cell:
+		return Rect2i()
+	var rectangle_size := max_cell - min_cell + Vector2i.ONE
+	if occupied.size() != rectangle_size.x * rectangle_size.y:
+		return Rect2i()
+	for y in range(min_cell.y, max_cell.y + 1):
+		for x in range(min_cell.x, max_cell.x + 1):
+			if not occupied.has(Vector2i(x, y)):
+				return Rect2i()
+	return Rect2i(min_cell, rectangle_size)
+
+
+func _merge_container_component(
+	component: Array,
+	rectangle: Rect2i
+) -> void:
+	var leader := component[0] as ExpandableContainer
+	for value: Variant in component:
+		var candidate := value as ExpandableContainer
+		if (
+			candidate.origin_cell.y < leader.origin_cell.y
+			or (
+				candidate.origin_cell.y == leader.origin_cell.y
+				and candidate.origin_cell.x < leader.origin_cell.x
+			)
+		):
+			leader = candidate
+
+	for value: Variant in component:
+		var member := value as ExpandableContainer
+		for occupied_cell: Vector2i in member.get_occupied_cells():
+			grid.erase(occupied_cell)
+
+	var merged_size := rectangle.size
+	if leader.rotation_index % 2 != 0:
+		merged_size = Vector2i(rectangle.size.y, rectangle.size.x)
+	leader.merge_container_members(
+		component,
+		rectangle.position,
+		merged_size,
+		leader.rotation_index
+	)
+
+	for value: Variant in component:
+		var member := value as ExpandableContainer
+		if member == leader:
+			continue
+		blocks.erase(member)
+		if member.collision != null:
+			member.collision.queue_free()
+		member.queue_free()
+
+	for occupied_cell: Vector2i in leader.get_occupied_cells():
+		grid[occupied_cell] = leader
+
+
 func damage_block(cell: Vector2i, amount: int, type: String):
 	var block := get_block(cell)
 	if block == null:
@@ -158,7 +315,13 @@ func damage_block(cell: Vector2i, amount: int, type: String):
 	block.damage(amount, type)
 
 
-func destroy_block(block:Block):
+func destroy_block(block: Block) -> Array[Vehicle]:
+	if block == null or not blocks.has(block):
+		return []
+	var preferred_control := active_control_block
+	var original_com_global := to_global(center_of_mass)
+	var original_linear_velocity := linear_velocity
+	var original_angular_velocity := angular_velocity
 	blocks.erase(block)
 	for c in block.get_occupied_cells():
 		grid.erase(c)
@@ -167,6 +330,146 @@ func destroy_block(block:Block):
 	block.queue_free()
 	
 	update_vehicle()
+	var fragments := split_disconnected_components(
+		preferred_control,
+		original_com_global,
+		original_linear_velocity,
+		original_angular_velocity
+	)
+	if not fragments.is_empty():
+		vehicle_split.emit(fragments)
+	return fragments
+
+
+func split_disconnected_components(
+	preferred_control: ControlBlock = null,
+	original_com_global: Vector2 = to_global(center_of_mass),
+	original_linear_velocity: Vector2 = linear_velocity,
+	original_angular_velocity: float = angular_velocity
+) -> Array[Vehicle]:
+	if block_components.size() <= 1:
+		return []
+	var components: Array = block_components.duplicate()
+	var retained_component := _choose_retained_component(
+		components,
+		preferred_control
+	)
+	var parent := get_parent()
+	if parent == null:
+		return []
+
+	var fragments: Array[Vehicle] = []
+	for component_value: Variant in components:
+		var component := component_value as Array
+		if component == retained_component:
+			continue
+		var fragment := (
+			load("res://vehicle/Vehicle.tscn").instantiate()
+			as Vehicle
+		)
+		if fragment == null:
+			continue
+		parent.add_child(fragment)
+		fragment.global_transform = global_transform
+		if _component_has_control(component):
+			fragment.vehicle_name = "parts of %s" % vehicle_name
+		else:
+			fragment.vehicle_name = "debris of %s" % vehicle_name
+		_move_component_to_vehicle(component, fragment)
+		fragment.update_vehicle()
+		fragment.angular_velocity = original_angular_velocity
+		fragment.linear_velocity = _get_fragment_linear_velocity(
+			fragment,
+			original_com_global,
+			original_linear_velocity,
+			original_angular_velocity
+		)
+		fragment.sleeping = false
+		fragments.append(fragment)
+
+	update_vehicle()
+	angular_velocity = original_angular_velocity
+	linear_velocity = _get_fragment_linear_velocity(
+		self,
+		original_com_global,
+		original_linear_velocity,
+		original_angular_velocity
+	)
+	sleeping = false
+	return fragments
+
+
+func _choose_retained_component(
+	components: Array,
+	preferred_control: ControlBlock
+) -> Array:
+	if preferred_control != null:
+		for component_value: Variant in components:
+			var component := component_value as Array
+			if component.has(preferred_control):
+				return component
+
+	for component_value: Variant in components:
+		var component := component_value as Array
+		if _component_has_control(component):
+			return component
+
+	var largest_component: Array = components[0]
+	var largest_mass := _get_component_mass(largest_component)
+	for component_value: Variant in components:
+		var component := component_value as Array
+		var component_mass := _get_component_mass(component)
+		if component_mass > largest_mass:
+			largest_component = component
+			largest_mass = component_mass
+	return largest_component
+
+
+func _component_has_control(component: Array) -> bool:
+	for block_value: Variant in component:
+		if block_value is ControlBlock:
+			return true
+	return false
+
+
+func _get_component_mass(component: Array) -> float:
+	var component_mass := 0.0
+	for block_value: Variant in component:
+		var component_block := block_value as Block
+		if component_block != null:
+			component_mass += component_block.mass
+	return component_mass
+
+
+func _move_component_to_vehicle(
+	component: Array,
+	target_vehicle: Vehicle
+) -> void:
+	for block_value: Variant in component:
+		var component_block := block_value as Block
+		if component_block == null:
+			continue
+		blocks.erase(component_block)
+		for occupied_cell: Vector2i in component_block.get_occupied_cells():
+			grid.erase(occupied_cell)
+			target_vehicle.grid[occupied_cell] = component_block
+		component_block.reparent(target_vehicle.blocks_root, true)
+		component_block.vehicle = target_vehicle
+		target_vehicle.blocks.append(component_block)
+		if component_block.collision != null:
+			component_block.collision.reparent(target_vehicle, true)
+
+
+func _get_fragment_linear_velocity(
+	fragment: Vehicle,
+	original_com_global: Vector2,
+	original_linear_velocity: Vector2,
+	original_angular_velocity: float
+) -> Vector2:
+	var fragment_com_global := fragment.to_global(fragment.center_of_mass)
+	var radius := fragment_com_global - original_com_global
+	var tangent := Vector2(-radius.y, radius.x) * original_angular_velocity
+	return original_linear_velocity + tangent
 
 
 func get_block(cell: Vector2i) -> Block:

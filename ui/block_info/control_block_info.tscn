@@ -1,0 +1,18 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/block_info/control_block_info.gd" id="1_script"]
+
+[node name="ControlBlockInfo" type="VBoxContainer"]
+theme_override_constants/separation = 8
+script = ExtResource("1_script")
+
+[node name="Status" type="Label" parent="."]
+layout_mode = 2
+text = "Inactive control"
+
+[node name="ActiveToggle" type="CheckButton" parent="."]
+layout_mode = 2
+tooltip_text = "Use this block to control the vehicle"
+text = "Functioning control block"
+
+[connection signal="toggled" from="ActiveToggle" to="." method="_on_active_toggle_toggled"]

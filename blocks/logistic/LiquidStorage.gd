@@ -1,5 +1,5 @@
 class_name LiquidStorage
-extends Block
+extends ExpandableContainer
 
 signal contents_changed
 signal allowed_items_changed
@@ -13,6 +13,57 @@ var allowed_items: Array[String] = []
 func _ready() -> void:
 	super()
 	reset_allowed_items()
+	add_liquid("petroleum", 50)
+
+
+func get_container_merge_key() -> String:
+	return "%s:liquid" % scene_file_path
+
+
+func can_merge_storage_members(members: Array) -> bool:
+	var contained_liquid := ""
+	for value: Variant in members:
+		var storage := value as LiquidStorage
+		if (
+			storage == null
+			or storage.stored <= 0.001
+			or storage.liquid.is_empty()
+		):
+			continue
+		if contained_liquid.is_empty():
+			contained_liquid = storage.liquid
+		elif contained_liquid != storage.liquid:
+			return false
+	return true
+
+
+func _scale_storage_capacity(unit_count: int) -> void:
+	capacity *= unit_count
+
+
+func _merge_storage_members(members: Array) -> void:
+	var combined_capacity := 0.0
+	var combined_stored := 0.0
+	var combined_liquid := ""
+	var allowed_union: Array[String] = []
+	for value: Variant in members:
+		var storage := value as LiquidStorage
+		if storage == null:
+			continue
+		combined_capacity += storage.capacity
+		combined_stored += storage.stored
+		if combined_liquid.is_empty() and not storage.liquid.is_empty():
+			combined_liquid = storage.liquid
+		for item_id: String in storage.allowed_items:
+			if not allowed_union.has(item_id):
+				allowed_union.append(item_id)
+	allowed_union.sort()
+	capacity = combined_capacity
+	stored = combined_stored
+	liquid = combined_liquid if combined_stored > 0.001 else ""
+	allowed_items = allowed_union
+	contents_changed.emit()
+	allowed_items_changed.emit()
 
 func get_compatible_item_ids() -> Array[String]:
 	return ItemDB.get_items_by_type(ItemDB.ItemType.LIQUID)

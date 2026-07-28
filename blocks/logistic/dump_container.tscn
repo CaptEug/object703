@@ -1,23 +1,23 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bm2o5xqsjvu4e"]
 
-[ext_resource type="Script" path="res://blocks/logistic/ItemStorage.gd" id="1_storage"]
-[ext_resource type="Texture2D" path="res://assets/blocks_basic.png" id="2_blocks"]
+[ext_resource type="Script" uid="uid://dpymnvjcr8b1p" path="res://blocks/logistic/ItemStorage.gd" id="1_storage"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_blocks"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dump"]
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dump"]
 atlas = ExtResource("2_blocks")
-region = Rect2(80, 64, 16, 16)
+region = Rect2(64, 64, 16, 16)
 
-[node name="DumpContainer" type="Node2D"]
+[node name="DumpContainer" type="Node2D" unique_id=554477844]
 script = ExtResource("1_storage")
 storage_kind = 0
 max_load = 2000
 block_name = "Dump Container"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=223092112]
 shape = SubResource("RectangleShape2D_dump")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=226547301]
 texture = SubResource("AtlasTexture_dump")

@@ -33,6 +33,9 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 			block.origin_cell.y,
 			block.rotation_index,
 		]
+		if block is ExpandableContainer and block.size != Vector2i.ONE:
+			record.append(block.size.x)
+			record.append(block.size.y)
 		if block is ItemStorage:
 			var item_storage := block as ItemStorage
 			if not item_storage.is_default_allowed_items():
@@ -100,16 +103,32 @@ static func build(data: Dictionary, parent: Node, vehicle_scene: PackedScene, tr
 	for record in validated["data"]["blocks"]:
 		var scene := BlockDB.get_scene(int(record[0]))
 		var cell := Vector2i(int(record[1]), int(record[2]))
-		if scene == null or not vehicle.place_block(scene, cell, int(record[3])):
+		var block_size := _get_record_size(record)
+		if (
+			scene == null
+			or not vehicle.place_block(
+				scene,
+				cell,
+				int(record[3]),
+				block_size,
+				false
+			)
+		):
 			vehicle.queue_free()
 			return _error("A block could not be placed at %s." % cell)
-		if record.size() == 5:
+		var filter_index := _get_filter_index(record)
+		if filter_index >= 0:
 			var placed_block := vehicle.get_block(cell)
 			if placed_block is ItemStorage:
-				(placed_block as ItemStorage).set_allowed_items(record[4])
+				(placed_block as ItemStorage).set_allowed_items(
+					record[filter_index]
+				)
 			elif placed_block is LiquidStorage:
-				(placed_block as LiquidStorage).set_allowed_items(record[4])
+				(placed_block as LiquidStorage).set_allowed_items(
+					record[filter_index]
+				)
 
+	vehicle.merge_rectangular_containers()
 	vehicle.update_vehicle()
 	return {
 		"ok": true,
@@ -142,11 +161,21 @@ static func _validate(data: Dictionary) -> Dictionary:
 			block = scene.instantiate() as Block
 		if block == null:
 			return _error("Block ID %d is not a Block scene." % block_id)
-		if record.size() == 5:
+		var block_size := _get_record_size(record)
+		if (
+			block_size != Vector2i.ZERO
+			and not block is ExpandableContainer
+		):
+			block.free()
+			return _error("Only expandable containers can have a saved size.")
+		if block_size != Vector2i.ZERO:
+			block.size = block_size
+		var filter_index := _get_filter_index(record)
+		if filter_index >= 0:
 			if not block is ItemStorage and not block is LiquidStorage:
 				block.free()
 				return _error("Only storage blocks can have an allowed-item list.")
-			for item_id: Variant in record[4]:
+			for item_id: Variant in record[filter_index]:
 				if not item_id is String:
 					block.free()
 					return _error("Allowed item IDs must be text.")
@@ -171,7 +200,7 @@ static func _validate(data: Dictionary) -> Dictionary:
 
 
 static func _valid_block_record(record) -> bool:
-	if not record is Array or record.size() < 4 or record.size() > 5:
+	if not record is Array or record.size() < 4 or record.size() > 7:
 		return false
 	for index in 4:
 		var value: Variant = record[index]
@@ -179,9 +208,37 @@ static func _valid_block_record(record) -> bool:
 			return false
 		if int(value) != value:
 			return false
-	if record.size() == 5 and not record[4] is Array:
-		return false
+	match record.size():
+		5:
+			if not record[4] is Array:
+				return false
+		6, 7:
+			for index in [4, 5]:
+				var size_value: Variant = record[index]
+				if (
+					not size_value is int
+					and not size_value is float
+				):
+					return false
+				if int(size_value) != size_value or int(size_value) <= 0:
+					return false
+			if record.size() == 7 and not record[6] is Array:
+				return false
 	return true
+
+
+static func _get_record_size(record: Array) -> Vector2i:
+	if record.size() >= 6:
+		return Vector2i(int(record[4]), int(record[5]))
+	return Vector2i.ZERO
+
+
+static func _get_filter_index(record: Array) -> int:
+	if record.size() == 5:
+		return 4
+	if record.size() == 7:
+		return 6
+	return -1
 
 
 static func _sort_block_records(a: Array, b: Array) -> bool:

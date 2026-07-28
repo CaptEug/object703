@@ -1,5 +1,5 @@
 class_name ItemStorage
-extends Block
+extends ExpandableContainer
 
 enum StorageKind {
 	DUMP,
@@ -18,7 +18,39 @@ var allowed_items: Array[String] = []
 func _ready() -> void:
 	super()
 	reset_allowed_items()
-	add_item("PZGR88mm", 20)
+
+
+func get_container_merge_key() -> String:
+	return "%s:item:%d" % [scene_file_path, storage_kind]
+
+
+func _scale_storage_capacity(unit_count: int) -> void:
+	max_load *= unit_count
+
+
+func _merge_storage_members(members: Array) -> void:
+	var combined_max_load := 0
+	var combined_items := {}
+	var allowed_union: Array[String] = []
+	for value: Variant in members:
+		var storage := value as ItemStorage
+		if storage == null:
+			continue
+		combined_max_load += storage.max_load
+		for item_id: String in storage.items:
+			combined_items[item_id] = (
+				int(combined_items.get(item_id, 0))
+				+ storage.get_item_count(item_id)
+			)
+		for item_id: String in storage.allowed_items:
+			if not allowed_union.has(item_id):
+				allowed_union.append(item_id)
+	allowed_union.sort()
+	max_load = combined_max_load
+	items = combined_items
+	allowed_items = allowed_union
+	contents_changed.emit()
+	allowed_items_changed.emit()
 
 func get_accepted_item_type() -> int:
 	if storage_kind == StorageKind.DUMP:
