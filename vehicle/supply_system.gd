@@ -139,7 +139,7 @@ func transfer_item(from_storage: ItemStorage, to_storage: ItemStorage, item_name
 	if free_load <= 0:
 		return 0
 	
-	var item_w : int = ItemDB.get_item(item_name)["weight"]
+	var item_w : int = ItemDB.get_item_by_name(item_name)["weight"]
 	var vacancy := floori(free_load/item_w)
 	
 	var move_amount : int = min(available, vacancy)

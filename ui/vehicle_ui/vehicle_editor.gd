@@ -156,6 +156,8 @@ func inspect_vehicle(clicked_vehicle: Vehicle) -> void:
 func enter_edit_mode() -> void:
 	if not is_instance_valid(vehicle):
 		return
+	vehicle.ensure_blueprint_from_blocks()
+	vehicle.set_blueprint_ghosts_visible(true)
 	interface_state = InterfaceState.EDIT
 	vehicle_panel.set_editing(true)
 	_apply_interface_state()
@@ -165,6 +167,8 @@ func enter_edit_mode() -> void:
 func exit_edit_mode() -> void:
 	clear_preview_block()
 	Input.set_custom_mouse_cursor(null)
+	if is_instance_valid(vehicle):
+		vehicle.set_blueprint_ghosts_visible(false)
 	interface_state = (
 		InterfaceState.INSPECT
 		if is_instance_valid(vehicle)
@@ -178,6 +182,8 @@ func close_vehicle_panel() -> void:
 	clear_preview_block()
 	Input.set_custom_mouse_cursor(null)
 	palette.selected_block = null
+	if is_instance_valid(vehicle):
+		vehicle.set_blueprint_ghosts_visible(false)
 	interface_state = InterfaceState.CLOSED
 	set_selected_vehicle(null)
 	_apply_interface_state()
@@ -367,8 +373,13 @@ func remove_block() -> void:
 	if not is_instance_valid(vehicle):
 		return
 	var block := vehicle.get_block(preview_cell)
+	var blueprint_changed := vehicle.remove_blueprint_record_at_cell(
+		preview_cell
+	)
 	if block != null:
 		vehicle.destroy_block(block)
+	elif blueprint_changed:
+		_show_status("Removed block from blueprint")
 	vehicle_panel.refresh_information()
 
 
@@ -419,9 +430,13 @@ func _get_new_vehicle_spawn_position(reference_vehicle: Vehicle) -> Vector2:
 
 func set_selected_vehicle(new_vehicle: Vehicle) -> void:
 	clear_preview_block()
+	if is_instance_valid(vehicle):
+		vehicle.set_blueprint_ghosts_visible(false)
 	vehicle = new_vehicle if is_instance_valid(new_vehicle) else null
 	vehicle_panel.set_vehicle(vehicle)
 	if is_instance_valid(vehicle):
+		vehicle.ensure_blueprint_from_blocks()
+		vehicle.set_blueprint_ghosts_visible(is_editing_vehicle())
 		_focus_camera_on_vehicle(vehicle)
 		if interface_state == InterfaceState.CLOSED:
 			interface_state = InterfaceState.INSPECT
@@ -456,6 +471,114 @@ func _get_vehicle_under_mouse() -> Vehicle:
 
 func _on_dismantle_button_pressed() -> void:
 	toggle_mode()
+
+
+func _on_auto_construct_button_pressed() -> void:
+	auto_construct_missing_blocks()
+
+
+func auto_construct_missing_blocks() -> void:
+	if not is_instance_valid(vehicle):
+		return
+	var missing_records := vehicle.get_missing_blueprint_records()
+	if missing_records.is_empty():
+		_show_status("Blueprint is already complete")
+		return
+
+	var built_count := 0
+	var material_failures := 0
+	var blocked_count := 0
+	for record: Array in missing_records:
+		var result := _construct_blueprint_record(record)
+		if result["ok"]:
+			built_count += 1
+		elif result["reason"] == "materials":
+			material_failures += 1
+		else:
+			blocked_count += 1
+
+	var remaining := vehicle.get_missing_blueprint_records().size()
+	vehicle_panel.refresh_information()
+	if remaining == 0:
+		_show_status(
+			"Auto construction complete: %d built" % built_count
+		)
+		return
+	_show_status(
+		"Auto built %d; %d remain (%d material, %d blocked)"
+		% [
+			built_count,
+			remaining,
+			material_failures,
+			blocked_count,
+		]
+	)
+
+
+func _construct_blueprint_record(record: Array) -> Dictionary:
+	if VehicleBlueprint.get_matching_block(vehicle, record) != null:
+		return {"ok": true}
+	var block_id := int(record[0])
+	var block_scene := BlockDB.get_scene(block_id)
+	if block_scene == null:
+		return {"ok": false, "reason": "blocked"}
+	var cell := Vector2i(int(record[1]), int(record[2]))
+	var rotation := int(record[3])
+	var block_size := VehicleBlueprint._get_record_size(record)
+	var candidate := block_scene.instantiate() as Block
+	if candidate == null:
+		return {"ok": false, "reason": "blocked"}
+	if (
+		block_size != Vector2i.ZERO
+		and candidate is ExpandableStorage
+		and not (candidate as ExpandableStorage).configure_blueprint_size(
+			block_size
+		)
+	):
+		candidate.free()
+		return {"ok": false, "reason": "blocked"}
+	candidate.update_transform(vehicle, cell, rotation)
+	var can_place := vehicle.can_place_block(candidate, cell)
+	candidate.free()
+	if not can_place:
+		return {"ok": false, "reason": "blocked"}
+
+	var cost := _get_record_construction_cost(record)
+	var storages := ConstructionMaterials.get_candidate_storages(
+		vehicle,
+		vehicle.cell_to_world(cell),
+		construction_range_tiles * Globals.TILE_SIZE
+	)
+	var payment := ConstructionMaterials.consume(cost, storages)
+	if not payment["ok"]:
+		return {
+			"ok": false,
+			"reason": "materials",
+			"missing": payment["missing"],
+		}
+	if not vehicle.place_block(
+		block_scene,
+		cell,
+		rotation,
+		block_size
+	):
+		ConstructionMaterials.refund(payment["withdrawals"])
+		return {"ok": false, "reason": "blocked"}
+	var placed_block := vehicle.get_block(cell)
+	if placed_block != null:
+		VehicleBlueprint.apply_record_filter(record, placed_block)
+	return {"ok": true}
+
+
+func _get_record_construction_cost(record: Array) -> Dictionary:
+	var cost := BlockDB.get_construction_cost(int(record[0]))
+	var saved_size := VehicleBlueprint._get_record_size(record)
+	var unit_count := 1
+	if saved_size != Vector2i.ZERO:
+		unit_count = maxi(1, saved_size.x * saved_size.y)
+	for item_id: Variant in cost:
+		cost[item_id] = int(cost[item_id]) * unit_count
+	return cost
 
 
 func _on_save_button_pressed() -> void:
@@ -511,7 +634,7 @@ func _on_blueprint_file_selected(path: String) -> void:
 	set_selected_vehicle(built_vehicle)
 	if is_instance_valid(old_vehicle):
 		old_vehicle.queue_free()
-	_show_status("Blueprint loaded: %s" % built["name"])
+	_show_status("Ghost blueprint loaded: %s" % built["name"])
 
 
 func _on_com_visibility_changed(enabled: bool) -> void:

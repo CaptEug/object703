@@ -18,17 +18,25 @@ func init_layerdata():
 		if tile_id == -1:
 			continue
 		
-		var tile_matter = get_cell_tile_data(cell).get_custom_data("matter")
-		var tile_info = TileDB.get_tile(tile_matter)
+		var tile_type_id := int(
+			get_cell_tile_data(cell).get_custom_data("tile_id")
+		)
+		var tile_info := TileDB.get_tile(tile_type_id)
+		if tile_info.is_empty():
+			push_error("Unknown TileDB ID %d at %s." % [
+				tile_type_id,
+				cell,
+			])
+			continue
 		var celldata:Dictionary
 		if tile_info["phase"] == "solid":
 			celldata = {
-				"matter": tile_matter,
+				"tile_id": tile_type_id,
 				"data": tile_info["hp"],
 			}
 		elif tile_info["phase"] == "liquid":
 			celldata = {
-				"matter": tile_matter,
+				"tile_id": tile_type_id,
 				"data": tile_info["mass"]
 			}
 		layerdata[cell] = celldata
@@ -38,8 +46,9 @@ func get_celldata(cell:Vector2i) -> Dictionary:
 
 
 func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
-	var kinetic_absorb = TileDB.get_tile(layerdata[cell]["matter"])["kinetic_aborb"]
-	var explosive_absorb = TileDB.get_tile(layerdata[cell]["matter"])["explosive_absorb"]
+	var tile_info := TileDB.get_tile(layerdata[cell]["tile_id"])
+	var kinetic_absorb = tile_info["kinetic_aborb"]
+	var explosive_absorb = tile_info["explosive_absorb"]
 	if dmg_type == "kinetic":
 		amount *= kinetic_absorb
 	elif dmg_type == "explosive":
@@ -54,7 +63,9 @@ func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
 	if randf_range(0, 1) < 0.1:
 		if not get_cell_tile_data(cell):
 			return
-		var particle_path = TileDB.get_tile(layerdata[cell]["matter"])["particle_path"]
+		var particle_path = TileDB.get_tile(
+			layerdata[cell]["tile_id"]
+		)["particle_path"]
 		
 		var shard = load(particle_path).instantiate()
 		shard.position = map_to_local(cell)
@@ -63,7 +74,9 @@ func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
 
 func destroy_tile(cell:Vector2i):
 	#shard particle
-	var particle_path = TileDB.get_tile(layerdata[cell]["matter"])["particle_path"]
+	var particle_path = TileDB.get_tile(
+		layerdata[cell]["tile_id"]
+	)["particle_path"]
 	var shard = load(particle_path).instantiate()
 	shard.position = map_to_local(cell)
 	shard.emitting = true
@@ -78,9 +91,9 @@ func destroy_tile(cell:Vector2i):
 func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
 	if not get_celldata(start_cell):
 		return []
-	if TileDB.get_tile(layerdata[start_cell]["matter"])["phase"] != "liquid":
+	if TileDB.get_tile(layerdata[start_cell]["tile_id"])["phase"] != "liquid":
 		return []
-	var liquid = layerdata[start_cell]["matter"]
+	var liquid_tile_id = layerdata[start_cell]["tile_id"]
 	var connected_liquid:Array[Vector2i] = []
 	var directions = [
 		Vector2i.LEFT,
@@ -103,7 +116,7 @@ func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
 				continue
 			if not get_celldata(next):
 				continue
-			if layerdata[next]["matter"] == liquid:
+			if layerdata[next]["tile_id"] == liquid_tile_id:
 				stack.append(next)
 	return connected_liquid
 
@@ -120,7 +133,7 @@ func get_total_liquid_mass(cells:Array[Vector2i]) -> float:
 func remove_liquid(cell:Vector2i, mass:float):
 	if not get_celldata(cell):
 		return
-	if TileDB.get_tile(layerdata[cell]["matter"])["phase"] != "liquid":
+	if TileDB.get_tile(layerdata[cell]["tile_id"])["phase"] != "liquid":
 		return
 	var mass_left = mass
 	while mass_left > 0:
@@ -137,9 +150,14 @@ func remove_liquid(cell:Vector2i, mass:float):
 			BetterTerrain.update_terrain_cell(self, farthest_cell, true)
 			gamemap.UI.minimap.update_cellmap([farthest_cell])
 
-func add_liquid(cell:Vector2i, matter:String, mass:float):
+func add_liquid(cell: Vector2i, tile_id: int, mass: float):
+	if (
+		not TileDB.has_tile(tile_id)
+		or TileDB.get_tile(tile_id).get("phase", "") != "liquid"
+	):
+		return
 	if get_celldata(cell):
-		if layerdata[cell]["matter"] != matter:
+		if layerdata[cell]["tile_id"] != tile_id:
 			return
 	var mass_left = mass
 	var tile_added:Array[Vector2i] = []
@@ -164,21 +182,21 @@ func add_liquid(cell:Vector2i, matter:String, mass:float):
 			return
 		elif mass_left <= 1000.0:
 			var celldata = {
-				"matter": matter,
+				"tile_id": tile_id,
 				"data": mass_left
 			}
 			layerdata[closest_cell] = celldata
 			mass_left = 0
 		else:
 			var celldata = {
-				"matter": matter,
+				"tile_id": tile_id,
 				"data": 1000.0
 			}
 			layerdata[closest_cell] = celldata
 			mass_left -= 1000.0
 		tile_added.append(closest_cell)
 	if !tile_added.is_empty():
-		BetterTerrain.set_cells(self, tile_added, TileDB.get_tile(matter)["terrain_int"])
+		BetterTerrain.set_cells(self, tile_added, tile_id)
 		BetterTerrain.update_terrain_cells(self, tile_added)
 		gamemap.UI.minimap.update_cellmap(tile_added)
 
@@ -225,7 +243,11 @@ func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
 			var cell := Vector2i(x, y)
 			var celldata = get_celldata(cell)
 			# --- terrain (u8) ---
-			bytes.append(0 if celldata.is_empty() else TileDB.get_tile(celldata["matter"])["terrain_int"])
+			bytes.append(
+				TileDB.EMPTY_TILE_ID
+				if celldata.is_empty()
+				else int(celldata["tile_id"])
+			)
 	
 			# --- data (u16) ---
 			var data := 0
@@ -240,19 +262,21 @@ func load_chunk(chunk_x:int, chunk_y:int, bytes:PackedByteArray, CHUNK_SIZE:int)
 	var i := 0
 	for ly in range(CHUNK_SIZE):
 		for lx in range(CHUNK_SIZE):
-			var terrain := bytes.decode_u8(i); i += 1
+			var tile_id := bytes.decode_u8(i); i += 1
 			var data := bytes.decode_u16(i); i += 2
 
-			if terrain == 0:
+			if tile_id == TileDB.EMPTY_TILE_ID:
+				continue
+			if not TileDB.has_tile(tile_id):
+				push_error("Unknown saved TileDB ID %d." % tile_id)
 				continue
 
 			var x := chunk_x * CHUNK_SIZE + lx
 			var y := chunk_y * CHUNK_SIZE + ly
 			var cell := Vector2i(x, y)
-			BetterTerrain.set_cell(self, cell, terrain)
-			var matter = TileDB.get_matter(terrain)
+			BetterTerrain.set_cell(self, cell, tile_id)
 			layerdata[cell] = {
-				"matter": matter,
+				"tile_id": tile_id,
 				"data": data
 			}
 	var rect := Rect2i(Vector2i(chunk_x * CHUNK_SIZE, chunk_y * CHUNK_SIZE), Vector2i(CHUNK_SIZE, CHUNK_SIZE))

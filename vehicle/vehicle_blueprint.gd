@@ -22,30 +22,13 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 		return _error("Enter a vehicle name.")
 	vehicle.vehicle_name = clean_name
 
-	var block_records: Array = []
-	for block in vehicle.blocks:
-		var block_id := BlockDB.get_id_for_scene(block.scene_file_path)
-		if block_id < 0:
+	for block: Block in vehicle.blocks:
+		if BlockDB.get_id_for_scene(block.scene_file_path) < 0:
 			return _error("Unregistered block: %s" % block.block_name)
-		var record: Array = [
-			block_id,
-			block.origin_cell.x,
-			block.origin_cell.y,
-			block.rotation_index,
-		]
-		if block is ExpandableStorage and block.size != Vector2i.ONE:
-			record.append(block.size.x)
-			record.append(block.size.y)
-		if block is ItemStorage:
-			var item_storage := block as ItemStorage
-			if not item_storage.is_default_allowed_items():
-				record.append(item_storage.allowed_items.duplicate())
-		elif block is LiquidStorage:
-			var liquid_storage := block as LiquidStorage
-			if not liquid_storage.is_default_allowed_items():
-				record.append(liquid_storage.allowed_items.duplicate())
-		block_records.append(record)
-	block_records.sort_custom(_sort_block_records)
+	vehicle.ensure_blueprint_from_blocks()
+	vehicle.reconcile_blueprint_with_blocks()
+	var normalized := normalize_records(vehicle.blueprint_blocks)
+	var block_records: Array = normalized["records"]
 
 	var directory_result := ensure_directory()
 	if not directory_result["ok"]:
@@ -88,7 +71,12 @@ static func load_path(path: String) -> Dictionary:
 	return _validate(parsed)
 
 
-static func build(data: Dictionary, parent: Node, vehicle_scene: PackedScene, transform: Transform2D) -> Dictionary:
+static func build(
+	data: Dictionary,
+	parent: Node,
+	vehicle_scene: PackedScene,
+	transform: Transform2D
+) -> Dictionary:
 	var validated := _validate(data)
 	if not validated["ok"]:
 		return validated
@@ -99,37 +87,7 @@ static func build(data: Dictionary, parent: Node, vehicle_scene: PackedScene, tr
 	vehicle.vehicle_name = validated["data"]["vehicle_name"]
 	parent.add_child(vehicle)
 	vehicle.global_transform = transform
-
-	for record in validated["data"]["blocks"]:
-		var scene := BlockDB.get_scene(int(record[0]))
-		var cell := Vector2i(int(record[1]), int(record[2]))
-		var block_size := _get_record_size(record)
-		if (
-			scene == null
-			or not vehicle.place_block(
-				scene,
-				cell,
-				int(record[3]),
-				block_size,
-				false
-			)
-		):
-			vehicle.queue_free()
-			return _error("A block could not be placed at %s." % cell)
-		var filter_index := _get_filter_index(record)
-		if filter_index >= 0:
-			var placed_block := vehicle.get_block(cell)
-			if placed_block is ItemStorage:
-				(placed_block as ItemStorage).set_allowed_items(
-					record[filter_index]
-				)
-			elif placed_block is LiquidStorage:
-				(placed_block as LiquidStorage).set_allowed_items(
-					record[filter_index]
-				)
-
-	vehicle.merge_rectangular_containers()
-	vehicle.update_vehicle()
+	vehicle.set_blueprint_records(validated["data"]["blocks"])
 	return {
 		"ok": true,
 		"name": validated["data"]["vehicle_name"],
@@ -196,7 +154,9 @@ static func _validate(data: Dictionary) -> Dictionary:
 			occupied[cell] = true
 		block.free()
 
-	return {"ok": true, "data": data}
+	var normalized_data := data.duplicate(true)
+	normalized_data["blocks"] = normalize_records(data["blocks"])["records"]
+	return {"ok": true, "data": normalized_data}
 
 
 static func _valid_block_record(record) -> bool:
@@ -247,6 +207,158 @@ static func _sort_block_records(a: Array, b: Array) -> bool:
 	if a[1] != b[1]:
 		return a[1] < b[1]
 	return a[0] < b[0]
+
+
+static func capture_vehicle_blocks(vehicle: Vehicle) -> Array:
+	var records: Array = []
+	for block: Block in vehicle.blocks:
+		var record := make_block_record(block)
+		if not record.is_empty():
+			records.append(record)
+	records.sort_custom(_sort_block_records)
+	return records
+
+
+static func make_block_record(block: Block) -> Array:
+	var block_id := BlockDB.get_id_for_scene(block.scene_file_path)
+	if block_id < 0:
+		return []
+	var record: Array = [
+		block_id,
+		block.origin_cell.x,
+		block.origin_cell.y,
+		block.rotation_index,
+	]
+	if block is ExpandableStorage and block.size != Vector2i.ONE:
+		record.append(block.size.x)
+		record.append(block.size.y)
+	if block is ItemStorage:
+		var item_storage := block as ItemStorage
+		if not item_storage.is_default_allowed_items():
+			record.append(item_storage.allowed_items.duplicate())
+	elif block is LiquidStorage:
+		var liquid_storage := block as LiquidStorage
+		if not liquid_storage.is_default_allowed_items():
+			record.append(liquid_storage.allowed_items.duplicate())
+	return record
+
+
+static func normalize_records(records: Array) -> Dictionary:
+	var result: Array = records.duplicate(true)
+	if result.is_empty():
+		return {
+			"records": result,
+			"offset": Vector2i.ZERO,
+		}
+	var minimum := Vector2i(int(result[0][1]), int(result[0][2]))
+	for record: Array in result:
+		minimum.x = mini(minimum.x, int(record[1]))
+		minimum.y = mini(minimum.y, int(record[2]))
+	for record: Array in result:
+		record[1] = int(record[1]) - minimum.x
+		record[2] = int(record[2]) - minimum.y
+	result.sort_custom(_sort_block_records)
+	return {
+		"records": result,
+		"offset": minimum,
+	}
+
+
+static func reconcile_records(records: Array, vehicle: Vehicle) -> Array:
+	var result: Array = records.duplicate(true)
+	for block: Block in vehicle.blocks:
+		var matching_index := get_matching_record_index(result, block)
+		if matching_index >= 0:
+			result[matching_index] = make_block_record(block)
+			continue
+		var block_cells := {}
+		for cell: Vector2i in block.get_occupied_cells():
+			block_cells[cell] = true
+		for index in range(result.size() - 1, -1, -1):
+			for cell: Vector2i in get_record_cells(result[index]):
+				if block_cells.has(cell):
+					result.remove_at(index)
+					break
+		var actual_record := make_block_record(block)
+		if not actual_record.is_empty():
+			result.append(actual_record)
+	result.sort_custom(_sort_block_records)
+	return result
+
+
+static func has_matching_record(records: Array, block: Block) -> bool:
+	return get_matching_record_index(records, block) >= 0
+
+
+static func get_matching_record_index(records: Array, block: Block) -> int:
+	var index := 0
+	for record: Array in records:
+		if record_matches_block(record, block):
+			return index
+		index += 1
+	return -1
+
+
+static func record_matches_block(record: Array, block: Block) -> bool:
+	return (
+		BlockDB.get_id_for_scene(block.scene_file_path) == int(record[0])
+		and block.origin_cell == Vector2i(int(record[1]), int(record[2]))
+		and block.rotation_index == int(record[3])
+		and block.size == get_record_base_size(record)
+	)
+
+
+static func get_matching_block(vehicle: Vehicle, record: Array) -> Block:
+	var block := vehicle.get_block(Vector2i(int(record[1]), int(record[2])))
+	if block != null and record_matches_block(record, block):
+		return block
+	return null
+
+
+static func get_record_cells(record: Array) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	var block_size := get_record_base_size(record)
+	var rotation := int(record[3])
+	var rotated_size := (
+		block_size
+		if rotation % 2 == 0
+		else Vector2i(block_size.y, block_size.x)
+	)
+	var origin := Vector2i(int(record[1]), int(record[2]))
+	for x in rotated_size.x:
+		for y in rotated_size.y:
+			cells.append(origin + Vector2i(x, y))
+	return cells
+
+
+static func get_record_base_size(record: Array) -> Vector2i:
+	var saved_size := _get_record_size(record)
+	if saved_size != Vector2i.ZERO:
+		return saved_size
+	var scene := BlockDB.get_scene(int(record[0]))
+	var block := scene.instantiate() as Block if scene != null else null
+	if block == null:
+		return Vector2i.ONE
+	var result := block.size
+	block.free()
+	return result
+
+
+static func get_record_filter(record: Array) -> Array:
+	var filter_index := _get_filter_index(record)
+	if filter_index < 0:
+		return []
+	return record[filter_index].duplicate()
+
+
+static func apply_record_filter(record: Array, block: Block) -> void:
+	var filter_index := _get_filter_index(record)
+	if filter_index < 0:
+		return
+	if block is ItemStorage:
+		(block as ItemStorage).set_allowed_items(record[filter_index])
+	elif block is LiquidStorage:
+		(block as LiquidStorage).set_allowed_items(record[filter_index])
 
 static func _get_path(vehicle_name: String) -> String:
 	return DIRECTORY + vehicle_name.validate_filename() + ".json"

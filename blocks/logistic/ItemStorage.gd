@@ -61,7 +61,7 @@ func get_compatible_item_ids() -> Array[String]:
 	return ItemDB.get_items_by_type(get_accepted_item_type())
 
 func is_item_compatible(item_id: String) -> bool:
-	var item_data := ItemDB.get_item(item_id)
+	var item_data := ItemDB.get_item_by_name(item_id)
 	return not item_data.is_empty() and item_data.get("type", -1) == get_accepted_item_type()
 
 func reset_allowed_items() -> void:
@@ -103,7 +103,7 @@ func is_default_allowed_items() -> bool:
 func get_total_load() -> float:
 	var total := 0.0
 	for item_id: String in items:
-		total += int(items[item_id]) * float(ItemDB.get_item(item_id).get("weight", 0.0))
+		total += int(items[item_id]) * float(ItemDB.get_item_by_name(item_id).get("weight", 0.0))
 	return total
 
 func get_free_load() -> float:
@@ -121,7 +121,7 @@ func has_item(item_id: String, amount: int) -> bool:
 func add_item(item_id: String, amount: int) -> int:
 	if amount <= 0 or not accepts_item(item_id):
 		return 0
-	var weight := float(ItemDB.get_item(item_id).get("weight", 0.0))
+	var weight := float(ItemDB.get_item_by_name(item_id).get("weight", 0.0))
 	if weight <= 0.0:
 		return 0
 	var accepted := mini(amount, int(floor(get_free_load() / weight)))

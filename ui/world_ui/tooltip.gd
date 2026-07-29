@@ -69,14 +69,28 @@ func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 	var cell = tilemap.local_to_map(qurey_pos)
 	var celldata = tilemap.get_celldata(cell)
 	if celldata:
-		if TileDB.get_tile(celldata["matter"])["phase"] == "solid":
-			textlabel.text = celldata["matter"] + " tile\nHP:" + str(celldata["data"])
-		elif TileDB.get_tile(celldata["matter"])["phase"] == "liquid":
+		var tile_info := TileDB.get_tile(celldata["tile_id"])
+		var tile_name := str(tile_info.get("name", "unknown"))
+		if tile_info["phase"] == "solid":
+			textlabel.text = (
+				tile_name + " tile\nHP:" + str(celldata["data"])
+			)
+		elif tile_info["phase"] == "liquid":
 			var total_mass = tilemap.get_total_liquid_mass(tilemap.get_connected_liquid(cell))
 			if total_mass < 1000.0:
-				textlabel.text = celldata["matter"] + "\nTotal mass: " + "%.f" % total_mass + " kg"
+				textlabel.text = (
+					tile_name
+					+ "\nTotal mass: "
+					+ "%.f" % total_mass
+					+ " kg"
+				)
 			else:
-				textlabel.text = celldata["matter"] + "\nTotal mass: " + "%.1f" % (total_mass/1000) + " T"
+				textlabel.text = (
+					tile_name
+					+ "\nTotal mass: "
+					+ "%.1f" % (total_mass / 1000)
+					+ " T"
+				)
 # Clear the optional detail grid.
 func _clear_grid() -> void:
 	for c in grid_container.get_children():

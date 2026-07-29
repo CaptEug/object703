@@ -64,7 +64,7 @@ func _refresh_item_storage(storage: ItemStorage) -> void:
 	else:
 		for item_id: String in item_ids:
 			var count := storage.get_item_count(item_id)
-			var weight := float(ItemDB.get_item(item_id).get("weight", 0.0))
+			var weight := float(ItemDB.get_item_by_name(item_id).get("weight", 0.0))
 			contents_list.add_child(_make_item_row(
 				item_id,
 				"%d  (%.1f mass)" % [count, count * weight]
@@ -92,7 +92,7 @@ func _refresh_allowed_items() -> void:
 	for item_id: String in item_ids:
 		var button := Button.new()
 		button.text = ItemDB.get_display_name(item_id)
-		button.icon = ItemDB.get_item(item_id).get("icon")
+		button.icon = ItemDB.get_item_by_name(item_id).get("icon")
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.tooltip_text = "Click to remove this allowed item"
 		button.pressed.connect(_remove_allowed_item.bind(item_id))
@@ -105,7 +105,7 @@ func _make_item_row(item_id: String, amount_text: String) -> HBoxContainer:
 	icon.custom_minimum_size = Vector2(24.0, 24.0)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.texture = ItemDB.get_item(item_id).get("icon")
+	icon.texture = ItemDB.get_item_by_name(item_id).get("icon")
 	row.add_child(icon)
 	var label := Label.new()
 	label.text = "%s  %s" % [ItemDB.get_display_name(item_id), amount_text]
@@ -165,7 +165,7 @@ func _build_add_tree() -> void:
 			categories[category_name] = category
 		var leaf := add_tree.create_item(category)
 		leaf.set_text(0, ItemDB.get_display_name(item_id))
-		leaf.set_icon(0, ItemDB.get_item(item_id).get("icon"))
+		leaf.set_icon(0, ItemDB.get_item_by_name(item_id).get("icon"))
 		leaf.set_metadata(0, item_id)
 
 func _get_item_category(item_id: String) -> String:

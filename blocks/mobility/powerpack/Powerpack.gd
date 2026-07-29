@@ -92,7 +92,7 @@ func preprocess_recipe(recipe: Dictionary, delta: float) -> Dictionary:
 	var solid_requests := {}
 	
 	for item in recipe.keys():
-		var item_data = ItemDB.get_item(item)
+		var item_data = ItemDB.get_item_by_name(item)
 		if item_data.is_empty():
 			continue
 		

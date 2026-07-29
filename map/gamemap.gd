@@ -19,6 +19,10 @@ func _ready():
 		"wall": wall,
 		
 	}
+	for validation_error: String in (
+		TileDB.validate_better_terrain(wall.tile_set)
+	):
+		push_error(validation_error)
 	
 	print("=== 游戏地图初始化完成 ===")
 
@@ -33,9 +37,9 @@ func generate_world():
 	noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	#terrain sets
 	var height_dict = {
-		"sandstone": [0, 0.5],
-		"hematite": [0.2, 0.3],
-		"crude_oil": [-INF, -0.5]
+		1: [0, 0.5],
+		2: [0.2, 0.3],
+		3: [-INF, -0.5]
 	}
 	
 	for x in range(world_width):
@@ -44,10 +48,16 @@ func generate_world():
 			
 			#generate wall
 			var noise_val = noise.get_noise_2d(x, y)
-			for matter in height_dict:
-				if noise_val > height_dict[matter][0] and noise_val <= height_dict[matter][1]:
-					var terrain_int = TileDB.get_tile(matter)["terrain_int"]
-					BetterTerrain.set_cell(wall, Vector2i(x, y), terrain_int)
+			for tile_id: int in height_dict:
+				if (
+					noise_val > height_dict[tile_id][0]
+					and noise_val <= height_dict[tile_id][1]
+				):
+					BetterTerrain.set_cell(
+						wall,
+						Vector2i(x, y),
+						tile_id
+					)
 	
 	BetterTerrain.update_terrain_area(wall, Rect2i(Vector2i(0, 0), Vector2i(world_width, world_height)))
 	wall.init_layerdata()

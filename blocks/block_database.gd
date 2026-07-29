@@ -2,12 +2,14 @@ extends Node
 
 var blocks := {
 	1: {
+		"block_name": "Structual Frame",
 		"path": "res://blocks/structural/structual_frame.tscn",
 		"construction_cost": {
 			"metal": 1,
 		},
 	},
 	2: {
+		"block_name": "Liquid Tank",
 		"path": "res://blocks/logistic/liquid_tank.tscn",
 		"construction_cost": {
 			"metal": 1,
@@ -15,6 +17,7 @@ var blocks := {
 		},
 	},
 	3: {
+		"block_name": "Cargo Box",
 		"path": "res://blocks/logistic/cargo_box.tscn",
 		"construction_cost": {
 			"metal": 1,
@@ -22,6 +25,7 @@ var blocks := {
 		},
 	},
 	4: {
+		"block_name": "V2",
 		"path": "res://blocks/mobility/powerpack/v_2.tscn",
 		"construction_cost": {
 			"metal": 2,
@@ -29,6 +33,7 @@ var blocks := {
 		},
 	},
 	5: {
+		"block_name": "Metal Track",
 		"path": "res://blocks/mobility/track/metal_track.tscn",
 		"construction_cost": {
 			"metal": 1,
@@ -36,6 +41,7 @@ var blocks := {
 		},
 	},
 	6: {
+		"block_name": "8.8cm KwK 43 L/71",
 		"path": "res://blocks/weapon/KwK_43.tscn",
 		"construction_cost": {
 			"metal": 2,
@@ -43,12 +49,14 @@ var blocks := {
 		},
 	},
 	7: {
+		"block_name": "Dump Container",
 		"path": "res://blocks/logistic/dump_container.tscn",
 		"construction_cost": {
 			"metal": 1,
 		},
 	},
 	8: {
+		"block_name": "Manual Cockpit",
 		"path": "res://blocks/control/manual_cockpit.tscn",
 		"construction_cost": {
 			"metal": 1,
@@ -75,9 +83,20 @@ func get_scene(block_id: int) -> PackedScene:
 	return load(block_data["path"]) as PackedScene
 
 
+func get_block_name(block_id: int) -> String:
+	return str(get_block(block_id).get("block_name", "Unknown Block"))
+
+
 func get_id_for_scene(scene_path: String) -> int:
 	for block_id in blocks:
 		if blocks[block_id]["path"] == scene_path:
+			return block_id
+	return -1
+
+
+func get_id_for_name(block_name: String) -> int:
+	for block_id in blocks:
+		if blocks[block_id]["block_name"] == block_name:
 			return block_id
 	return -1
 

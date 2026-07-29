@@ -69,7 +69,7 @@ func get_compatible_item_ids() -> Array[String]:
 	return ItemDB.get_items_by_type(ItemDB.ItemType.LIQUID)
 
 func is_item_compatible(item_id: String) -> bool:
-	var item_data := ItemDB.get_item(item_id)
+	var item_data := ItemDB.get_item_by_name(item_id)
 	return not item_data.is_empty() and item_data.get("type", -1) == ItemDB.ItemType.LIQUID
 
 func reset_allowed_items() -> void:

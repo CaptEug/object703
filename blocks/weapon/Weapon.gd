@@ -147,7 +147,7 @@ func _try_start_reload() -> bool:
 			continue
 		if not vehicle.supply_system.supply_item(self, item_id, 1):
 			continue
-		var shell_scene := ItemDB.get_item(item_id).get("shell_scene") as PackedScene
+		var shell_scene := ItemDB.get_item_by_name(item_id).get("shell_scene") as PackedScene
 		if shell_scene == null:
 			continue
 		loaded_ammo_id = item_id
@@ -171,7 +171,7 @@ func _get_ammo_candidates() -> Array[String]:
 	return result
 
 func _is_valid_ammo(item_id: String) -> bool:
-	var item_data := ItemDB.get_item(item_id)
+	var item_data := ItemDB.get_item_by_name(item_id)
 	return (
 		not item_data.is_empty()
 		and ItemDB.has_subclass(item_id, ItemDB.ItemSubclass.AMMO)

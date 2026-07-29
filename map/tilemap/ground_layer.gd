@@ -17,19 +17,22 @@ func build_ground_cache():
 			for id in source.get_tiles_count():
 				var coords:Vector2i = source.get_tile_id(id)
 				var data = source.get_tile_data(coords, 0)
-				var matter = data.get_custom_data("matter")
-				if matter != "":
-					if TileDB.get_tile(matter)["layer"] == "ground":
-						if not ground_tiles.has(matter):
-							ground_tiles[matter] = []
-						ground_tiles[matter].append({
+				var tile_id := int(data.get_custom_data("tile_id"))
+				if TileDB.has_tile(tile_id):
+					if TileDB.get_tile(tile_id)["layer"] == "ground":
+						if not ground_tiles.has(tile_id):
+							ground_tiles[tile_id] = []
+						ground_tiles[tile_id].append({
 							"source": source_id,
 							"coords": coords
 						})
 
 
-func place_ground(pos:Vector2i, matter:String):
-	var variants = ground_tiles[matter]
+func place_ground(pos: Vector2i, tile_id: int):
+	if not ground_tiles.has(tile_id):
+		push_error("No ground variants for TileDB ID %d." % tile_id)
+		return
+	var variants = ground_tiles[tile_id]
 	var choice = variants[get_variant(pos,variants.size())]
 	set_cell(pos, choice.source, choice.coords)
 
@@ -55,9 +58,9 @@ func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
 			if not celldata:
 				bytes.append(0)
 			else:
-				var cellmatter = celldata.get_custom_data("matter")
+				var tile_id := int(celldata.get_custom_data("tile_id"))
 			# --- terrain (u8) ---
-				bytes.append(TileDB.get_tile(cellmatter)["terrain_int"])   
+				bytes.append(tile_id)
 	return bytes
 
 
@@ -65,11 +68,13 @@ func load_chunk(chunk_x:int, chunk_y:int, bytes:PackedByteArray, CHUNK_SIZE:int)
 	var i := 0
 	for ly in range(CHUNK_SIZE):
 		for lx in range(CHUNK_SIZE):
-			var terrain := bytes.decode_u8(i); i += 1
-			if terrain == 0:
+			var tile_id := bytes.decode_u8(i); i += 1
+			if tile_id == TileDB.EMPTY_TILE_ID:
 				continue
-			var matter = TileDB.get_matter(terrain)
+			if not TileDB.has_tile(tile_id):
+				push_error("Unknown saved TileDB ID %d." % tile_id)
+				continue
 			var x := chunk_x * CHUNK_SIZE + lx
 			var y := chunk_y * CHUNK_SIZE + ly
 			var cell := Vector2i(x, y)
-			place_ground(cell, matter)
+			place_ground(cell, tile_id)

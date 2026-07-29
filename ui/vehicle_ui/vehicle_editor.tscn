@@ -29,6 +29,10 @@ region = Rect2(0, 128, 32, 32)
 atlas = ExtResource("4_buttons")
 region = Rect2(32, 128, 32, 32)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_auto_construct"]
+atlas = ExtResource("4_buttons")
+region = Rect2(64, 128, 32, 32)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_com_off"]
 atlas = ExtResource("4_buttons")
 region = Rect2(0, 0, 16, 16)
@@ -141,6 +145,14 @@ focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_dismantle")
 
+[node name="AutoConstructButton" type="TextureButton" parent="EditorDock/EditorTools"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Auto construct all missing blueprint blocks"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_auto_construct")
+
 [node name="CoMButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=865704074]
 layout_mode = 2
 size_flags_horizontal = 8
@@ -235,6 +247,7 @@ texture_normal = SubResource("AtlasTexture_zoom_out")
 [connection signal="pressed" from="EditorDock/EditorTools/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="EditorDock/EditorTools/LoadButton" to="." method="_on_load_button_pressed"]
 [connection signal="pressed" from="EditorDock/EditorTools/DismantleButton" to="." method="_on_dismantle_button_pressed"]
+[connection signal="pressed" from="EditorDock/EditorTools/AutoConstructButton" to="." method="_on_auto_construct_button_pressed"]
 [connection signal="toggled" from="EditorDock/EditorTools/CoMButton" to="." method="_on_com_visibility_changed"]
 [connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomInButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
 [connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomOutButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]

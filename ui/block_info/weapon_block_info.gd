@@ -53,7 +53,7 @@ func _on_ammo_button_pressed() -> void:
 	first_available.set_text(0, "First available")
 	first_available.set_metadata(0, "")
 	for item_id: String in weapon.shells:
-		var item_data := ItemDB.get_item(item_id)
+		var item_data := ItemDB.get_item_by_name(item_id)
 		if item_data.is_empty() or not ItemDB.has_subclass(item_id, ItemDB.ItemSubclass.AMMO):
 			continue
 		var leaf := ammo_tree.create_item(root)

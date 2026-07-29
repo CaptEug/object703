@@ -1,7 +1,7 @@
 extends Node2D
 
 var map:GameMap
-var cell_map:Dictionary[Vector2i, String] = {}
+var cell_map: Dictionary[Vector2i, int] = {}
 var image: Image
 var texture: ImageTexture
 var size := Vector2i(256, 256)
@@ -15,11 +15,15 @@ func loadmap():
 	if !map:
 		return
 	for cell in map.ground.get_used_cells():
-		cell_map[cell] = map.ground.get_cell_tile_data(cell).get_custom_data("matter")
+		cell_map[cell] = int(
+			map.ground.get_cell_tile_data(cell).get_custom_data("tile_id")
+		)
 	for cell in map.wall.get_used_cells():
-		cell_map[cell] = map.wall.get_cell_tile_data(cell).get_custom_data("matter")
+		cell_map[cell] = int(
+			map.wall.get_cell_tile_data(cell).get_custom_data("tile_id")
+		)
 	#for cell in map.building.layerdata:
-		#cell_map[cell] = "building"
+		#cell_map[cell] = 5
 	
 	for cell in cell_map:
 		var color = TileDB.get_tile(cell_map[cell])["color"]

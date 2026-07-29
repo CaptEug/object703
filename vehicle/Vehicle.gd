@@ -19,6 +19,8 @@ var block_component_map: Dictionary[Block, int] = {}
 # basic property
 @export var vehicle_name := "New Vehicle"
 @export var owner_id: StringName = &"player"
+var blueprint_blocks: Array = []
+var blueprint_ghosts_root: Node2D
 var total_mass := 0.0
 var total_engine_power: float = 0.0
 var engines: Array[PowerPack] = []
@@ -29,6 +31,12 @@ var active_control_block: ControlBlock
 
 func _ready() -> void:
 	add_to_group("vehicles")
+	blueprint_ghosts_root = Node2D.new()
+	blueprint_ghosts_root.name = "BlueprintGhosts"
+	blueprint_ghosts_root.z_index = 20
+	blueprint_ghosts_root.process_mode = Node.PROCESS_MODE_DISABLED
+	blueprint_ghosts_root.visible = false
+	add_child(blueprint_ghosts_root)
 
 
 func _process(_delta):
@@ -74,6 +82,7 @@ func update_vehicle():
 	center_of_mass = calculate_center_of_mass()
 	
 	refresh_system_lists()
+	refresh_blueprint_ghosts()
 
 
 func get_drive_input() -> Dictionary:
@@ -163,6 +172,7 @@ func place_block(
 	if merge_containers:
 		merge_rectangular_containers()
 	update_vehicle()
+	reconcile_blueprint_with_blocks()
 	
 	return true
 
@@ -383,6 +393,7 @@ func split_disconnected_components(
 			fragment.vehicle_name = "debris of %s" % vehicle_name
 		_move_component_to_vehicle(component, fragment)
 		fragment.update_vehicle()
+		fragment.replace_blueprint_from_blocks()
 		fragment.angular_velocity = original_angular_velocity
 		fragment.linear_velocity = _get_fragment_linear_velocity(
 			fragment,
@@ -394,6 +405,7 @@ func split_disconnected_components(
 		fragments.append(fragment)
 
 	update_vehicle()
+	replace_blueprint_from_blocks()
 	angular_velocity = original_angular_velocity
 	linear_velocity = _get_fragment_linear_velocity(
 		self,
@@ -658,3 +670,102 @@ func distance_to_world_point(world_point: Vector2) -> float:
 				to_global(cell_center).distance_to(world_point)
 			)
 	return nearest_distance
+
+
+# Blueprint
+
+func set_blueprint_records(records: Array) -> void:
+	blueprint_blocks = records.duplicate(true)
+	blueprint_blocks.sort_custom(VehicleBlueprint._sort_block_records)
+	refresh_blueprint_ghosts()
+
+
+func ensure_blueprint_from_blocks() -> void:
+	if blueprint_blocks.is_empty() and not blocks.is_empty():
+		replace_blueprint_from_blocks()
+
+
+func replace_blueprint_from_blocks() -> void:
+	blueprint_blocks = VehicleBlueprint.capture_vehicle_blocks(self)
+	refresh_blueprint_ghosts()
+
+
+func reconcile_blueprint_with_blocks() -> void:
+	blueprint_blocks = VehicleBlueprint.reconcile_records(
+		blueprint_blocks,
+		self
+	)
+	refresh_blueprint_ghosts()
+
+
+func get_missing_blueprint_records() -> Array:
+	var missing: Array = []
+	for record: Array in blueprint_blocks:
+		if VehicleBlueprint.get_matching_block(self, record) == null:
+			missing.append(record.duplicate(true))
+	return missing
+
+
+func remove_blueprint_record_at_cell(cell: Vector2i) -> bool:
+	for index in range(blueprint_blocks.size() - 1, -1, -1):
+		if VehicleBlueprint.get_record_cells(blueprint_blocks[index]).has(cell):
+			blueprint_blocks.remove_at(index)
+			refresh_blueprint_ghosts()
+			return true
+	return false
+
+
+func set_blueprint_ghosts_visible(visible: bool) -> void:
+	if blueprint_ghosts_root == null:
+		return
+	blueprint_ghosts_root.visible = visible
+	if visible:
+		refresh_blueprint_ghosts()
+
+
+func refresh_blueprint_ghosts() -> void:
+	if blueprint_ghosts_root == null:
+		return
+	for child: Node in blueprint_ghosts_root.get_children():
+		child.free()
+	if not blueprint_ghosts_root.visible:
+		return
+
+	for record: Array in get_missing_blueprint_records():
+		var scene := BlockDB.get_scene(int(record[0]))
+		if scene == null:
+			continue
+		var ghost := scene.instantiate() as Block
+		if ghost == null:
+			continue
+		var saved_size := VehicleBlueprint._get_record_size(record)
+		if (
+			saved_size != Vector2i.ZERO
+			and ghost is ExpandableStorage
+			and not (ghost as ExpandableStorage).configure_blueprint_size(
+				saved_size
+			)
+		):
+			ghost.free()
+			continue
+		ghost.process_mode = Node.PROCESS_MODE_DISABLED
+		ghost.update_transform(
+			self,
+			Vector2i(int(record[1]), int(record[2])),
+			int(record[3])
+		)
+		ghost.modulate = Color(1.0, 0.48, 0.08, 0.42)
+		blueprint_ghosts_root.add_child(ghost)
+		_disable_ghost_features(ghost)
+
+
+func _disable_ghost_features(node: Node) -> void:
+	if node is CollisionShape2D:
+		(node as CollisionShape2D).disabled = true
+	elif node is CollisionPolygon2D:
+		(node as CollisionPolygon2D).disabled = true
+	elif node is Area2D:
+		(node as Area2D).monitoring = false
+		(node as Area2D).monitorable = false
+	for child: Node in node.get_children():
+		_disable_ghost_features(child)

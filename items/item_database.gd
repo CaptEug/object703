@@ -1,5 +1,7 @@
 extends Node
 
+const INVALID_ITEM_ID := -1
+
 enum ItemType {
 	MINERAL,
 	MATERIAL,
@@ -13,62 +15,62 @@ enum ItemSubclass {
 }
 
 var items := {
-	"scrap": {
-		"name": "Scrap",
+	1: {
+		"name": "scrap",
 		"type": ItemType.MATERIAL,
 		"subclasses": [],
 		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/scrap.png"),
 	},
-	"metal": {
-		"name": "Metal",
+	2: {
+		"name": "metal",
 		"type": ItemType.MATERIAL,
 		"subclasses": [],
 		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/metal.png"),
 	},
-	"metal_parts": {
-		"name": "Metal Parts",
+	3: {
+		"name": "metal_parts",
 		"type": ItemType.MATERIAL,
 		"subclasses": [],
 		"weight": 25.0,
 		"icon": preload("res://assets/icons/items/metal.png"),
 	},
-	"sandstone": {
-		"name": "Sandstone",
+	4: {
+		"name": "sandstone",
 		"type": ItemType.MINERAL,
 		"subclasses": [],
 		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/sandstone.png"),
 	},
-	"hematite": {
-		"name": "Hematite",
+	5: {
+		"name": "hematite",
 		"type": ItemType.MINERAL,
 		"subclasses": [ItemSubclass.RAW_ORE],
 		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/hematite.png"),
 	},
-	"coal": {
-		"name": "Coal",
+	6: {
+		"name": "coal",
 		"type": ItemType.MINERAL,
 		"subclasses": [ItemSubclass.FUEL],
 		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/coal.png"),
 	},
-	"crude_oil": {
-		"name": "Crude Oil",
+	7: {
+		"name": "crude_oil",
 		"type": ItemType.LIQUID,
 		"subclasses": [],
 		"icon": preload("res://assets/icons/items/crude_oil.png"),
 	},
-	"petroleum": {
-		"name": "Petroleum",
+	8: {
+		"name": "petroleum",
 		"type": ItemType.LIQUID,
 		"subclasses": [ItemSubclass.FUEL],
 		"icon": preload("res://assets/icons/items/petroleum.png"),
 	},
-	"PZGR88mm": {
-		"name": "PzGr. 88 mm",
+	9: {
+		"name": "PZGR88mm",
 		"type": ItemType.MATERIAL,
 		"subclasses": [ItemSubclass.AMMO],
 		"weight": 7.0,
@@ -78,20 +80,36 @@ var items := {
 	},
 }
 
-func get_item(item_id: String) -> Dictionary:
+func get_item(item_id: int) -> Dictionary:
 	return items.get(item_id, {})
 
-func get_display_name(item_id: String) -> String:
-	return get_item(item_id).get("name", item_id)
+func get_item_by_name(item_name: String) -> Dictionary:
+	return get_item(get_id_by_name(item_name))
+
+func get_id_by_name(item_name: String) -> int:
+	for item_id: int in items:
+		if items[item_id].get("name", "") == item_name:
+			return item_id
+	return INVALID_ITEM_ID
+
+func has_item(item_id: int) -> bool:
+	return items.has(item_id)
+
+func get_display_name(item_name: String) -> String:
+	if get_item_by_name(item_name).is_empty():
+		return item_name
+	if item_name != item_name.to_lower():
+		return item_name
+	return item_name.replace("_", " ").capitalize()
 
 func get_items_by_type(item_type: int) -> Array[String]:
 	var result: Array[String] = []
-	for item_id: String in items:
+	for item_id: int in items:
 		if items[item_id].get("type", -1) == item_type:
-			result.append(item_id)
+			result.append(items[item_id].get("name", ""))
 	result.sort()
 	return result
 
-func has_subclass(item_id: String, subclass: int) -> bool:
-	var subclasses: Array = get_item(item_id).get("subclasses", [])
+func has_subclass(item_name: String, subclass: int) -> bool:
+	var subclasses: Array = get_item_by_name(item_name).get("subclasses", [])
 	return subclasses.has(subclass)
