@@ -10,9 +10,9 @@ size = Vector2(16, 16)
 atlas = ExtResource("1_vd1ly")
 region = Rect2(128, 64, 16, 16)
 
-[node name="LiquidContainer" type="Node2D" unique_id=418363344]
+[node name="LiquidTank" type="Node2D" unique_id=418363344]
 script = ExtResource("1_v2fc7")
-block_name = "Liquid Container"
+block_name = "Liquid Tank"
 metadata/_custom_type_script = "uid://pnfcsef3bfk8"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1091049743]

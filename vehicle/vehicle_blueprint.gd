@@ -33,7 +33,7 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 			block.origin_cell.y,
 			block.rotation_index,
 		]
-		if block is ExpandableContainer and block.size != Vector2i.ONE:
+		if block is ExpandableStorage and block.size != Vector2i.ONE:
 			record.append(block.size.x)
 			record.append(block.size.y)
 		if block is ItemStorage:
@@ -164,7 +164,7 @@ static func _validate(data: Dictionary) -> Dictionary:
 		var block_size := _get_record_size(record)
 		if (
 			block_size != Vector2i.ZERO
-			and not block is ExpandableContainer
+			and not block is ExpandableStorage
 		):
 			block.free()
 			return _error("Only expandable containers can have a saved size.")

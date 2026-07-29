@@ -1,5 +1,5 @@
 class_name LiquidStorage
-extends ExpandableContainer
+extends ExpandableStorage
 
 signal contents_changed
 signal allowed_items_changed

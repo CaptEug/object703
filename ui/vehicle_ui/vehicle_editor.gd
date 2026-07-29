@@ -40,6 +40,8 @@ var selection_click_active := false
 
 var vehicle_scene: PackedScene = load("res://vehicle/Vehicle.tscn")
 
+@export_range(1.0, 64.0, 1.0) var construction_range_tiles := 8.0
+
 
 func _ready() -> void:
 	vehicle_panel.edit_requested.connect(enter_edit_mode)
@@ -308,8 +310,57 @@ func place_block() -> void:
 	if not is_instance_valid(vehicle) or selected_block == null:
 		return
 	var block_scene := load(selected_block.scene_file_path) as PackedScene
-	vehicle.place_block(block_scene, preview_cell, preview_rotation)
+	if block_scene == null:
+		_show_status("Cannot build: block scene is missing")
+		return
+	if not _can_place_selected_block(block_scene):
+		_show_status("Cannot build here")
+		return
+
+	var block_id := BlockDB.get_id_for_scene(selected_block.scene_file_path)
+	if block_id < 0:
+		_show_status("Cannot build: block is not registered in BlockDB")
+		return
+	var cost := BlockDB.get_construction_cost(block_id)
+	var build_position := vehicle.cell_to_world(preview_cell)
+	var storages := ConstructionMaterials.get_candidate_storages(
+		vehicle,
+		build_position,
+		construction_range_tiles * Globals.TILE_SIZE
+	)
+	var payment := ConstructionMaterials.consume(cost, storages)
+	if not payment["ok"]:
+		_show_status(
+			"Missing: %s"
+			% ConstructionMaterials.format_cost(payment["missing"])
+		)
+		return
+
+	if not vehicle.place_block(block_scene, preview_cell, preview_rotation):
+		ConstructionMaterials.refund(payment["withdrawals"])
+		_show_status("Cannot build here; materials returned")
+		return
+	if not cost.is_empty():
+		_show_status(
+			"Built %s (-%s)"
+			% [
+				selected_block.block_name,
+				ConstructionMaterials.format_cost(cost),
+			]
+		)
 	vehicle_panel.refresh_information()
+
+
+func _can_place_selected_block(block_scene: PackedScene) -> bool:
+	if is_instance_valid(preview_block):
+		return vehicle.can_place_block(preview_block, preview_cell)
+	var candidate := block_scene.instantiate() as Block
+	if candidate == null:
+		return false
+	candidate.update_transform(vehicle, preview_cell, preview_rotation)
+	var can_place := vehicle.can_place_block(candidate, preview_cell)
+	candidate.free()
+	return can_place
 
 
 func remove_block() -> void:
@@ -337,6 +388,8 @@ func create_new_vehicle(
 		previous_vehicle.queue_free()
 	var new_vehicle := vehicle_scene.instantiate() as Vehicle
 	new_vehicle.vehicle_name = "New Vehicle %d" % new_vehicle_index
+	if is_instance_valid(previous_vehicle):
+		new_vehicle.owner_id = previous_vehicle.owner_id
 	new_vehicle_index += 1
 	if gamemap != null:
 		gamemap.add_child(new_vehicle)
@@ -436,8 +489,10 @@ func _on_blueprint_file_selected(path: String) -> void:
 
 	var parent: Node = gamemap if gamemap != null else get_tree().current_scene
 	var old_transform := Transform2D.IDENTITY
+	var old_owner_id: StringName = &"player"
 	if is_instance_valid(vehicle):
 		old_transform = vehicle.global_transform
+		old_owner_id = vehicle.owner_id
 
 	var built := VehicleBlueprint.build(
 		result["data"],
@@ -451,7 +506,9 @@ func _on_blueprint_file_selected(path: String) -> void:
 
 	clear_preview_block()
 	var old_vehicle := vehicle
-	set_selected_vehicle(built["vehicle"])
+	var built_vehicle := built["vehicle"] as Vehicle
+	built_vehicle.owner_id = old_owner_id
+	set_selected_vehicle(built_vehicle)
 	if is_instance_valid(old_vehicle):
 		old_vehicle.queue_free()
 	_show_status("Blueprint loaded: %s" % built["name"])

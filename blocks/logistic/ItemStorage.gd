@@ -1,5 +1,5 @@
 class_name ItemStorage
-extends ExpandableContainer
+extends ExpandableStorage
 
 enum StorageKind {
 	DUMP,

@@ -27,6 +27,13 @@ var items := {
 		"weight": 100.0,
 		"icon": preload("res://assets/icons/items/metal.png"),
 	},
+	"metal_parts": {
+		"name": "Metal Parts",
+		"type": ItemType.MATERIAL,
+		"subclasses": [],
+		"weight": 25.0,
+		"icon": preload("res://assets/icons/items/metal.png"),
+	},
 	"sandstone": {
 		"name": "Sandstone",
 		"type": ItemType.MINERAL,

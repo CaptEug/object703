@@ -1,4 +1,4 @@
-class_name ExpandableContainer
+class_name ExpandableStorage
 extends Block
 
 var _source_atlas: Texture2D
@@ -43,7 +43,7 @@ func merge_container_members(
 	var combined_max_hp := 0.0
 	var combined_hp := 0.0
 	for value: Variant in members:
-		var member := value as ExpandableContainer
+		var member := value as ExpandableStorage
 		if member == null:
 			continue
 		combined_mass += member.mass

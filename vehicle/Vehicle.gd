@@ -18,12 +18,17 @@ var block_component_map: Dictionary[Block, int] = {}
 
 # basic property
 @export var vehicle_name := "New Vehicle"
+@export var owner_id: StringName = &"player"
 var total_mass := 0.0
 var total_engine_power: float = 0.0
 var engines: Array[PowerPack] = []
 var tracks: Array[Track] = []
 var control_blocks: Array[ControlBlock] = []
 var active_control_block: ControlBlock
+
+
+func _ready() -> void:
+	add_to_group("vehicles")
 
 
 func _process(_delta):
@@ -128,13 +133,13 @@ func place_block(
 	var block := block_scene.instantiate() as Block
 	if block == null:
 		return false
-	if block is ExpandableContainer:
+	if block is ExpandableStorage:
 		var container_size := (
 			block.size
 			if block_size == Vector2i.ZERO
 			else block_size
 		)
-		if not (block as ExpandableContainer).configure_blueprint_size(
+		if not (block as ExpandableStorage).configure_blueprint_size(
 			container_size
 		):
 			block.free()
@@ -176,12 +181,12 @@ func create_collision(block: Block) -> void:
 func merge_rectangular_containers() -> int:
 	var unvisited := {}
 	for block: Block in blocks:
-		if block is ExpandableContainer:
+		if block is ExpandableStorage:
 			unvisited[block] = true
 
 	var merged_count := 0
 	while not unvisited.is_empty():
-		var start := unvisited.keys()[0] as ExpandableContainer
+		var start := unvisited.keys()[0] as ExpandableStorage
 		var component := _get_container_component(start, unvisited)
 		if component.size() <= 1:
 			continue
@@ -196,15 +201,15 @@ func merge_rectangular_containers() -> int:
 
 
 func _get_container_component(
-	start: ExpandableContainer,
+	start: ExpandableStorage,
 	unvisited: Dictionary
 ) -> Array:
 	var result: Array = []
-	var queue: Array[ExpandableContainer] = [start]
+	var queue: Array[ExpandableStorage] = [start]
 	var merge_key := start.get_container_merge_key()
 	var merge_rotation := start.rotation_index
 	while not queue.is_empty():
-		var current := queue.pop_front() as ExpandableContainer
+		var current := queue.pop_front() as ExpandableStorage
 		if not unvisited.has(current):
 			continue
 		unvisited.erase(current)
@@ -213,17 +218,17 @@ func _get_container_component(
 			for direction: Vector2i in Block.SIDE_DIRS.values():
 				var neighbor := get_block(occupied_cell + direction)
 				if (
-					neighbor is ExpandableContainer
+					neighbor is ExpandableStorage
 					and neighbor != current
 					and unvisited.has(neighbor)
 					and (
-						neighbor as ExpandableContainer
+						neighbor as ExpandableStorage
 					).get_container_merge_key() == merge_key
 					and (
-						neighbor as ExpandableContainer
+						neighbor as ExpandableStorage
 					).rotation_index == merge_rotation
 				):
-					queue.append(neighbor as ExpandableContainer)
+					queue.append(neighbor as ExpandableStorage)
 	return result
 
 
@@ -233,7 +238,7 @@ func _get_complete_container_rectangle(component: Array) -> Rect2i:
 	var min_cell := Vector2i.ZERO
 	var max_cell := Vector2i.ZERO
 	for value: Variant in component:
-		var container := value as ExpandableContainer
+		var container := value as ExpandableStorage
 		if container == null:
 			continue
 		for cell: Vector2i in container.get_occupied_cells():
@@ -263,9 +268,9 @@ func _merge_container_component(
 	component: Array,
 	rectangle: Rect2i
 ) -> void:
-	var leader := component[0] as ExpandableContainer
+	var leader := component[0] as ExpandableStorage
 	for value: Variant in component:
-		var candidate := value as ExpandableContainer
+		var candidate := value as ExpandableStorage
 		if (
 			candidate.origin_cell.y < leader.origin_cell.y
 			or (
@@ -276,7 +281,7 @@ func _merge_container_component(
 			leader = candidate
 
 	for value: Variant in component:
-		var member := value as ExpandableContainer
+		var member := value as ExpandableStorage
 		for occupied_cell: Vector2i in member.get_occupied_cells():
 			grid.erase(occupied_cell)
 
@@ -291,7 +296,7 @@ func _merge_container_component(
 	)
 
 	for value: Variant in component:
-		var member := value as ExpandableContainer
+		var member := value as ExpandableStorage
 		if member == leader:
 			continue
 		blocks.erase(member)
@@ -369,6 +374,7 @@ func split_disconnected_components(
 		)
 		if fragment == null:
 			continue
+		fragment.owner_id = owner_id
 		parent.add_child(fragment)
 		fragment.global_transform = global_transform
 		if _component_has_control(component):
@@ -636,3 +642,19 @@ func world_to_cell(world_pos: Vector2) -> Vector2i:
 func cell_to_world(cell: Vector2i) -> Vector2:
 	var local = cell * TILE_SIZE
 	return to_global(local)
+
+
+func distance_to_world_point(world_point: Vector2) -> float:
+	if blocks.is_empty():
+		return global_position.distance_to(world_point)
+	var nearest_distance := INF
+	for block: Block in blocks:
+		for cell: Vector2i in block.get_occupied_cells():
+			var cell_center := (
+				(Vector2(cell) + Vector2(0.5, 0.5)) * TILE_SIZE
+			)
+			nearest_distance = minf(
+				nearest_distance,
+				to_global(cell_center).distance_to(world_point)
+			)
+	return nearest_distance

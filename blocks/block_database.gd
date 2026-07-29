@@ -3,27 +3,57 @@ extends Node
 var blocks := {
 	1: {
 		"path": "res://blocks/structural/structual_frame.tscn",
+		"construction_cost": {
+			"metal": 1,
+		},
 	},
 	2: {
-		"path": "res://blocks/logistic/liquid_container.tscn",
+		"path": "res://blocks/logistic/liquid_tank.tscn",
+		"construction_cost": {
+			"metal": 1,
+			"metal_parts": 1,
+		},
 	},
 	3: {
-		"path": "res://blocks/logistic/cargo_container.tscn",
+		"path": "res://blocks/logistic/cargo_box.tscn",
+		"construction_cost": {
+			"metal": 1,
+			"metal_parts": 1,
+		},
 	},
 	4: {
 		"path": "res://blocks/mobility/powerpack/v_2.tscn",
+		"construction_cost": {
+			"metal": 2,
+			"metal_parts": 2,
+		},
 	},
 	5: {
 		"path": "res://blocks/mobility/track/metal_track.tscn",
+		"construction_cost": {
+			"metal": 1,
+			"metal_parts": 1,
+		},
 	},
 	6: {
 		"path": "res://blocks/weapon/KwK_43.tscn",
+		"construction_cost": {
+			"metal": 2,
+			"metal_parts": 2,
+		},
 	},
 	7: {
 		"path": "res://blocks/logistic/dump_container.tscn",
+		"construction_cost": {
+			"metal": 1,
+		},
 	},
 	8: {
 		"path": "res://blocks/control/manual_cockpit.tscn",
+		"construction_cost": {
+			"metal": 1,
+			"metal_parts": 1,
+		},
 	},
 }
 
@@ -50,3 +80,12 @@ func get_id_for_scene(scene_path: String) -> int:
 		if blocks[block_id]["path"] == scene_path:
 			return block_id
 	return -1
+
+
+func get_construction_cost(block_id: int) -> Dictionary:
+	var block_data := get_block(block_id)
+	return block_data.get("construction_cost", {}).duplicate(true)
+
+
+func get_construction_cost_for_scene(scene_path: String) -> Dictionary:
+	return get_construction_cost(get_id_for_scene(scene_path))
