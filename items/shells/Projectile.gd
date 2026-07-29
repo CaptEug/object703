@@ -78,7 +78,7 @@ func _physics_process(_delta: float) -> void:
 		last_pos = to
 		return
 
-	var collider := hit.get("collider") as CollisionObject2D
+	var collider: Object = hit.get("collider")
 	var hit_position: Vector2 = hit.get("position", to)
 	var hit_normal: Vector2 = hit.get("normal", Vector2.ZERO)
 	if collider is Vehicle:
@@ -90,6 +90,14 @@ func _physics_process(_delta: float) -> void:
 			hit_normal
 		):
 			return
+	elif collider is WallLayer:
+		_handle_wall_impact(
+			collider as WallLayer,
+			hit_position,
+			hit_normal,
+			(to - from).normalized()
+		)
+		return
 	else:
 		_handle_world_impact(hit_position, hit_normal)
 		return
@@ -162,6 +170,59 @@ func ricochet(normal: Vector2, hit_position: Vector2) -> void:
 	rotation = linear_velocity.angle() + PI * 0.5
 	last_pos = global_position
 	traversing_vehicle = null
+
+
+func _handle_wall_impact(
+	wall: WallLayer,
+	hit_position: Vector2,
+	hit_normal: Vector2,
+	direction: Vector2
+) -> void:
+	if (
+		shell_type != ShellType.HE
+		and _should_ricochet(direction, hit_normal)
+	):
+		ricochet(hit_normal, hit_position)
+		return
+
+	var cell := wall.get_solid_cell_at_world_position(
+		hit_position,
+		direction
+	)
+	if cell == WallLayer.INVALID_CELL:
+		_handle_world_impact(hit_position, hit_normal)
+		return
+
+	var impact_position := hit_position
+	if not direction.is_zero_approx():
+		impact_position += direction.normalized()
+	global_position = impact_position
+	if shell_type == ShellType.HE:
+		explode()
+		queue_free()
+		return
+
+	var result := wall.damage_tile(
+		cell,
+		remaining_K_DMG,
+		&"KINETIC"
+	)
+	if not result["hit"]:
+		_handle_world_impact(hit_position, hit_normal)
+		return
+
+	remaining_K_DMG = maxf(
+		remaining_K_DMG - float(result["damage_consumed"]),
+		0.0
+	)
+	if result["destroyed"] and remaining_K_DMG > 0.001:
+		last_pos = global_position
+		return
+
+	if shell_type == ShellType.APHE:
+		explode()
+	queue_free()
+
 
 func _handle_world_impact(hit_position: Vector2, hit_normal: Vector2) -> void:
 	if shell_type != ShellType.HE and _should_ricochet(

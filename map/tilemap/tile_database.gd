@@ -9,9 +9,9 @@ var tiles := {
 		"layer": "wall",
 		"phase": "solid",
 		"hp": 400,
-		"kinetic_aborb": 1.0,
-		"explosive_absorb": 1.0,
-		"mined_item_id": "sandstone",
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"mined_item": "sandstone",
 		"color": Color(0.361, 0.137, 0.114),
 		"particle_path": (
 			"res://assets/particles/sandstone_shard.tscn"
@@ -22,9 +22,9 @@ var tiles := {
 		"layer": "wall",
 		"phase": "solid",
 		"hp": 800,
-		"kinetic_aborb": 1.0,
-		"explosive_absorb": 0.5,
-		"mined_item_id": "hematite",
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 0.5,
+		"mined_item": "hematite",
 		"color": Color.LIGHT_STEEL_BLUE,
 		"particle_path": (
 			"res://assets/particles/sandstone_shard.tscn"
@@ -41,11 +41,6 @@ var tiles := {
 		"name": "sandstone_g",
 		"layer": "ground",
 		"color": Color(0.533, 0.251, 0.176),
-	},
-	5: {
-		"name": "building",
-		"layer": "building",
-		"color": Color.YELLOW,
 	},
 }
 

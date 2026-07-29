@@ -1,11 +1,13 @@
 class_name WallLayer
 extends TileMapLayer
 
+const INVALID_CELL := Vector2i(-2147483648, -2147483648)
+
 var layerdata:Dictionary[Vector2i, Dictionary]
 @onready var gamemap:GameMap = get_parent()
 
 func _ready():
-	pass
+	add_to_group("environment_wall_layers")
 
 
 func _process(_delta):
@@ -45,47 +47,152 @@ func get_celldata(cell:Vector2i) -> Dictionary:
 	return layerdata.get(cell, {})
 
 
-func damage_tile(cell:Vector2i, amount:int, dmg_type:String = ""):
-	var tile_info := TileDB.get_tile(layerdata[cell]["tile_id"])
-	var kinetic_absorb = tile_info["kinetic_aborb"]
-	var explosive_absorb = tile_info["explosive_absorb"]
-	if dmg_type == "kinetic":
-		amount *= kinetic_absorb
-	elif dmg_type == "explosive":
-		amount *= explosive_absorb
-	
-	layerdata[cell]["data"] -= amount
-	
-	if layerdata[cell]["data"] <= 0:
-		destroy_tile(cell)
-	
-	#shard particle
-	if randf_range(0, 1) < 0.1:
-		if not get_cell_tile_data(cell):
-			return
-		var particle_path = TileDB.get_tile(
-			layerdata[cell]["tile_id"]
-		)["particle_path"]
-		
-		var shard = load(particle_path).instantiate()
-		shard.position = map_to_local(cell)
-		shard.emitting = true
-		get_tree().current_scene.add_child(shard)
+func get_solid_cell_at_world_position(
+	world_position: Vector2,
+	travel_direction: Vector2 = Vector2.ZERO
+) -> Vector2i:
+	var sample_position := world_position
+	if not travel_direction.is_zero_approx():
+		sample_position += travel_direction.normalized()
+	var cell := local_to_map(to_local(sample_position))
+	if _is_solid_cell(cell):
+		return cell
+	return INVALID_CELL
 
-func destroy_tile(cell:Vector2i):
-	#shard particle
-	var particle_path = TileDB.get_tile(
-		layerdata[cell]["tile_id"]
-	)["particle_path"]
-	var shard = load(particle_path).instantiate()
-	shard.position = map_to_local(cell)
-	shard.emitting = true
-	get_tree().current_scene.add_child(shard)
-	
+
+func damage_tile(
+	cell: Vector2i,
+	amount: float,
+	damage_type: StringName = &""
+) -> Dictionary:
+	var result := {
+		"hit": false,
+		"destroyed": false,
+		"damage_applied": 0.0,
+		"damage_consumed": 0.0,
+	}
+	if amount <= 0.0 or not _is_solid_cell(cell):
+		return result
+
+	var cell_data: Dictionary = layerdata[cell]
+	var tile_info := TileDB.get_tile(int(cell_data["tile_id"]))
+	var hp_before := maxf(float(cell_data.get("data", 0.0)), 0.0)
+	var multiplier := _get_damage_multiplier(tile_info, damage_type)
+	result["hit"] = true
+
+	if multiplier <= 0.0:
+		result["damage_consumed"] = amount
+		return result
+
+	var damage_applied := minf(amount * multiplier, hp_before)
+	var damage_consumed := minf(amount, hp_before / multiplier)
+	cell_data["data"] = hp_before - damage_applied
+	result["damage_applied"] = damage_applied
+	result["damage_consumed"] = damage_consumed
+
+	if float(cell_data["data"]) <= 0.001:
+		result["destroyed"] = destroy_tile(cell)
+	elif randf() < 0.1:
+		_spawn_tile_shards(cell, tile_info)
+	return result
+
+
+func apply_radial_damage(
+	world_position: Vector2,
+	radius_tiles: int,
+	max_damage: float
+) -> int:
+	if max_damage <= 0.0:
+		return 0
+	var center_cell := local_to_map(to_local(world_position))
+	if radius_tiles <= 0:
+		var direct_result := damage_tile(
+			center_cell,
+			max_damage,
+			&"EXPLOSIVE"
+		)
+		return 1 if direct_result["hit"] else 0
+
+	var damaged_cells := 0
+	for y in range(-radius_tiles, radius_tiles + 1):
+		for x in range(-radius_tiles, radius_tiles + 1):
+			var cell := center_cell + Vector2i(x, y)
+			if not _is_solid_cell(cell):
+				continue
+			var cell_world := to_global(map_to_local(cell))
+			var distance_tiles := (
+				world_position.distance_to(cell_world)
+				/ float(Globals.TILE_SIZE)
+			)
+			if distance_tiles > float(radius_tiles):
+				continue
+			var factor := 1.0 - distance_tiles / float(radius_tiles)
+			var damage := max_damage * factor
+			if damage <= 0.0:
+				continue
+			var result := damage_tile(cell, damage, &"EXPLOSIVE")
+			if result["hit"]:
+				damaged_cells += 1
+	return damaged_cells
+
+
+func destroy_tile(cell: Vector2i) -> bool:
+	if not _is_solid_cell(cell):
+		return false
+	var tile_info := TileDB.get_tile(int(layerdata[cell]["tile_id"]))
+	_spawn_tile_shards(cell, tile_info)
 	erase_cell(cell)
 	layerdata.erase(cell)
 	BetterTerrain.update_terrain_cell(self, cell, true)
-	gamemap.UI.minimap.update_cellmap([cell])
+	_update_minimap([cell])
+	return true
+
+
+func _is_solid_cell(cell: Vector2i) -> bool:
+	var cell_data := get_celldata(cell)
+	if cell_data.is_empty():
+		return false
+	var tile_info := TileDB.get_tile(int(cell_data.get("tile_id", -1)))
+	return tile_info.get("phase", "") == "solid"
+
+
+func _get_damage_multiplier(
+	tile_info: Dictionary,
+	damage_type: StringName
+) -> float:
+	match String(damage_type).to_upper():
+		"KINETIC":
+			return maxf(
+				float(tile_info.get("kinetic_damage_multiplier", 1.0)),
+				0.0
+			)
+		"EXPLOSIVE":
+			return maxf(
+				float(tile_info.get("explosive_damage_multiplier", 1.0)),
+				0.0
+			)
+	return 1.0
+
+
+func _spawn_tile_shards(cell: Vector2i, tile_info: Dictionary) -> void:
+	var particle_path := str(tile_info.get("particle_path", ""))
+	if particle_path.is_empty():
+		return
+	var particle_scene := load(particle_path) as PackedScene
+	if particle_scene == null:
+		return
+	var shard := particle_scene.instantiate() as GPUParticles2D
+	if shard == null:
+		return
+	shard.global_position = to_global(map_to_local(cell))
+	shard.emitting = true
+	get_tree().current_scene.add_child(shard)
+
+
+func _update_minimap(cells: Array[Vector2i]) -> void:
+	if gamemap == null or not is_instance_valid(gamemap.minimap):
+		return
+	gamemap.minimap.update_cellmap(cells)
 
 # liquid Calculation
 func get_connected_liquid(start_cell:Vector2i) -> Array[Vector2i]:
@@ -148,7 +255,7 @@ func remove_liquid(cell:Vector2i, mass:float):
 			erase_cell(farthest_cell)
 			layerdata.erase(farthest_cell)
 			BetterTerrain.update_terrain_cell(self, farthest_cell, true)
-			gamemap.UI.minimap.update_cellmap([farthest_cell])
+			_update_minimap([farthest_cell])
 
 func add_liquid(cell: Vector2i, tile_id: int, mass: float):
 	if (
@@ -198,7 +305,7 @@ func add_liquid(cell: Vector2i, tile_id: int, mass: float):
 	if !tile_added.is_empty():
 		BetterTerrain.set_cells(self, tile_added, tile_id)
 		BetterTerrain.update_terrain_cells(self, tile_added)
-		gamemap.UI.minimap.update_cellmap(tile_added)
+		_update_minimap(tile_added)
 
 func find_farthest_cell(cell: Vector2i, from: Array[Vector2i]):
 	var farthest = null

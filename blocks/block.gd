@@ -50,6 +50,10 @@ func _ready():
 		build_default_edge_sockets()
 
 
+func has_information_panel() -> bool:
+	return false
+
+
 # Block Placement
 
 func update_transform(v, cell:Vector2i, rotation_i:int):

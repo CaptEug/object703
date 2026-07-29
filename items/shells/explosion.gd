@@ -18,6 +18,15 @@ func apply_explosion() -> void:
 	for body in get_overlapping_bodies():
 		if body is Vehicle:
 			apply_explosion_to_vehicle(body as Vehicle)
+	for wall_node: Node in get_tree().get_nodes_in_group(
+		"environment_wall_layers"
+	):
+		if wall_node is WallLayer:
+			(wall_node as WallLayer).apply_radial_damage(
+				global_position,
+				radius,
+				max_damage
+			)
 	
 	queue_free()
 

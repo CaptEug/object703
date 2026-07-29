@@ -1,17 +1,17 @@
 [gd_scene format=3 uid="uid://db5q6xew8l8yd"]
 
-[ext_resource type="Script" uid="uid://pnfcsef3bfk8" path="res://blocks/logistic/LiquidStorage.gd" id="1_v2fc7"]
-[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="1_vd1ly"]
+[ext_resource type="Script" uid="uid://pnfcsef3bfk8" path="res://blocks/logistic/LiquidStorage.gd" id="1_24i4h"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_28fit"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v2fc7"]
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8tech"]
-atlas = ExtResource("1_vd1ly")
+atlas = ExtResource("2_28fit")
 region = Rect2(128, 64, 16, 16)
 
 [node name="LiquidTank" type="Node2D" unique_id=418363344]
-script = ExtResource("1_v2fc7")
+script = ExtResource("1_24i4h")
 block_name = "Liquid Tank"
 metadata/_custom_type_script = "uid://pnfcsef3bfk8"
 

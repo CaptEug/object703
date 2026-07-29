@@ -54,9 +54,9 @@ func _merge_storage_members(members: Array) -> void:
 		combined_stored += storage.stored
 		if combined_liquid.is_empty() and not storage.liquid.is_empty():
 			combined_liquid = storage.liquid
-		for item_id: String in storage.allowed_items:
-			if not allowed_union.has(item_id):
-				allowed_union.append(item_id)
+		for item_name: String in storage.allowed_items:
+			if not allowed_union.has(item_name):
+				allowed_union.append(item_name)
 	allowed_union.sort()
 	capacity = combined_capacity
 	stored = combined_stored
@@ -65,36 +65,36 @@ func _merge_storage_members(members: Array) -> void:
 	contents_changed.emit()
 	allowed_items_changed.emit()
 
-func get_compatible_item_ids() -> Array[String]:
+func get_compatible_item_names() -> Array[String]:
 	return ItemDB.get_items_by_type(ItemDB.ItemType.LIQUID)
 
-func is_item_compatible(item_id: String) -> bool:
-	var item_data := ItemDB.get_item_by_name(item_id)
+func is_item_compatible(item_name: String) -> bool:
+	var item_data := ItemDB.get_item_by_name(item_name)
 	return not item_data.is_empty() and item_data.get("type", -1) == ItemDB.ItemType.LIQUID
 
 func reset_allowed_items() -> void:
-	allowed_items = get_compatible_item_ids()
+	allowed_items = get_compatible_item_names()
 	allowed_items_changed.emit()
 
-func set_allowed_items(item_ids: Array) -> void:
+func set_allowed_items(item_names: Array) -> void:
 	var validated: Array[String] = []
-	for value: Variant in item_ids:
+	for value: Variant in item_names:
 		if value is String and is_item_compatible(value) and not validated.has(value):
 			validated.append(value)
 	validated.sort()
 	allowed_items = validated
 	allowed_items_changed.emit()
 
-func add_allowed_item(item_id: String) -> bool:
-	if not is_item_compatible(item_id) or allowed_items.has(item_id):
+func add_allowed_item(item_name: String) -> bool:
+	if not is_item_compatible(item_name) or allowed_items.has(item_name):
 		return false
-	allowed_items.append(item_id)
+	allowed_items.append(item_name)
 	allowed_items.sort()
 	allowed_items_changed.emit()
 	return true
 
-func remove_allowed_item(item_id: String) -> bool:
-	var index := allowed_items.find(item_id)
+func remove_allowed_item(item_name: String) -> bool:
+	var index := allowed_items.find(item_name)
 	if index < 0:
 		return false
 	allowed_items.remove_at(index)
@@ -103,22 +103,22 @@ func remove_allowed_item(item_id: String) -> bool:
 
 func is_default_allowed_items() -> bool:
 	var current := allowed_items.duplicate()
-	var default_items := get_compatible_item_ids()
+	var default_items := get_compatible_item_names()
 	current.sort()
 	default_items.sort()
 	return current == default_items
 
-func accepts_item(item_id: String) -> bool:
-	return is_item_compatible(item_id) and allowed_items.has(item_id)
+func accepts_item(item_name: String) -> bool:
+	return is_item_compatible(item_name) and allowed_items.has(item_name)
 
-func has_liquid(liquid_type: String, amount: float) -> bool:
-	return liquid == liquid_type and stored >= amount
+func has_liquid(liquid_name: String, amount: float) -> bool:
+	return liquid == liquid_name and stored >= amount
 
 func get_free_space() -> float:
 	return maxf(0.0, capacity - stored)
 
-func take_liquid(liquid_type: String, amount: float) -> float:
-	if amount <= 0.0 or stored <= 0.0 or liquid != liquid_type:
+func take_liquid(liquid_name: String, amount: float) -> float:
+	if amount <= 0.0 or stored <= 0.0 or liquid != liquid_name:
 		return 0.0
 	var taken := minf(stored, amount)
 	stored -= taken
@@ -128,12 +128,12 @@ func take_liquid(liquid_type: String, amount: float) -> float:
 	contents_changed.emit()
 	return taken
 
-func add_liquid(liquid_type: String, amount: float) -> float:
-	if amount <= 0.0 or not accepts_item(liquid_type):
+func add_liquid(liquid_name: String, amount: float) -> float:
+	if amount <= 0.0 or not accepts_item(liquid_name):
 		return 0.0
 	if stored <= 0.0:
-		liquid = liquid_type
-	if liquid != liquid_type:
+		liquid = liquid_name
+	if liquid != liquid_name:
 		return 0.0
 	var accepted := minf(get_free_space(), amount)
 	if accepted > 0.0:

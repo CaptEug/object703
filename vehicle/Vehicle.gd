@@ -63,12 +63,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _open_block_panel_at_mouse() -> bool:
 	var block := get_block(world_to_cell(get_global_mouse_position()))
-	if block == null:
+	if block == null or not block.has_information_panel():
 		return false
 	var panel := get_tree().get_first_node_in_group("block_information_panel")
 	if panel != null and panel.has_method("open_for_block"):
-		panel.open_for_block(block, get_viewport().get_mouse_position())
-		return true
+		return panel.open_for_block(
+			block,
+			get_viewport().get_mouse_position()
+		)
 	return false
 
 

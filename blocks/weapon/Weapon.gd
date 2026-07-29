@@ -45,6 +45,11 @@ var reload_timer: Timer
 var ammo_retry_time := 0.0
 const AMMO_RETRY_INTERVAL := 0.25
 
+
+func has_information_panel() -> bool:
+	return true
+
+
 func _ready() -> void:
 	super()
 	reload_timer = Timer.new()
@@ -86,14 +91,14 @@ func clear_aim_target() -> void:
 func set_trigger_held(pressed: bool) -> void:
 	trigger_held = pressed
 
-func select_ammo(item_id: String) -> bool:
-	if item_id.is_empty():
+func select_ammo(item_name: String) -> bool:
+	if item_name.is_empty():
 		selected_ammo_id = ""
 		weapon_status_changed.emit()
 		return true
-	if not shells.has(item_id) or not _is_valid_ammo(item_id):
+	if not shells.has(item_name) or not _is_valid_ammo(item_name):
 		return false
-	selected_ammo_id = item_id
+	selected_ammo_id = item_name
 	weapon_status_changed.emit()
 	return true
 
@@ -142,15 +147,15 @@ func _update_integrated_turret(delta: float) -> void:
 func _try_start_reload() -> bool:
 	if state != WeaponState.EMPTY or vehicle == null:
 		return false
-	for item_id: String in _get_ammo_candidates():
-		if not vehicle.supply_system.can_supply_item(self, item_id, 1):
+	for item_name: String in _get_ammo_candidates():
+		if not vehicle.supply_system.can_supply_item(self, item_name, 1):
 			continue
-		if not vehicle.supply_system.supply_item(self, item_id, 1):
+		if not vehicle.supply_system.supply_item(self, item_name, 1):
 			continue
-		var shell_scene := ItemDB.get_item_by_name(item_id).get("shell_scene") as PackedScene
+		var shell_scene := ItemDB.get_item_by_name(item_name).get("shell_scene") as PackedScene
 		if shell_scene == null:
 			continue
-		loaded_ammo_id = item_id
+		loaded_ammo_id = item_name
 		shell_loaded = shell_scene
 		_set_state(WeaponState.RELOADING)
 		reload_timer.start(maxf(reload, 0.001))
@@ -165,16 +170,16 @@ func _get_ammo_candidates() -> Array[String]:
 		and _is_valid_ammo(selected_ammo_id)
 	):
 		result.append(selected_ammo_id)
-	for item_id: String in shells:
-		if item_id != selected_ammo_id and _is_valid_ammo(item_id):
-			result.append(item_id)
+	for item_name: String in shells:
+		if item_name != selected_ammo_id and _is_valid_ammo(item_name):
+			result.append(item_name)
 	return result
 
-func _is_valid_ammo(item_id: String) -> bool:
-	var item_data := ItemDB.get_item_by_name(item_id)
+func _is_valid_ammo(item_name: String) -> bool:
+	var item_data := ItemDB.get_item_by_name(item_name)
 	return (
 		not item_data.is_empty()
-		and ItemDB.has_subclass(item_id, ItemDB.ItemSubclass.AMMO)
+		and ItemDB.has_subclass(item_name, ItemDB.ItemSubclass.AMMO)
 		and item_data.get("shell_scene") is PackedScene
 	)
 
@@ -239,6 +244,7 @@ func _clear_chamber() -> void:
 	loaded_ammo_id = ""
 	shell_loaded = null
 	weapon_status_changed.emit()
+
 
 func _set_state(new_state: WeaponState) -> void:
 	if state == new_state:

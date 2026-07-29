@@ -15,9 +15,12 @@ var detail_section: Node
 func _ready() -> void:
 	hide()
 
-func open_for_block(block: Block, screen_position: Vector2 = Vector2.ZERO) -> void:
-	if not is_instance_valid(block):
-		return
+func open_for_block(
+	block: Block,
+	screen_position: Vector2 = Vector2.ZERO
+) -> bool:
+	if not is_instance_valid(block) or not block.has_information_panel():
+		return false
 	_disconnect_target()
 	target_block = block
 	target_block.health_changed.connect(_refresh_general)
@@ -32,6 +35,7 @@ func open_for_block(block: Block, screen_position: Vector2 = Vector2.ZERO) -> vo
 			Vector2.ZERO,
 			(viewport_size - size).max(Vector2.ZERO)
 		)
+	return true
 
 func close_panel() -> void:
 	hide()

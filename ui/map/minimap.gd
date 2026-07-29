@@ -24,9 +24,6 @@ func _process(_delta):
 
 func update_cellmap(cells:Array):
 	for cell in cells:
-		if map.building.layerdata.has(cell):
-			map_renderer.cell_map[cell] = 5
-			continue
 		var walldata = map.wall.get_cell_tile_data(cell)
 		if walldata:
 			map_renderer.cell_map[cell] = int(

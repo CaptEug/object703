@@ -6,6 +6,10 @@ var _atlas_origin := Vector2i.ZERO
 var _visual_root: Node2D
 
 
+func has_information_panel() -> bool:
+	return true
+
+
 func _ready() -> void:
 	super()
 	if collision != null and collision.shape != null:

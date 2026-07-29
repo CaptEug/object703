@@ -18,6 +18,7 @@ var allowed_items: Array[String] = []
 func _ready() -> void:
 	super()
 	reset_allowed_items()
+	add_item("PZGR88mm", 20)
 
 
 func get_container_merge_key() -> String:
@@ -37,14 +38,14 @@ func _merge_storage_members(members: Array) -> void:
 		if storage == null:
 			continue
 		combined_max_load += storage.max_load
-		for item_id: String in storage.items:
-			combined_items[item_id] = (
-				int(combined_items.get(item_id, 0))
-				+ storage.get_item_count(item_id)
+		for item_name: String in storage.items:
+			combined_items[item_name] = (
+				int(combined_items.get(item_name, 0))
+				+ storage.get_item_count(item_name)
 			)
-		for item_id: String in storage.allowed_items:
-			if not allowed_union.has(item_id):
-				allowed_union.append(item_id)
+		for item_name: String in storage.allowed_items:
+			if not allowed_union.has(item_name):
+				allowed_union.append(item_name)
 	allowed_union.sort()
 	max_load = combined_max_load
 	items = combined_items
@@ -57,36 +58,36 @@ func get_accepted_item_type() -> int:
 		return ItemDB.ItemType.MINERAL
 	return ItemDB.ItemType.MATERIAL
 
-func get_compatible_item_ids() -> Array[String]:
+func get_compatible_item_names() -> Array[String]:
 	return ItemDB.get_items_by_type(get_accepted_item_type())
 
-func is_item_compatible(item_id: String) -> bool:
-	var item_data := ItemDB.get_item_by_name(item_id)
+func is_item_compatible(item_name: String) -> bool:
+	var item_data := ItemDB.get_item_by_name(item_name)
 	return not item_data.is_empty() and item_data.get("type", -1) == get_accepted_item_type()
 
 func reset_allowed_items() -> void:
-	allowed_items = get_compatible_item_ids()
+	allowed_items = get_compatible_item_names()
 	allowed_items_changed.emit()
 
-func set_allowed_items(item_ids: Array) -> void:
+func set_allowed_items(item_names: Array) -> void:
 	var validated: Array[String] = []
-	for value: Variant in item_ids:
+	for value: Variant in item_names:
 		if value is String and is_item_compatible(value) and not validated.has(value):
 			validated.append(value)
 	validated.sort()
 	allowed_items = validated
 	allowed_items_changed.emit()
 
-func add_allowed_item(item_id: String) -> bool:
-	if not is_item_compatible(item_id) or allowed_items.has(item_id):
+func add_allowed_item(item_name: String) -> bool:
+	if not is_item_compatible(item_name) or allowed_items.has(item_name):
 		return false
-	allowed_items.append(item_id)
+	allowed_items.append(item_name)
 	allowed_items.sort()
 	allowed_items_changed.emit()
 	return true
 
-func remove_allowed_item(item_id: String) -> bool:
-	var index := allowed_items.find(item_id)
+func remove_allowed_item(item_name: String) -> bool:
+	var index := allowed_items.find(item_name)
 	if index < 0:
 		return false
 	allowed_items.remove_at(index)
@@ -95,51 +96,51 @@ func remove_allowed_item(item_id: String) -> bool:
 
 func is_default_allowed_items() -> bool:
 	var current := allowed_items.duplicate()
-	var default_items := get_compatible_item_ids()
+	var default_items := get_compatible_item_names()
 	current.sort()
 	default_items.sort()
 	return current == default_items
 
 func get_total_load() -> float:
 	var total := 0.0
-	for item_id: String in items:
-		total += int(items[item_id]) * float(ItemDB.get_item_by_name(item_id).get("weight", 0.0))
+	for item_name: String in items:
+		total += int(items[item_name]) * float(ItemDB.get_item_by_name(item_name).get("weight", 0.0))
 	return total
 
 func get_free_load() -> float:
 	return maxf(0.0, max_load - get_total_load())
 
-func accepts_item(item_id: String) -> bool:
-	return is_item_compatible(item_id) and allowed_items.has(item_id)
+func accepts_item(item_name: String) -> bool:
+	return is_item_compatible(item_name) and allowed_items.has(item_name)
 
-func get_item_count(item_id: String) -> int:
-	return int(items.get(item_id, 0))
+func get_item_count(item_name: String) -> int:
+	return int(items.get(item_name, 0))
 
-func has_item(item_id: String, amount: int) -> bool:
-	return amount <= 0 or get_item_count(item_id) >= amount
+func has_item(item_name: String, amount: int) -> bool:
+	return amount <= 0 or get_item_count(item_name) >= amount
 
-func add_item(item_id: String, amount: int) -> int:
-	if amount <= 0 or not accepts_item(item_id):
+func add_item(item_name: String, amount: int) -> int:
+	if amount <= 0 or not accepts_item(item_name):
 		return 0
-	var weight := float(ItemDB.get_item_by_name(item_id).get("weight", 0.0))
+	var weight := float(ItemDB.get_item_by_name(item_name).get("weight", 0.0))
 	if weight <= 0.0:
 		return 0
 	var accepted := mini(amount, int(floor(get_free_load() / weight)))
 	if accepted > 0:
-		items[item_id] = get_item_count(item_id) + accepted
+		items[item_name] = get_item_count(item_name) + accepted
 		contents_changed.emit()
 	return accepted
 
-func take_item(item_id: String, amount: int) -> int:
+func take_item(item_name: String, amount: int) -> int:
 	if amount <= 0:
 		return 0
-	var taken := mini(amount, get_item_count(item_id))
+	var taken := mini(amount, get_item_count(item_name))
 	if taken <= 0:
 		return 0
-	var left := get_item_count(item_id) - taken
+	var left := get_item_count(item_name) - taken
 	if left <= 0:
-		items.erase(item_id)
+		items.erase(item_name)
 	else:
-		items[item_id] = left
+		items[item_name] = left
 	contents_changed.emit()
 	return taken

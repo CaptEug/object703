@@ -3,9 +3,11 @@ extends VBoxContainer
 
 var weapon: Weapon
 
-@onready var state_label: Label = $State
-@onready var ammo_label: Label = $Ammo
-@onready var selection_label: Label = $Selection
+@onready var state_label: Label = $StateRow/State
+@onready var chambered_icon: TextureRect = $StateRow/Icon
+@onready var ammo_label: Label = $StateRow/Ammo
+@onready var selection_icon: TextureRect = $SelectionRow/Icon
+@onready var selection_label: Label = $SelectionRow/Label
 @onready var reload_bar: ProgressBar = $ReloadBar
 @onready var ammo_button: Button = $AmmoButton
 @onready var ammo_popup: PopupPanel = $AmmoPopup
@@ -32,15 +34,33 @@ func unbind_block() -> void:
 func _refresh() -> void:
 	if not is_instance_valid(weapon):
 		return
-	state_label.text = "State: %s" % weapon.get_state_name()
-	var loaded_name := "None"
-	if not weapon.loaded_ammo_id.is_empty():
-		loaded_name = ItemDB.get_display_name(weapon.loaded_ammo_id)
-	ammo_label.text = "Chambered: %s" % loaded_name
+	chambered_icon.texture = null
+	chambered_icon.hide()
+	ammo_label.text = ""
+	ammo_label.hide()
+	if (
+		weapon.state == Weapon.WeaponState.READY
+		and not weapon.loaded_ammo_id.is_empty()
+	):
+		state_label.text = "Shell loaded:"
+		chambered_icon.texture = ItemDB.get_item_by_name(
+			weapon.loaded_ammo_id
+		).get("icon")
+		chambered_icon.show()
+		ammo_label.text = ItemDB.get_display_name(
+			weapon.loaded_ammo_id
+		)
+		ammo_label.show()
+	else:
+		state_label.text = weapon.get_state_name()
 	var selection_name := "First available"
+	selection_icon.texture = null
 	if not weapon.selected_ammo_id.is_empty():
 		selection_name = ItemDB.get_display_name(weapon.selected_ammo_id)
-	selection_label.text = "Ammo selection: %s" % selection_name
+		selection_icon.texture = ItemDB.get_item_by_name(
+			weapon.selected_ammo_id
+		).get("icon")
+	selection_label.text = selection_name
 	reload_bar.value = weapon.get_reload_progress() * 100.0
 	ammo_button.disabled = weapon.shells.is_empty()
 

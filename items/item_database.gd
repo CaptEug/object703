@@ -75,7 +75,6 @@ var items := {
 		"subclasses": [ItemSubclass.AMMO],
 		"weight": 7.0,
 		"icon": preload("res://assets/icons/items/pzgr75.png"),
-		"max_stack": 999,
 		"shell_scene": preload("res://items/shells/ger/pzgr_88mm.tscn"),
 	},
 }

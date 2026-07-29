@@ -12,55 +12,48 @@ var blocks := {
 		"block_name": "Liquid Tank",
 		"path": "res://blocks/logistic/liquid_tank.tscn",
 		"construction_cost": {
-			"metal": 1,
-			"metal_parts": 1,
+
 		},
 	},
 	3: {
 		"block_name": "Cargo Box",
 		"path": "res://blocks/logistic/cargo_box.tscn",
 		"construction_cost": {
-			"metal": 1,
-			"metal_parts": 1,
 		},
 	},
 	4: {
 		"block_name": "V2",
 		"path": "res://blocks/mobility/powerpack/v_2.tscn",
 		"construction_cost": {
-			"metal": 2,
-			"metal_parts": 2,
+
 		},
 	},
 	5: {
 		"block_name": "Metal Track",
 		"path": "res://blocks/mobility/track/metal_track.tscn",
 		"construction_cost": {
-			"metal": 1,
-			"metal_parts": 1,
+
 		},
 	},
 	6: {
 		"block_name": "8.8cm KwK 43 L/71",
 		"path": "res://blocks/weapon/KwK_43.tscn",
 		"construction_cost": {
-			"metal": 2,
-			"metal_parts": 2,
+
 		},
 	},
 	7: {
 		"block_name": "Dump Container",
 		"path": "res://blocks/logistic/dump_container.tscn",
 		"construction_cost": {
-			"metal": 1,
+
 		},
 	},
 	8: {
 		"block_name": "Manual Cockpit",
 		"path": "res://blocks/control/manual_cockpit.tscn",
 		"construction_cost": {
-			"metal": 1,
-			"metal_parts": 1,
+
 		},
 	},
 }

@@ -1,6 +1,9 @@
 class_name ControlBlock
 extends Block
 
+func has_information_panel() -> bool:
+	return true
+
 func get_drive_command() -> Dictionary:
 	return {
 		"move": 0.0,

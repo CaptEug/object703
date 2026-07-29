@@ -16,6 +16,10 @@ var current_fuel : Dictionary = {}
 var solid_fuel_buffer: Dictionary = {}    # item_name -> buffered solid amount
 
 
+func has_information_panel() -> bool:
+	return true
+
+
 func _physics_process(delta: float) -> void:
 	if vehicle == null:
 		return
