@@ -67,7 +67,7 @@ func _show_vehicle_block(
 		return
 	visible = true
 	textlabel.text = "%s\nHP: %.1f" % [
-		BlockDB.get_display_name(block.block_id),
+		BlockDB.get_block_name(block.block_id),
 		block.hp,
 	]
 	if block is LiquidStorage:
@@ -92,7 +92,7 @@ func _show_world_block(
 	var block_id := int(state["block_id"])
 	visible = true
 	textlabel.text = "%s\nHP: %.1f" % [
-		BlockDB.get_display_name(block_id),
+		BlockDB.get_block_name(block_id),
 		float(state["hp"]),
 	]
 
@@ -110,7 +110,7 @@ func _show_liquid(
 	var connected := layer.get_connected_liquid(cell)
 	var total_mass := layer.get_total_liquid_mass(connected)
 	visible = true
-	textlabel.text = BlockDB.get_display_name(block_id)
+	textlabel.text = BlockDB.get_block_name(block_id)
 	if total_mass < 1000.0:
 		textlabel.text += "\nTotal mass: %.0f kg" % total_mass
 	else:

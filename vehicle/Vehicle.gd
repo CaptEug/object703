@@ -74,7 +74,7 @@ func _open_block_panel_at_mouse() -> bool:
 
 
 func update_vehicle():
-	var mass_sum := 0
+	var mass_sum := 0.0
 	for block in blocks:
 		mass_sum += block.mass
 	total_mass = mass_sum

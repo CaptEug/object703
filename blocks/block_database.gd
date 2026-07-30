@@ -10,8 +10,7 @@ const HOST_VEHICLE := "vehicle"
 # stable String identity used by developer-authored data.
 var blocks := {
 	1: {
-		"block_name": "structural_frame",
-		"display_name": "Structural Frame",
+		"block_name": "Structural Frame",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/structural/structual_frame.tscn",
@@ -28,8 +27,7 @@ var blocks := {
 		},
 	},
 	2: {
-		"block_name": "liquid_container",
-		"display_name": "Liquid Container",
+		"block_name": "Liquid Container",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/logistic/liquid_tank.tscn",
@@ -44,8 +42,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	3: {
-		"block_name": "cargo_container",
-		"display_name": "Cargo Container",
+		"block_name": "Cargo Container",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/logistic/cargo_box.tscn",
@@ -60,8 +57,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	4: {
-		"block_name": "v2_engine",
-		"display_name": "V2 Engine",
+		"block_name": "V2 Engine",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/mobility/powerpack/v_2.tscn",
@@ -76,8 +72,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	5: {
-		"block_name": "metal_track",
-		"display_name": "Metal Track",
+		"block_name": "Metal Track",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_VEHICLE],
 		"scene_path": "res://blocks/mobility/track/metal_track.tscn",
@@ -92,8 +87,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	6: {
-		"block_name": "kwk_43_88mm",
-		"display_name": "8.8 cm KwK 43 L/71",
+		"block_name": "8.8 cm KwK 43 L/71",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/weapon/KwK_43.tscn",
@@ -108,8 +102,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	7: {
-		"block_name": "dump_container",
-		"display_name": "Dump Container",
+		"block_name": "Dump Container",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/logistic/dump_container.tscn",
@@ -124,8 +117,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	8: {
-		"block_name": "manual_cockpit",
-		"display_name": "Manual Cockpit",
+		"block_name": "Manual Cockpit",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_VEHICLE],
 		"scene_path": "res://blocks/control/manual_cockpit.tscn",
@@ -140,8 +132,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	9: {
-		"block_name": "sandstone",
-		"display_name": "Sandstone",
+		"block_name": "Sandstone",
 		"block_class": CLASS_NATURAL,
 		"allowed_hosts": [HOST_WORLD],
 		"scene_path": "res://blocks/natural/sandstone.tscn",
@@ -158,8 +149,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	10: {
-		"block_name": "hematite",
-		"display_name": "Hematite",
+		"block_name": "Hematite",
 		"block_class": CLASS_NATURAL,
 		"allowed_hosts": [HOST_WORLD],
 		"scene_path": "res://blocks/natural/hematite.tscn",
@@ -176,16 +166,14 @@ var blocks := {
 		"construction_cost": {},
 	},
 	11: {
-		"block_name": "crude_oil",
-		"display_name": "Crude Oil",
+		"block_name": "Crude Oil",
 		"phase": "liquid",
 		"mass": 1000.0,
 		"item_name": "crude_oil",
 		"color": Color(0.149, 0.078, 0.310),
 	},
 	12: {
-		"block_name": "sandstone_ground",
-		"display_name": "Sandstone Ground",
+		"block_name": "Sandstone Ground",
 		"phase": "ground",
 		"color": Color(0.533, 0.251, 0.176),
 	},
@@ -215,18 +203,6 @@ func get_block_name(block_id: int) -> String:
 	return str(get_block(block_id).get("block_name", "unknown_block"))
 
 
-func get_display_name(block_id: int) -> String:
-	var definition := get_block(block_id)
-	return str(
-		definition.get(
-			"display_name",
-			str(definition.get("block_name", "Unknown Block"))
-				.replace("_", " ")
-				.capitalize()
-		)
-	)
-
-
 func get_color(block_id: int) -> Color:
 	return get_block(block_id).get("color", Color.MAGENTA)
 
@@ -241,10 +217,7 @@ func get_id_for_scene(scene_path: String) -> int:
 func get_id_for_name(block_name: String) -> int:
 	for block_id: int in blocks:
 		var definition: Dictionary = blocks[block_id]
-		if (
-			definition.get("block_name", "") == block_name
-			or definition.get("display_name", "") == block_name
-		):
+		if definition.get("block_name", "") == block_name:
 			return block_id
 	return INVALID_BLOCK_ID
 

@@ -21,7 +21,6 @@ sprite_mask = NodePath("Mask")
 mask_front = ExtResource("2_lejlx")
 mask_back = ExtResource("3_gx4qe")
 mask_single = ExtResource("4_wi0xm")
-block_name = "metal_track"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1365564482]
 shape = SubResource("RectangleShape2D_d2quv")

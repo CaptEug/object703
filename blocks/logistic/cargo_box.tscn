@@ -13,7 +13,6 @@ region = Rect2(192, 64, 16, 16)
 [node name="CargoBox" type="Node2D" unique_id=1017669523]
 script = ExtResource("1_storage")
 max_load = 1000
-block_name = "cargo_container"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1637510050]
 shape = SubResource("RectangleShape2D_cargo")

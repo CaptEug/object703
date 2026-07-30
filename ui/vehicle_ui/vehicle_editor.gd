@@ -355,7 +355,7 @@ func place_block() -> void:
 		_show_status(
 			"Built %s (-%s)"
 			% [
-				BlockDB.get_display_name(selected_block.block_id),
+				BlockDB.get_block_name(selected_block.block_id),
 				ConstructionMaterials.format_cost(cost),
 			]
 		)

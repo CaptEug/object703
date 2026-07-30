@@ -65,7 +65,7 @@ func refresh_information() -> void:
 		return
 	var control_text := "[color=#ff493d]No control block[/color]"
 	if is_instance_valid(vehicle.active_control_block):
-		control_text = BlockDB.get_display_name(
+		control_text = BlockDB.get_block_name(
 			vehicle.active_control_block.block_id
 		)
 	vehicle_info_label.text = (

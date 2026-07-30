@@ -55,7 +55,7 @@ func _disconnect_target() -> void:
 func _refresh_general() -> void:
 	if not is_instance_valid(target_block):
 		return
-	title_label.text = BlockDB.get_display_name(target_block.block_id)
+	title_label.text = BlockDB.get_block_name(target_block.block_id)
 	status_label.text = "HP: %.1f / %.1f" % [
 		maxf(target_block.hp, 0.0),
 		target_block.max_hp,

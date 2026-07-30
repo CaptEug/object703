@@ -26,7 +26,7 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 		if not BlockDB.has_block(block.block_id):
 			return _error(
 				"Unregistered block: %s"
-				% BlockDB.get_display_name(block.block_id)
+				% BlockDB.get_block_name(block.block_id)
 			)
 	vehicle.ensure_blueprint_from_blocks()
 	vehicle.reconcile_blueprint_with_blocks()

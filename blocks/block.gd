@@ -36,8 +36,8 @@ const OPPOSITE_SIDE := {
 
 # game property
 var block_id: int = BlockDB.INVALID_BLOCK_ID
-@export var block_name : String
-@export var max_hp : float = 100.0
+var block_name := ""
+var max_hp := 0.0
 var _local_hp := 0.0
 var _hp_managed_by_host := false
 var hp: float:
@@ -51,7 +51,7 @@ var hp: float:
 		return _local_hp
 	set(value):
 		_local_hp = maxf(value, 0.0)
-@export var mass : int = 1
+var mass := 0.0
 
 
 func _ready():

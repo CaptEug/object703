@@ -1,20 +1,17 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://blocks/Block.gd" id="1_block"]
-[ext_resource type="Texture2D" path="res://assets/tiles/wall/wall_01.png" id="2_texture"]
+[ext_resource type="Texture2D" uid="uid://dcsl4uledmso8" path="res://assets/blocks/blocks_mineral1.png" id="2_texture"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sandstone"]
 size = Vector2(16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_sandstone"]
 atlas = ExtResource("2_texture")
-region = Rect2(0, 112, 16, 16)
+region = Rect2(0, 0, 16, 16)
 
 [node name="Sandstone" type="Node2D"]
 script = ExtResource("1_block")
-block_name = "sandstone"
-max_hp = 400.0
-mass = 100
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_sandstone")

@@ -100,7 +100,6 @@ Vector2i(1, 0): {
 3: false
 }
 })
-block_name = "kwk_43_88mm"
 metadata/_custom_type_script = "uid://4mjm7mrjy4sw"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=495091749]

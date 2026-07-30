@@ -43,7 +43,7 @@ func merge_container_members(
 	new_size: Vector2i,
 	new_rotation: int
 ) -> void:
-	var combined_mass := 0
+	var combined_mass := 0.0
 	var combined_max_hp := 0.0
 	var combined_hp := 0.0
 	for value: Variant in members:

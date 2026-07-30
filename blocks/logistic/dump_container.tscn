@@ -14,7 +14,6 @@ region = Rect2(64, 64, 16, 16)
 script = ExtResource("1_storage")
 storage_kind = 0
 max_load = 2000
-block_name = "dump_container"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=223092112]
 shape = SubResource("RectangleShape2D_dump")
