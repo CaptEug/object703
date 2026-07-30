@@ -23,21 +23,7 @@ func _process(_delta):
 
 
 func update_cellmap(cells:Array):
-	for cell in cells:
-		var walldata = map.wall.get_cell_tile_data(cell)
-		if walldata:
-			map_renderer.cell_map[cell] = int(
-				walldata.get_custom_data("tile_id")
-			)
-			continue
-		var grounddata = map.ground.get_cell_tile_data(cell)
-		if grounddata:
-			map_renderer.cell_map[cell] = int(
-				grounddata.get_custom_data("tile_id")
-			)
-			continue
-		map_renderer.cell_map.erase(cell)
-	map_renderer.update_pixels(cells)
+	map_renderer.update_cells(cells)
 
 
 func _on_zoom_in_button_pressed() -> void:

@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://cido6cidvw0hw" path="res://map/gamemap.gd" id="1_ljns0"]
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="2_8k602"]
-[ext_resource type="Script" uid="uid://xoludftp2xyj" path="res://map/tilemap/wall_layer.gd" id="2_i3gmg"]
+[ext_resource type="Script" path="res://map/tilemap/world_block_layer.gd" id="2_i3gmg"]
 [ext_resource type="Script" uid="uid://cw85p5j1usqjd" path="res://map/tilemap/ground_layer.gd" id="3_7we3v"]
+[ext_resource type="Script" path="res://map/tilemap/liquid_layer.gd" id="4_liquid"]
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scene/day&night.gd" id="5_y5b6y"]
 [ext_resource type="Script" uid="uid://febxvt3qcdf4" path="res://map/vehicle_root.gd" id="6_ldbmw"]
 
@@ -22,10 +23,15 @@ metadata/_custom_type_script = "uid://cido6cidvw0hw"
 tile_set = ExtResource("2_8k602")
 script = ExtResource("3_7we3v")
 
-[node name="WallLayer" type="TileMapLayer" parent="." unique_id=725661247]
+[node name="WorldBlockLayer" type="TileMapLayer" parent="." unique_id=725661247]
 tile_set = ExtResource("2_8k602")
 script = ExtResource("2_i3gmg")
-metadata/_custom_type_script = "uid://xoludftp2xyj"
+
+[node name="FunctionalBlocks" type="Node2D" parent="WorldBlockLayer"]
+
+[node name="LiquidLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_8k602")
+script = ExtResource("4_liquid")
 
 [node name="VehicleRoot" type="Node2D" parent="." unique_id=1036498771]
 script = ExtResource("6_ldbmw")

@@ -111,7 +111,13 @@ func _handle_inspection_input(event: InputEvent) -> void:
 
 func _handle_editor_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ROTATE"):
-		preview_rotation = wrapi(preview_rotation + 1, 0, 4)
+		if (
+			selected_block != null
+			and BlockDB.is_rotatable(selected_block.block_id)
+		):
+			preview_rotation = wrapi(preview_rotation + 1, 0, 4)
+		else:
+			preview_rotation = 0
 		return
 	if event is InputEventKey and event.pressed and event.keycode == KEY_X:
 		toggle_mode()
@@ -260,7 +266,7 @@ func update_preview() -> void:
 		return
 	if (
 		preview_block == null
-		or preview_block.block_name != selected_block.block_name
+		or preview_block.block_id != selected_block.block_id
 	):
 		create_preview_block()
 
@@ -272,7 +278,13 @@ func create_preview_block() -> void:
 	clear_preview_block()
 	if selected_block == null or not is_instance_valid(vehicle):
 		return
-	preview_block = selected_block.duplicate() as Block
+	var preview_scene := BlockDB.get_scene(selected_block.block_id)
+	if preview_scene == null:
+		return
+	preview_block = preview_scene.instantiate() as Block
+	if preview_block == null:
+		return
+	preview_block.block_id = selected_block.block_id
 	vehicle.add_child(preview_block)
 	preview_block.vehicle = vehicle
 	preview_block.set_process(false)
@@ -308,7 +320,8 @@ func world_to_screen(world_pos: Vector2) -> Vector2:
 func place_block() -> void:
 	if not is_instance_valid(vehicle) or selected_block == null:
 		return
-	var block_scene := load(selected_block.scene_file_path) as PackedScene
+	var block_id := selected_block.block_id
+	var block_scene := BlockDB.get_scene(block_id)
 	if block_scene == null:
 		_show_status("Cannot build: block scene is missing")
 		return
@@ -316,8 +329,7 @@ func place_block() -> void:
 		_show_status("Cannot build here")
 		return
 
-	var block_id := BlockDB.get_id_for_scene(selected_block.scene_file_path)
-	if block_id < 0:
+	if not BlockDB.has_block(block_id):
 		_show_status("Cannot build: block is not registered in BlockDB")
 		return
 	var cost := BlockDB.get_construction_cost(block_id)
@@ -343,7 +355,7 @@ func place_block() -> void:
 		_show_status(
 			"Built %s (-%s)"
 			% [
-				selected_block.block_name,
+				BlockDB.get_display_name(selected_block.block_id),
 				ConstructionMaterials.format_cost(cost),
 			]
 		)
@@ -356,6 +368,7 @@ func _can_place_selected_block(block_scene: PackedScene) -> bool:
 	var candidate := block_scene.instantiate() as Block
 	if candidate == null:
 		return false
+	candidate.block_id = selected_block.block_id
 	candidate.update_transform(vehicle, preview_cell, preview_rotation)
 	var can_place := vehicle.can_place_block(candidate, preview_cell)
 	candidate.free()
@@ -521,6 +534,7 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 	var candidate := block_scene.instantiate() as Block
 	if candidate == null:
 		return {"ok": false, "reason": "blocked"}
+	candidate.block_id = block_id
 	if (
 		block_size != Vector2i.ZERO
 		and candidate is ExpandableStorage
@@ -569,8 +583,8 @@ func _get_record_construction_cost(record: Array) -> Dictionary:
 	var unit_count := 1
 	if saved_size != Vector2i.ZERO:
 		unit_count = maxi(1, saved_size.x * saved_size.y)
-	for item_id: Variant in cost:
-		cost[item_id] = int(cost[item_id]) * unit_count
+	for item_name: Variant in cost:
+		cost[item_name] = int(cost[item_name]) * unit_count
 	return cost
 
 

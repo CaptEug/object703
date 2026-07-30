@@ -21,7 +21,7 @@ func has_information_panel() -> bool:
 
 
 func _physics_process(delta: float) -> void:
-	if vehicle == null:
+	if get_assembly() == null:
 		return
 	
 	# 1. set this frame's intended output first
@@ -46,6 +46,9 @@ func _physics_process(delta: float) -> void:
 # Fuel Calculation
 
 func request_fuel(delta: float) -> bool:
+	var current_assembly := get_assembly()
+	if current_assembly == null:
+		return false
 	for recipe in fuel_choices:
 		var split := preprocess_recipe(recipe, delta)
 		var liquid_requests: Dictionary = split["liquid_requests"]
@@ -56,9 +59,19 @@ func request_fuel(delta: float) -> bool:
 		var solids_ok := true
 		
 		if not liquid_requests.is_empty():
-			liquids_ok = vehicle.fluid_system.can_supply_liquids(self, liquid_requests)
+			liquids_ok = (
+				current_assembly.has_method("can_supply_liquids")
+				and current_assembly.call(
+					"can_supply_liquids",
+					self,
+					liquid_requests
+				)
+			)
 		if not solid_requests.is_empty():
-			solids_ok = vehicle.supply_system.can_supply_items(self, solid_requests)
+			solids_ok = _can_supply_items(
+				current_assembly,
+				solid_requests
+			)
 		
 		if not liquids_ok or not solids_ok:
 			continue
@@ -67,9 +80,19 @@ func request_fuel(delta: float) -> bool:
 		var solids_taken := true
 		
 		if not liquid_requests.is_empty():
-			liquids_taken = vehicle.fluid_system.supply_liquids(self, liquid_requests)
+			liquids_taken = (
+				current_assembly.has_method("supply_liquids")
+				and current_assembly.call(
+					"supply_liquids",
+					self,
+					liquid_requests
+				)
+			)
 		if not solid_requests.is_empty():
-			solids_taken = vehicle.supply_system.supply_items(self, solid_requests)
+			solids_taken = _supply_items(
+				current_assembly,
+				solid_requests
+			)
 		
 		if not liquids_taken or not solids_taken:
 			continue
@@ -88,6 +111,42 @@ func request_fuel(delta: float) -> bool:
 		return true
 	
 	return false
+
+
+func _can_supply_items(
+	current_assembly: Object,
+	requirements: Dictionary
+) -> bool:
+	for item_name: String in requirements:
+		if (
+			not current_assembly.has_method("can_supply_item")
+			or not current_assembly.call(
+				"can_supply_item",
+				self,
+				item_name,
+				int(requirements[item_name])
+			)
+		):
+			return false
+	return true
+
+
+func _supply_items(
+	current_assembly: Object,
+	requirements: Dictionary
+) -> bool:
+	for item_name: String in requirements:
+		if (
+			not current_assembly.has_method("supply_item")
+			or not current_assembly.call(
+				"supply_item",
+				self,
+				item_name,
+				int(requirements[item_name])
+			)
+		):
+			return false
+	return true
 
 
 func preprocess_recipe(recipe: Dictionary, delta: float) -> Dictionary:

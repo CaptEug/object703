@@ -6,6 +6,7 @@ signal vehicle_split(fragments: Array)
 const TILE_SIZE := Globals.TILE_SIZE
 
 @onready var blocks_root : Node2D = $Blocks
+@onready var passive_visuals: TileMapLayer = $PassiveVisuals
 @onready var power_system := $PowerSystem
 @onready var fluid_system := $FluidSystem
 @onready var supply_system := $SupplySystem
@@ -124,6 +125,14 @@ func set_active_control_block(control_block: ControlBlock) -> bool:
 # Block Management
 
 func can_place_block(block:Block, cell:Vector2i) -> bool:
+	if (
+		not BlockDB.has_block(block.block_id)
+		or not BlockDB.can_place_on(
+			block.block_id,
+			BlockDB.HOST_VEHICLE
+		)
+	):
+		return false
 	# overlap check
 	block.origin_cell = cell
 	for c in block.get_occupied_cells():
@@ -141,6 +150,16 @@ func place_block(
 ):
 	var block := block_scene.instantiate() as Block
 	if block == null:
+		return false
+	block.block_id = BlockDB.get_id_for_scene(block_scene.resource_path)
+	if (
+		block.block_id == BlockDB.INVALID_BLOCK_ID
+		or not BlockDB.can_place_on(
+			block.block_id,
+			BlockDB.HOST_VEHICLE
+		)
+	):
+		block.free()
 		return false
 	if block is ExpandableStorage:
 		var container_size := (
@@ -168,6 +187,7 @@ func place_block(
 	blocks_root.add_child(block)
 	blocks.append(block)
 	create_collision(block)
+	refresh_block_visuals_around(block.get_occupied_cells())
 	
 	if merge_containers:
 		merge_rectangular_containers()
@@ -326,11 +346,13 @@ func destroy_block(block: Block) -> Array[Vehicle]:
 	var original_linear_velocity := linear_velocity
 	var original_angular_velocity := angular_velocity
 	blocks.erase(block)
-	for c in block.get_occupied_cells():
+	var removed_cells := block.get_occupied_cells()
+	for c in removed_cells:
 		grid.erase(c)
 	if block.collision != null:
 		block.collision.queue_free()
 	block.queue_free()
+	refresh_block_visuals_around(removed_cells)
 	
 	update_vehicle()
 	var fragments := split_disconnected_components(
@@ -342,6 +364,28 @@ func destroy_block(block: Block) -> Array[Vehicle]:
 	if not fragments.is_empty():
 		vehicle_split.emit(fragments)
 	return fragments
+
+
+func damage_block_at(
+	cell: Vector2i,
+	amount: float,
+	damage_type: StringName
+) -> Dictionary:
+	var block := get_block(cell)
+	if block == null:
+		return BlockDamage.miss()
+	var result := BlockDamage.calculate(
+		block.block_id,
+		block.hp,
+		amount,
+		damage_type
+	)
+	if not result["hit"]:
+		return result
+	block.apply_vehicle_damage_result(result)
+	if result["destroyed"]:
+		destroy_block(block)
+	return result
 
 
 func split_disconnected_components(
@@ -451,19 +495,25 @@ func _move_component_to_vehicle(
 	component: Array,
 	target_vehicle: Vehicle
 ) -> void:
+	var moved_cells: Array[Vector2i] = []
 	for block_value: Variant in component:
 		var component_block := block_value as Block
 		if component_block == null:
 			continue
 		blocks.erase(component_block)
 		for occupied_cell: Vector2i in component_block.get_occupied_cells():
+			moved_cells.append(occupied_cell)
 			grid.erase(occupied_cell)
 			target_vehicle.grid[occupied_cell] = component_block
 		component_block.reparent(target_vehicle.blocks_root, true)
 		component_block.vehicle = target_vehicle
+		component_block.block_host = target_vehicle
+		component_block.assembly = target_vehicle
 		target_vehicle.blocks.append(component_block)
 		if component_block.collision != null:
 			component_block.collision.reparent(target_vehicle, true)
+	refresh_block_visuals_around(moved_cells)
+	target_vehicle.refresh_block_visuals_around(moved_cells)
 
 
 func _get_fragment_linear_velocity(
@@ -480,6 +530,132 @@ func _get_fragment_linear_velocity(
 
 func get_block(cell: Vector2i) -> Block:
 	return grid.get(cell, null)
+
+
+func get_block_id_at(cell: Vector2i) -> int:
+	var block := get_block(cell)
+	return (
+		BlockDB.INVALID_BLOCK_ID
+		if block == null
+		else block.block_id
+	)
+
+
+func get_block_rotation_at(cell: Vector2i) -> int:
+	var block := get_block(cell)
+	return 0 if block == null else block.rotation_index
+
+
+func get_visual_merge_data_at(cell: Vector2i) -> Dictionary:
+	var block := get_block(cell)
+	if block == null:
+		return {}
+	return {
+		"group": BlockVisualSystem.get_block_merge_group(
+			block.block_id
+		),
+		"rotation": block.rotation_index,
+	}
+
+
+func get_block_hp_at(cell: Vector2i) -> float:
+	var block := get_block(cell)
+	return 0.0 if block == null else block._local_hp
+
+
+func get_assembly_at(_cell: Vector2i) -> Object:
+	return self
+
+
+func refresh_block_visuals_around(cells: Array[Vector2i]) -> void:
+	var affected_blocks := {}
+	var affected_cells := {}
+	for cell: Vector2i in cells:
+		affected_cells[cell] = true
+		var block := get_block(cell)
+		if block != null:
+			affected_blocks[block] = true
+		for direction: Vector2i in (
+			BlockVisualSystem.NEIGHBOR_DIRECTIONS
+		):
+			var neighbor_cell := cell + direction
+			affected_cells[neighbor_cell] = true
+			var neighbor := get_block(neighbor_cell)
+			if neighbor != null:
+				affected_blocks[neighbor] = true
+	for block: Block in affected_blocks:
+		var uses_tile_visual := (
+			BlockVisualSystem.has_block_tile_visual(block.block_id)
+		)
+		_set_block_scene_sprite_visible(block, not uses_tile_visual)
+		if not uses_tile_visual:
+			block.refresh_shared_visual()
+	for cell: Vector2i in affected_cells:
+		_refresh_passive_visual_cell(cell)
+
+
+func _refresh_passive_visual_cell(cell: Vector2i) -> void:
+	var block := get_block(cell)
+	if (
+		block == null
+		or not BlockVisualSystem.has_block_tile_visual(block.block_id)
+	):
+		passive_visuals.erase_cell(cell)
+		return
+	var variant := BlockVisualSystem.resolve_variant(
+		self,
+		cell,
+		block.block_id,
+		block.rotation_index
+	)
+	if variant.is_empty():
+		passive_visuals.erase_cell(cell)
+		return
+	passive_visuals.set_cell(
+		cell,
+		int(variant["source_id"]),
+		variant["atlas_coordinates"],
+		int(variant.get("alternative", 0))
+	)
+
+
+func _set_block_scene_sprite_visible(
+	block: Block,
+	is_visible: bool
+) -> void:
+	var sprite := block.get_node_or_null("Sprite2D") as Sprite2D
+	if sprite != null:
+		sprite.visible = is_visible
+
+
+func can_supply_item(
+	requester: Block,
+	item_name: String,
+	amount: int
+) -> bool:
+	return supply_system.can_supply_item(requester, item_name, amount)
+
+
+func supply_item(
+	requester: Block,
+	item_name: String,
+	amount: int
+) -> bool:
+	return supply_system.supply_item(requester, item_name, amount)
+
+
+func can_supply_liquids(
+	requester: Block,
+	liquid_requests: Dictionary
+) -> bool:
+	return fluid_system.can_supply_liquids(requester, liquid_requests)
+
+
+func supply_liquids(
+	requester: Block,
+	liquid_requests: Dictionary
+) -> bool:
+	return fluid_system.supply_liquids(requester, liquid_requests)
 
 
 func refresh_system_lists() -> void:
@@ -714,6 +890,7 @@ func refresh_blueprint_ghosts() -> void:
 		var ghost := scene.instantiate() as Block
 		if ghost == null:
 			continue
+		ghost.block_id = int(record[0])
 		var saved_size := VehicleBlueprint._get_record_size(record)
 		if (
 			saved_size != Vector2i.ZERO

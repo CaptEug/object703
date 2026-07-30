@@ -1,10 +1,15 @@
 class_name GameMap
 extends Node2D
 
-@onready var ground:TileMapLayer = $GroundLayer
-@onready var wall:WallLayer = $WallLayer
+@onready var ground: GroundLayer = $GroundLayer
+@onready var world_blocks:WorldBlockLayer = $WorldBlockLayer
+@onready var liquid:LiquidLayer = $LiquidLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
 @onready var vehicle_root: = $VehicleRoot
+
+var wall: WorldBlockLayer:
+	get:
+		return world_blocks
 
 @export var minimap : MiniMap
 var layers:Dictionary[String, TileMapLayer]
@@ -16,11 +21,11 @@ var world_width:int = 256
 func _ready():
 	layers = {
 		"ground": ground,
-		"wall": wall,
-		
+		"blocks": world_blocks,
+		"liquid": liquid,
 	}
 	for validation_error: String in (
-		TileDB.validate_better_terrain(wall.tile_set)
+		BlockDB.validate_database(world_blocks.tile_set)
 	):
 		push_error(validation_error)
 	
@@ -36,31 +41,47 @@ func generate_world():
 	noise.seed = int(world_seed)
 	noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	#terrain sets
-	var height_dict = {
-		1: [0, 0.5],
-		2: [0.2, 0.3],
-		3: [-INF, -0.5]
+	var block_height_dict = {
+		9: [0, 0.5],
+		10: [0.2, 0.3],
+	}
+	var liquid_height_dict = {
+		11: [-INF, -0.5],
 	}
 	
+	world_blocks.begin_bulk_edit()
+	liquid.begin_bulk_edit()
 	for x in range(world_width):
 		for y in range(world_height):
 			#generate ground
 			
 			#generate wall
 			var noise_val = noise.get_noise_2d(x, y)
-			for tile_id: int in height_dict:
+			var generated_block_id := BlockDB.INVALID_BLOCK_ID
+			for block_id: int in block_height_dict:
 				if (
-					noise_val > height_dict[tile_id][0]
-					and noise_val <= height_dict[tile_id][1]
+					noise_val > block_height_dict[block_id][0]
+					and noise_val <= block_height_dict[block_id][1]
 				):
-					BetterTerrain.set_cell(
-						wall,
+					generated_block_id = block_id
+			if generated_block_id != BlockDB.INVALID_BLOCK_ID:
+				world_blocks.place_block(
+					generated_block_id,
+					Vector2i(x, y)
+				)
+			for block_id: int in liquid_height_dict:
+				if (
+					noise_val > liquid_height_dict[block_id][0]
+					and noise_val <= liquid_height_dict[block_id][1]
+				):
+					liquid.set_liquid_cell(
 						Vector2i(x, y),
-						tile_id
+						block_id,
+						BlockDB.get_default_liquid_mass(block_id),
+						false
 					)
-	
-	BetterTerrain.update_terrain_area(wall, Rect2i(Vector2i(0, 0), Vector2i(world_width, world_height)))
-	wall.init_layerdata()
+	world_blocks.end_bulk_edit()
+	liquid.end_bulk_edit()
 	
 	# load map to minimap
 	minimap.map_renderer.loadmap()
@@ -76,7 +97,7 @@ func save_map(world_folder:String):
 	var file = FileAccess.open(world_folder + "%s.map" % GameState.current_gamescene.world_name, FileAccess.WRITE)
 	# ---- header ----
 	file.store_buffer("MAP0".to_ascii_buffer()) # magic
-	file.store_16(1)                           # version
+	file.store_16(4)                           # version
 	file.store_16(world_width)
 	file.store_16(world_height)
 	file.store_8(CHUNK_SIZE)
@@ -98,6 +119,13 @@ func save_map(world_folder:String):
 				file.store_16(cy)
 				file.store_32(bytes.size())
 				file.store_buffer(bytes)
+
+	var building_text := JSON.stringify(
+		world_blocks.get_building_save_data()
+	)
+	var building_bytes := building_text.to_utf8_buffer()
+	file.store_32(building_bytes.size())
+	file.store_buffer(building_bytes)
 	
 	file.close()
 	print("地图文件保存完成")
@@ -121,12 +149,16 @@ func load_map(path: String):
 	
 	# ---- layers ----
 	var layer_count := file.get_16()
+	world_blocks.begin_bulk_edit()
+	liquid.begin_bulk_edit()
 	
 	for i in range(layer_count):
 		var name_len := file.get_8()
 		var layer_name := file.get_buffer(name_len).get_string_from_ascii()
 		var chunk_count := file.get_32()
-		var layer = layers[layer_name]
+		var layer = layers.get(layer_name)
+		if version == 1 and layer_name == "wall":
+			layer = world_blocks
 		if layer == null:
 			push_warning("Unknown layer: %s" % layer_name)
 			for c in range(chunk_count):
@@ -142,8 +174,47 @@ func load_map(path: String):
 			var data_size := file.get_32()
 			var bytes := file.get_buffer(data_size)
 	
-			layer.load_chunk(cx, cy, bytes, CHUNK_SIZE)
+			if version == 1 and layer_name == "wall":
+				world_blocks.load_legacy_wall_chunk(
+					cx,
+					cy,
+					bytes,
+					CHUNK_SIZE,
+					liquid
+				)
+			elif layer == liquid:
+				liquid.load_chunk(
+					cx,
+					cy,
+					bytes,
+					CHUNK_SIZE,
+					version
+				)
+			elif layer == ground:
+				ground.load_chunk(
+					cx,
+					cy,
+					bytes,
+					CHUNK_SIZE,
+					version
+				)
+			else:
+				layer.load_chunk(cx, cy, bytes, CHUNK_SIZE)
 		
+	world_blocks.end_bulk_edit()
+	liquid.end_bulk_edit()
+	if version >= 2 and file.get_position() + 4 <= file.get_length():
+		var metadata_size := file.get_32()
+		if (
+			metadata_size > 0
+			and file.get_position() + metadata_size <= file.get_length()
+		):
+			var metadata_text := file.get_buffer(
+				metadata_size
+			).get_string_from_utf8()
+			var metadata: Variant = JSON.parse_string(metadata_text)
+			if metadata is Array:
+				world_blocks.apply_building_save_data(metadata)
 	file.close()
 	
 	# load map to minimap

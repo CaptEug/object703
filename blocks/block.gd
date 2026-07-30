@@ -7,6 +7,8 @@ signal block_destroyed
 const TILE_SIZE := Globals.TILE_SIZE
 
 var vehicle : Vehicle
+var block_host: Node
+var assembly: Object
 var origin_cell : Vector2i
 var local_cells : Array[Vector2i]
 @export var size : Vector2i = Vector2i(1,1)
@@ -33,19 +35,49 @@ const OPPOSITE_SIDE := {
 @export var edge_sockets: Dictionary[Vector2i,Dictionary] = {}    # { local_cell: { side:int -> bool } }
 
 # game property
+var block_id: int = BlockDB.INVALID_BLOCK_ID
 @export var block_name : String
 @export var max_hp : float = 100.0
-var hp : float
-@export var k_a : float = 1.0
-@export var e_a : float = 1.0
+var _local_hp := 0.0
+var _hp_managed_by_host := false
+var hp: float:
+	get:
+		if (
+			_hp_managed_by_host
+			and block_host != null
+			and block_host.has_method("get_block_hp_at")
+		):
+			return float(block_host.call("get_block_hp_at", origin_cell))
+		return _local_hp
+	set(value):
+		_local_hp = maxf(value, 0.0)
 @export var mass : int = 1
 
 
 func _ready():
-	hp = max_hp
+	if block_id == BlockDB.INVALID_BLOCK_ID:
+		block_id = BlockDB.get_id_for_name(block_name)
+	if block_id == BlockDB.INVALID_BLOCK_ID:
+		block_id = BlockDB.get_id_for_scene(scene_file_path)
+	if BlockDB.has_block(block_id):
+		var definition := BlockDB.get_block(block_id)
+		block_name = BlockDB.get_block_name(block_id)
+		var base_size: Vector2i = definition.get("size", size)
+		var base_units := maxi(base_size.x * base_size.y, 1)
+		var configured_units := maxi(size.x * size.y, 1)
+		var unit_scale := maxf(
+			float(configured_units) / float(base_units),
+			1.0
+		)
+		max_hp = BlockDB.get_max_hp(block_id) * unit_scale
+		mass = roundi(
+			float(definition.get("mass", mass)) * unit_scale
+		)
+	_local_hp = max_hp
 	build_local_cells()
 	if edge_sockets.is_empty():
 		build_default_edge_sockets()
+	refresh_shared_visual()
 
 
 func has_information_panel() -> bool:
@@ -56,10 +88,55 @@ func has_information_panel() -> bool:
 
 func update_transform(v, cell:Vector2i, rotation_i:int):
 	vehicle = v
+	block_host = v
+	assembly = v
+	_hp_managed_by_host = false
 	origin_cell = cell
-	rotation_index = rotation_i
+	rotation_index = BlockDB.normalize_rotation(block_id, rotation_i)
 	position = (Vector2(origin_cell) * TILE_SIZE) + (Vector2(get_rotated_size()) * TILE_SIZE) / 2
 	rotation = rotation_index * PI * 0.5
+
+
+func update_world_transform(
+	world_host: Node,
+	cell: Vector2i,
+	rotation_i: int
+) -> void:
+	vehicle = null
+	block_host = world_host
+	assembly = null
+	_hp_managed_by_host = true
+	origin_cell = cell
+	rotation_index = BlockDB.normalize_rotation(block_id, rotation_i)
+	position = (
+		Vector2(origin_cell) * TILE_SIZE
+		+ Vector2(get_rotated_size()) * TILE_SIZE * 0.5
+	)
+	rotation = rotation_index * PI * 0.5
+
+
+func get_assembly() -> Object:
+	if (
+		block_host != null
+		and block_host.has_method("get_assembly_at")
+	):
+		return block_host.call("get_assembly_at", origin_cell)
+	return assembly
+
+
+func refresh_shared_visual() -> void:
+	if not BlockDB.has_block(block_id):
+		return
+	var variant := BlockVisualSystem.resolve_variant(
+		block_host,
+		origin_cell,
+		block_id,
+		rotation_index
+	)
+	if variant.is_empty():
+		return
+	var sprite := get_node_or_null("Sprite2D") as Sprite2D
+	BlockVisualSystem.apply_variant_to_sprite(sprite, variant)
 
 
 func get_rotated_size() -> Vector2i:
@@ -154,15 +231,31 @@ func is_edge_connectable(cell: Vector2i, side: int) -> bool:
 
 # Block Status
 
-func damage(amount: float, type: String):
-	
-	var dmg_taken = amount
-	match type:
-		"KINETIC": dmg_taken *= k_a
-		"EXPLOSIVE": dmg_taken *= e_a
-	print(block_name + " took " + str(dmg_taken) + "damage")
-	hp -= dmg_taken
+func damage(
+	amount: float,
+	damage_type: StringName
+) -> Dictionary:
+	if (
+		block_host == null
+		or not block_host.has_method("damage_block_at")
+	):
+		return BlockDamage.miss()
+	return block_host.call(
+		"damage_block_at",
+		origin_cell,
+		amount,
+		damage_type
+	)
+
+
+func apply_vehicle_damage_result(result: Dictionary) -> void:
+	_local_hp = float(result.get("hp_after", _local_hp))
 	health_changed.emit()
-	if hp <= 0.0:
+	if bool(result.get("destroyed", false)):
 		block_destroyed.emit()
-		vehicle.destroy_block(self)
+
+
+func notify_world_health_changed(destroyed: bool) -> void:
+	health_changed.emit()
+	if destroyed:
+		block_destroyed.emit()

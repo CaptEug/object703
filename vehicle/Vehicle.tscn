@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://3qyo3rkt1l5x" path="res://vehicle/power_system.gd" id="2_vsmxc"]
 [ext_resource type="Script" uid="uid://c2cjx5glmjkqn" path="res://vehicle/fluid_system.gd" id="3_jkabe"]
 [ext_resource type="Script" uid="uid://c03cd3morat2n" path="res://vehicle/supply_system.gd" id="4_w7aos"]
+[ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="5_tiles"]
 
 [node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
 input_pickable = true
@@ -12,6 +13,11 @@ linear_damp = 2.0
 angular_damp = 5.0
 script = ExtResource("1_1cp1r")
 metadata/_custom_type_script = "uid://bqcqepxvgt6bt"
+
+[node name="PassiveVisuals" type="TileMapLayer" parent="."]
+tile_set = ExtResource("5_tiles")
+collision_enabled = false
+navigation_enabled = false
 
 [node name="Blocks" type="Node2D" parent="." unique_id=1086676098]
 

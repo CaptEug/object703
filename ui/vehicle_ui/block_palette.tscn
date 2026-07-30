@@ -29,11 +29,9 @@ position = Vector2(24, 64)
 
 [node name="LiquidTank" parent="." unique_id=418363344 instance=ExtResource("8_tk1tn")]
 position = Vector2(56, 56)
-block_name = "Liquid Tank"
 
 [node name="CargoBox" parent="." unique_id=1130200209 instance=ExtResource("9_hpgwb")]
 position = Vector2(88, 56)
-block_name = "Cargo Box"
 
 [node name="DumpContainer" parent="." unique_id=1450820109 instance=ExtResource("10_dump")]
 position = Vector2(120, 56)

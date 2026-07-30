@@ -23,8 +23,11 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 	vehicle.vehicle_name = clean_name
 
 	for block: Block in vehicle.blocks:
-		if BlockDB.get_id_for_scene(block.scene_file_path) < 0:
-			return _error("Unregistered block: %s" % block.block_name)
+		if not BlockDB.has_block(block.block_id):
+			return _error(
+				"Unregistered block: %s"
+				% BlockDB.get_display_name(block.block_id)
+			)
 	vehicle.ensure_blueprint_from_blocks()
 	vehicle.reconcile_blueprint_with_blocks()
 	var normalized := normalize_records(vehicle.blueprint_blocks)
@@ -97,13 +100,16 @@ static func _validate(data: Dictionary) -> Dictionary:
 		return _error("Invalid blueprint field: blocks")
 
 	var occupied := {}
-	for record in data["blocks"]:
+	var canonical_records: Array = data["blocks"].duplicate(true)
+	for record: Array in canonical_records:
 		if not _valid_block_record(record):
 			return _error("Invalid block record.")
 		var block_id := int(record[0])
 		var rotation := int(record[3])
 		if not BlockDB.has_block(block_id) or rotation < 0 or rotation > 3:
 			return _error("Invalid block ID or rotation.")
+		rotation = BlockDB.normalize_rotation(block_id, rotation)
+		record[3] = rotation
 
 		var scene := BlockDB.get_scene(block_id)
 		var block: Block = null
@@ -111,6 +117,7 @@ static func _validate(data: Dictionary) -> Dictionary:
 			block = scene.instantiate() as Block
 		if block == null:
 			return _error("Block ID %d is not a Block scene." % block_id)
+		block.block_id = block_id
 		var block_size := _get_record_size(record)
 		if (
 			block_size != Vector2i.ZERO
@@ -125,18 +132,25 @@ static func _validate(data: Dictionary) -> Dictionary:
 			if not block is ItemStorage and not block is LiquidStorage:
 				block.free()
 				return _error("Only storage blocks can have an allowed-item list.")
-			for item_id: Variant in record[filter_index]:
-				if not item_id is String:
+			for item_name: Variant in record[filter_index]:
+				if not item_name is String:
 					block.free()
-					return _error("Allowed item IDs must be text.")
+					return _error("Allowed item names must be text.")
 				var compatible := false
 				if block is ItemStorage:
-					compatible = (block as ItemStorage).is_item_compatible(item_id)
+					compatible = (
+						block as ItemStorage
+					).is_item_compatible(item_name)
 				else:
-					compatible = (block as LiquidStorage).is_item_compatible(item_id)
+					compatible = (
+						block as LiquidStorage
+					).is_item_compatible(item_name)
 				if not compatible:
 					block.free()
-					return _error("Item %s is incompatible with block ID %d." % [item_id, block_id])
+					return _error(
+						"Item %s is incompatible with block ID %d."
+						% [item_name, block_id]
+					)
 		block.origin_cell = Vector2i(int(record[1]), int(record[2]))
 		block.rotation_index = rotation
 		for cell in block.get_occupied_cells():
@@ -147,7 +161,9 @@ static func _validate(data: Dictionary) -> Dictionary:
 		block.free()
 
 	var normalized_data := data.duplicate(true)
-	normalized_data["blocks"] = normalize_records(data["blocks"])["records"]
+	normalized_data["blocks"] = normalize_records(
+		canonical_records
+	)["records"]
 	return {"ok": true, "data": normalized_data}
 
 
@@ -212,8 +228,8 @@ static func capture_vehicle_blocks(vehicle: Vehicle) -> Array:
 
 
 static func make_block_record(block: Block) -> Array:
-	var block_id := BlockDB.get_id_for_scene(block.scene_file_path)
-	if block_id < 0:
+	var block_id := block.block_id
+	if not BlockDB.has_block(block_id):
 		return []
 	var record: Array = [
 		block_id,
@@ -289,7 +305,7 @@ static func get_matching_record_index(records: Array, block: Block) -> int:
 
 static func record_matches_block(record: Array, block: Block) -> bool:
 	return (
-		BlockDB.get_id_for_scene(block.scene_file_path) == int(record[0])
+		block.block_id == int(record[0])
 		and block.origin_cell == Vector2i(int(record[1]), int(record[2]))
 		and block.rotation_index == int(record[3])
 		and block.size == get_record_base_size(record)
@@ -306,7 +322,10 @@ static func get_matching_block(vehicle: Vehicle, record: Array) -> Block:
 static func get_record_cells(record: Array) -> Array[Vector2i]:
 	var cells: Array[Vector2i] = []
 	var block_size := get_record_base_size(record)
-	var rotation := int(record[3])
+	var rotation := BlockDB.normalize_rotation(
+		int(record[0]),
+		int(record[3])
+	)
 	var rotated_size := (
 		block_size
 		if rotation % 2 == 0
@@ -323,13 +342,7 @@ static func get_record_base_size(record: Array) -> Vector2i:
 	var saved_size := _get_record_size(record)
 	if saved_size != Vector2i.ZERO:
 		return saved_size
-	var scene := BlockDB.get_scene(int(record[0]))
-	var block := scene.instantiate() as Block if scene != null else null
-	if block == null:
-		return Vector2i.ONE
-	var result := block.size
-	block.free()
-	return result
+	return BlockDB.get_size(int(record[0]))
 
 
 static func get_record_filter(record: Array) -> Array:

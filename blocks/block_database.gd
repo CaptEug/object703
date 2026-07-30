@@ -1,68 +1,203 @@
 extends Node
 
+const INVALID_BLOCK_ID := -1
+const CLASS_NATURAL := "natural"
+const CLASS_CONSTRUCTED := "constructed"
+const HOST_WORLD := "world"
+const HOST_VEHICLE := "vehicle"
+
+# Integer block IDs are the compact runtime/save identity. block_name is the
+# stable String identity used by developer-authored data.
 var blocks := {
 	1: {
-		"block_name": "Structual Frame",
-		"path": "res://blocks/structural/structual_frame.tscn",
+		"block_name": "structural_frame",
+		"display_name": "Structural Frame",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://blocks/structural/structual_frame.tscn",
+		"world_functional": false,
+		"size": Vector2i(1, 1),
+		"rotatable": false,
+		"max_hp": 50.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.52, 0.57, 0.61),
 		"construction_cost": {
 			"metal": 1,
 		},
 	},
 	2: {
-		"block_name": "Liquid Tank",
-		"path": "res://blocks/logistic/liquid_tank.tscn",
-		"construction_cost": {
-
-		},
+		"block_name": "liquid_container",
+		"display_name": "Liquid Container",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://blocks/logistic/liquid_tank.tscn",
+		"world_functional": true,
+		"size": Vector2i(1, 1),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.18, 0.58, 0.72),
+		"construction_cost": {},
 	},
 	3: {
-		"block_name": "Cargo Box",
-		"path": "res://blocks/logistic/cargo_box.tscn",
-		"construction_cost": {
-		},
+		"block_name": "cargo_container",
+		"display_name": "Cargo Container",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://blocks/logistic/cargo_box.tscn",
+		"world_functional": true,
+		"size": Vector2i(1, 1),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.68, 0.49, 0.25),
+		"construction_cost": {},
 	},
 	4: {
-		"block_name": "V2",
-		"path": "res://blocks/mobility/powerpack/v_2.tscn",
-		"construction_cost": {
-
-		},
+		"block_name": "v2_engine",
+		"display_name": "V2 Engine",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://blocks/mobility/powerpack/v_2.tscn",
+		"world_functional": true,
+		"size": Vector2i(1, 2),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.91, 0.34, 0.12),
+		"construction_cost": {},
 	},
 	5: {
-		"block_name": "Metal Track",
-		"path": "res://blocks/mobility/track/metal_track.tscn",
-		"construction_cost": {
-
-		},
+		"block_name": "metal_track",
+		"display_name": "Metal Track",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_VEHICLE],
+		"scene_path": "res://blocks/mobility/track/metal_track.tscn",
+		"world_functional": false,
+		"size": Vector2i(1, 1),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.28, 0.31, 0.34),
+		"construction_cost": {},
 	},
 	6: {
-		"block_name": "8.8cm KwK 43 L/71",
-		"path": "res://blocks/weapon/KwK_43.tscn",
-		"construction_cost": {
-
-		},
+		"block_name": "kwk_43_88mm",
+		"display_name": "8.8 cm KwK 43 L/71",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://blocks/weapon/KwK_43.tscn",
+		"world_functional": true,
+		"size": Vector2i(1, 8),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.78, 0.13, 0.10),
+		"construction_cost": {},
 	},
 	7: {
-		"block_name": "Dump Container",
-		"path": "res://blocks/logistic/dump_container.tscn",
-		"construction_cost": {
-
-		},
+		"block_name": "dump_container",
+		"display_name": "Dump Container",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"scene_path": "res://blocks/logistic/dump_container.tscn",
+		"world_functional": true,
+		"size": Vector2i(1, 1),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.50, 0.34, 0.20),
+		"construction_cost": {},
 	},
 	8: {
-		"block_name": "Manual Cockpit",
-		"path": "res://blocks/control/manual_cockpit.tscn",
-		"construction_cost": {
-
-		},
+		"block_name": "manual_cockpit",
+		"display_name": "Manual Cockpit",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_VEHICLE],
+		"scene_path": "res://blocks/control/manual_cockpit.tscn",
+		"world_functional": false,
+		"size": Vector2i(1, 1),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(1.0, 0.67, 0.12),
+		"construction_cost": {},
+	},
+	9: {
+		"block_name": "sandstone",
+		"display_name": "Sandstone",
+		"block_class": CLASS_NATURAL,
+		"allowed_hosts": [HOST_WORLD],
+		"scene_path": "res://blocks/natural/sandstone.tscn",
+		"world_functional": false,
+		"size": Vector2i(1, 1),
+		"rotatable": false,
+		"max_hp": 400.0,
+		"mass": 100.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"item_name": "sandstone",
+		"color": Color(0.361, 0.137, 0.114),
+		"particle_path": "res://assets/particles/sandstone_shard.tscn",
+		"construction_cost": {},
+	},
+	10: {
+		"block_name": "hematite",
+		"display_name": "Hematite",
+		"block_class": CLASS_NATURAL,
+		"allowed_hosts": [HOST_WORLD],
+		"scene_path": "res://blocks/natural/hematite.tscn",
+		"world_functional": false,
+		"size": Vector2i(1, 1),
+		"rotatable": false,
+		"max_hp": 800.0,
+		"mass": 100.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 0.5,
+		"item_name": "hematite",
+		"color": Color.LIGHT_STEEL_BLUE,
+		"particle_path": "res://assets/particles/sandstone_shard.tscn",
+		"construction_cost": {},
+	},
+	11: {
+		"block_name": "crude_oil",
+		"display_name": "Crude Oil",
+		"phase": "liquid",
+		"mass": 1000.0,
+		"item_name": "crude_oil",
+		"color": Color(0.149, 0.078, 0.310),
+	},
+	12: {
+		"block_name": "sandstone_ground",
+		"display_name": "Sandstone Ground",
+		"phase": "ground",
+		"color": Color(0.533, 0.251, 0.176),
 	},
 }
 
 
 func get_block(block_id: int) -> Dictionary:
-	if blocks.has(block_id):
-		return blocks[block_id]
-	return {}
+	return blocks.get(block_id, {})
+
+
+func get_block_by_name(block_name: String) -> Dictionary:
+	return get_block(get_id_for_name(block_name))
 
 
 func has_block(block_id: int) -> bool:
@@ -70,34 +205,180 @@ func has_block(block_id: int) -> bool:
 
 
 func get_scene(block_id: int) -> PackedScene:
-	var block_data := get_block(block_id)
-	if block_data.is_empty():
+	var scene_path := str(get_block(block_id).get("scene_path", ""))
+	if scene_path.is_empty():
 		return null
-	return load(block_data["path"]) as PackedScene
+	return load(scene_path) as PackedScene
 
 
 func get_block_name(block_id: int) -> String:
-	return str(get_block(block_id).get("block_name", "Unknown Block"))
+	return str(get_block(block_id).get("block_name", "unknown_block"))
+
+
+func get_display_name(block_id: int) -> String:
+	var definition := get_block(block_id)
+	return str(
+		definition.get(
+			"display_name",
+			str(definition.get("block_name", "Unknown Block"))
+				.replace("_", " ")
+				.capitalize()
+		)
+	)
+
+
+func get_color(block_id: int) -> Color:
+	return get_block(block_id).get("color", Color.MAGENTA)
 
 
 func get_id_for_scene(scene_path: String) -> int:
-	for block_id in blocks:
-		if blocks[block_id]["path"] == scene_path:
+	for block_id: int in blocks:
+		if blocks[block_id].get("scene_path", "") == scene_path:
 			return block_id
-	return -1
+	return INVALID_BLOCK_ID
 
 
 func get_id_for_name(block_name: String) -> int:
-	for block_id in blocks:
-		if blocks[block_id]["block_name"] == block_name:
+	for block_id: int in blocks:
+		var definition: Dictionary = blocks[block_id]
+		if (
+			definition.get("block_name", "") == block_name
+			or definition.get("display_name", "") == block_name
+		):
 			return block_id
-	return -1
+	return INVALID_BLOCK_ID
 
 
 func get_construction_cost(block_id: int) -> Dictionary:
-	var block_data := get_block(block_id)
-	return block_data.get("construction_cost", {}).duplicate(true)
+	return get_block(block_id).get("construction_cost", {}).duplicate(true)
 
 
 func get_construction_cost_for_scene(scene_path: String) -> Dictionary:
 	return get_construction_cost(get_id_for_scene(scene_path))
+
+
+func can_place_on(block_id: int, host_name: String) -> bool:
+	return get_block(block_id).get("allowed_hosts", []).has(host_name)
+
+
+func is_constructed(block_id: int) -> bool:
+	return get_block(block_id).get("block_class", "") == CLASS_CONSTRUCTED
+
+
+func is_world_functional(block_id: int) -> bool:
+	return bool(get_block(block_id).get("world_functional", false))
+
+
+func is_liquid(block_id: int) -> bool:
+	return get_block(block_id).get("phase", "") == "liquid"
+
+
+func is_ground(block_id: int) -> bool:
+	return get_block(block_id).get("phase", "") == "ground"
+
+
+func get_default_liquid_mass(block_id: int) -> float:
+	if not is_liquid(block_id):
+		return 0.0
+	return maxf(float(get_block(block_id).get("mass", 0.0)), 0.0)
+
+
+func is_rotatable(block_id: int) -> bool:
+	return bool(get_block(block_id).get("rotatable", false))
+
+
+func normalize_rotation(block_id: int, rotation_index: int) -> int:
+	if not is_rotatable(block_id):
+		return 0
+	return wrapi(rotation_index, 0, 4)
+
+
+func get_size(block_id: int) -> Vector2i:
+	return get_block(block_id).get("size", Vector2i.ONE)
+
+
+func get_max_hp(block_id: int) -> float:
+	return maxf(float(get_block(block_id).get("max_hp", 0.0)), 0.0)
+
+
+func get_damage_multiplier(block_id: int, damage_type: StringName) -> float:
+	var key := ""
+	match String(damage_type).to_upper():
+		"KINETIC":
+			key = "kinetic_damage_multiplier"
+		"EXPLOSIVE":
+			key = "explosive_damage_multiplier"
+		_:
+			return 1.0
+	return maxf(float(get_block(block_id).get(key, 1.0)), 0.0)
+
+
+func get_legacy_world_block_id(tile_id: int) -> int:
+	match tile_id:
+		1:
+			return 9
+		2:
+			return 10
+	return INVALID_BLOCK_ID
+
+
+func get_legacy_liquid_block_id(tile_id: int) -> int:
+	return 11 if tile_id == 3 else INVALID_BLOCK_ID
+
+
+func get_legacy_ground_block_id(tile_id: int) -> int:
+	return 12 if tile_id == 4 else INVALID_BLOCK_ID
+
+
+func validate_database(tile_set: TileSet = null) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var names := {}
+	for block_id: int in blocks:
+		var definition: Dictionary = blocks[block_id]
+		var block_name := str(definition.get("block_name", ""))
+		if block_name.is_empty():
+			errors.append("Block ID %d has no block_name." % block_id)
+		elif names.has(block_name):
+			errors.append("Duplicate block_name: %s." % block_name)
+		else:
+			names[block_name] = block_id
+		if not definition.get("color", null) is Color:
+			errors.append("Block %s has no valid color." % block_name)
+		if is_liquid(block_id):
+			if get_default_liquid_mass(block_id) <= 0.0:
+				errors.append(
+					"Liquid block %s has invalid mass." % block_name
+				)
+			if not BlockVisualSystem.has_block_tile_visual(block_id):
+				errors.append(
+					"Liquid block %s has no TileSet block_id visual."
+					% block_name
+				)
+			continue
+		if is_ground(block_id):
+			if not BlockVisualSystem.has_block_tile_visual(block_id):
+				errors.append(
+					"Ground block %s has no TileSet block_id visual."
+					% block_name
+				)
+			continue
+		if float(definition.get("max_hp", 0.0)) <= 0.0:
+			errors.append("Block %s has invalid max_hp." % block_name)
+		var scene_path := str(definition.get("scene_path", ""))
+		if scene_path.is_empty():
+			errors.append("Block %s has no scene file." % block_name)
+		elif not ResourceLoader.exists(scene_path):
+			errors.append("Block %s has missing scene %s." % [
+				block_name,
+				scene_path,
+			])
+		if (
+			not bool(definition.get("world_functional", false))
+			and definition.get("allowed_hosts", []).has(HOST_WORLD)
+			and not BlockVisualSystem.has_block_tile_visual(block_id)
+		):
+			errors.append(
+				"Passive world block %s has no TileSet block_id visual."
+				% block_name
+			)
+	return errors

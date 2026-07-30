@@ -19,10 +19,10 @@ func apply_explosion() -> void:
 		if body is Vehicle:
 			apply_explosion_to_vehicle(body as Vehicle)
 	for wall_node: Node in get_tree().get_nodes_in_group(
-		"environment_wall_layers"
+		"world_block_layers"
 	):
-		if wall_node is WallLayer:
-			(wall_node as WallLayer).apply_radial_damage(
+		if wall_node is WorldBlockLayer:
+			(wall_node as WorldBlockLayer).apply_radial_damage(
 				global_position,
 				radius,
 				max_damage
@@ -37,7 +37,11 @@ func apply_explosion_to_vehicle(vehicle: Vehicle) -> void:
 	if radius <= 0:
 		var direct_block := vehicle.get_block(center_cell)
 		if direct_block != null:
-			direct_block.damage(max_damage, "EXPLOSIVE")
+			vehicle.damage_block_at(
+				direct_block.origin_cell,
+				max_damage,
+				&"EXPLOSIVE"
+			)
 		return
 	
 	for y in range(-radius, radius + 1):
@@ -66,4 +70,8 @@ func apply_explosion_to_vehicle(vehicle: Vehicle) -> void:
 				hit_blocks[block] = damage
 	
 	for block in hit_blocks.keys():
-		block.damage(hit_blocks[block], "EXPLOSIVE")
+		vehicle.damage_block_at(
+			(block as Block).origin_cell,
+			float(hit_blocks[block]),
+			&"EXPLOSIVE"
+		)

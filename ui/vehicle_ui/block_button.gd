@@ -9,7 +9,7 @@ func intiatialize():
 	size = block.size * Globals.TILE_SIZE
 	position = block.position - (size / 2)
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	tooltip_text = block.block_name
+	tooltip_text = BlockDB.get_display_name(block.block_id)
 
 
 func _gui_input(event):

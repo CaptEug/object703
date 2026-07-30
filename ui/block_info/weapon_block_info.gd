@@ -40,25 +40,27 @@ func _refresh() -> void:
 	ammo_label.hide()
 	if (
 		weapon.state == Weapon.WeaponState.READY
-		and not weapon.loaded_ammo_id.is_empty()
+		and not weapon.loaded_ammo.is_empty()
 	):
 		state_label.text = "Shell loaded:"
 		chambered_icon.texture = ItemDB.get_item_by_name(
-			weapon.loaded_ammo_id
+			weapon.loaded_ammo
 		).get("icon")
 		chambered_icon.show()
 		ammo_label.text = ItemDB.get_display_name(
-			weapon.loaded_ammo_id
+			weapon.loaded_ammo
 		)
 		ammo_label.show()
 	else:
 		state_label.text = weapon.get_state_name()
 	var selection_name := "First available"
 	selection_icon.texture = null
-	if not weapon.selected_ammo_id.is_empty():
-		selection_name = ItemDB.get_display_name(weapon.selected_ammo_id)
+	if not weapon.selected_ammo.is_empty():
+		selection_name = ItemDB.get_display_name(
+			weapon.selected_ammo
+		)
 		selection_icon.texture = ItemDB.get_item_by_name(
-			weapon.selected_ammo_id
+			weapon.selected_ammo
 		).get("icon")
 	selection_label.text = selection_name
 	reload_bar.value = weapon.get_reload_progress() * 100.0
@@ -72,14 +74,20 @@ func _on_ammo_button_pressed() -> void:
 	var first_available := ammo_tree.create_item(root)
 	first_available.set_text(0, "First available")
 	first_available.set_metadata(0, "")
-	for item_id: String in weapon.shells:
-		var item_data := ItemDB.get_item_by_name(item_id)
-		if item_data.is_empty() or not ItemDB.has_subclass(item_id, ItemDB.ItemSubclass.AMMO):
+	for item_name: String in weapon.shells:
+		var item_data := ItemDB.get_item_by_name(item_name)
+		if (
+			item_data.is_empty()
+			or not ItemDB.has_subclass(
+				item_name,
+				ItemDB.ItemSubclass.AMMO
+			)
+		):
 			continue
 		var leaf := ammo_tree.create_item(root)
-		leaf.set_text(0, ItemDB.get_display_name(item_id))
+		leaf.set_text(0, ItemDB.get_display_name(item_name))
 		leaf.set_icon(0, item_data.get("icon"))
-		leaf.set_metadata(0, item_id)
+		leaf.set_metadata(0, item_name)
 	ammo_popup.popup_centered(Vector2i(340, 300))
 
 func _on_ammo_tree_item_selected() -> void:

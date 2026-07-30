@@ -20,7 +20,7 @@ Vector2i(0, 0): {
 3: true
 }
 })
-block_name = "Manual Cockpit"
+block_name = "manual_cockpit"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_cockpit")

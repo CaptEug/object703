@@ -90,12 +90,22 @@ func _physics_process(_delta: float) -> void:
 			hit_normal
 		):
 			return
-	elif collider is WallLayer:
-		_handle_wall_impact(
-			collider as WallLayer,
+	elif collider is WorldBlockLayer:
+		_handle_world_block_impact(
+			collider as WorldBlockLayer,
 			hit_position,
 			hit_normal,
 			(to - from).normalized()
+		)
+		return
+	elif collider is WorldBlockBody:
+		var world_body := collider as WorldBlockBody
+		_handle_world_block_impact(
+			world_body.world_block_layer,
+			hit_position,
+			hit_normal,
+			(to - from).normalized(),
+			world_body.anchor_cell
 		)
 		return
 	else:
@@ -141,11 +151,16 @@ func _trace_vehicle_cells(
 			queue_free()
 			return true
 
-		var kinetic_resistance := maxf(block.k_a, 0.001)
-		var damage_needed := maxf(block.hp, 0.0) / kinetic_resistance
-		var kinetic_spent := minf(remaining_K_DMG, damage_needed)
-		block.damage(kinetic_spent, "KINETIC")
-		remaining_K_DMG = maxf(remaining_K_DMG - kinetic_spent, 0.0)
+		var result := target_vehicle.damage_block_at(
+			block.origin_cell,
+			remaining_K_DMG,
+			&"KINETIC"
+		)
+		remaining_K_DMG = maxf(
+			remaining_K_DMG
+				- float(result["damage_consumed"]),
+			0.0
+		)
 
 		if remaining_K_DMG <= 0.001:
 			global_position = sample_position
@@ -172,11 +187,12 @@ func ricochet(normal: Vector2, hit_position: Vector2) -> void:
 	traversing_vehicle = null
 
 
-func _handle_wall_impact(
-	wall: WallLayer,
+func _handle_world_block_impact(
+	world_blocks: WorldBlockLayer,
 	hit_position: Vector2,
 	hit_normal: Vector2,
-	direction: Vector2
+	direction: Vector2,
+	known_cell: Vector2i = WorldBlockLayer.INVALID_CELL
 ) -> void:
 	if (
 		shell_type != ShellType.HE
@@ -185,11 +201,13 @@ func _handle_wall_impact(
 		ricochet(hit_normal, hit_position)
 		return
 
-	var cell := wall.get_solid_cell_at_world_position(
-		hit_position,
-		direction
-	)
-	if cell == WallLayer.INVALID_CELL:
+	var cell := known_cell
+	if cell == WorldBlockLayer.INVALID_CELL:
+		cell = world_blocks.get_solid_cell_at_world_position(
+			hit_position,
+			direction
+		)
+	if cell == WorldBlockLayer.INVALID_CELL:
 		_handle_world_impact(hit_position, hit_normal)
 		return
 
@@ -202,7 +220,7 @@ func _handle_wall_impact(
 		queue_free()
 		return
 
-	var result := wall.damage_tile(
+	var result := world_blocks.damage_block_at(
 		cell,
 		remaining_K_DMG,
 		&"KINETIC"

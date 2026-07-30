@@ -43,14 +43,14 @@ static func get_missing(
 ) -> Dictionary:
 	var missing := {}
 	for item_value: Variant in cost:
-		var item_id := str(item_value)
+		var item_name := str(item_value)
 		var required := maxi(0, int(cost[item_value]))
 		var available := 0
 		for storage: ItemStorage in storages:
 			if is_instance_valid(storage):
-				available += storage.get_item_count(item_id)
+				available += storage.get_item_count(item_name)
 		if available < required:
-			missing[item_id] = required - available
+			missing[item_name] = required - available
 	return missing
 
 
@@ -68,19 +68,19 @@ static func consume(
 
 	var withdrawals: Array[Dictionary] = []
 	for item_value: Variant in cost:
-		var item_id := str(item_value)
+		var item_name := str(item_value)
 		var remaining := maxi(0, int(cost[item_value]))
 		for storage: ItemStorage in storages:
 			if remaining <= 0:
 				break
 			if not is_instance_valid(storage):
 				continue
-			var taken := storage.take_item(item_id, remaining)
+			var taken := storage.take_item(item_name, remaining)
 			if taken <= 0:
 				continue
 			withdrawals.append({
 				"storage": storage,
-				"item_id": item_id,
+				"item_name": item_name,
 				"amount": taken,
 			})
 			remaining -= taken
@@ -97,21 +97,26 @@ static func refund(withdrawals: Array) -> void:
 		var storage := withdrawal.get("storage") as ItemStorage
 		if not is_instance_valid(storage):
 			continue
-		var item_id := str(withdrawal.get("item_id", ""))
+		var item_name := str(withdrawal.get("item_name", ""))
 		var amount := int(withdrawal.get("amount", 0))
-		if item_id.is_empty() or amount <= 0:
+		if item_name.is_empty() or amount <= 0:
 			continue
-		storage.items[item_id] = storage.get_item_count(item_id) + amount
+		storage.items[item_name] = (
+			storage.get_item_count(item_name) + amount
+		)
 		storage.contents_changed.emit()
 
 
 static func format_cost(cost: Dictionary) -> String:
 	var parts: Array[String] = []
 	for item_value: Variant in cost:
-		var item_id := str(item_value)
+		var item_name := str(item_value)
 		var amount := int(cost[item_value])
 		if amount > 0:
-			parts.append("%d %s" % [amount, ItemDB.get_display_name(item_id)])
+			parts.append(
+				"%d %s"
+				% [amount, ItemDB.get_display_name(item_name)]
+			)
 	return ", ".join(parts)
 
 

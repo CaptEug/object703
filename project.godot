@@ -24,8 +24,6 @@ Globals="*uid://txmi1b8smg1j"
 GameState="*res://GameState.gd"
 BlockDB="*res://blocks/block_database.gd"
 ItemDB="*res://items/item_database.gd"
-TileDB="*res://map/tilemap/tile_database.gd"
-BetterTerrain="*res://addons/better-terrain/BetterTerrain.gd"
 
 [display]
 
@@ -34,10 +32,6 @@ window/stretch/scale_mode="integer"
 [editor]
 
 version_control/autoload_on_startup=true
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/better-terrain/plugin.cfg")
 
 [file_customization]
 

@@ -12,7 +12,7 @@ region = Rect2(128, 64, 16, 16)
 
 [node name="LiquidTank" type="Node2D" unique_id=418363344]
 script = ExtResource("1_24i4h")
-block_name = "Liquid Tank"
+block_name = "liquid_container"
 metadata/_custom_type_script = "uid://pnfcsef3bfk8"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1091049743]

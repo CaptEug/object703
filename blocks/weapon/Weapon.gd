@@ -36,8 +36,8 @@ var state: WeaponState = WeaponState.EMPTY
 var trigger_held := false
 var aim_target_world := Vector2.ZERO
 var has_aim_target := false
-var selected_ammo_id := ""
-var loaded_ammo_id := ""
+var selected_ammo := ""
+var loaded_ammo := ""
 var shell_loaded: PackedScene
 var current_muzzle := 0
 
@@ -58,14 +58,22 @@ func _ready() -> void:
 	add_child(reload_timer)
 
 func _physics_process(delta: float) -> void:
-	if vehicle == null:
+	var current_assembly := get_assembly()
+	if current_assembly == null:
 		return
 
-	if vehicle.has_aim_command():
-		set_aim_target(vehicle.get_aim_target())
+	if (
+		current_assembly.has_method("has_aim_command")
+		and current_assembly.call("has_aim_command")
+	):
+		set_aim_target(current_assembly.call("get_aim_target"))
 	else:
 		clear_aim_target()
-	set_trigger_held(vehicle.get_fire_command())
+	set_trigger_held(
+		bool(current_assembly.call("get_fire_command"))
+		if current_assembly.has_method("get_fire_command")
+		else false
+	)
 	if mount_type == MountType.INTEGRATED_TURRET:
 		_update_integrated_turret(delta)
 
@@ -93,12 +101,12 @@ func set_trigger_held(pressed: bool) -> void:
 
 func select_ammo(item_name: String) -> bool:
 	if item_name.is_empty():
-		selected_ammo_id = ""
+		selected_ammo = ""
 		weapon_status_changed.emit()
 		return true
 	if not shells.has(item_name) or not _is_valid_ammo(item_name):
 		return false
-	selected_ammo_id = item_name
+	selected_ammo = item_name
 	weapon_status_changed.emit()
 	return true
 
@@ -145,17 +153,34 @@ func _update_integrated_turret(delta: float) -> void:
 		turret.rotation = clampf(next_rotation, minimum, maximum)
 
 func _try_start_reload() -> bool:
-	if state != WeaponState.EMPTY or vehicle == null:
+	var current_assembly := get_assembly()
+	if state != WeaponState.EMPTY or current_assembly == null:
 		return false
 	for item_name: String in _get_ammo_candidates():
-		if not vehicle.supply_system.can_supply_item(self, item_name, 1):
+		if (
+			not current_assembly.has_method("can_supply_item")
+			or not current_assembly.call(
+				"can_supply_item",
+				self,
+				item_name,
+				1
+			)
+		):
 			continue
-		if not vehicle.supply_system.supply_item(self, item_name, 1):
+		if (
+			not current_assembly.has_method("supply_item")
+			or not current_assembly.call(
+				"supply_item",
+				self,
+				item_name,
+				1
+			)
+		):
 			continue
 		var shell_scene := ItemDB.get_item_by_name(item_name).get("shell_scene") as PackedScene
 		if shell_scene == null:
 			continue
-		loaded_ammo_id = item_name
+		loaded_ammo = item_name
 		shell_loaded = shell_scene
 		_set_state(WeaponState.RELOADING)
 		reload_timer.start(maxf(reload, 0.001))
@@ -165,13 +190,13 @@ func _try_start_reload() -> bool:
 func _get_ammo_candidates() -> Array[String]:
 	var result: Array[String] = []
 	if (
-		not selected_ammo_id.is_empty()
-		and shells.has(selected_ammo_id)
-		and _is_valid_ammo(selected_ammo_id)
+		not selected_ammo.is_empty()
+		and shells.has(selected_ammo)
+		and _is_valid_ammo(selected_ammo)
 	):
-		result.append(selected_ammo_id)
+		result.append(selected_ammo)
 	for item_name: String in shells:
-		if item_name != selected_ammo_id and _is_valid_ammo(item_name):
+		if item_name != selected_ammo and _is_valid_ammo(item_name):
 			result.append(item_name)
 	return result
 
@@ -222,7 +247,12 @@ func _spawn_projectile(muzzle: Marker2D, shell_scene: PackedScene) -> bool:
 
 	var direction := Vector2.UP.rotated(muzzle.global_rotation)
 	direction = direction.rotated(randf_range(-spread, spread)).normalized()
-	shell.source_vehicle = vehicle
+	var current_assembly := get_assembly()
+	shell.source_vehicle = (
+		current_assembly as Vehicle
+		if current_assembly is Vehicle
+		else null
+	)
 	shell.source_weapon = self
 	shell.global_position = muzzle.global_position
 	shell.spawn_position = muzzle.global_position
@@ -236,12 +266,16 @@ func _spawn_projectile(muzzle: Marker2D, shell_scene: PackedScene) -> bool:
 	var impulse := direction * shell_mass * velocity
 	shell.apply_impulse(impulse)
 
-	var recoil_offset := muzzle.global_position - vehicle.global_position
-	vehicle.apply_impulse(-impulse, recoil_offset)
+	if current_assembly is Vehicle:
+		var source_vehicle := current_assembly as Vehicle
+		var recoil_offset := (
+			muzzle.global_position - source_vehicle.global_position
+		)
+		source_vehicle.apply_impulse(-impulse, recoil_offset)
 	return true
 
 func _clear_chamber() -> void:
-	loaded_ammo_id = ""
+	loaded_ammo = ""
 	shell_loaded = null
 	weapon_status_changed.emit()
 
