@@ -48,14 +48,6 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 	return {"ok": true, "name": clean_name, "path": path}
 
 
-static func load_data(vehicle_name: String) -> Dictionary:
-	var clean_name := vehicle_name.strip_edges()
-	if clean_name.is_empty():
-		return _error("Enter a vehicle name.")
-
-	return load_path(_get_path(clean_name))
-
-
 static func load_path(path: String) -> Dictionary:
 	if not path.ends_with(".json"):
 		return _error("Select a JSON blueprint file.")
@@ -284,10 +276,6 @@ static func reconcile_records(records: Array, vehicle: Vehicle) -> Array:
 			result.append(actual_record)
 	result.sort_custom(_sort_block_records)
 	return result
-
-
-static func has_matching_record(records: Array, block: Block) -> bool:
-	return get_matching_record_index(records, block) >= 0
 
 
 static func get_matching_record_index(records: Array, block: Block) -> int:

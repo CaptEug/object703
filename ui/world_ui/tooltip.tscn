@@ -37,11 +37,3 @@ theme_override_styles/normal = SubResource("StyleBoxEmpty_oc8ad")
 bbcode_enabled = true
 text = "infomation"
 fit_content = true
-
-[node name="GridContainer" type="GridContainer" parent="."]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 25.0
-offset_right = 70.0
-offset_bottom = 89.0
-columns = 6

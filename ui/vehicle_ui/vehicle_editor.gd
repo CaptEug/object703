@@ -189,13 +189,6 @@ func close_vehicle_panel() -> void:
 	_apply_interface_state()
 
 
-func toggle_editor() -> void:
-	if is_editing_vehicle():
-		exit_edit_mode()
-	elif is_instance_valid(vehicle):
-		enter_edit_mode()
-
-
 func is_editing_vehicle() -> bool:
 	return interface_state == InterfaceState.EDIT
 

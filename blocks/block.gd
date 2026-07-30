@@ -3,7 +3,6 @@ extends Node2D
 
 signal health_changed
 signal block_destroyed
-signal connectivity_changed
 
 const TILE_SIZE := Globals.TILE_SIZE
 
@@ -32,7 +31,6 @@ const OPPOSITE_SIDE := {
 	Side.LEFT: Side.RIGHT,
 }
 @export var edge_sockets: Dictionary[Vector2i,Dictionary] = {}    # { local_cell: { side:int -> bool } }
-var connected : bool = false
 
 # game property
 @export var block_name : String
@@ -111,23 +109,6 @@ func rotate_cell_raw(cell: Vector2i, rot: int) -> Vector2i:
 	return cell
 
 
-func get_transformed_cell(cell:Vector2i):
-	var raw_cells : Array[Vector2i] = []
-	
-	for c in local_cells:
-		raw_cells.append(rotate_cell_raw(c, rotation_index))
-	
-	var min_x := raw_cells[0].x
-	var min_y := raw_cells[0].y
-	for c in raw_cells:
-		min_x = min(min_x, c.x)
-		min_y = min(min_y, c.y)
-	
-	var rotated_cell = rotate_cell_raw(cell, rotation_index) - Vector2i(min_x, min_y)
-	
-	return origin_cell + rotated_cell
-
-
 func rotate_side(side: int, rot: int) -> int:
 	return wrapi(side + rot, 0, 4)
 
@@ -169,28 +150,6 @@ func is_edge_connectable(cell: Vector2i, side: int) -> bool:
 		return false
 	var side_dict: Dictionary = edges[cell]
 	return side_dict.get(side, false)
-
-
-func update_connectivity():
-	var has_connection := false
-	var block_edges := get_transformed_edges()
-	
-	for edge_cell in block_edges.keys():
-		var side_dict: Dictionary = block_edges[edge_cell]
-		for side in side_dict.keys():
-			var my_connectable: bool = side_dict[side]
-			var neighbor_cell : Vector2i = edge_cell + Block.SIDE_DIRS[side]
-			var neighbor := vehicle.get_block(neighbor_cell)
-			if neighbor == null:
-				continue
-			
-			var opposite: int = Block.OPPOSITE_SIDE[side]
-			var neighbor_connectable := neighbor.is_edge_connectable(neighbor_cell, opposite)
-			
-			if my_connectable and neighbor_connectable:
-				has_connection = true
-	
-	connected = has_connection
 
 
 # Block Status

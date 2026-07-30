@@ -24,12 +24,6 @@ func create_button(block : Block):
 	add_child(button)
 
 
-func clamp_position():
-	var rect = get_rect()
-	position.x = clamp(position.x, -rect.size.x, size.x)
-	position.y = clamp(position.y, -rect.size.y, size.y)
-
-
 func _on_zoom_in_button_pressed():
 	zoom = clampi(zoom + 1, min_zoom, max_zoom)
 	scale = Vector2(zoom, zoom)

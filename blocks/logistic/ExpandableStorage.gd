@@ -66,7 +66,6 @@ func merge_container_members(
 	_resize_container_collision()
 	refresh_container_visual()
 	health_changed.emit()
-	connectivity_changed.emit()
 
 
 func refresh_container_visual() -> void:

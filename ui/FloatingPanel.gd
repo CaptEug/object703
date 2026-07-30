@@ -20,19 +20,3 @@ func _gui_input(event: InputEvent) -> void:
 		# keep it inside the screen bounds
 		var rect = get_viewport_rect()
 		global_position = global_position.clamp(Vector2.ZERO, rect.size - size)
-
-
-func any_overlap() -> bool:
-	var UI = GameState.current_gamescene.gameUI
-	for p in UI.get_children():
-		if p is FloatingPanel and p != self:
-			var r = Rect2(p.position, Vector2(32, 32))
-			if r.intersects(Rect2(position, size)):
-				return true
-	return false
-
-func is_frontmost() -> bool:
-	var parent = get_parent()
-	if parent == null:
-		return true  # Root node is always "frontmost" by default
-	return get_index() == parent.get_child_count() - 1

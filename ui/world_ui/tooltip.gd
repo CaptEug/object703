@@ -1,15 +1,11 @@
 extends Panel
 
 @onready var textlabel: RichTextLabel = $RichTextLabel
-@onready var grid_container: GridContainer = $GridContainer
 
 @export var padding: Vector2 = Vector2(16, 32)
 
-var _last_block: Node = null
-
 func _ready() -> void:
 	visible = false
-	grid_container.visible = false
 
 
 func _physics_process(_delta: float) -> void:
@@ -46,9 +42,7 @@ func _physics_process(_delta: float) -> void:
 	# ---- 鼠标移出或未检测到 ----
 	if visible:
 		visible = false
-	_clear_grid()
 	call_deferred("update_panel_size")
-	_last_block = null
 
 
 func show_block_in_vehicle(vehicle:Vehicle, pos:Vector2):
@@ -62,7 +56,6 @@ func show_block_in_vehicle(vehicle:Vehicle, pos:Vector2):
 	# Liquid Storage
 	if block is LiquidStorage:
 		textlabel.text += ("\n" + "%.2f" % block.stored + " mass " + block.liquid + " stored")
-	_last_block = block
 
 func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 	visible = true
@@ -91,22 +84,5 @@ func show_tile(tilemap:TileMapLayer, qurey_pos:Vector2):
 					+ "%.1f" % (total_mass / 1000)
 					+ " T"
 				)
-# Clear the optional detail grid.
-func _clear_grid() -> void:
-	for c in grid_container.get_children():
-		c.queue_free()
-	grid_container.visible = false
-
-
 func update_panel_size() -> void:
-	var text_size: Vector2 = textlabel.get_size()
-	var grid_size: Vector2 = Vector2.ZERO
-	if grid_container.visible:
-		grid_size = grid_container.get_size()
-
-	var content_width = max(text_size.x, grid_size.x)
-	var content_height = text_size.y
-	if grid_container.visible:
-		content_height += grid_size.y
-
-	size = Vector2(content_width, content_height) + padding
+	size = textlabel.get_size() + padding

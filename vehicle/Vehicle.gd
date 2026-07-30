@@ -22,8 +22,6 @@ var block_component_map: Dictionary[Block, int] = {}
 var blueprint_blocks: Array = []
 var blueprint_ghosts_root: Node2D
 var total_mass := 0.0
-var total_engine_power: float = 0.0
-var engines: Array[PowerPack] = []
 var tracks: Array[Track] = []
 var control_blocks: Array[ControlBlock] = []
 var active_control_block: ControlBlock
@@ -320,18 +318,6 @@ func _merge_container_component(
 		grid[occupied_cell] = leader
 
 
-func damage_block(cell: Vector2i, amount: int, type: String):
-	var block := get_block(cell)
-	if block == null:
-		return false
-	
-	if amount <= 0.0:
-		return false
-	
-	# apply damage
-	block.damage(amount, type)
-
-
 func destroy_block(block: Block) -> Array[Vehicle]:
 	if block == null or not blocks.has(block):
 		return []
@@ -499,20 +485,13 @@ func get_block(cell: Vector2i) -> Block:
 func refresh_system_lists() -> void:
 	var previous_control := active_control_block
 	tracks.clear()
-	engines.clear()
 	control_blocks.clear()
-	
-	total_engine_power = 0.0
 	
 	for block in blocks:
 		if block is ControlBlock:
 			control_blocks.append(block as ControlBlock)
 		elif block is Track:
 			tracks.append(block as Track)
-		elif block is PowerPack:
-			var engine := block as PowerPack
-			engines.append(engine)
-			total_engine_power += engine.max_power
 	if is_instance_valid(previous_control) and control_blocks.has(previous_control):
 		active_control_block = previous_control
 	elif control_blocks.is_empty():
@@ -551,11 +530,6 @@ func rebuild_block_connectivity() -> void:
 					queue.append(neighbor)
 
 		block_components.append(component)
-
-	for block in blocks:
-		block.connected = get_connected_blocks(block, false).size() > 0
-		block.connectivity_changed.emit()
-
 
 func get_directly_connected_blocks(block: Block) -> Array[Block]:
 	var result: Array[Block] = []
