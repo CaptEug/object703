@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bm2o5xqsjvu4e"]
 
 [ext_resource type="Script" uid="uid://dpymnvjcr8b1p" path="res://blocks/logistic/ItemStorage.gd" id="1_storage"]
-[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks_basic.png" id="2_blocks"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks/blocks_basic.png" id="2_blocks"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dump"]
 size = Vector2(16, 16)

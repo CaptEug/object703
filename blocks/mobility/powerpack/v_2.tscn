@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://vbegrifblqog"]
 
 [ext_resource type="Script" uid="uid://bicc471ql4ger" path="res://blocks/mobility/powerpack/Powerpack.gd" id="1_wdfkh"]
-[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks_ussr.png" id="2_wdfkh"]
+[ext_resource type="Texture2D" uid="uid://d1boi4b4eg236" path="res://assets/blocks/blocks_ussr.png" id="2_wdfkh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_we1dh"]
 size = Vector2(16, 32)
