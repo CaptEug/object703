@@ -1,4 +1,3 @@
-class_name ManualCockpit
 extends ControlBlock
 
 func get_drive_command() -> Dictionary:

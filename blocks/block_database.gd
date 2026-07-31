@@ -143,7 +143,7 @@ var blocks := {
 		"mass": 100.0,
 		"kinetic_damage_multiplier": 1.0,
 		"explosive_damage_multiplier": 1.0,
-		"item_name": "sandstone",
+		"mining_yield": "sandstone",
 		"color": Color(0.361, 0.137, 0.114),
 		"particle_path": "res://assets/particles/sandstone_shard.tscn",
 		"construction_cost": {},
@@ -160,7 +160,7 @@ var blocks := {
 		"mass": 100.0,
 		"kinetic_damage_multiplier": 1.0,
 		"explosive_damage_multiplier": 0.5,
-		"item_name": "hematite",
+		"mining_yield": "hematite",
 		"color": Color.LIGHT_STEEL_BLUE,
 		"particle_path": "res://assets/particles/sandstone_shard.tscn",
 		"construction_cost": {},
@@ -169,13 +169,28 @@ var blocks := {
 		"block_name": "Crude Oil",
 		"phase": "liquid",
 		"mass": 1000.0,
-		"item_name": "crude_oil",
+		"mining_yield": "crude_oil",
 		"color": Color(0.149, 0.078, 0.310),
 	},
 	12: {
 		"block_name": "Sandstone Ground",
 		"phase": "ground",
 		"color": Color(0.533, 0.251, 0.176),
+	},
+	13: {
+		"block_name": "Drill",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_VEHICLE],
+		"scene_path": "res://blocks/industrial/drill.tscn",
+		"world_functional": false,
+		"size": Vector2i(2, 3),
+		"rotatable": true,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.78, 0.58, 0.16),
+		"construction_cost": {},
 	},
 }
 
@@ -228,6 +243,10 @@ func get_construction_cost(block_id: int) -> Dictionary:
 
 func get_construction_cost_for_scene(scene_path: String) -> Dictionary:
 	return get_construction_cost(get_id_for_scene(scene_path))
+
+
+func get_mining_yield(block_id: int) -> String:
+	return str(get_block(block_id).get("mining_yield", ""))
 
 
 func can_place_on(block_id: int, host_name: String) -> bool:

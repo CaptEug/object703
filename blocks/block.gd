@@ -84,6 +84,10 @@ func has_information_panel() -> bool:
 	return false
 
 
+func get_information_panel_key() -> StringName:
+	return &""
+
+
 # Block Placement
 
 func update_transform(v, cell:Vector2i, rotation_i:int):

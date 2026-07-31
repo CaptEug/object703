@@ -644,6 +644,22 @@ func supply_item(
 	return supply_system.supply_item(requester, item_name, amount)
 
 
+func can_receive_item(
+	requester: Block,
+	item_name: String,
+	amount: int = 1
+) -> bool:
+	return supply_system.can_receive_item(requester, item_name, amount)
+
+
+func receive_item(
+	requester: Block,
+	item_name: String,
+	amount: int
+) -> int:
+	return supply_system.receive_item(requester, item_name, amount)
+
+
 func can_supply_liquids(
 	requester: Block,
 	liquid_requests: Dictionary

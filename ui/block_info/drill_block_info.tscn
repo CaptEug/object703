@@ -1,0 +1,26 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/block_info/drill_block_info.gd" id="1_script"]
+
+[node name="DrillBlockInfo" type="VBoxContainer"]
+theme_override_constants/separation = 10
+script = ExtResource("1_script")
+
+[node name="PowerRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="PowerRow"]
+layout_mode = 2
+text = "Power supply"
+
+[node name="Percentage" type="Label" parent="PowerRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.12, 0.12, 1)
+text = "0%"
+mouse_filter = 2
+
+[node name="StorageFull" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.62, 0.08, 1)
+text = "Storage full"

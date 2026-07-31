@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://dcsl4uledmso8" path="res://assets/blocks/blocks_mineral1.png" id="1_b4djy"]
 [ext_resource type="Texture2D" uid="uid://cg424y6jnmul8" path="res://assets/blocks/blocks_liquid1.png" id="2_ebuck"]
 [ext_resource type="Texture2D" uid="uid://bfm1ixppv8f30" path="res://assets/blocks/blocks_ground1.png" id="3_gr8ml"]
-[ext_resource type="Texture2D" uid="uid://d3fem60qxalpy" path="res://assets/blocks/blocks_ger.png" id="4_blocks"]
+[ext_resource type="Texture2D" uid="uid://b0hkyvua53ptx" path="res://assets/blocks/blocks_basic.png" id="5_ebuck"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_t0wv1"]
 texture = ExtResource("1_b4djy")
@@ -590,11 +590,77 @@ texture = ExtResource("3_gr8ml")
 3:0/0/custom_data_0 = 12
 4:1/0 = 0
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_blocks"]
-texture = ExtResource("4_blocks")
-0:9/0 = 0
-0:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
-0:9/0/custom_data_0 = 1
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_r3s4x"]
+texture = ExtResource("5_ebuck")
+0:0/0 = 0
+1:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+0:3/0 = 0
+0:3/0/custom_data_0 = 1
+6:3/0 = 0
+7:3/0 = 0
+4:4/0 = 0
+5:4/0 = 0
+6:4/0 = 0
+7:4/0 = 0
+8:4/0 = 0
+9:4/0 = 0
+10:4/0 = 0
+11:4/0 = 0
+12:4/0 = 0
+13:4/0 = 0
+14:4/0 = 0
+15:4/0 = 0
+4:5/0 = 0
+5:5/0 = 0
+6:5/0 = 0
+7:5/0 = 0
+8:5/0 = 0
+9:5/0 = 0
+10:5/0 = 0
+11:5/0 = 0
+12:5/0 = 0
+13:5/0 = 0
+14:5/0 = 0
+15:5/0 = 0
+4:6/0 = 0
+5:6/0 = 0
+6:6/0 = 0
+7:6/0 = 0
+8:6/0 = 0
+9:6/0 = 0
+10:6/0 = 0
+11:6/0 = 0
+12:6/0 = 0
+13:6/0 = 0
+14:6/0 = 0
+15:6/0 = 0
+4:7/0 = 0
+5:7/0 = 0
+6:7/0 = 0
+7:7/0 = 0
+8:7/0 = 0
+9:7/0 = 0
+10:7/0 = 0
+11:7/0 = 0
+12:7/0 = 0
+13:7/0 = 0
+14:7/0 = 0
+15:7/0 = 0
 
 [resource]
 physics_layer_0/collision_layer = 1
@@ -605,4 +671,4 @@ custom_data_layer_0/type = 2
 sources/0 = SubResource("TileSetAtlasSource_t0wv1")
 sources/1 = SubResource("TileSetAtlasSource_gr8ml")
 sources/2 = SubResource("TileSetAtlasSource_b4djy")
-sources/3 = SubResource("TileSetAtlasSource_blocks")
+sources/3 = SubResource("TileSetAtlasSource_r3s4x")

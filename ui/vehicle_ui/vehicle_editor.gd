@@ -334,21 +334,21 @@ func place_block() -> void:
 		return
 	var cost := BlockDB.get_construction_cost(block_id)
 	var build_position := vehicle.cell_to_world(preview_cell)
-	var storages := ConstructionMaterials.get_candidate_storages(
+	var storages := ConstructionSupport.get_candidate_storages(
 		vehicle,
 		build_position,
 		construction_range_tiles * Globals.TILE_SIZE
 	)
-	var payment := ConstructionMaterials.consume(cost, storages)
+	var payment := ConstructionSupport.consume(cost, storages)
 	if not payment["ok"]:
 		_show_status(
 			"Missing: %s"
-			% ConstructionMaterials.format_cost(payment["missing"])
+			% ConstructionSupport.format_cost(payment["missing"])
 		)
 		return
 
 	if not vehicle.place_block(block_scene, preview_cell, preview_rotation):
-		ConstructionMaterials.refund(payment["withdrawals"])
+		ConstructionSupport.refund(payment["withdrawals"])
 		_show_status("Cannot build here; materials returned")
 		return
 	if not cost.is_empty():
@@ -356,7 +356,7 @@ func place_block() -> void:
 			"Built %s (-%s)"
 			% [
 				BlockDB.get_block_name(selected_block.block_id),
-				ConstructionMaterials.format_cost(cost),
+				ConstructionSupport.format_cost(cost),
 			]
 		)
 	vehicle_panel.refresh_information()
@@ -551,12 +551,12 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 		return {"ok": false, "reason": "blocked"}
 
 	var cost := _get_record_construction_cost(record)
-	var storages := ConstructionMaterials.get_candidate_storages(
+	var storages := ConstructionSupport.get_candidate_storages(
 		vehicle,
 		vehicle.cell_to_world(cell),
 		construction_range_tiles * Globals.TILE_SIZE
 	)
-	var payment := ConstructionMaterials.consume(cost, storages)
+	var payment := ConstructionSupport.consume(cost, storages)
 	if not payment["ok"]:
 		return {
 			"ok": false,
@@ -569,7 +569,7 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 		rotation,
 		block_size
 	):
-		ConstructionMaterials.refund(payment["withdrawals"])
+		ConstructionSupport.refund(payment["withdrawals"])
 		return {"ok": false, "reason": "blocked"}
 	var placed_block := vehicle.get_block(cell)
 	if placed_block != null:

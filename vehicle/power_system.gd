@@ -15,6 +15,9 @@ func _process(_delta):
 
 
 func rebuild_component_network() -> void:
+	for block: Block in block_group_map:
+		if block.has_method("set_supplied_power"):
+			block.call("set_supplied_power", 0.0)
 	block_group_map.clear()
 	avaliable_engines.clear()
 	active_tracks.clear()
@@ -154,8 +157,14 @@ func get_device_power_demand(group_index: int) -> float:
 		if block is Track:
 			continue
 
-		if block.has_method("get_power_demand"):
-			demand += block.get_power_demand()
+		if (
+			block.has_method("get_power_demand")
+			and block.has_method("set_supplied_power")
+		):
+			demand += maxf(
+				float(block.call("get_power_demand")),
+				0.0
+			)
 	
 	return demand
 
@@ -190,7 +199,38 @@ func get_track_power_demand(group_index: int, raw_cmds: Dictionary[Track, float]
 
 
 func distribute_device_power(group_index: int, power_budget:float) -> float:
-	return 0.0
+	var devices: Array[Block] = []
+	var demands: Dictionary[Block, float] = {}
+	var total_demand := 0.0
+	for block: Block in block_group_map:
+		if (
+			block_group_map[block] != group_index
+			or block is PowerPack
+			or block is Track
+			or not block.has_method("get_power_demand")
+			or not block.has_method("set_supplied_power")
+		):
+			continue
+		var demand := maxf(
+			float(block.call("get_power_demand")),
+			0.0
+		)
+		devices.append(block)
+		demands[block] = demand
+		total_demand += demand
+
+	var used_power := minf(maxf(power_budget, 0.0), total_demand)
+	var supply_ratio := (
+		0.0
+		if total_demand <= 0.0
+		else used_power / total_demand
+	)
+	for device: Block in devices:
+		device.call(
+			"set_supplied_power",
+			float(demands[device]) * supply_ratio
+		)
+	return used_power
 
 
 func distribute_track_power(group_index: int, raw_cmds: Dictionary[Track, float], power_scale: float) -> void:
@@ -257,11 +297,14 @@ func update_power_system() -> void:
 		update_engine_targets(group_index, device_demand + track_demand)
 		
 		var group_power := get_group_power(group_index)
+		var device_used: float = distribute_device_power(
+			group_index,
+			group_power
+		)
 		if group_power == 0.0:
 			distribute_track_power(group_index, raw_cmds, 0.0)
 			continue
 		
-		var device_used: float = distribute_device_power(group_index, group_power)
 		var remaining_power := maxf(0.0, group_power - device_used)
 		if remaining_power == 0.0:
 			distribute_track_power(group_index, raw_cmds, 0.0)

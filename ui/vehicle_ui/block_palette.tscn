@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://db5q6xew8l8yd" path="res://blocks/logistic/liquid_tank.tscn" id="8_tk1tn"]
 [ext_resource type="PackedScene" uid="uid://dmbiltj5ojfl2" path="res://blocks/logistic/cargo_box.tscn" id="9_hpgwb"]
 [ext_resource type="PackedScene" uid="uid://bm2o5xqsjvu4e" path="res://blocks/logistic/dump_container.tscn" id="10_dump"]
+[ext_resource type="PackedScene" uid="uid://ctxya1ewcu5qr" path="res://blocks/industrial/drill.tscn" id="11_l8ndj"]
 [ext_resource type="PackedScene" uid="uid://cxis8u1udc8hr" path="res://blocks/weapon/KwK_43.tscn" id="11_ulxes"]
 [ext_resource type="PackedScene" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
 
@@ -41,3 +42,6 @@ position = Vector2(152, 56)
 
 [node name="KwK43" parent="." unique_id=460751282 instance=ExtResource("11_ulxes")]
 position = Vector2(184, 78)
+
+[node name="Drill" parent="." unique_id=71089784 instance=ExtResource("11_l8ndj")]
+position = Vector2(123, 119)

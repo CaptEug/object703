@@ -117,6 +117,27 @@ func receive_item(requester: Block, item_name: String, amount: int) -> int:
 	return amount - remaining
 
 
+func can_receive_item(
+	requester: Block,
+	item_name: String,
+	amount: int = 1
+) -> bool:
+	if amount <= 0:
+		return true
+	var item_data := ItemDB.get_item_by_name(item_name)
+	var item_weight := float(item_data.get("weight", 0.0))
+	if item_data.is_empty() or item_weight <= 0.0:
+		return false
+	var capacity := 0
+	for storage: ItemStorage in get_connected_storages(requester):
+		if not storage.accepts_item(item_name):
+			continue
+		capacity += floori(storage.get_free_load() / item_weight)
+		if capacity >= amount:
+			return true
+	return false
+
+
 # =========================
 # ITEM TRANSFER
 # =========================

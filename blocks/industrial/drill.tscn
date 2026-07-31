@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://ctxya1ewcu5qr"]
+
+[ext_resource type="Script" uid="uid://bj11nxudr41mg" path="res://blocks/industrial/drill.gd" id="1_hfpfy"]
+[ext_resource type="Texture2D" uid="uid://c5ovvxeiuly74" path="res://assets/blocks/blocks_industrial.png" id="2_jw8pp"]
+
+[sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_drill"]
+points = PackedVector2Array(0, -24, 16, 8, 16, 24, -16, 24, -16, 8)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_upqtn"]
+atlas = ExtResource("2_jw8pp")
+region = Rect2(96, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e8i22"]
+atlas = ExtResource("2_jw8pp")
+region = Rect2(32, 32, 64, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jsdmi"]
+atlas = ExtResource("2_jw8pp")
+region = Rect2(0, 32, 32, 48)
+
+[node name="Drill" type="Node2D" unique_id=71089784 node_paths=PackedStringArray("drill_area", "drill_head")]
+script = ExtResource("1_hfpfy")
+drill_area = NodePath("Area2D")
+drill_head = NodePath("Mask/Sprite2D")
+size = Vector2i(2, 3)
+edge_sockets = Dictionary[Vector2i, Dictionary]({
+Vector2i(0, 0): {
+0: false
+},
+Vector2i(0, 2): {
+2: true
+},
+Vector2i(1, 0): {
+0: false
+},
+Vector2i(1, 2): {
+2: true
+}
+})
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=749173512]
+shape = SubResource("ConvexPolygonShape2D_drill")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1575134742]
+collision_layer = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Area2D" unique_id=121606311]
+polygon = PackedVector2Array(-8, -28, 8, -28, 16, 8, -16, 8)
+
+[node name="Mask" type="Sprite2D" parent="." unique_id=1215614097]
+clip_children = 1
+position = Vector2(0, -8)
+texture = SubResource("AtlasTexture_upqtn")
+
+[node name="Sprite2D" type="Sprite2D" parent="Mask" unique_id=733027488]
+texture = SubResource("AtlasTexture_e8i22")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2122379713]
+texture = SubResource("AtlasTexture_jsdmi")
