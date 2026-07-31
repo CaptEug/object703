@@ -77,24 +77,13 @@ func refresh_container_visual() -> void:
 			_visual_root = Node2D.new()
 			_visual_root.name = "ExpandableVisual"
 			add_child(_visual_root)
-	for child in _visual_root.get_children():
-		child.free()
-
-	for y in size.y:
-		for x in size.x:
-			var sprite := Sprite2D.new()
-			var texture := AtlasTexture.new()
-			texture.atlas = _source_atlas
-			texture.region = Rect2(
-				_atlas_origin + _get_atlas_offset(x, y),
-				Vector2i(TILE_SIZE, TILE_SIZE)
-			)
-			sprite.texture = texture
-			sprite.position = Vector2(
-				(float(x) + 0.5 - float(size.x) * 0.5) * TILE_SIZE,
-				(float(y) + 0.5 - float(size.y) * 0.5) * TILE_SIZE
-			)
-			_visual_root.add_child(sprite)
+	BlockVisualSystem.apply_rectangle_merge_to_node(
+		_visual_root,
+		_source_atlas,
+		_atlas_origin,
+		size,
+		TILE_SIZE
+	)
 
 
 func _prepare_expandable_visual() -> void:
@@ -108,26 +97,6 @@ func _prepare_expandable_visual() -> void:
 	_atlas_origin = Vector2i(atlas_texture.region.position)
 	original_sprite.hide()
 	refresh_container_visual()
-
-
-func _get_atlas_offset(x: int, y: int) -> Vector2i:
-	var atlas_column := 0
-	var atlas_row := 0
-	if size.x > 1:
-		if x == 0:
-			atlas_column = 1
-		elif x == size.x - 1:
-			atlas_column = 3
-		else:
-			atlas_column = 2
-	if size.y > 1:
-		if y == 0:
-			atlas_row = 1
-		elif y == size.y - 1:
-			atlas_row = 3
-		else:
-			atlas_row = 2
-	return Vector2i(atlas_column, atlas_row) * TILE_SIZE
 
 
 func _resize_container_collision() -> void:

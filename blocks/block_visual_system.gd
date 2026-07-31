@@ -297,6 +297,78 @@ static func apply_variant_to_sprite(
 	return true
 
 
+static func resolve_rectangle_merge_atlas_cell(
+	local_cell: Vector2i,
+	rectangle_size: Vector2i
+) -> Vector2i:
+	if (
+		rectangle_size.x <= 0
+		or rectangle_size.y <= 0
+		or local_cell.x < 0
+		or local_cell.y < 0
+		or local_cell.x >= rectangle_size.x
+		or local_cell.y >= rectangle_size.y
+	):
+		return Vector2i(-1, -1)
+	return Vector2i(
+		_resolve_rectangle_axis(local_cell.x, rectangle_size.x),
+		_resolve_rectangle_axis(local_cell.y, rectangle_size.y)
+	)
+
+
+static func apply_rectangle_merge_to_node(
+	visual_root: Node2D,
+	atlas: Texture2D,
+	atlas_origin: Vector2i,
+	rectangle_size: Vector2i,
+	tile_size: int
+) -> bool:
+	if (
+		visual_root == null
+		or atlas == null
+		or rectangle_size.x <= 0
+		or rectangle_size.y <= 0
+		or tile_size <= 0
+	):
+		return false
+
+	for child in visual_root.get_children():
+		child.free()
+
+	for y in range(rectangle_size.y):
+		for x in range(rectangle_size.x):
+			var local_cell := Vector2i(x, y)
+			var atlas_cell := resolve_rectangle_merge_atlas_cell(
+				local_cell,
+				rectangle_size
+			)
+			var texture := AtlasTexture.new()
+			texture.atlas = atlas
+			texture.region = Rect2(
+				atlas_origin + atlas_cell * tile_size,
+				Vector2i(tile_size, tile_size)
+			)
+			var sprite := Sprite2D.new()
+			sprite.texture = texture
+			sprite.position = (
+				Vector2(local_cell)
+				+ Vector2(0.5, 0.5)
+				- Vector2(rectangle_size) * 0.5
+			) * tile_size
+			visual_root.add_child(sprite)
+	return true
+
+
+static func _resolve_rectangle_axis(index: int, length: int) -> int:
+	if length <= 1:
+		return 0
+	if index == 0:
+		return 1
+	if index == length - 1:
+		return 3
+	return 2
+
+
 static func _copy_variant(value: Dictionary) -> Dictionary:
 	if value.is_empty():
 		return {}
