@@ -8,7 +8,7 @@ const TILE_SIZE := Globals.TILE_SIZE
 
 var vehicle : Vehicle
 var block_host: Node
-var assembly: Object
+var assembly: BlockAssembly
 var origin_cell : Vector2i
 var local_cells : Array[Vector2i]
 @export var size : Vector2i = Vector2i(1,1)
@@ -88,12 +88,32 @@ func get_information_panel_key() -> StringName:
 	return &""
 
 
+func is_power_consumer() -> bool:
+	return false
+
+
+func get_power_demand() -> float:
+	return 0.0
+
+
+func set_supplied_power(_amount: float) -> void:
+	pass
+
+
+func get_save_state() -> Dictionary:
+	return {}
+
+
+func apply_save_state(_state: Dictionary) -> void:
+	pass
+
+
 # Block Placement
 
-func update_transform(v, cell:Vector2i, rotation_i:int):
+func update_transform(v: Vehicle, cell:Vector2i, rotation_i:int):
 	vehicle = v
 	block_host = v
-	assembly = v
+	assembly = v.block_assembly if v != null else null
 	_hp_managed_by_host = false
 	origin_cell = cell
 	rotation_index = BlockDB.normalize_rotation(block_id, rotation_i)
@@ -119,12 +139,15 @@ func update_world_transform(
 	rotation = rotation_index * PI * 0.5
 
 
-func get_assembly() -> Object:
+func get_assembly() -> BlockAssembly:
 	if (
 		block_host != null
 		and block_host.has_method("get_assembly_at")
 	):
-		return block_host.call("get_assembly_at", origin_cell)
+		return block_host.call(
+			"get_assembly_at",
+			origin_cell
+		) as BlockAssembly
 	return assembly
 
 

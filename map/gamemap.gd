@@ -1,15 +1,35 @@
 class_name GameMap
 extends Node2D
 
+const MAP_VERSION := 0
+const MAP_CHUNK_SIZE := 32
+const MAP_FILE_NAME := "terrain.map"
+const GENERATION_GROUND_BLOCK := "Sandstone Ground"
+const NATURAL_GENERATION_RULES := [
+	{
+		"block_name": "Hematite",
+		"minimum": 0.2,
+		"maximum": 0.3,
+	},
+	{
+		"block_name": "Sandstone",
+		"minimum": 0.0,
+		"maximum": 0.5,
+	},
+]
+const LIQUID_GENERATION_RULES := [
+	{
+		"block_name": "Crude Oil",
+		"minimum": -INF,
+		"maximum": -0.5,
+	},
+]
+
 @onready var ground: GroundLayer = $GroundLayer
 @onready var world_blocks:WorldBlockLayer = $WorldBlockLayer
 @onready var liquid:LiquidLayer = $LiquidLayer
 @onready var canvas_modulate:CanvasModulate = $CanvasModulate
 @onready var vehicle_root: = $VehicleRoot
-
-var wall: WorldBlockLayer:
-	get:
-		return world_blocks
 
 @export var minimap : MiniMap
 var layers:Dictionary[String, TileMapLayer]
@@ -36,71 +56,156 @@ func _process(_delta: float) -> void:
 	pass
 
 
-func generate_world():
+func generate_world() -> void:
+	var ground_block_id := _resolve_generation_block_id(
+		GENERATION_GROUND_BLOCK,
+		&"ground"
+	)
+	var natural_rules := _resolve_generation_rules(
+		NATURAL_GENERATION_RULES,
+		&"natural"
+	)
+	var liquid_rules := _resolve_generation_rules(
+		LIQUID_GENERATION_RULES,
+		&"liquid"
+	)
+	if (
+		ground_block_id == BlockDB.INVALID_BLOCK_ID
+		or natural_rules.size() != NATURAL_GENERATION_RULES.size()
+		or liquid_rules.size() != LIQUID_GENERATION_RULES.size()
+	):
+		push_error("World generation stopped because its block rules are invalid.")
+		return
+	if not ground.ground_tiles.has(ground_block_id):
+		push_error(
+			"World generation ground has no TileSet visual: %s."
+			% GENERATION_GROUND_BLOCK
+		)
+		return
+
 	var noise := FastNoiseLite.new()
-	noise.seed = int(world_seed)
+	noise.seed = hash(world_seed)
 	noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	#terrain sets
-	var block_height_dict = {
-		9: [0, 0.5],
-		10: [0.2, 0.3],
-	}
-	var liquid_height_dict = {
-		11: [-INF, -0.5],
-	}
 	
 	world_blocks.begin_bulk_edit()
 	liquid.begin_bulk_edit()
 	for x in range(world_width):
 		for y in range(world_height):
-			#generate ground
-			
-			#generate wall
-			var noise_val = noise.get_noise_2d(x, y)
-			var generated_block_id := BlockDB.INVALID_BLOCK_ID
-			for block_id: int in block_height_dict:
-				if (
-					noise_val > block_height_dict[block_id][0]
-					and noise_val <= block_height_dict[block_id][1]
-				):
-					generated_block_id = block_id
-			if generated_block_id != BlockDB.INVALID_BLOCK_ID:
-				world_blocks.place_block(
-					generated_block_id,
-					Vector2i(x, y)
+			var cell := Vector2i(x, y)
+			ground.place_ground(cell, ground_block_id)
+			var noise_value := noise.get_noise_2d(x, y)
+			var natural_block_id := _select_generation_block(
+				noise_value,
+				natural_rules
+			)
+			if natural_block_id != BlockDB.INVALID_BLOCK_ID:
+				world_blocks.place_block(natural_block_id, cell)
+				continue
+			var liquid_block_id := _select_generation_block(
+				noise_value,
+				liquid_rules
+			)
+			if liquid_block_id != BlockDB.INVALID_BLOCK_ID:
+				liquid.set_liquid_cell(
+					cell,
+					liquid_block_id,
+					BlockDB.get_default_liquid_mass(liquid_block_id),
+					false
 				)
-			for block_id: int in liquid_height_dict:
-				if (
-					noise_val > liquid_height_dict[block_id][0]
-					and noise_val <= liquid_height_dict[block_id][1]
-				):
-					liquid.set_liquid_cell(
-						Vector2i(x, y),
-						block_id,
-						BlockDB.get_default_liquid_mass(block_id),
-						false
-					)
 	world_blocks.end_bulk_edit()
 	liquid.end_bulk_edit()
 	
 	# load map to minimap
-	minimap.map_renderer.loadmap()
-	minimap.map_renderer.queue_redraw()
+	if is_instance_valid(minimap):
+		minimap.map_renderer.loadmap()
+		minimap.map_renderer.queue_redraw()
 
-func save_map(world_folder:String):
-	const CHUNK_SIZE := 32
-	assert(world_width % CHUNK_SIZE == 0)
-	assert(world_height % CHUNK_SIZE == 0)
-	var chunks_x := world_width / CHUNK_SIZE
-	var chunks_y := world_height / CHUNK_SIZE
+
+func _resolve_generation_rules(
+	definitions: Array,
+	category: StringName
+) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for definition: Dictionary in definitions:
+		var block_name := str(definition.get("block_name", ""))
+		var block_id := _resolve_generation_block_id(
+			block_name,
+			category
+		)
+		var minimum := float(definition.get("minimum", 0.0))
+		var maximum := float(definition.get("maximum", 0.0))
+		if block_id == BlockDB.INVALID_BLOCK_ID:
+			return []
+		if minimum >= maximum:
+			push_error(
+				"Invalid generation range for %s: %s to %s."
+				% [block_name, minimum, maximum]
+			)
+			return []
+		result.append({
+			"block_id": block_id,
+			"minimum": minimum,
+			"maximum": maximum,
+		})
+	return result
+
+
+func _resolve_generation_block_id(
+	block_name: String,
+	category: StringName
+) -> int:
+	var block_id := BlockDB.get_id_for_name(block_name)
+	var valid := false
+	match category:
+		&"ground":
+			valid = BlockDB.is_ground(block_id)
+		&"natural":
+			valid = (
+				BlockDB.is_natural(block_id)
+				and BlockDB.can_place_on(block_id, BlockDB.HOST_WORLD)
+			)
+		&"liquid":
+			valid = BlockDB.is_liquid(block_id)
+	if valid:
+		return block_id
+	push_error(
+		"Generation block %s is missing or is not %s."
+		% [block_name, category]
+	)
+	return BlockDB.INVALID_BLOCK_ID
+
+
+func _select_generation_block(
+	noise_value: float,
+	rules: Array[Dictionary]
+) -> int:
+	for rule: Dictionary in rules:
+		if (
+			noise_value > float(rule["minimum"])
+			and noise_value <= float(rule["maximum"])
+		):
+			return int(rule["block_id"])
+	return BlockDB.INVALID_BLOCK_ID
+
+func save_map(world_folder: String) -> bool:
+	assert(world_width % MAP_CHUNK_SIZE == 0)
+	assert(world_height % MAP_CHUNK_SIZE == 0)
+	var chunks_x := world_width / MAP_CHUNK_SIZE
+	var chunks_y := world_height / MAP_CHUNK_SIZE
 	
-	var file = FileAccess.open(world_folder + "%s.map" % GameState.current_gamescene.world_name, FileAccess.WRITE)
+	var file = FileAccess.open(
+		world_folder + MAP_FILE_NAME,
+		FileAccess.WRITE
+	)
+	if file == null:
+		push_error("Failed to open world map for saving")
+		return false
 	# ---- header ----
 	file.store_buffer("MAP0".to_ascii_buffer()) # magic
-	file.store_16(4)                           # version
+	file.store_16(MAP_VERSION)
 	file.store_16(world_width)
 	file.store_16(world_height)
-	file.store_8(CHUNK_SIZE)
+	file.store_8(MAP_CHUNK_SIZE)
 	
 	file.store_16(layers.size())
 	
@@ -120,32 +225,34 @@ func save_map(world_folder:String):
 				file.store_32(bytes.size())
 				file.store_buffer(bytes)
 
-	var building_text := JSON.stringify(
-		world_blocks.get_building_save_data()
-	)
-	var building_bytes := building_text.to_utf8_buffer()
-	file.store_32(building_bytes.size())
-	file.store_buffer(building_bytes)
-	
 	file.close()
-	print("地图文件保存完成")
+	print("Terrain save complete")
+	return true
 
-func load_map(path: String):
+func load_map(path: String) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("Failed to open world file")
-		return
+		return false
 	
 	# ---- header ----
 	var magic := file.get_buffer(4).get_string_from_ascii()
 	if magic != "MAP0":
 		push_error("Invalid world file")
-		return
+		file.close()
+		return false
 	
 	var version := file.get_16()
+	if version != MAP_VERSION:
+		push_error(
+			"Unsupported world file version %d; expected version %d"
+			% [version, MAP_VERSION]
+		)
+		file.close()
+		return false
 	world_width = file.get_16()
 	world_height = file.get_16()
-	var CHUNK_SIZE := file.get_8()
+	var chunk_size := file.get_8()
 	
 	# ---- layers ----
 	var layer_count := file.get_16()
@@ -157,8 +264,6 @@ func load_map(path: String):
 		var layer_name := file.get_buffer(name_len).get_string_from_ascii()
 		var chunk_count := file.get_32()
 		var layer = layers.get(layer_name)
-		if version == 1 and layer_name == "wall":
-			layer = world_blocks
 		if layer == null:
 			push_warning("Unknown layer: %s" % layer_name)
 			for c in range(chunk_count):
@@ -174,49 +279,14 @@ func load_map(path: String):
 			var data_size := file.get_32()
 			var bytes := file.get_buffer(data_size)
 	
-			if version == 1 and layer_name == "wall":
-				world_blocks.load_legacy_wall_chunk(
-					cx,
-					cy,
-					bytes,
-					CHUNK_SIZE,
-					liquid
-				)
-			elif layer == liquid:
-				liquid.load_chunk(
-					cx,
-					cy,
-					bytes,
-					CHUNK_SIZE,
-					version
-				)
-			elif layer == ground:
-				ground.load_chunk(
-					cx,
-					cy,
-					bytes,
-					CHUNK_SIZE,
-					version
-				)
-			else:
-				layer.load_chunk(cx, cy, bytes, CHUNK_SIZE)
-		
+			layer.load_chunk(cx, cy, bytes, chunk_size)
+
 	world_blocks.end_bulk_edit()
 	liquid.end_bulk_edit()
-	if version >= 2 and file.get_position() + 4 <= file.get_length():
-		var metadata_size := file.get_32()
-		if (
-			metadata_size > 0
-			and file.get_position() + metadata_size <= file.get_length()
-		):
-			var metadata_text := file.get_buffer(
-				metadata_size
-			).get_string_from_utf8()
-			var metadata: Variant = JSON.parse_string(metadata_text)
-			if metadata is Array:
-				world_blocks.apply_building_save_data(metadata)
 	file.close()
 	
 	# load map to minimap
-	minimap.map_renderer.loadmap()
-	minimap.map_renderer.queue_redraw()
+	if is_instance_valid(minimap):
+		minimap.map_renderer.loadmap()
+		minimap.map_renderer.queue_redraw()
+	return true

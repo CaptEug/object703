@@ -27,14 +27,31 @@ func get_fire_command() -> bool:
 	return Input.is_action_pressed("FIRE_MAIN")
 
 func _can_accept_player_control() -> bool:
-	if vehicle == null or not is_inside_tree():
+	var current_assembly := get_assembly()
+	if current_assembly == null or not is_inside_tree():
+		return false
+	var constructor := get_tree().get_first_node_in_group(
+		"building_constructor"
+	) as BuildingConstructor
+	if constructor != null and constructor.is_active():
 		return false
 	var editor := _get_vehicle_editor()
-	if editor == null:
-		return true
-	if editor.is_editing_vehicle():
+	if editor != null and editor.is_editing_vehicle():
 		return false
-	return editor.vehicle == vehicle
+	if current_assembly.host is Vehicle:
+		return editor == null or editor.vehicle == current_assembly.host
+	if current_assembly.host is Building:
+		var building_panel := get_tree().get_first_node_in_group(
+			"building_panel"
+		)
+		return (
+			building_panel != null
+			and building_panel.has_method("is_building_selected")
+			and building_panel.is_building_selected(
+				current_assembly.host
+			)
+		)
+	return true
 
 func _get_vehicle_editor() -> VehicleEditor:
 	var current_scene := get_tree().current_scene

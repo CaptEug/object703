@@ -1,5 +1,5 @@
 class_name LiquidStorage
-extends ExpandableStorage
+extends ExpandableBlock
 
 signal contents_changed
 signal allowed_items_changed
@@ -16,11 +16,49 @@ func _ready() -> void:
 	add_liquid("petroleum", 50)
 
 
-func get_container_merge_key() -> String:
+func has_information_panel() -> bool:
+	return true
+
+
+func get_union_key() -> String:
 	return "%s:liquid" % scene_file_path
 
 
-func can_merge_storage_members(members: Array) -> bool:
+func get_save_state() -> Dictionary:
+	var result := {
+		"liquid": liquid,
+		"stored": stored,
+	}
+	if not is_default_allowed_items():
+		result["allowed_items"] = allowed_items.duplicate()
+	return result
+
+
+func apply_save_state(state: Dictionary) -> void:
+	var saved_liquid := str(state.get("liquid", ""))
+	var saved_stored := clampf(
+		float(state.get("stored", 0.0)),
+		0.0,
+		capacity
+	)
+	if (
+		saved_stored > 0.001
+		and is_item_compatible(saved_liquid)
+	):
+		liquid = saved_liquid
+		stored = saved_stored
+	else:
+		liquid = ""
+		stored = 0.0
+	var saved_allowed: Variant = state.get("allowed_items")
+	if saved_allowed is Array:
+		set_allowed_items(saved_allowed)
+	else:
+		reset_allowed_items()
+	contents_changed.emit()
+
+
+func can_union_members(members: Array) -> bool:
 	var contained_liquid := ""
 	for value: Variant in members:
 		var storage := value as LiquidStorage
@@ -37,11 +75,11 @@ func can_merge_storage_members(members: Array) -> bool:
 	return true
 
 
-func _scale_storage_capacity(unit_count: int) -> void:
+func _scale_union_capacity(unit_count: int) -> void:
 	capacity *= unit_count
 
 
-func _merge_storage_members(members: Array) -> void:
+func _merge_union_data(members: Array) -> void:
 	var combined_capacity := 0.0
 	var combined_stored := 0.0
 	var combined_liquid := ""

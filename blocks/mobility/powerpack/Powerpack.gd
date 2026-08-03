@@ -20,6 +20,36 @@ func has_information_panel() -> bool:
 	return true
 
 
+func get_save_state() -> Dictionary:
+	var saved_buffer := {}
+	for item_name: String in solid_fuel_buffer:
+		var amount := maxf(float(solid_fuel_buffer[item_name]), 0.0)
+		if amount > 0.0:
+			saved_buffer[item_name] = amount
+	return {"solid_fuel_buffer": saved_buffer}
+
+
+func apply_save_state(state: Dictionary) -> void:
+	solid_fuel_buffer.clear()
+	var saved_buffer: Variant = state.get("solid_fuel_buffer")
+	if not saved_buffer is Dictionary:
+		return
+	for item_value: Variant in saved_buffer:
+		var item_name := str(item_value)
+		var item_data := ItemDB.get_item_by_name(item_name)
+		var amount := maxf(float(saved_buffer[item_value]), 0.0)
+		if (
+			amount > 0.0
+			and not item_data.is_empty()
+			and item_data.get("type", -1) != ItemDB.ItemType.LIQUID
+			and ItemDB.has_subclass(
+				item_name,
+				ItemDB.ItemSubclass.FUEL
+			)
+		):
+			solid_fuel_buffer[item_name] = amount
+
+
 func _physics_process(delta: float) -> void:
 	if get_assembly() == null:
 		return
@@ -59,13 +89,9 @@ func request_fuel(delta: float) -> bool:
 		var solids_ok := true
 		
 		if not liquid_requests.is_empty():
-			liquids_ok = (
-				current_assembly.has_method("can_supply_liquids")
-				and current_assembly.call(
-					"can_supply_liquids",
-					self,
-					liquid_requests
-				)
+			liquids_ok = current_assembly.can_supply_liquids(
+				self,
+				liquid_requests
 			)
 		if not solid_requests.is_empty():
 			solids_ok = _can_supply_items(
@@ -80,13 +106,9 @@ func request_fuel(delta: float) -> bool:
 		var solids_taken := true
 		
 		if not liquid_requests.is_empty():
-			liquids_taken = (
-				current_assembly.has_method("supply_liquids")
-				and current_assembly.call(
-					"supply_liquids",
-					self,
-					liquid_requests
-				)
+			liquids_taken = current_assembly.supply_liquids(
+				self,
+				liquid_requests
 			)
 		if not solid_requests.is_empty():
 			solids_taken = _supply_items(
@@ -114,36 +136,28 @@ func request_fuel(delta: float) -> bool:
 
 
 func _can_supply_items(
-	current_assembly: Object,
+	current_assembly: BlockAssembly,
 	requirements: Dictionary
 ) -> bool:
 	for item_name: String in requirements:
-		if (
-			not current_assembly.has_method("can_supply_item")
-			or not current_assembly.call(
-				"can_supply_item",
-				self,
-				item_name,
-				int(requirements[item_name])
-			)
+		if not current_assembly.can_supply_item(
+			self,
+			item_name,
+			int(requirements[item_name])
 		):
 			return false
 	return true
 
 
 func _supply_items(
-	current_assembly: Object,
+	current_assembly: BlockAssembly,
 	requirements: Dictionary
 ) -> bool:
 	for item_name: String in requirements:
-		if (
-			not current_assembly.has_method("supply_item")
-			or not current_assembly.call(
-				"supply_item",
-				self,
-				item_name,
-				int(requirements[item_name])
-			)
+		if not current_assembly.supply_item(
+			self,
+			item_name,
+			int(requirements[item_name])
 		):
 			return false
 	return true

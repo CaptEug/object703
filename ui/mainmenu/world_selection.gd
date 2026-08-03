@@ -2,7 +2,6 @@ extends Panel
 
 @onready var world_list: ItemList = $VBoxContainer/WorldList
 var world_files: Array[String] = []
-var save_dir:String = "res://saves/"
 
 
 func _ready():
@@ -15,15 +14,15 @@ func _process(delta):
 
 func refresh_world_list():
 	world_list.clear()
+	$LoadButton.disabled = true
 	world_files = scan_worlds()
-	for path in world_files:
-		var world_name:= path.get_file().get_basename()
-		world_list.add_item(world_name)
+	for world_folder: String in world_files:
+		world_list.add_item(world_folder)
 
 
 func scan_worlds() -> Array[String]:
 	var worlds: Array[String] = []
-	var dir := DirAccess.open(save_dir)
+	var dir := DirAccess.open(GameState.saving_dir)
 	if dir == null:
 		return worlds
 	
@@ -31,13 +30,13 @@ func scan_worlds() -> Array[String]:
 	var name := dir.get_next()
 	while name != "":
 		if dir.current_is_dir():
-			# skip "." and ".."
 			if name != "." and name != "..":
-				# validate save by header.json
-				if FileAccess.file_exists(save_dir + name + "/header.json"):
+				var validation := GameState.inspect_world(name)
+				if validation["ok"]:
 					worlds.append(name)
 		name = dir.get_next()
 	dir.list_dir_end()
+	worlds.sort()
 	return worlds
 
 
@@ -47,6 +46,10 @@ func _on_load_button_pressed() -> void:
 		return
 	var idx := selected[0]
 	var file := world_files[idx]
+	var validation := GameState.inspect_world(file)
+	if not validation["ok"]:
+		refresh_world_list()
+		return
 	GameState.load_game(file)
 
 

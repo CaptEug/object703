@@ -1,0 +1,796 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/netjtu",
+    "id": "netjtu",
+    "slide": 3,
+    "layoutId": "a91045a2-e324-4032-9ed5-14ea2de371d8",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "1d666f77-9303-4ec6-9b39-76d8bea3fce0",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F7F8FA",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Microsoft YaHei"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "a91045a2-e324-4032-9ed5-14ea2de371d8",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "1d666f77-9303-4ec6-9b39-76d8bea3fce0",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "1d666f77-9303-4ec6-9b39-76d8bea3fce0",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qxo761o7",
+      "id": "1",
+      "bbox": [
+        56,
+        34,
+        1080,
+        68
+      ],
+      "geometry": "rect",
+      "text": "简单例子：用学习时间预测测验成绩",
+      "textPreview": "简单例子：用学习时间预测测验成绩",
+      "resolvedFontSize": 38,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 38,
+        "typeface": "Microsoft YaHei",
+        "color": "#152033",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "简单例子：用学习时间预测测验成绩"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "简单例子：用学习时间预测测验成绩",
+          "resolvedTextStyle": {
+            "fontSize": 38,
+            "typeface": "Microsoft YaHei",
+            "color": "#152033",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "简单例子：用学习时间预测测验成绩",
+              "fontSize": 38,
+              "typeface": "Microsoft YaHei",
+              "color": "#152033",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/d0fqhgny",
+      "id": "2",
+      "bbox": [
+        1170,
+        40,
+        54,
+        30
+      ],
+      "geometry": "rect",
+      "text": "03",
+      "textPreview": "03",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "Microsoft YaHei",
+        "color": "#657083",
+        "alignment": "right",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "03"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "03",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "typeface": "Microsoft YaHei",
+            "color": "#657083",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "03",
+              "fontSize": 15,
+              "typeface": "Microsoft YaHei",
+              "color": "#657083",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/cz6p8b6d",
+      "id": "3",
+      "bbox": [
+        56,
+        110,
+        1168,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#DDE3EA",
+      "lineWidth": 1
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/z2h8jq5o",
+      "id": "4",
+      "bbox": [
+        56,
+        145,
+        760,
+        500
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#DDE3EA",
+      "lineWidth": 1
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/y187aloj",
+      "id": "5",
+      "bbox": [
+        120,
+        585,
+        630,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#152033",
+      "lineWidth": 2
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/l4zql0nu",
+      "id": "6",
+      "bbox": [
+        120,
+        215,
+        0,
+        370
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#152033",
+      "lineWidth": 2
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/03qpcv69",
+      "id": "7",
+      "bbox": [
+        142,
+        522,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/nqh8nq50",
+      "id": "8",
+      "bbox": [
+        197,
+        492,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mp87elof",
+      "id": "9",
+      "bbox": [
+        257,
+        467,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/wzqdk7el",
+      "id": "10",
+      "bbox": [
+        317,
+        422,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x0zutcv6",
+      "id": "11",
+      "bbox": [
+        382,
+        407,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/axovixwf",
+      "id": "12",
+      "bbox": [
+        447,
+        347,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/byxcr2d0",
+      "id": "13",
+      "bbox": [
+        512,
+        332,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/k3qdoreh",
+      "id": "14",
+      "bbox": [
+        577,
+        277,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/54zexwv2",
+      "id": "15",
+      "bbox": [
+        642,
+        242,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/i18vmhwr",
+      "id": "16",
+      "bbox": [
+        702,
+        197,
+        16,
+        16
+      ],
+      "geometry": "ellipse",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/j2hcvmdc",
+      "id": "17",
+      "bbox": [
+        145,
+        205,
+        575,
+        330
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#FF9A3D",
+      "lineWidth": 5
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/s7adsret",
+      "id": "18",
+      "bbox": [
+        850,
+        190,
+        300,
+        44
+      ],
+      "geometry": "rect",
+      "text": "已有经验",
+      "textPreview": "已有经验",
+      "resolvedFontSize": 28,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 28,
+        "typeface": "Microsoft YaHei",
+        "color": "#2979FF",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "已有经验"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "已有经验",
+          "resolvedTextStyle": {
+            "fontSize": 28,
+            "typeface": "Microsoft YaHei",
+            "color": "#2979FF",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "已有经验",
+              "fontSize": 28,
+              "typeface": "Microsoft YaHei",
+              "color": "#2979FF",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/t8je1wve",
+      "id": "19",
+      "bbox": [
+        850,
+        235,
+        330,
+        42
+      ],
+      "geometry": "rect",
+      "text": "学习时间 x 与成绩 y",
+      "textPreview": "学习时间 x 与成绩 y",
+      "resolvedFontSize": 20,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 20,
+        "typeface": "Microsoft YaHei",
+        "color": "#657083",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "学习时间 x 与成绩 y"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "学习时间 x 与成绩 y",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "typeface": "Microsoft YaHei",
+            "color": "#657083",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "学习时间 x 与成绩 y",
+              "fontSize": 20,
+              "typeface": "Microsoft YaHei",
+              "color": "#657083",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1ofulwni",
+      "id": "20",
+      "bbox": [
+        850,
+        330,
+        300,
+        44
+      ],
+      "geometry": "rect",
+      "text": "拟合曲线",
+      "textPreview": "拟合曲线",
+      "resolvedFontSize": 28,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 28,
+        "typeface": "Microsoft YaHei",
+        "color": "#FF9A3D",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "拟合曲线"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "拟合曲线",
+          "resolvedTextStyle": {
+            "fontSize": 28,
+            "typeface": "Microsoft YaHei",
+            "color": "#FF9A3D",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "拟合曲线",
+              "fontSize": 28,
+              "typeface": "Microsoft YaHei",
+              "color": "#FF9A3D",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gn6dcr6x",
+      "id": "21",
+      "bbox": [
+        850,
+        375,
+        330,
+        42
+      ],
+      "geometry": "rect",
+      "text": "模型对规律的猜测",
+      "textPreview": "模型对规律的猜测",
+      "resolvedFontSize": 20,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 20,
+        "typeface": "Microsoft YaHei",
+        "color": "#657083",
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "模型对规律的猜测"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "模型对规律的猜测",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "typeface": "Microsoft YaHei",
+            "color": "#657083",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "模型对规律的猜测",
+              "fontSize": 20,
+              "typeface": "Microsoft YaHei",
+              "color": "#657083",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fmxcjm5c",
+      "id": "22",
+      "bbox": [
+        850,
+        490,
+        330,
+        88
+      ],
+      "geometry": "rect",
+      "text": "学到趋势后，可以预测新的学习时长",
+      "textPreview": "学到趋势后，可以预测新的学习时长",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 25,
+        "typeface": "Microsoft YaHei",
+        "color": "#152033",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "学到趋势后，可以预测新的"
+          },
+          {
+            "index": 2,
+            "text": "学习时长"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "学到趋势后，可以预测新的学习时长",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Microsoft YaHei",
+            "color": "#152033",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "学到趋势后，可以预测新的学习时长",
+              "fontSize": 25,
+              "typeface": "Microsoft YaHei",
+              "color": "#152033",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

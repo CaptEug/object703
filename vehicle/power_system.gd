@@ -16,8 +16,8 @@ func _process(_delta):
 
 func rebuild_component_network() -> void:
 	for block: Block in block_group_map:
-		if block.has_method("set_supplied_power"):
-			block.call("set_supplied_power", 0.0)
+		if block.is_power_consumer():
+			block.set_supplied_power(0.0)
 	block_group_map.clear()
 	avaliable_engines.clear()
 	active_tracks.clear()
@@ -157,14 +157,8 @@ func get_device_power_demand(group_index: int) -> float:
 		if block is Track:
 			continue
 
-		if (
-			block.has_method("get_power_demand")
-			and block.has_method("set_supplied_power")
-		):
-			demand += maxf(
-				float(block.call("get_power_demand")),
-				0.0
-			)
+		if block.is_power_consumer():
+			demand += maxf(block.get_power_demand(), 0.0)
 	
 	return demand
 
@@ -207,14 +201,10 @@ func distribute_device_power(group_index: int, power_budget:float) -> float:
 			block_group_map[block] != group_index
 			or block is PowerPack
 			or block is Track
-			or not block.has_method("get_power_demand")
-			or not block.has_method("set_supplied_power")
+			or not block.is_power_consumer()
 		):
 			continue
-		var demand := maxf(
-			float(block.call("get_power_demand")),
-			0.0
-		)
+		var demand := maxf(block.get_power_demand(), 0.0)
 		devices.append(block)
 		demands[block] = demand
 		total_demand += demand
@@ -226,8 +216,7 @@ func distribute_device_power(group_index: int, power_budget:float) -> float:
 		else used_power / total_demand
 	)
 	for device: Block in devices:
-		device.call(
-			"set_supplied_power",
+		device.set_supplied_power(
 			float(demands[device]) * supply_ratio
 		)
 	return used_power

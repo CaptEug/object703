@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
 [ext_resource type="Script" uid="uid://n3fvr1twwrri" path="res://ui/vehicle_ui/vehicle_editor.gd" id="2_script"]
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="3_style"]
-[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="4_buttons"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="4_buttons"]
 [ext_resource type="PackedScene" uid="uid://cm0v65jmp7f6n" path="res://ui/vehicle_ui/block_palette.tscn" id="5_palette"]
 [ext_resource type="Script" uid="uid://ddh6jgn0kda8a" path="res://ui/vehicle_ui/palette_panel.gd" id="6_palette_panel"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="7_symbols"]
@@ -95,6 +95,10 @@ size = Vector2i(720, 520)
 file_mode = 0
 access = 1
 filters = PackedStringArray("*.json ; Vehicle Blueprints")
+hidden_files_toggle_enabled = false
+folder_creation_enabled = false
+favorites_enabled = false
+recent_list_enabled = false
 
 [node name="COMicon" type="Sprite2D" parent="." unique_id=861271777]
 visible = false
@@ -145,7 +149,7 @@ focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_dismantle")
 
-[node name="AutoConstructButton" type="TextureButton" parent="EditorDock/EditorTools"]
+[node name="AutoConstructButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=2138990638]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 tooltip_text = "Auto construct all missing blueprint blocks"
@@ -244,6 +248,7 @@ mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_zoom_out")
 
 [connection signal="file_selected" from="BlueprintDialog" to="." method="_on_blueprint_file_selected"]
+[connection signal="canceled" from="BlueprintDialog" to="." method="_on_blueprint_dialog_canceled"]
 [connection signal="pressed" from="EditorDock/EditorTools/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="EditorDock/EditorTools/LoadButton" to="." method="_on_load_button_pressed"]
 [connection signal="pressed" from="EditorDock/EditorTools/DismantleButton" to="." method="_on_dismantle_button_pressed"]

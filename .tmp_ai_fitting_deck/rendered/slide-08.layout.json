@@ -1,0 +1,990 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/vnxibu",
+    "id": "vnxibu",
+    "slide": 8,
+    "layoutId": "a91045a2-e324-4032-9ed5-14ea2de371d8",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "1d666f77-9303-4ec6-9b39-76d8bea3fce0",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#F7F8FA",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Microsoft YaHei"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "a91045a2-e324-4032-9ed5-14ea2de371d8",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "1d666f77-9303-4ec6-9b39-76d8bea3fce0",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "1d666f77-9303-4ec6-9b39-76d8bea3fce0",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sbq9ofml",
+      "id": "1",
+      "bbox": [
+        56,
+        34,
+        1080,
+        68
+      ],
+      "geometry": "rect",
+      "text": "神经网络把许多简单函数叠加成复杂曲线",
+      "textPreview": "神经网络把许多简单函数叠加成复杂曲线",
+      "resolvedFontSize": 38,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 38,
+        "typeface": "Microsoft YaHei",
+        "color": "#152033",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "神经网络把许多简单函数叠加成复杂曲线"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "神经网络把许多简单函数叠加成复杂曲线",
+          "resolvedTextStyle": {
+            "fontSize": 38,
+            "typeface": "Microsoft YaHei",
+            "color": "#152033",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "神经网络把许多简单函数叠加成复杂曲线",
+              "fontSize": 38,
+              "typeface": "Microsoft YaHei",
+              "color": "#152033",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/rah8ful0",
+      "id": "2",
+      "bbox": [
+        1170,
+        40,
+        54,
+        30
+      ],
+      "geometry": "rect",
+      "text": "08",
+      "textPreview": "08",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 15,
+        "typeface": "Microsoft YaHei",
+        "color": "#657083",
+        "alignment": "right",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "08"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "08",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "typeface": "Microsoft YaHei",
+            "color": "#657083",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "08",
+              "fontSize": 15,
+              "typeface": "Microsoft YaHei",
+              "color": "#657083",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/698rmp4f",
+      "id": "3",
+      "bbox": [
+        56,
+        110,
+        1168,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#DDE3EA",
+      "lineWidth": 1
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/10zal432",
+      "id": "4",
+      "bbox": [
+        55,
+        145,
+        560,
+        455
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#FFFFFF",
+      "lineColor": "#DDE3EA",
+      "lineWidth": 1
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gzq9szmh",
+      "id": "5",
+      "bbox": [
+        105,
+        535,
+        460,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#152033",
+      "lineWidth": 2
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fyh8julw",
+      "id": "6",
+      "bbox": [
+        105,
+        220,
+        0,
+        315
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#152033",
+      "lineWidth": 2
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ex8rqp4r",
+      "id": "7",
+      "bbox": [
+        120,
+        490,
+        90,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#B8D0FF",
+      "lineWidth": 5
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/h4fq903y",
+      "id": "8",
+      "bbox": [
+        210,
+        390,
+        105,
+        100
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#B8D0FF",
+      "lineWidth": 5
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/w369gvmd",
+      "id": "9",
+      "bbox": [
+        315,
+        390,
+        95,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#B8D0FF",
+      "lineWidth": 5
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ydgnuds7",
+      "id": "10",
+      "bbox": [
+        410,
+        255,
+        130,
+        135
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#B8D0FF",
+      "lineWidth": 5
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zepo3its",
+      "id": "11",
+      "bbox": [
+        120,
+        455,
+        150,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#99E0E6",
+      "lineWidth": 5
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/kzi5wnad",
+      "id": "12",
+      "bbox": [
+        270,
+        315,
+        95,
+        140
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#99E0E6",
+      "lineWidth": 5
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/l0r658by",
+      "id": "13",
+      "bbox": [
+        365,
+        315,
+        175,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#99E0E6",
+      "lineWidth": 5
+    },
+    {
+      "order": 14,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/m107ydsj",
+      "id": "14",
+      "bbox": [
+        120,
+        520,
+        230,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#FFD1A8",
+      "lineWidth": 5
+    },
+    {
+      "order": 15,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/729o7ito",
+      "id": "15",
+      "bbox": [
+        350,
+        365,
+        110,
+        155
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#FFD1A8",
+      "lineWidth": 5
+    },
+    {
+      "order": 16,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/83ip0na9",
+      "id": "16",
+      "bbox": [
+        460,
+        365,
+        80,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#FFD1A8",
+      "lineWidth": 5
+    },
+    {
+      "order": 17,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/94r69sbu",
+      "id": "17",
+      "bbox": [
+        120,
+        470,
+        70,
+        25
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 8
+    },
+    {
+      "order": 18,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u5072xsf",
+      "id": "18",
+      "bbox": [
+        190,
+        420,
+        70,
+        50
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 8
+    },
+    {
+      "order": 19,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/v69ob2t0",
+      "id": "19",
+      "bbox": [
+        260,
+        350,
+        70,
+        70
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 8
+    },
+    {
+      "order": 20,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ratoj2p8",
+      "id": "20",
+      "bbox": [
+        330,
+        305,
+        70,
+        45
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 8
+    },
+    {
+      "order": 21,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/69knqx8n",
+      "id": "21",
+      "bbox": [
+        400,
+        280,
+        70,
+        25
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 8
+    },
+    {
+      "order": 22,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/twb6lc7y",
+      "id": "22",
+      "bbox": [
+        470,
+        245,
+        70,
+        35
+      ],
+      "verticalFlip": true,
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 8
+    },
+    {
+      "order": 23,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/sb25s7qt",
+      "id": "23",
+      "bbox": [
+        145,
+        565,
+        400,
+        30
+      ],
+      "geometry": "rect",
+      "text": "多个简单“折线函数”",
+      "textPreview": "多个简单“折线函数”",
+      "resolvedFontSize": 17,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 20,
+        "typeface": "Microsoft YaHei",
+        "color": "#657083",
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 0.85,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "多个简单“折线函数”"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "多个简单“折线函数”",
+          "resolvedTextStyle": {
+            "fontSize": 20,
+            "typeface": "Microsoft YaHei",
+            "color": "#657083",
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "多个简单“折线函数”",
+              "fontSize": 20,
+              "typeface": "Microsoft YaHei",
+              "color": "#657083",
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 24,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/j6t4fi9w",
+      "id": "24",
+      "bbox": [
+        640,
+        365,
+        100,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#2979FF",
+      "lineWidth": 4
+    },
+    {
+      "order": 25,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/i50nmd8b",
+      "id": "25",
+      "bbox": [
+        730,
+        358,
+        16,
+        14
+      ],
+      "geometry": "triangle",
+      "fillColor": "#2979FF",
+      "lineColor": "#2979FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 26,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/58bmhs72",
+      "id": "26",
+      "bbox": [
+        765,
+        175,
+        440,
+        350
+      ],
+      "geometry": "roundRect",
+      "fillColor": "#EAF2FF",
+      "lineWidth": 0
+    },
+    {
+      "order": 27,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4725onqh",
+      "id": "27",
+      "bbox": [
+        825,
+        205,
+        320,
+        52
+      ],
+      "geometry": "rect",
+      "text": "神经网络",
+      "textPreview": "神经网络",
+      "resolvedFontSize": 34,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 34,
+        "typeface": "Microsoft YaHei",
+        "color": "#2979FF",
+        "bold": true,
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "神经网络"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "神经网络",
+          "resolvedTextStyle": {
+            "fontSize": 34,
+            "typeface": "Microsoft YaHei",
+            "color": "#2979FF",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "神经网络",
+              "fontSize": 34,
+              "typeface": "Microsoft YaHei",
+              "color": "#2979FF",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 28,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/v294bi90",
+      "id": "28",
+      "bbox": [
+        815,
+        285,
+        340,
+        50
+      ],
+      "geometry": "rect",
+      "text": "每个神经元学习一个简单变换",
+      "textPreview": "每个神经元学习一个简单变换",
+      "resolvedFontSize": 23,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 23,
+        "typeface": "Microsoft YaHei",
+        "color": "#152033",
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "每个神经元学习一个简单变换"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "每个神经元学习一个简单变换",
+          "resolvedTextStyle": {
+            "fontSize": 23,
+            "typeface": "Microsoft YaHei",
+            "color": "#152033",
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "每个神经元学习一个简单变换",
+              "fontSize": 23,
+              "typeface": "Microsoft YaHei",
+              "color": "#152033",
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 29,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/u10nid8f",
+      "id": "29",
+      "bbox": [
+        815,
+        365,
+        340,
+        50
+      ],
+      "geometry": "rect",
+      "text": "多层组合后，能逼近复杂规律",
+      "textPreview": "多层组合后，能逼近复杂规律",
+      "resolvedFontSize": 24.74,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 25,
+        "typeface": "Microsoft YaHei",
+        "color": "#152033",
+        "bold": true,
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 0.99,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "多层组合后，能逼近复杂规"
+          },
+          {
+            "index": 2,
+            "text": "律"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "多层组合后，能逼近复杂规律",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "typeface": "Microsoft YaHei",
+            "color": "#152033",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "多层组合后，能逼近复杂规律",
+              "fontSize": 25,
+              "typeface": "Microsoft YaHei",
+              "color": "#152033",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 30,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0vetwf21",
+      "id": "30",
+      "bbox": [
+        815,
+        445,
+        340,
+        42
+      ],
+      "geometry": "rect",
+      "text": "参数 = 所有连接的权重与偏置",
+      "textPreview": "参数 = 所有连接的权重与偏置",
+      "resolvedFontSize": 21,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 21,
+        "typeface": "Microsoft YaHei",
+        "color": "#657083",
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "参数 = 所有连接的权重与偏置"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "参数 = 所有连接的权重与偏置",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "typeface": "Microsoft YaHei",
+            "color": "#657083",
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "参数 = 所有连接的权重与偏置",
+              "fontSize": 21,
+              "typeface": "Microsoft YaHei",
+              "color": "#657083",
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 31,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/lwnu5kjm",
+      "id": "31",
+      "bbox": [
+        250,
+        630,
+        780,
+        40
+      ],
+      "geometry": "rect",
+      "text": "不是换了一种目标：仍然是在“拟合”",
+      "textPreview": "不是换了一种目标：仍然是在“拟合”",
+      "resolvedFontSize": 25.33,
+      "resolvedTextStyle": {
+        "anchor": 2,
+        "fontSize": 28,
+        "typeface": "Microsoft YaHei",
+        "color": "#152033",
+        "bold": true,
+        "alignment": "center",
+        "verticalAlignment": "middle",
+        "autoFit": "shrinkText",
+        "autoFitScale": 0.9,
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "不是换了一种目标：仍然是在“拟合”"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "不是换了一种目标：仍然是在“拟合”",
+          "resolvedTextStyle": {
+            "fontSize": 28,
+            "typeface": "Microsoft YaHei",
+            "color": "#152033",
+            "bold": true,
+            "alignment": "center"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "不是换了一种目标：仍然是在“拟合”",
+              "fontSize": 28,
+              "typeface": "Microsoft YaHei",
+              "color": "#152033",
+              "bold": true,
+              "alignment": "center"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

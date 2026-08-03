@@ -7,30 +7,30 @@ signal block_destroyed(anchor: Vector2i, block_id: int)
 signal buildings_rebuilt(buildings: Array[Building])
 
 const INVALID_CELL := Vector2i(-2147483648, -2147483648)
-const CARDINAL_DIRECTIONS: Array[Vector2i] = [
-	Vector2i.UP,
-	Vector2i.RIGHT,
-	Vector2i.DOWN,
-	Vector2i.LEFT,
-]
 
 # One record per placed block, keyed by its anchor. Every occupied grid cell
 # maps back to that anchor, allowing multi-cell blocks to share one HP value.
 var block_records: Dictionary[Vector2i, Dictionary] = {}
 var cell_occupancy: Dictionary[Vector2i, Vector2i] = {}
 var functional_nodes: Dictionary[Vector2i, Block] = {}
-var buildings: Array[Building] = []
-var cell_to_building: Dictionary[Vector2i, Building] = {}
+var buildings: Array[Building]:
+	get:
+		return (
+			building_system.buildings
+			if building_system != null
+			else []
+		)
 
 var _bulk_edit_depth := 0
 var _pending_visual_cells: Dictionary = {}
-var _pending_building_rebuild := false
-var _pending_owner_by_anchor: Dictionary = {}
 
 @onready var gamemap: GameMap = get_parent()
 @onready var functional_root: Node2D = get_node_or_null(
 	"FunctionalBlocks"
 ) as Node2D
+@onready var building_system: BuildingSystem = get_node_or_null(
+	"BuildingSystem"
+) as BuildingSystem
 
 
 func _ready() -> void:
@@ -39,23 +39,58 @@ func _ready() -> void:
 		functional_root = Node2D.new()
 		functional_root.name = "FunctionalBlocks"
 		add_child(functional_root)
+	if building_system == null:
+		building_system = BuildingSystem.new()
+		building_system.name = "BuildingSystem"
+		add_child(building_system)
+	building_system.setup(self)
+	if not building_system.buildings_rebuilt.is_connected(
+		_on_buildings_rebuilt
+	):
+		building_system.buildings_rebuilt.connect(
+			_on_buildings_rebuilt
+		)
+
+
+func _on_buildings_rebuilt(rebuilt: Array[Building]) -> void:
+	buildings_rebuilt.emit(rebuilt)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (
+		not event is InputEventMouseButton
+		or not event.pressed
+		or _block_interaction_is_suppressed()
+	):
+		return
+	var cell := local_to_map(to_local(get_global_mouse_position()))
+	var handled := false
+	if event.button_index == MOUSE_BUTTON_RIGHT:
+		handled = open_information_panel_at(
+			cell,
+			get_viewport().get_mouse_position()
+		)
+	elif event.button_index == MOUSE_BUTTON_LEFT:
+		handled = open_building_panel_at(cell)
+	if handled:
+		get_viewport().set_input_as_handled()
 
 
 func begin_bulk_edit() -> void:
 	_bulk_edit_depth += 1
+	building_system.begin_bulk_edit()
 
 
 func end_bulk_edit() -> void:
 	_bulk_edit_depth = maxi(_bulk_edit_depth - 1, 0)
+	building_system.end_bulk_edit()
 	if _bulk_edit_depth > 0:
 		return
 	_flush_visual_updates()
-	if _pending_building_rebuild:
-		rebuild_buildings()
-	_pending_building_rebuild = false
 
 
 func initialize_from_tilemap() -> void:
+	building_system.clear()
 	block_records.clear()
 	cell_occupancy.clear()
 	for child: Node in functional_root.get_children():
@@ -80,12 +115,7 @@ func initialize_from_tilemap() -> void:
 			0,
 			BlockDB.get_max_hp(block_id)
 		)
-	rebuild_buildings()
-
-
-# Compatibility with the previous world generation call.
-func init_layerdata() -> void:
-	initialize_from_tilemap()
+	building_system.rebuild_all()
 
 
 func get_block_anchor(cell: Vector2i) -> Vector2i:
@@ -136,12 +166,56 @@ func get_functional_block_at(cell: Vector2i) -> Block:
 	return functional_nodes.get(anchor, null)
 
 
+func open_information_panel_at(
+	cell: Vector2i,
+	screen_position: Vector2 = Vector2.ZERO
+) -> bool:
+	if _block_interaction_is_suppressed():
+		return false
+	var block := get_functional_block_at(cell)
+	if block == null or not block.has_information_panel():
+		return false
+	var panel := get_tree().get_first_node_in_group(
+		"block_information_panel"
+	)
+	if panel == null or not panel.has_method("open_for_block"):
+		return false
+	return panel.open_for_block(block, screen_position)
+
+
+func open_building_panel_at(cell: Vector2i) -> bool:
+	if _block_interaction_is_suppressed():
+		return false
+	return building_system.open_panel_at(cell)
+
+
+func _block_interaction_is_suppressed() -> bool:
+	var constructor := get_tree().get_first_node_in_group(
+		"building_constructor"
+	)
+	if constructor != null and constructor.is_active():
+		return true
+	var vehicle_editor := get_tree().get_first_node_in_group(
+		"vehicle_editor"
+	)
+	return (
+		vehicle_editor != null
+		and vehicle_editor.has_method("is_editing_vehicle")
+		and vehicle_editor.is_editing_vehicle()
+	)
+
+
 func get_building_at(cell: Vector2i) -> Building:
-	return cell_to_building.get(cell, null)
+	return (
+		building_system.get_building_at(cell)
+		if building_system != null
+		else null
+	)
 
 
-func get_assembly_at(cell: Vector2i) -> Object:
-	return get_building_at(cell)
+func get_assembly_at(cell: Vector2i) -> BlockAssembly:
+	var building := get_building_at(cell)
+	return building.block_assembly if building != null else null
 
 
 func get_solid_cell_at_world_position(
@@ -171,34 +245,38 @@ func can_place_block(
 		block_id,
 		rotation_index
 	)
-	for cell: Vector2i in _get_occupied_cells(
+	var occupied_cells := _get_occupied_cells(
 		block_id,
 		anchor,
 		normalized_rotation
-	):
+	)
+	for cell: Vector2i in occupied_cells:
+		if (
+			gamemap != null
+			and (
+				cell.x < 0
+				or cell.y < 0
+				or cell.x >= gamemap.world_width
+				or cell.y >= gamemap.world_height
+			)
+		):
+			return false
 		if cell_occupancy.has(cell):
+			return false
+		if (
+			gamemap != null
+			and is_instance_valid(gamemap.liquid)
+			and gamemap.liquid.get_block_id_at(cell)
+			!= BlockDB.INVALID_BLOCK_ID
+		):
 			return false
 
 	if not BlockDB.is_constructed(block_id):
 		return true
-	var adjacent_owners := {}
-	for cell: Vector2i in _get_occupied_cells(
-		block_id,
-		anchor,
-		normalized_rotation
-	):
-		for direction: Vector2i in CARDINAL_DIRECTIONS:
-			var building := get_building_at(cell + direction)
-			if building != null:
-				adjacent_owners[building.owner_id] = true
-	if adjacent_owners.size() > 1:
-		return false
-	if (
-		adjacent_owners.size() == 1
-		and not adjacent_owners.has(owner_id)
-	):
-		return false
-	return true
+	return building_system.can_place_for_owner(
+		occupied_cells,
+		owner_id
+	)
 
 
 func place_block(
@@ -224,6 +302,11 @@ func place_block(
 		if hp < 0.0
 		else clampf(hp, 0.0, BlockDB.get_max_hp(block_id))
 	)
+	var changed_cells := _get_occupied_cells(
+		block_id,
+		anchor,
+		normalized_rotation
+	)
 	_register_block_state(
 		anchor,
 		block_id,
@@ -235,14 +318,22 @@ func place_block(
 	else:
 		_render_passive_block(anchor)
 
-	if BlockDB.is_constructed(block_id):
-		_pending_owner_by_anchor[anchor] = owner_id
-		_request_building_rebuild()
-	_queue_visual_refresh(_get_occupied_cells(
-		block_id,
+	var expandable := functional_nodes.get(
 		anchor,
-		normalized_rotation
-	))
+		null
+	) as ExpandableBlock
+	if expandable != null:
+		merge_rectangular_union_from(expandable)
+	if BlockDB.is_constructed(block_id):
+		building_system.notify_constructed_changed(
+			changed_cells,
+			owner_id
+		)
+	var placed_anchor := get_block_anchor(anchor)
+	if placed_anchor != INVALID_CELL:
+		_queue_visual_refresh(
+			_get_record_occupied_cells(placed_anchor)
+		)
 	block_placed.emit(anchor, block_id)
 	return true
 
@@ -325,7 +416,10 @@ func apply_radial_damage(
 	return damaged_blocks
 
 
-func destroy_block_at(cell: Vector2i) -> bool:
+func destroy_block_at(
+	cell: Vector2i,
+	spawn_shards: bool = true
+) -> bool:
 	var anchor := get_block_anchor(cell)
 	if anchor == INVALID_CELL:
 		return false
@@ -333,12 +427,9 @@ func destroy_block_at(cell: Vector2i) -> bool:
 	if state.is_empty():
 		return false
 	var block_id := int(state["block_id"])
-	var occupied_cells := _get_occupied_cells(
-		block_id,
-		anchor,
-		int(state.get("rotation", 0))
-	)
-	_spawn_block_shards(anchor, block_id)
+	var occupied_cells := _get_record_occupied_cells(anchor)
+	if spawn_shards:
+		_spawn_block_shards(anchor, block_id)
 
 	var functional_block: Block = functional_nodes.get(anchor, null)
 	if functional_block != null:
@@ -351,7 +442,9 @@ func destroy_block_at(cell: Vector2i) -> bool:
 
 	_queue_visual_refresh(occupied_cells)
 	if BlockDB.is_constructed(block_id):
-		_request_building_rebuild()
+		building_system.notify_constructed_changed(
+			occupied_cells
+		)
 	_update_minimap(occupied_cells)
 	block_destroyed.emit(anchor, block_id)
 	return true
@@ -362,121 +455,15 @@ func destroy_tile(cell: Vector2i) -> bool:
 
 
 func rebuild_buildings() -> void:
-	var previous_cell_map := cell_to_building.duplicate()
-	var unvisited := {}
-	for anchor: Vector2i in block_records:
-		if BlockDB.is_constructed(
-			int(block_records[anchor]["block_id"])
-		):
-			unvisited[anchor] = true
-
-	var rebuilt: Array[Building] = []
-	var rebuilt_cell_map: Dictionary[Vector2i, Building] = {}
-	while not unvisited.is_empty():
-		var start: Vector2i = unvisited.keys()[0]
-		var component: Array[Vector2i] = []
-		var queue: Array[Vector2i] = [start]
-		while not queue.is_empty():
-			var anchor: Vector2i = queue.pop_front()
-			if not unvisited.has(anchor):
-				continue
-			unvisited.erase(anchor)
-			component.append(anchor)
-			var state: Dictionary = block_records[anchor]
-			for occupied_cell: Vector2i in _get_occupied_cells(
-				int(state["block_id"]),
-				anchor,
-				int(state.get("rotation", 0))
-			):
-				for direction: Vector2i in CARDINAL_DIRECTIONS:
-					var neighbor_anchor := get_block_anchor(
-						occupied_cell + direction
-					)
-					if (
-						neighbor_anchor != INVALID_CELL
-						and unvisited.has(neighbor_anchor)
-					):
-						queue.append(neighbor_anchor)
-
-		var building: Building = Building.new()
-		var inherited: Building
-		for anchor: Vector2i in component:
-			var previous: Building = previous_cell_map.get(anchor, null)
-			if previous != null:
-				inherited = previous
-				break
-		if inherited != null:
-			building.owner_id = inherited.owner_id
-			building.building_name = inherited.building_name
-		else:
-			for anchor: Vector2i in component:
-				if _pending_owner_by_anchor.has(anchor):
-					building.owner_id = _pending_owner_by_anchor[anchor]
-					break
-
-		building.block_anchors = component
-		for anchor: Vector2i in component:
-			var state: Dictionary = block_records[anchor]
-			for occupied_cell: Vector2i in _get_occupied_cells(
-				int(state["block_id"]),
-				anchor,
-				int(state.get("rotation", 0))
-			):
-				if not building.occupied_cells.has(occupied_cell):
-					building.occupied_cells.append(occupied_cell)
-				rebuilt_cell_map[occupied_cell] = building
-			var functional_block: Block = functional_nodes.get(
-				anchor,
-				null
-			)
-			if functional_block != null:
-				building.functional_blocks.append(functional_block)
-		rebuilt.append(building)
-
-	buildings = rebuilt
-	cell_to_building = rebuilt_cell_map
-	_pending_owner_by_anchor.clear()
-	buildings_rebuilt.emit(buildings)
+	building_system.rebuild_all()
 
 
-func get_building_save_data() -> Array:
-	var result: Array = []
-	for building: Building in buildings:
-		if building.block_anchors.is_empty():
-			continue
-		var anchor := building.block_anchors[0]
-		result.append({
-			"anchor": [anchor.x, anchor.y],
-			"owner_name": String(building.owner_id),
-			"building_name": building.building_name,
-		})
-	return result
+func get_constructed_save_data() -> Array:
+	return building_system.get_constructed_save_data()
 
 
-func apply_building_save_data(records: Array) -> void:
-	for value: Variant in records:
-		if not value is Dictionary:
-			continue
-		var record := value as Dictionary
-		var anchor_value: Variant = record.get("anchor")
-		if (
-			not anchor_value is Array
-			or (anchor_value as Array).size() != 2
-		):
-			continue
-		var anchor := Vector2i(
-			int((anchor_value as Array)[0]),
-			int((anchor_value as Array)[1])
-		)
-		var building := get_building_at(anchor)
-		if building == null:
-			continue
-		building.owner_id = StringName(
-			str(record.get("owner_name", "player"))
-		)
-		building.building_name = str(
-			record.get("building_name", "New Building")
-		)
+func restore_constructed_save_data(records: Array) -> void:
+	building_system.restore_constructed_save_data(records)
 
 
 func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
@@ -488,20 +475,34 @@ func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
 				chunk_x * CHUNK_SIZE + lx,
 				chunk_y * CHUNK_SIZE + ly
 			)
-			var state: Dictionary = block_records.get(cell, {})
+			var anchor := get_block_anchor(cell)
+			var state: Dictionary = block_records.get(anchor, {})
+			if (
+				anchor != cell
+				or (
+					not state.is_empty()
+					and not BlockDB.is_natural(int(state["block_id"]))
+				)
+			):
+				state = {}
 			var offset := bytes.size()
-			bytes.resize(offset + 5)
+			bytes.resize(offset + 4)
 			if state.is_empty():
 				bytes.encode_u16(offset, 0)
 				bytes.encode_u16(offset + 2, 0)
-				bytes[offset + 4] = 0
 				continue
-			bytes.encode_u16(offset, int(state["block_id"]))
-			bytes.encode_u16(
-				offset + 2,
-				clampi(roundi(float(state["hp"])), 0, 65535)
+			var block_id := int(state["block_id"])
+			bytes.encode_u16(offset, block_id)
+			var max_hp := get_state_max_hp(
+				block_id,
+				state.get("size", BlockDB.get_size(block_id))
 			)
-			bytes[offset + 4] = int(state.get("rotation", 0))
+			var health := clampi(
+				roundi(float(state["hp"]) / maxf(max_hp, 0.001) * 65535.0),
+				0,
+				65535
+			)
+			bytes.encode_u16(offset + 2, health)
 	return bytes
 
 
@@ -511,91 +512,148 @@ func load_chunk(
 	bytes: PackedByteArray,
 	chunk_size: int
 ) -> void:
+	var expected_size := chunk_size * chunk_size * 4
+	if bytes.size() < expected_size:
+		push_error("Natural block chunk is truncated.")
+		return
 	var index := 0
 	for ly in range(chunk_size):
 		for lx in range(chunk_size):
 			var block_id := bytes.decode_u16(index)
-			var hp := bytes.decode_u16(index + 2)
-			var rotation_index := bytes.decode_u8(index + 4)
-			index += 5
+			var health := bytes.decode_u16(index + 2)
+			index += 4
 			if block_id == 0:
 				continue
-			if not BlockDB.has_block(block_id):
-				push_error("Unknown saved block ID %d." % block_id)
+			if (
+				not BlockDB.has_block(block_id)
+				or not BlockDB.is_natural(block_id)
+			):
+				push_error(
+					"Invalid natural block ID %d in chunk."
+					% block_id
+				)
 				continue
 			var cell := Vector2i(
 				chunk_x * chunk_size + lx,
 				chunk_y * chunk_size + ly
 			)
-			place_block(
-				block_id,
-				cell,
-				rotation_index,
-				float(hp)
+			var hp := (
+				BlockDB.get_max_hp(block_id)
+				* float(health)
+				/ 65535.0
 			)
-
-
-func load_legacy_wall_chunk(
-	chunk_x: int,
-	chunk_y: int,
-	bytes: PackedByteArray,
-	chunk_size: int,
-	liquid_layer: LiquidLayer
-) -> void:
-	var index := 0
-	for ly in range(chunk_size):
-		for lx in range(chunk_size):
-			var tile_id := bytes.decode_u8(index)
-			var data := bytes.decode_u16(index + 1)
-			index += 3
-			if tile_id == 0:
-				continue
-			var cell := Vector2i(
-				chunk_x * chunk_size + lx,
-				chunk_y * chunk_size + ly
+			place_block(block_id, cell, 0, hp)
+func restore_constructed_block(
+	block_id: int,
+	anchor: Vector2i,
+	rotation_index: int,
+	hp: float,
+	block_size: Vector2i,
+	functional_state: Dictionary,
+	owner_id: StringName
+) -> bool:
+	if (
+		not BlockDB.has_block(block_id)
+		or not BlockDB.is_constructed(block_id)
+		or not BlockDB.can_place_on(block_id, BlockDB.HOST_WORLD)
+		or block_size.x <= 0
+		or block_size.y <= 0
+	):
+		return false
+	var normalized_rotation := BlockDB.normalize_rotation(
+		block_id,
+		rotation_index
+	)
+	var occupied_cells := _get_occupied_cells(
+		block_id,
+		anchor,
+		normalized_rotation,
+		block_size
+	)
+	for cell: Vector2i in occupied_cells:
+		if cell_occupancy.has(cell):
+			return false
+		if (
+			gamemap != null
+			and (
+				cell.x < 0
+				or cell.y < 0
+				or cell.x >= gamemap.world_width
+				or cell.y >= gamemap.world_height
 			)
-			var block_id := BlockDB.get_legacy_world_block_id(tile_id)
-			if block_id != BlockDB.INVALID_BLOCK_ID:
-				place_block(block_id, cell, 0, float(data))
-			else:
-				var liquid_block_id := (
-					BlockDB.get_legacy_liquid_block_id(tile_id)
-				)
-				if liquid_block_id == BlockDB.INVALID_BLOCK_ID:
-					continue
-				liquid_layer.set_liquid_cell(
-					cell,
-					liquid_block_id,
-					float(data),
-					false
-				)
+		):
+			return false
+	_register_block_state(
+		anchor,
+		block_id,
+		normalized_rotation,
+		clampf(hp, 0.0, get_state_max_hp(block_id, block_size)),
+		block_size
+	)
+	if BlockDB.is_world_functional(block_id):
+		_spawn_functional_node(anchor)
+		var functional := functional_nodes.get(anchor, null) as Block
+		if functional != null:
+			functional.apply_save_state(functional_state)
+	else:
+		_render_passive_block(anchor)
+	building_system.notify_constructed_changed(
+		occupied_cells,
+		owner_id
+	)
+	_queue_visual_refresh(occupied_cells)
+	block_placed.emit(anchor, block_id)
+	return true
 
 
 func _register_block_state(
 	anchor: Vector2i,
 	block_id: int,
 	rotation_index: int,
-	hp: float
+	hp: float,
+	block_size: Vector2i = Vector2i.ZERO
 ) -> void:
+	if block_size == Vector2i.ZERO:
+		block_size = BlockDB.get_size(block_id)
 	block_records[anchor] = {
 		"block_id": block_id,
 		"hp": hp,
 		"rotation": rotation_index,
+		"size": block_size,
 	}
 	for cell: Vector2i in _get_occupied_cells(
 		block_id,
 		anchor,
-		rotation_index
+		rotation_index,
+		block_size
 	):
 		cell_occupancy[cell] = anchor
+
+
+func get_state_max_hp(
+	block_id: int,
+	block_size: Vector2i = Vector2i.ZERO
+) -> float:
+	var base_size := BlockDB.get_size(block_id)
+	if block_size == Vector2i.ZERO:
+		block_size = base_size
+	var base_units := maxi(base_size.x * base_size.y, 1)
+	var stored_units := maxi(block_size.x * block_size.y, 1)
+	return (
+		BlockDB.get_max_hp(block_id)
+		* float(stored_units)
+		/ float(base_units)
+	)
 
 
 func _get_occupied_cells(
 	block_id: int,
 	anchor: Vector2i,
-	rotation_index: int
+	rotation_index: int,
+	block_size: Vector2i = Vector2i.ZERO
 ) -> Array[Vector2i]:
-	var block_size := BlockDB.get_size(block_id)
+	if block_size == Vector2i.ZERO:
+		block_size = BlockDB.get_size(block_id)
 	if rotation_index % 2 != 0:
 		block_size = Vector2i(block_size.y, block_size.x)
 	var cells: Array[Vector2i] = []
@@ -603,6 +661,103 @@ func _get_occupied_cells(
 		for x in range(block_size.x):
 			cells.append(anchor + Vector2i(x, y))
 	return cells
+
+
+func _get_record_occupied_cells(anchor: Vector2i) -> Array[Vector2i]:
+	var state: Dictionary = block_records.get(anchor, {})
+	if state.is_empty():
+		return []
+	return _get_occupied_cells(
+		int(state["block_id"]),
+		anchor,
+		int(state.get("rotation", 0)),
+		state.get("size", Vector2i.ZERO)
+	)
+
+
+func get_record_occupied_cells(anchor: Vector2i) -> Array[Vector2i]:
+	return _get_record_occupied_cells(anchor)
+
+
+func merge_rectangular_union_from(start: ExpandableBlock) -> bool:
+	var group := ExpandableBlock.find_rectangular_group_from(
+		start,
+		Callable(self, "get_functional_block_at")
+	)
+	if group.is_empty():
+		return false
+	_merge_union_component(group["members"], group["rectangle"])
+	return true
+
+
+func _merge_union_component(
+	component: Array,
+	rectangle: Rect2i
+) -> void:
+	var leader := component[0] as ExpandableBlock
+	var combined_hp := 0.0
+	var old_cells: Array[Vector2i] = []
+	for value: Variant in component:
+		var member := value as ExpandableBlock
+		if member == null:
+			continue
+		if (
+			member.origin_cell.y < leader.origin_cell.y
+			or (
+				member.origin_cell.y == leader.origin_cell.y
+				and member.origin_cell.x < leader.origin_cell.x
+			)
+		):
+			leader = member
+		var member_state: Dictionary = block_records.get(
+			member.origin_cell,
+			{}
+		)
+		combined_hp += float(member_state.get("hp", member.hp))
+		for cell: Vector2i in member.get_occupied_cells():
+			if not old_cells.has(cell):
+				old_cells.append(cell)
+
+	var block_id := leader.block_id
+	var rotation_index := leader.rotation_index
+	var merged_size := rectangle.size
+	if rotation_index % 2 != 0:
+		merged_size = Vector2i(rectangle.size.y, rectangle.size.x)
+
+	leader.merge_union_members(
+		component,
+		rectangle.position,
+		merged_size,
+		rotation_index
+	)
+	for value: Variant in component:
+		var member := value as ExpandableBlock
+		if member == null:
+			continue
+		functional_nodes.erase(member.origin_cell)
+		block_records.erase(member.origin_cell)
+	for cell: Vector2i in old_cells:
+		cell_occupancy.erase(cell)
+
+	_register_block_state(
+		rectangle.position,
+		block_id,
+		rotation_index,
+		combined_hp,
+		merged_size
+	)
+	functional_nodes[rectangle.position] = leader
+	var collision_body := leader.get_node_or_null(
+		"WorldCollision"
+	) as WorldBlockBody
+	if collision_body != null:
+		collision_body.configure(self, rectangle.position)
+
+	for value: Variant in component:
+		var member := value as ExpandableBlock
+		if member != null and member != leader:
+			member.queue_free()
+	_queue_visual_refresh(old_cells)
 
 
 func _render_passive_block(anchor: Vector2i) -> void:
@@ -639,6 +794,15 @@ func _spawn_functional_node(anchor: Vector2i) -> void:
 		push_error("Functional scene is not a Block: %s." % scene.resource_path)
 		return
 	block.block_id = block_id
+	if block is ExpandableBlock:
+		var stored_size: Vector2i = state.get(
+			"size",
+			BlockDB.get_size(block_id)
+		)
+		if stored_size != block.size:
+			(block as ExpandableBlock).configure_union_size(
+				stored_size
+			)
 	block.update_world_transform(
 		self,
 		anchor,
@@ -711,13 +875,6 @@ func _flush_visual_updates() -> void:
 					int(variant.get("alternative", 0))
 				)
 	_pending_visual_cells.clear()
-
-
-func _request_building_rebuild() -> void:
-	_pending_building_rebuild = true
-	if _bulk_edit_depth == 0:
-		rebuild_buildings()
-		_pending_building_rebuild = false
 
 
 func _spawn_block_shards(

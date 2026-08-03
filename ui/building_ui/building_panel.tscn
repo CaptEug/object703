@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://assets/resources/UI_theme.tres" id="1_theme"]
+[ext_resource type="Script" path="res://ui/building_ui/building_panel.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/icons/symbls.png" id="3_symbols"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_close"]
+atlas = ExtResource("3_symbols")
+region = Rect2(224, 0, 16, 16)
+
+[node name="BuildingPanel" type="Panel" groups=["building_panel"]]
+custom_minimum_size = Vector2(256, 256)
+anchors_preset = 3
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -256.0
+offset_right = 256.0
+grow_vertical = 0
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="CloseButton" type="TextureButton" parent="."]
+layout_mode = 0
+offset_left = 234.0
+offset_top = 6.0
+offset_right = 250.0
+offset_bottom = 22.0
+tooltip_text = "Close building panel"
+focus_mode = 0
+texture_normal = SubResource("AtlasTexture_close")
+
+[node name="BuildingName" type="LineEdit" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 230.0
+offset_bottom = 56.0
+editable = false
+placeholder_text = "Building name"
+
+[node name="BuildingInfo" type="RichTextLabel" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 57.0
+offset_right = 250.0
+offset_bottom = 249.0
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 8
+bbcode_enabled = true
+text = "Weight: --\nBlocks: --\nOccupied cells: --\nFunctional blocks: --\nOwner: --"
+fit_content = true
+
+[connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]

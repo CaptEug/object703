@@ -60,6 +60,10 @@ func get_information_panel_key() -> StringName:
 	return &"drill"
 
 
+func is_power_consumer() -> bool:
+	return true
+
+
 func get_power_demand() -> float:
 	if not _is_activation_requested():
 		return 0.0
@@ -88,8 +92,7 @@ func _is_activation_requested() -> bool:
 	var current_assembly := get_assembly()
 	return (
 		current_assembly != null
-		and current_assembly.has_method("get_fire_command")
-		and bool(current_assembly.call("get_fire_command"))
+		and current_assembly.get_fire_command()
 	)
 
 
@@ -154,9 +157,12 @@ func _collect_damage_targets() -> Array[Dictionary]:
 	query.collide_with_areas = false
 	query.collide_with_bodies = true
 	var current_assembly := get_assembly()
-	if current_assembly is CollisionObject2D:
+	if (
+		current_assembly != null
+		and current_assembly.host is CollisionObject2D
+	):
 		query.exclude = [
-			(current_assembly as CollisionObject2D).get_rid()
+			(current_assembly.host as CollisionObject2D).get_rid()
 		]
 
 	var targets_by_key := {}
@@ -259,7 +265,11 @@ func _resolve_damage_target(hit: Dictionary) -> Dictionary:
 	var shape_index := int(hit.get("shape", -1))
 	if collider is Vehicle:
 		var target_vehicle := collider as Vehicle
-		if target_vehicle == get_assembly():
+		var current_assembly := get_assembly()
+		if (
+			current_assembly != null
+			and target_vehicle == current_assembly.host
+		):
 			return {}
 		var target_block := _get_vehicle_block_for_shape(
 			target_vehicle,
@@ -314,6 +324,8 @@ func _make_world_target(
 	var anchor := world_layer.get_block_anchor(cell)
 	if anchor == WorldBlockLayer.INVALID_CELL:
 		return {}
+	if world_layer.get_assembly_at(anchor) == get_assembly():
+		return {}
 	var target_id := world_layer.get_block_id_at(anchor)
 	if target_id == BlockDB.INVALID_BLOCK_ID:
 		return {}
@@ -359,16 +371,12 @@ func _store_mining_yield(destroyed_block_id: int) -> void:
 	_last_yield_item = item_name
 	var current_assembly := get_assembly()
 	var received := 0
-	if (
-		current_assembly != null
-		and current_assembly.has_method("receive_item")
-	):
-		received = int(current_assembly.call(
-			"receive_item",
+	if current_assembly != null:
+		received = current_assembly.receive_item(
 			self,
 			item_name,
 			1
-		))
+		)
 	_set_storage_full(received < 1)
 
 
@@ -378,13 +386,11 @@ func _refresh_storage_availability() -> void:
 	var current_assembly := get_assembly()
 	var has_space := (
 		current_assembly != null
-		and current_assembly.has_method("can_receive_item")
-		and bool(current_assembly.call(
-			"can_receive_item",
+		and current_assembly.can_receive_item(
 			self,
 			_last_yield_item,
 			1
-		))
+		)
 	)
 	_set_storage_full(not has_space)
 

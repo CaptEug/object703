@@ -12,29 +12,65 @@ static func get_candidate_storages(
 		return result
 
 	_append_vehicle_storages(target_vehicle, result)
-	var nearby_vehicles: Array[Vehicle] = []
-	for node: Node in target_vehicle.get_tree().get_nodes_in_group("vehicles"):
-		var candidate := node as Vehicle
-		if (
-			not is_instance_valid(candidate)
-			or candidate == target_vehicle
-			or candidate.owner_id != target_vehicle.owner_id
-			or candidate.distance_to_world_point(build_world_position)
-			> range_pixels
-		):
-			continue
-		nearby_vehicles.append(candidate)
-
-	nearby_vehicles.sort_custom(
-		func(first: Vehicle, second: Vehicle) -> bool:
-			return (
-				first.distance_to_world_point(build_world_position)
-				< second.distance_to_world_point(build_world_position)
-			)
+	var nearby := _get_nearby_construction_storages(
+		target_vehicle.get_tree(),
+		build_world_position,
+		range_pixels,
+		target_vehicle.owner_id,
+		target_vehicle
 	)
-	for candidate: Vehicle in nearby_vehicles:
-		_append_vehicle_storages(candidate, result)
+	for storage: ItemStorage in nearby:
+		if not result.has(storage):
+			result.append(storage)
 	return result
+
+
+static func get_world_candidate_storages(
+	tree: SceneTree,
+	build_world_position: Vector2,
+	range_pixels: float,
+	owner_id: StringName
+) -> Array[ItemStorage]:
+	return _get_nearby_construction_storages(
+		tree,
+		build_world_position,
+		range_pixels,
+		owner_id,
+		null
+	)
+
+
+static func has_world_construction_support(
+	tree: SceneTree,
+	build_world_position: Vector2,
+	range_pixels: float,
+	owner_id: StringName
+) -> bool:
+	if tree == null:
+		return false
+	var maximum_distance := maxf(range_pixels, 0.0)
+	for node: Node in tree.get_nodes_in_group("vehicles"):
+		var vehicle := node as Vehicle
+		if (
+			is_instance_valid(vehicle)
+			and vehicle.owner_id == owner_id
+			and vehicle.distance_to_world_point(build_world_position)
+			<= maximum_distance
+		):
+			return true
+	for node: Node in tree.get_nodes_in_group("world_block_layers"):
+		var world_layer := node as WorldBlockLayer
+		if world_layer == null:
+			continue
+		for building: Building in world_layer.buildings:
+			if (
+				building.owner_id == owner_id
+				and building.distance_to_world_point(
+					build_world_position
+				) <= maximum_distance
+			):
+				return true
+	return false
 
 
 static func get_missing(
@@ -124,6 +160,95 @@ static func _append_vehicle_storages(
 	source_vehicle: Vehicle,
 	result: Array[ItemStorage]
 ) -> void:
-	for block: Block in source_vehicle.blocks:
-		if block is ItemStorage:
-			result.append(block as ItemStorage)
+	for storage: ItemStorage in (
+		source_vehicle.block_assembly.get_construction_storages()
+	):
+		if not result.has(storage):
+			result.append(storage)
+
+
+static func _get_nearby_construction_storages(
+	tree: SceneTree,
+	build_world_position: Vector2,
+	range_pixels: float,
+	owner_id: StringName,
+	excluded_vehicle: Vehicle
+) -> Array[ItemStorage]:
+	var ranked: Array[Dictionary] = []
+	var seen := {}
+	var maximum_distance := maxf(range_pixels, 0.0)
+
+	for node: Node in tree.get_nodes_in_group("vehicles"):
+		var candidate := node as Vehicle
+		if (
+			not is_instance_valid(candidate)
+			or candidate == excluded_vehicle
+			or candidate.owner_id != owner_id
+		):
+			continue
+		var source_distance := candidate.distance_to_world_point(
+			build_world_position
+		)
+		if source_distance > maximum_distance:
+			continue
+		var vehicle_storages: Array[ItemStorage] = []
+		_append_vehicle_storages(candidate, vehicle_storages)
+		for storage: ItemStorage in vehicle_storages:
+			_append_ranked_storage(
+				storage,
+				source_distance,
+				ranked,
+				seen
+			)
+
+	for node: Node in tree.get_nodes_in_group("world_block_layers"):
+		var world_layer := node as WorldBlockLayer
+		if world_layer == null:
+			continue
+		for building: Building in world_layer.buildings:
+			if building.owner_id != owner_id:
+				continue
+			for storage: ItemStorage in building.get_construction_storages():
+				var source_distance := storage.global_position.distance_to(
+					build_world_position
+				)
+				if source_distance > maximum_distance:
+					continue
+				_append_ranked_storage(
+					storage,
+					source_distance,
+					ranked,
+					seen
+				)
+
+	ranked.sort_custom(
+		func(first: Dictionary, second: Dictionary) -> bool:
+			var first_distance := float(first["distance"])
+			var second_distance := float(second["distance"])
+			if not is_equal_approx(first_distance, second_distance):
+				return first_distance < second_distance
+			return int(first["instance_id"]) < int(second["instance_id"])
+	)
+	var result: Array[ItemStorage] = []
+	for entry: Dictionary in ranked:
+		result.append(entry["storage"] as ItemStorage)
+	return result
+
+
+static func _append_ranked_storage(
+	storage: ItemStorage,
+	distance: float,
+	ranked: Array[Dictionary],
+	seen: Dictionary
+) -> void:
+	if not is_instance_valid(storage):
+		return
+	var instance_id := storage.get_instance_id()
+	if seen.has(instance_id):
+		return
+	seen[instance_id] = true
+	ranked.append({
+		"storage": storage,
+		"distance": distance,
+		"instance_id": instance_id,
+	})

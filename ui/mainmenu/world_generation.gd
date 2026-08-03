@@ -1,9 +1,6 @@
 extends Panel
 
 
-var save_dir:String = "res://saves/"
-
-
 func _ready():
 	$WorldName/LineEdit.text = "new world"
 	$WorldSeed/LineEdit.text = str(randi())
@@ -18,7 +15,7 @@ func check_world_name(world_name:String):
 	if world_name == "":
 		$Warning.text = ""
 		$GenerateButton.disabled = true
-	elif DirAccess.dir_exists_absolute(save_dir + world_name):
+	elif DirAccess.dir_exists_absolute(GameState.saving_dir + world_name):
 		$Warning.text = "World exists!"
 		$GenerateButton.disabled = true
 	else:

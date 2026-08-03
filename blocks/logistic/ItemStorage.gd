@@ -1,5 +1,5 @@
 class_name ItemStorage
-extends ExpandableStorage
+extends ExpandableBlock
 
 enum StorageKind {
 	DUMP,
@@ -21,15 +21,45 @@ func _ready() -> void:
 	add_item("PZGR88mm", 20)
 
 
-func get_container_merge_key() -> String:
+func has_information_panel() -> bool:
+	return true
+
+
+func get_union_key() -> String:
 	return "%s:item:%d" % [scene_file_path, storage_kind]
 
 
-func _scale_storage_capacity(unit_count: int) -> void:
+func get_save_state() -> Dictionary:
+	var result := {
+		"items": items.duplicate(true),
+	}
+	if not is_default_allowed_items():
+		result["allowed_items"] = allowed_items.duplicate()
+	return result
+
+
+func apply_save_state(state: Dictionary) -> void:
+	var saved_items: Variant = state.get("items")
+	if saved_items is Dictionary:
+		items.clear()
+		for item_value: Variant in saved_items:
+			var item_name := str(item_value)
+			var amount := maxi(int(saved_items[item_value]), 0)
+			if amount > 0 and is_item_compatible(item_name):
+				items[item_name] = amount
+	var saved_allowed: Variant = state.get("allowed_items")
+	if saved_allowed is Array:
+		set_allowed_items(saved_allowed)
+	else:
+		reset_allowed_items()
+	contents_changed.emit()
+
+
+func _scale_union_capacity(unit_count: int) -> void:
 	max_load *= unit_count
 
 
-func _merge_storage_members(members: Array) -> void:
+func _merge_union_data(members: Array) -> void:
 	var combined_max_load := 0
 	var combined_items := {}
 	var allowed_union: Array[String] = []

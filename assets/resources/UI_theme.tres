@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="1_4w2ry"]
 [ext_resource type="FontFile" uid="uid://bqm2whs604lm4" path="res://assets/fonts/nokiafc22.ttf" id="3_4w2ry"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="3_vwcpp"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="4_vwcpp"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_edc7y"]
 atlas = ExtResource("1_4w2ry")
@@ -66,6 +67,18 @@ texture_margin_right = 8.0
 texture_margin_bottom = 10.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5x8jt"]
+atlas = ExtResource("3_vwcpp")
+region = Rect2(208, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yi0qi"]
+atlas = ExtResource("4_vwcpp")
+region = Rect2(0, 32, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8fdp8"]
+atlas = ExtResource("3_vwcpp")
+region = Rect2(192, 0, 16, 16)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4w2ry"]
 
@@ -287,6 +300,9 @@ Button/styles/focus = SubResource("StyleBoxTexture_cet5l")
 Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
 Button/styles/normal = SubResource("StyleBoxTexture_xxub0")
 Button/styles/pressed = SubResource("StyleBoxTexture_7qj07")
+FileDialog/icons/back_folder = SubResource("AtlasTexture_5x8jt")
+FileDialog/icons/file_thumbnail = SubResource("AtlasTexture_yi0qi")
+FileDialog/icons/forward_folder = SubResource("AtlasTexture_8fdp8")
 ItemList/colors/font_color = Color(0, 1, 0, 1)
 ItemList/colors/font_hovered_color = Color(0, 1, 0, 1)
 ItemList/colors/font_hovered_selected_color = Color(0.133333, 0.12549, 0.203922, 1)
@@ -302,10 +318,13 @@ ItemList/styles/selected = SubResource("StyleBoxFlat_6vqaq")
 ItemList/styles/selected_focus = SubResource("StyleBoxFlat_4w2ry")
 Label/colors/font_color = Color(0.13145, 0.258068, 0.37867, 1)
 Label/fonts/font = ExtResource("3_4w2ry")
+LineEdit/colors/caret_color = Color(0, 1, 0, 1)
 LineEdit/colors/font_color = Color(0, 1, 0, 1)
+LineEdit/constants/caret_width = 2
 LineEdit/fonts/font = ExtResource("3_4w2ry")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_edc7y")
 LineEdit/styles/normal = SubResource("StyleBoxTexture_f7ufs")
+LineEdit/styles/read_only = SubResource("StyleBoxTexture_f7ufs")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_d3oid")
 ProgressBar/styles/fill = SubResource("StyleBoxTexture_2u1il")

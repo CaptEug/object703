@@ -1,0 +1,187 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
+[ext_resource type="Script" path="res://ui/building_ui/building_constructor.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://cbeoshr0k0075" path="res://assets/style_tex.png" id="3_style"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="4_icons"]
+[ext_resource type="PackedScene" uid="uid://cm0v65jmp7f6n" path="res://ui/vehicle_ui/block_palette.tscn" id="5_palette"]
+[ext_resource type="Script" uid="uid://ddh6jgn0kda8a" path="res://ui/vehicle_ui/palette_panel.gd" id="6_palette_panel"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/symbls.png" id="7_symbols"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_saw"]
+atlas = ExtResource("7_symbols")
+region = Rect2(240, 112, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dismantle"]
+atlas = ExtResource("4_icons")
+region = Rect2(32, 128, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_frame"]
+atlas = ExtResource("3_style")
+region = Rect2(240, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_frame"]
+texture = SubResource("AtlasTexture_frame")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_inner"]
+atlas = ExtResource("3_style")
+region = Rect2(192, 96, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_inner"]
+texture = SubResource("AtlasTexture_inner")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_zoom_in"]
+atlas = ExtResource("7_symbols")
+region = Rect2(176, 32, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_zoom_out"]
+atlas = ExtResource("7_symbols")
+region = Rect2(192, 32, 16, 16)
+
+[node name="BuildingConstructor" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+saw_cursor = SubResource("AtlasTexture_saw")
+
+[node name="ConstructorDock" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -220.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Tools" type="VBoxContainer" parent="ConstructorDock"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 42.0
+offset_bottom = 75.0
+theme_override_constants/separation = 4
+
+[node name="DismantleButton" type="TextureButton" parent="ConstructorDock/Tools"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Toggle building dismantling (X)"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+texture_normal = SubResource("AtlasTexture_dismantle")
+
+[node name="ModeHint" type="Label" parent="ConstructorDock/Tools"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+text = "X"
+horizontal_alignment = 1
+
+[node name="PaletteArea" type="MarginContainer" parent="ConstructorDock"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 52
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 28
+
+[node name="Panel" type="Panel" parent="ConstructorDock/PaletteArea"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_frame")
+script = ExtResource("6_palette_panel")
+
+[node name="Clipper" type="Panel" parent="ConstructorDock/PaletteArea/Panel"]
+clip_children = 1
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_inner")
+
+[node name="BlockPalette" parent="ConstructorDock/PaletteArea/Panel/Clipper" instance=ExtResource("5_palette")]
+layout_mode = 0
+host_name = "world"
+
+[node name="ZoomInButton" type="TextureButton" parent="ConstructorDock/PaletteArea/Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -44.0
+offset_top = -21.0
+offset_right = -28.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_zoom_in")
+
+[node name="ZoomOutButton" type="TextureButton" parent="ConstructorDock/PaletteArea/Panel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.0
+offset_top = -21.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_zoom_out")
+
+[node name="Status" type="Label" parent="ConstructorDock"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 52.0
+offset_top = -24.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 8
+text_overrun_behavior = 3
+
+[connection signal="pressed" from="ConstructorDock/Tools/DismantleButton" to="." method="_on_dismantle_button_pressed"]
+[connection signal="pressed" from="ConstructorDock/PaletteArea/Panel/ZoomInButton" to="ConstructorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
+[connection signal="pressed" from="ConstructorDock/PaletteArea/Panel/ZoomOutButton" to="ConstructorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]

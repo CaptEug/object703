@@ -13,13 +13,21 @@ static func ensure_directory() -> Dictionary:
 	return {"ok": true}
 
 
-static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
+static func save_path(
+	vehicle: Vehicle,
+	vehicle_name: String,
+	path: String
+) -> Dictionary:
 	if not is_instance_valid(vehicle):
 		return _error("There is no vehicle to save.")
 
 	var clean_name := vehicle_name.strip_edges()
 	if clean_name.is_empty():
 		return _error("Enter a vehicle name.")
+	if path.is_empty():
+		return _error("Choose a blueprint file.")
+	if not path.ends_with(".json"):
+		path += ".json"
 	vehicle.vehicle_name = clean_name
 
 	for block: Block in vehicle.blocks:
@@ -37,7 +45,6 @@ static func save(vehicle: Vehicle, vehicle_name: String) -> Dictionary:
 	if not directory_result["ok"]:
 		return directory_result
 
-	var path := _get_path(clean_name)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		return _error("Could not open the blueprint file.")
@@ -121,10 +128,10 @@ static func _validate(data: Dictionary) -> Dictionary:
 		var block_size := _get_record_size(record)
 		if (
 			block_size != Vector2i.ZERO
-			and not block is ExpandableStorage
+			and not block is ExpandableBlock
 		):
 			block.free()
-			return _error("Only expandable containers can have a saved size.")
+			return _error("Only union blocks can have a saved size.")
 		if block_size != Vector2i.ZERO:
 			block.size = block_size
 		var filter_index := _get_filter_index(record)
@@ -237,7 +244,7 @@ static func make_block_record(block: Block) -> Array:
 		block.origin_cell.y,
 		block.rotation_index,
 	]
-	if block is ExpandableStorage and block.size != Vector2i.ONE:
+	if block is ExpandableBlock and block.size != Vector2i.ONE:
 		record.append(block.size.x)
 		record.append(block.size.y)
 	if block is ItemStorage:
@@ -360,10 +367,6 @@ static func apply_record_filter(record: Array, block: Block) -> void:
 		(block as ItemStorage).set_allowed_items(record[filter_index])
 	elif block is LiquidStorage:
 		(block as LiquidStorage).set_allowed_items(record[filter_index])
-
-static func _get_path(vehicle_name: String) -> String:
-	return DIRECTORY + vehicle_name.validate_filename() + ".json"
-
 
 static func _error(message: String) -> Dictionary:
 	return {"ok": false, "error": message}

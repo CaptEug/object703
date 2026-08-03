@@ -31,12 +31,10 @@ func set_vehicle(new_vehicle: Vehicle) -> void:
 	vehicle = new_vehicle if is_instance_valid(new_vehicle) else null
 	updating_name_field = true
 	if is_instance_valid(vehicle):
-		vehicle_name_input.editable = true
 		vehicle_name_input.remove_theme_color_override("font_color")
 		vehicle_name_input.remove_theme_color_override("font_uneditable_color")
 		vehicle_name_input.text = vehicle.vehicle_name
 	else:
-		vehicle_name_input.editable = false
 		var no_selection_color := Color.RED
 		vehicle_name_input.add_theme_color_override("font_color", no_selection_color)
 		vehicle_name_input.add_theme_color_override(
@@ -45,6 +43,7 @@ func set_vehicle(new_vehicle: Vehicle) -> void:
 		)
 		vehicle_name_input.text = "No vehicle selected"
 	updating_name_field = false
+	_refresh_name_field_state()
 	edit_button.disabled = not is_instance_valid(vehicle)
 	clear_status()
 	refresh_information()
@@ -53,6 +52,17 @@ func set_vehicle(new_vehicle: Vehicle) -> void:
 func set_editing(value: bool) -> void:
 	editing = value
 	edit_button.text = "Finish Editing" if editing else "Edit Vehicle"
+	_refresh_name_field_state()
+
+
+func _refresh_name_field_state() -> void:
+	if not is_node_ready():
+		return
+	vehicle_name_input.editable = (
+		editing and is_instance_valid(vehicle)
+	)
+	if not vehicle_name_input.editable:
+		vehicle_name_input.release_focus()
 
 
 func refresh_information() -> void:
@@ -88,7 +98,11 @@ func clear_status() -> void:
 
 
 func _on_vehicle_name_changed(new_name: String) -> void:
-	if updating_name_field or not is_instance_valid(vehicle):
+	if (
+		updating_name_field
+		or not editing
+		or not is_instance_valid(vehicle)
+	):
 		return
 	vehicle.vehicle_name = new_name
 

@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" uid="uid://bqcqepxvgt6bt" path="res://vehicle/Vehicle.gd" id="1_1cp1r"]
 [ext_resource type="Script" uid="uid://3qyo3rkt1l5x" path="res://vehicle/power_system.gd" id="2_vsmxc"]
-[ext_resource type="Script" uid="uid://c2cjx5glmjkqn" path="res://vehicle/fluid_system.gd" id="3_jkabe"]
-[ext_resource type="Script" uid="uid://c03cd3morat2n" path="res://vehicle/supply_system.gd" id="4_w7aos"]
 [ext_resource type="TileSet" uid="uid://dtpjtgfhc1jn5" path="res://assets/resources/tiles.tres" id="5_tiles"]
 
 [node name="Vehicle" type="RigidBody2D" unique_id=1895877846]
@@ -23,12 +21,4 @@ navigation_enabled = false
 
 [node name="PowerSystem" type="Node2D" parent="." unique_id=534518037 node_paths=PackedStringArray("vehicle")]
 script = ExtResource("2_vsmxc")
-vehicle = NodePath("..")
-
-[node name="FluidSystem" type="Node2D" parent="." unique_id=1748715618 node_paths=PackedStringArray("vehicle")]
-script = ExtResource("3_jkabe")
-vehicle = NodePath("..")
-
-[node name="SupplySystem" type="Node2D" parent="." unique_id=1073856846 node_paths=PackedStringArray("vehicle")]
-script = ExtResource("4_w7aos")
 vehicle = NodePath("..")

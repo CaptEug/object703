@@ -12,6 +12,12 @@ enum EditMode {
 	DISMANTLE,
 }
 
+enum BlueprintDialogMode {
+	NONE,
+	SAVE,
+	LOAD,
+}
+
 const INSPECT_PANEL_WIDTH := 256.0
 
 var vehicle: Vehicle
@@ -21,6 +27,7 @@ var preview_block: Block
 var preview_rotation := 0
 var interface_state := InterfaceState.CLOSED
 var edit_mode := EditMode.BUILD
+var blueprint_dialog_mode := BlueprintDialogMode.NONE
 var new_vehicle_index := 1
 var selection_click_active := false
 
@@ -44,6 +51,7 @@ var vehicle_scene: PackedScene = load("res://vehicle/Vehicle.tscn")
 
 
 func _ready() -> void:
+	add_to_group("vehicle_editor")
 	vehicle_panel.edit_requested.connect(enter_edit_mode)
 	vehicle_panel.finish_requested.connect(exit_edit_mode)
 	vehicle_panel.close_requested.connect(close_vehicle_panel)
@@ -75,6 +83,11 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var constructor := get_tree().get_first_node_in_group(
+		"building_constructor"
+	) as BuildingConstructor
+	if constructor != null and constructor.is_active():
+		return
 	if (
 		event is InputEventMouseButton
 		and event.button_index == MOUSE_BUTTON_LEFT
@@ -153,6 +166,11 @@ func inspect_vehicle(clicked_vehicle: Vehicle) -> void:
 		return
 	if is_editing_vehicle() and clicked_vehicle != vehicle:
 		return
+	var building_panel := get_tree().get_first_node_in_group(
+		"building_panel"
+	)
+	if building_panel != null and building_panel.has_method("close_panel"):
+		building_panel.close_panel()
 	set_selected_vehicle(clicked_vehicle)
 	if not is_editing_vehicle():
 		interface_state = InterfaceState.INSPECT
@@ -537,8 +555,8 @@ func _construct_blueprint_record(record: Array) -> Dictionary:
 	candidate.block_id = block_id
 	if (
 		block_size != Vector2i.ZERO
-		and candidate is ExpandableStorage
-		and not (candidate as ExpandableStorage).configure_blueprint_size(
+		and candidate is ExpandableBlock
+		and not (candidate as ExpandableBlock).configure_union_size(
 			block_size
 		)
 	):
@@ -591,27 +609,64 @@ func _get_record_construction_cost(record: Array) -> Dictionary:
 func _on_save_button_pressed() -> void:
 	if not is_instance_valid(vehicle):
 		return
-	var result := VehicleBlueprint.save(vehicle, vehicle.vehicle_name)
+	_open_blueprint_dialog(BlueprintDialogMode.SAVE)
+
+
+func _on_load_button_pressed() -> void:
+	if not is_instance_valid(vehicle):
+		return
+	_open_blueprint_dialog(BlueprintDialogMode.LOAD)
+
+
+func _open_blueprint_dialog(mode: BlueprintDialogMode) -> void:
+	var directory_result := VehicleBlueprint.ensure_directory()
+	if not directory_result["ok"]:
+		_show_status(directory_result["error"])
+		return
+	blueprint_dialog_mode = mode
+	blueprint_dialog.access = FileDialog.ACCESS_USERDATA
+	if mode == BlueprintDialogMode.SAVE:
+		blueprint_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+		blueprint_dialog.title = "Save Vehicle Blueprint"
+		blueprint_dialog.ok_button_text = "Save"
+		blueprint_dialog.current_dir = VehicleBlueprint.DIRECTORY
+		blueprint_dialog.current_file = (
+			vehicle.vehicle_name.validate_filename() + ".json"
+		)
+	else:
+		blueprint_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+		blueprint_dialog.title = "Load Vehicle Blueprint"
+		blueprint_dialog.ok_button_text = "Load"
+		blueprint_dialog.current_dir = VehicleBlueprint.DIRECTORY
+		blueprint_dialog.current_file = ""
+	blueprint_dialog.popup_centered_ratio(0.7)
+
+
+func _on_blueprint_file_selected(path: String) -> void:
+	var selected_mode := blueprint_dialog_mode
+	blueprint_dialog_mode = BlueprintDialogMode.NONE
+	if selected_mode == BlueprintDialogMode.SAVE:
+		_save_blueprint_to_path(path)
+	elif selected_mode == BlueprintDialogMode.LOAD:
+		_load_blueprint_from_path(path)
+
+
+func _save_blueprint_to_path(path: String) -> void:
+	if not is_instance_valid(vehicle):
+		_show_status("There is no vehicle to save.")
+		return
+	var result := VehicleBlueprint.save_path(
+		vehicle,
+		vehicle.vehicle_name,
+		path
+	)
 	if result["ok"]:
 		_show_status("Blueprint saved: %s" % result["name"])
 	else:
 		_show_status(result["error"])
 
 
-func _on_load_button_pressed() -> void:
-	if not is_instance_valid(vehicle):
-		return
-	var directory_result := VehicleBlueprint.ensure_directory()
-	if not directory_result["ok"]:
-		_show_status(directory_result["error"])
-		return
-	blueprint_dialog.access = FileDialog.ACCESS_USERDATA
-	blueprint_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
-	blueprint_dialog.current_dir = VehicleBlueprint.DIRECTORY
-	blueprint_dialog.popup_centered_ratio(0.7)
-
-
-func _on_blueprint_file_selected(path: String) -> void:
+func _load_blueprint_from_path(path: String) -> void:
 	var result := VehicleBlueprint.load_path(path)
 	if not result["ok"]:
 		_show_status(result["error"])
@@ -642,6 +697,10 @@ func _on_blueprint_file_selected(path: String) -> void:
 	if is_instance_valid(old_vehicle):
 		old_vehicle.queue_free()
 	_show_status("Ghost blueprint loaded: %s" % built["name"])
+
+
+func _on_blueprint_dialog_canceled() -> void:
+	blueprint_dialog_mode = BlueprintDialogMode.NONE
 
 
 func _on_com_visibility_changed(enabled: bool) -> void:

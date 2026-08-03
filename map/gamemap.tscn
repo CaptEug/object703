@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://tlan82mfwxap" path="res://map/tilemap/liquid_layer.gd" id="4_liquid"]
 [ext_resource type="Script" uid="uid://c5e5skv5tfrvd" path="res://scene/day&night.gd" id="5_y5b6y"]
 [ext_resource type="Script" uid="uid://febxvt3qcdf4" path="res://map/vehicle_root.gd" id="6_ldbmw"]
+[ext_resource type="Script" path="res://building/building_system.gd" id="7_buildings"]
 
 [sub_resource type="Environment" id="Environment_i3gmg"]
 background_mode = 3
@@ -28,6 +29,9 @@ tile_set = ExtResource("2_8k602")
 script = ExtResource("2_i3gmg")
 
 [node name="FunctionalBlocks" type="Node2D" parent="WorldBlockLayer" unique_id=132110311]
+
+[node name="BuildingSystem" type="Node" parent="WorldBlockLayer"]
+script = ExtResource("7_buildings")
 
 [node name="LiquidLayer" type="TileMapLayer" parent="." unique_id=841302961]
 tile_set = ExtResource("2_8k602")

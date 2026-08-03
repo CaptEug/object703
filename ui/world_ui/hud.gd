@@ -3,13 +3,18 @@ extends Panel
 @export var UI_root : CanvasLayer
 @export var gamescene : GameScene
 @export var vehicle_editor : VehicleEditor
+@export var building_constructor: BuildingConstructor
 @export var settings_panel : FloatingPanel
 @export var minimap : FloatingPanel
 
 @onready var clock = $Clock
+@onready var build_button: TextureButton = $BuildButton
 
-func _ready():
-	pass
+func _ready() -> void:
+	if building_constructor != null:
+		building_constructor.active_changed.connect(
+			_on_building_constructor_active_changed
+		)
 
 func _process(_delta):
 	if gamescene:
@@ -24,9 +29,18 @@ func get_clock_string(time) -> String:
 	return "%02d:%02d" % [hour, minute]
 
 
-func _on_build_button_pressed():
-	vehicle_editor.create_new_vehicle()
-	vehicle_editor.enter_edit_mode()
+func _on_build_button_toggled(enabled: bool) -> void:
+	if building_constructor == null:
+		build_button.set_pressed_no_signal(false)
+		return
+	if enabled and vehicle_editor != null:
+		vehicle_editor.close_vehicle_panel()
+	building_constructor.set_active(enabled)
+	build_button.set_pressed_no_signal(building_constructor.is_active())
+
+
+func _on_building_constructor_active_changed(enabled: bool) -> void:
+	build_button.set_pressed_no_signal(enabled)
 
 
 func _on_settings_button_pressed() -> void:

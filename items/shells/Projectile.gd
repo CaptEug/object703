@@ -17,6 +17,7 @@ enum ShellType {
 @export_range(0.0, 1.0, 0.01) var ricochet_loss: float = 0.5
 
 var source_vehicle: Vehicle
+var source_assembly: BlockAssembly
 var source_weapon: Weapon
 var spawn_position := Vector2.ZERO
 var distance_travelled := 0.0
@@ -209,6 +210,13 @@ func _handle_world_block_impact(
 		)
 	if cell == WorldBlockLayer.INVALID_CELL:
 		_handle_world_impact(hit_position, hit_normal)
+		return
+	if (
+		not source_cleared
+		and source_assembly != null
+		and world_blocks.get_assembly_at(cell) == source_assembly
+	):
+		last_pos = hit_position + direction.normalized()
 		return
 
 	var impact_position := hit_position

@@ -53,11 +53,10 @@ func place_ground(position: Vector2i, block_id: int) -> bool:
 
 
 func get_variant(position: Vector2i, variant_count: int) -> int:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(
-		Vector3i(position.x, position.y, hash(gamemap.world_seed))
+	return posmod(
+		hash(Vector3i(position.x, position.y, hash(gamemap.world_seed))),
+		variant_count
 	)
-	return rng.randi_range(0, variant_count - 1)
 
 
 func get_ground_block_id_at(cell: Vector2i) -> int:
@@ -96,21 +95,17 @@ func load_chunk(
 	chunk_x: int,
 	chunk_y: int,
 	bytes: PackedByteArray,
-	chunk_size: int,
-	format_version: int = 4
+	chunk_size: int
 ) -> void:
+	var expected_size := chunk_size * chunk_size * 2
+	if bytes.size() < expected_size:
+		push_error("Ground chunk is truncated.")
+		return
 	var index := 0
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
-			var block_id := 0
-			if format_version >= 4:
-				block_id = bytes.decode_u16(index)
-				index += 2
-			else:
-				block_id = BlockDB.get_legacy_ground_block_id(
-					bytes.decode_u8(index)
-				)
-				index += 1
+			var block_id := bytes.decode_u16(index)
+			index += 2
 			if block_id <= 0:
 				continue
 			if not BlockDB.is_ground(block_id):

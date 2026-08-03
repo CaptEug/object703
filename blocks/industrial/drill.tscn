@@ -22,6 +22,8 @@ region = Rect2(0, 32, 32, 48)
 script = ExtResource("1_hfpfy")
 drill_area = NodePath("Area2D")
 drill_head = NodePath("Mask/Sprite2D")
+head_scroll_speed = 256.0
+head_acceleration = 64.0
 size = Vector2i(2, 3)
 edge_sockets = Dictionary[Vector2i, Dictionary]({
 Vector2i(0, 0): {

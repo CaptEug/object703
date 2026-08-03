@@ -63,6 +63,23 @@ func set_liquid_cell(
 ) -> bool:
 	if not BlockDB.is_liquid(block_id):
 		return false
+	if (
+		gamemap != null
+		and (
+			cell.x < 0
+			or cell.y < 0
+			or cell.x >= gamemap.world_width
+			or cell.y >= gamemap.world_height
+		)
+	):
+		return false
+	if (
+		gamemap != null
+		and is_instance_valid(gamemap.world_blocks)
+		and gamemap.world_blocks.get_block_id_at(cell)
+		!= BlockDB.INVALID_BLOCK_ID
+	):
+		return false
 	var cell_capacity := BlockDB.get_default_liquid_mass(block_id)
 	layerdata[cell] = {
 		"block_id": block_id,
@@ -197,26 +214,19 @@ func load_chunk(
 	chunk_x: int,
 	chunk_y: int,
 	bytes: PackedByteArray,
-	chunk_size: int,
-	format_version: int = 3
+	chunk_size: int
 ) -> void:
+	var expected_size := chunk_size * chunk_size * 4
+	if bytes.size() < expected_size:
+		push_error("Liquid chunk is truncated.")
+		return
 	var index := 0
 	var changed: Array[Vector2i] = []
 	for ly in range(chunk_size):
 		for lx in range(chunk_size):
-			var block_id := 0
-			var mass := 0
-			if format_version >= 3:
-				block_id = bytes.decode_u16(index)
-				mass = bytes.decode_u16(index + 2)
-				index += 4
-			else:
-				var legacy_tile_id := bytes.decode_u8(index)
-				block_id = BlockDB.get_legacy_liquid_block_id(
-					legacy_tile_id
-				)
-				mass = bytes.decode_u16(index + 1)
-				index += 3
+			var block_id := bytes.decode_u16(index)
+			var mass := bytes.decode_u16(index + 2)
+			index += 4
 			if block_id <= 0:
 				continue
 			var cell := Vector2i(

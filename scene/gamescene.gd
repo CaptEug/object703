@@ -1,6 +1,9 @@
 class_name GameScene
 extends Node2D
 
+const BUILDING_SAVE := preload("res://building/building_save.gd")
+const VEHICLE_SAVE := preload("res://vehicle/vehicle_save.gd")
+
 @onready var gamemap:GameMap = $Gamemap
 @onready var gameUI:CanvasLayer = $UI
 @onready var camera:Camera2D = $Camera2D
@@ -37,30 +40,42 @@ func update_game_time(delta):
 func gen_world():
 	world_name = GameState.world_gen_data["name"]
 	world_seed = GameState.world_gen_data["seed"]
+	GameState.world_gen_data.clear()
 	gamemap.world_seed = world_seed
 	gamemap.generate_world()
+	save_world(GameState.world_path)
 
 
-func save_world(dir:String):
-	# HEADER
+func save_world(dir: String) -> bool:
+	var success := true
 	var header := {
 		"name": world_name,
 		"seed": world_seed,
 		"last_played": Time.get_unix_time_from_system(),
-		"version": 0
+		"version": GameState.WORLD_VERSION,
 	}
-	_write_json(dir + "header.json", header)
-	
+	success = _write_json(dir + "header.json", header) and success
 	var data := {
 		"gametime": game_time,
-		#"technology":,
 	}
-	_write_json(dir + "world.json", data)
-	
-	# TILEMAP
-	gamemap.save_map(dir)
-	
-	print("世界保存完成")
+	success = _write_json(dir + "world.json", data) and success
+	success = gamemap.save_map(dir) and success
+
+	var building_result := BUILDING_SAVE.save_file(
+		gamemap.world_blocks,
+		dir
+	)
+	if not building_result["ok"]:
+		push_error(building_result["error"])
+		success = false
+	var vehicle_result := VEHICLE_SAVE.save_file(get_tree(), dir)
+	if not vehicle_result["ok"]:
+		push_error(vehicle_result["error"])
+		success = false
+
+	if success:
+		print("World save complete")
+	return success
 
 
 func load_world():
@@ -82,14 +97,30 @@ func load_world():
 	world_data = data
 	game_time = world_data.get("gametime", 0)
 	
-	# load tilemap
+	# Version 0 uses separate authoritative terrain, building, and vehicle files.
 	gamemap.world_seed = world_seed
-	gamemap.load_map(path + world_name + ".map")
+	if not gamemap.load_map(path + GameMap.MAP_FILE_NAME):
+		return
+	var building_result := BUILDING_SAVE.load_file(
+		gamemap.world_blocks,
+		path
+	)
+	if not building_result["ok"]:
+		push_error(building_result["error"])
+		return
+	var vehicle_result := VEHICLE_SAVE.load_file(gamemap, path)
+	if not vehicle_result["ok"]:
+		push_error(vehicle_result["error"])
+		return
 	
-func _write_json(path: String, data: Dictionary):
+func _write_json(path: String, data: Dictionary) -> bool:
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	file.store_string(JSON.stringify(data, "\t"))
+	if file == null:
+		push_error("Could not write %s." % path)
+		return false
+	file.store_string(JSON.stringify(data))
 	file.close()
+	return true
 
 
 func _read_json(path: String) -> Dictionary:

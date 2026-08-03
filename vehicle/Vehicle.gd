@@ -8,8 +8,6 @@ const TILE_SIZE := Globals.TILE_SIZE
 @onready var blocks_root : Node2D = $Blocks
 @onready var passive_visuals: TileMapLayer = $PassiveVisuals
 @onready var power_system := $PowerSystem
-@onready var fluid_system := $FluidSystem
-@onready var supply_system := $SupplySystem
 
 # grid storage
 var grid : Dictionary = {}      # Vector2i -> Block
@@ -19,13 +17,38 @@ var block_component_map: Dictionary[Block, int] = {}
 
 # basic property
 @export var vehicle_name := "New Vehicle"
-@export var owner_id: StringName = &"player"
+var block_assembly: BlockAssembly
+var _owner_id: StringName = &"player"
+@export var owner_id: StringName:
+	get:
+		return block_assembly.owner_id if block_assembly != null else _owner_id
+	set(value):
+		_owner_id = value
+		if block_assembly != null:
+			block_assembly.owner_id = value
 var blueprint_blocks: Array = []
 var blueprint_ghosts_root: Node2D
 var total_mass := 0.0
 var tracks: Array[Track] = []
-var control_blocks: Array[ControlBlock] = []
-var active_control_block: ControlBlock
+var control_blocks: Array[ControlBlock]:
+	get:
+		return (
+			block_assembly.control_blocks
+			if block_assembly != null
+			else []
+		)
+var active_control_block: ControlBlock:
+	get:
+		return (
+			block_assembly.active_control_block
+			if block_assembly != null
+			else null
+		)
+
+
+func _init() -> void:
+	block_assembly = BlockAssembly.new(self)
+	block_assembly.owner_id = _owner_id
 
 
 func _ready() -> void:
@@ -87,39 +110,35 @@ func update_vehicle():
 
 
 func get_drive_input() -> Dictionary:
-	if not is_instance_valid(active_control_block):
-		return {
-			"move": 0.0,
-			"pivot": 0.0,
-		}
-	return active_control_block.get_drive_command()
+	return block_assembly.get_drive_input()
 
 
 func has_aim_command() -> bool:
-	return (
-		is_instance_valid(active_control_block)
-		and active_control_block.has_aim_command()
-	)
+	return block_assembly.has_aim_command()
 
 
 func get_aim_target() -> Vector2:
-	if not is_instance_valid(active_control_block):
-		return global_position
-	return active_control_block.get_aim_target()
-
-
-func get_fire_command() -> bool:
 	return (
-		is_instance_valid(active_control_block)
-		and active_control_block.get_fire_command()
+		block_assembly.get_aim_target()
+		if block_assembly.has_aim_command()
+		else global_position
 	)
 
 
+func get_fire_command() -> bool:
+	return block_assembly.get_fire_command()
+
+
 func set_active_control_block(control_block: ControlBlock) -> bool:
-	if not is_instance_valid(control_block) or not control_blocks.has(control_block):
-		return false
-	active_control_block = control_block
-	return true
+	return block_assembly.set_active_control_block(control_block)
+
+
+func has_control_block(control_block: ControlBlock) -> bool:
+	return block_assembly.has_control_block(control_block)
+
+
+func is_active_control_block(control_block: ControlBlock) -> bool:
+	return block_assembly.is_active_control_block(control_block)
 
 
 # Block Management
@@ -146,7 +165,8 @@ func place_block(
 	cell: Vector2i,
 	rotation_i: int,
 	block_size: Vector2i = Vector2i.ZERO,
-	merge_containers: bool = true
+	merge_unions: bool = true,
+	update_after_placement: bool = true
 ):
 	var block := block_scene.instantiate() as Block
 	if block == null:
@@ -161,14 +181,14 @@ func place_block(
 	):
 		block.free()
 		return false
-	if block is ExpandableStorage:
-		var container_size := (
+	if block is ExpandableBlock:
+		var union_size := (
 			block.size
 			if block_size == Vector2i.ZERO
 			else block_size
 		)
-		if not (block as ExpandableStorage).configure_blueprint_size(
-			container_size
+		if not (block as ExpandableBlock).configure_union_size(
+			union_size
 		):
 			block.free()
 			return false
@@ -189,10 +209,11 @@ func place_block(
 	create_collision(block)
 	refresh_block_visuals_around(block.get_occupied_cells())
 	
-	if merge_containers:
-		merge_rectangular_containers()
-	update_vehicle()
-	reconcile_blueprint_with_blocks()
+	if merge_unions:
+		merge_rectangular_unions()
+	if update_after_placement:
+		update_vehicle()
+		reconcile_blueprint_with_blocks()
 	
 	return true
 
@@ -208,99 +229,30 @@ func create_collision(block: Block) -> void:
 		collision.global_transform = old_global
 
 
-func merge_rectangular_containers() -> int:
-	var unvisited := {}
+func merge_rectangular_unions() -> int:
+	var union_blocks: Array[ExpandableBlock] = []
 	for block: Block in blocks:
-		if block is ExpandableStorage:
-			unvisited[block] = true
-
-	var merged_count := 0
-	while not unvisited.is_empty():
-		var start := unvisited.keys()[0] as ExpandableStorage
-		var component := _get_container_component(start, unvisited)
-		if component.size() <= 1:
-			continue
-		var rectangle := _get_complete_container_rectangle(component)
-		if rectangle.size == Vector2i.ZERO:
-			continue
-		if not start.can_merge_storage_members(component):
-			continue
-		_merge_container_component(component, rectangle)
-		merged_count += 1
-	return merged_count
+		if block is ExpandableBlock:
+			union_blocks.append(block as ExpandableBlock)
+	var groups := ExpandableBlock.find_rectangular_groups(
+		union_blocks,
+		Callable(self, "get_block")
+	)
+	for group: Dictionary in groups:
+		_merge_union_component(
+			group["members"],
+			group["rectangle"]
+		)
+	return groups.size()
 
 
-func _get_container_component(
-	start: ExpandableStorage,
-	unvisited: Dictionary
-) -> Array:
-	var result: Array = []
-	var queue: Array[ExpandableStorage] = [start]
-	var merge_key := start.get_container_merge_key()
-	var merge_rotation := start.rotation_index
-	while not queue.is_empty():
-		var current := queue.pop_front() as ExpandableStorage
-		if not unvisited.has(current):
-			continue
-		unvisited.erase(current)
-		result.append(current)
-		for occupied_cell: Vector2i in current.get_occupied_cells():
-			for direction: Vector2i in Block.SIDE_DIRS.values():
-				var neighbor := get_block(occupied_cell + direction)
-				if (
-					neighbor is ExpandableStorage
-					and neighbor != current
-					and unvisited.has(neighbor)
-					and (
-						neighbor as ExpandableStorage
-					).get_container_merge_key() == merge_key
-					and (
-						neighbor as ExpandableStorage
-					).rotation_index == merge_rotation
-				):
-					queue.append(neighbor as ExpandableStorage)
-	return result
-
-
-func _get_complete_container_rectangle(component: Array) -> Rect2i:
-	var occupied := {}
-	var has_cell := false
-	var min_cell := Vector2i.ZERO
-	var max_cell := Vector2i.ZERO
-	for value: Variant in component:
-		var container := value as ExpandableStorage
-		if container == null:
-			continue
-		for cell: Vector2i in container.get_occupied_cells():
-			occupied[cell] = true
-			if not has_cell:
-				min_cell = cell
-				max_cell = cell
-				has_cell = true
-			else:
-				min_cell.x = mini(min_cell.x, cell.x)
-				min_cell.y = mini(min_cell.y, cell.y)
-				max_cell.x = maxi(max_cell.x, cell.x)
-				max_cell.y = maxi(max_cell.y, cell.y)
-	if not has_cell:
-		return Rect2i()
-	var rectangle_size := max_cell - min_cell + Vector2i.ONE
-	if occupied.size() != rectangle_size.x * rectangle_size.y:
-		return Rect2i()
-	for y in range(min_cell.y, max_cell.y + 1):
-		for x in range(min_cell.x, max_cell.x + 1):
-			if not occupied.has(Vector2i(x, y)):
-				return Rect2i()
-	return Rect2i(min_cell, rectangle_size)
-
-
-func _merge_container_component(
+func _merge_union_component(
 	component: Array,
 	rectangle: Rect2i
 ) -> void:
-	var leader := component[0] as ExpandableStorage
+	var leader := component[0] as ExpandableBlock
 	for value: Variant in component:
-		var candidate := value as ExpandableStorage
+		var candidate := value as ExpandableBlock
 		if (
 			candidate.origin_cell.y < leader.origin_cell.y
 			or (
@@ -311,14 +263,14 @@ func _merge_container_component(
 			leader = candidate
 
 	for value: Variant in component:
-		var member := value as ExpandableStorage
+		var member := value as ExpandableBlock
 		for occupied_cell: Vector2i in member.get_occupied_cells():
 			grid.erase(occupied_cell)
 
 	var merged_size := rectangle.size
 	if leader.rotation_index % 2 != 0:
 		merged_size = Vector2i(rectangle.size.y, rectangle.size.x)
-	leader.merge_container_members(
+	leader.merge_union_members(
 		component,
 		rectangle.position,
 		merged_size,
@@ -326,7 +278,7 @@ func _merge_container_component(
 	)
 
 	for value: Variant in component:
-		var member := value as ExpandableStorage
+		var member := value as ExpandableBlock
 		if member == leader:
 			continue
 		blocks.erase(member)
@@ -508,7 +460,7 @@ func _move_component_to_vehicle(
 		component_block.reparent(target_vehicle.blocks_root, true)
 		component_block.vehicle = target_vehicle
 		component_block.block_host = target_vehicle
-		component_block.assembly = target_vehicle
+		component_block.assembly = target_vehicle.block_assembly
 		target_vehicle.blocks.append(component_block)
 		if component_block.collision != null:
 			component_block.collision.reparent(target_vehicle, true)
@@ -563,8 +515,8 @@ func get_block_hp_at(cell: Vector2i) -> float:
 	return 0.0 if block == null else block._local_hp
 
 
-func get_assembly_at(_cell: Vector2i) -> Object:
-	return self
+func get_assembly_at(_cell: Vector2i) -> BlockAssembly:
+	return block_assembly
 
 
 func refresh_block_visuals_around(cells: Array[Vector2i]) -> void:
@@ -633,7 +585,7 @@ func can_supply_item(
 	item_name: String,
 	amount: int
 ) -> bool:
-	return supply_system.can_supply_item(requester, item_name, amount)
+	return block_assembly.can_supply_item(requester, item_name, amount)
 
 
 func supply_item(
@@ -641,7 +593,7 @@ func supply_item(
 	item_name: String,
 	amount: int
 ) -> bool:
-	return supply_system.supply_item(requester, item_name, amount)
+	return block_assembly.supply_item(requester, item_name, amount)
 
 
 func can_receive_item(
@@ -649,7 +601,7 @@ func can_receive_item(
 	item_name: String,
 	amount: int = 1
 ) -> bool:
-	return supply_system.can_receive_item(requester, item_name, amount)
+	return block_assembly.can_receive_item(requester, item_name, amount)
 
 
 func receive_item(
@@ -657,39 +609,31 @@ func receive_item(
 	item_name: String,
 	amount: int
 ) -> int:
-	return supply_system.receive_item(requester, item_name, amount)
+	return block_assembly.receive_item(requester, item_name, amount)
 
 
 func can_supply_liquids(
 	requester: Block,
 	liquid_requests: Dictionary
 ) -> bool:
-	return fluid_system.can_supply_liquids(requester, liquid_requests)
+	return block_assembly.can_supply_liquids(requester, liquid_requests)
 
 
 func supply_liquids(
 	requester: Block,
 	liquid_requests: Dictionary
 ) -> bool:
-	return fluid_system.supply_liquids(requester, liquid_requests)
+	return block_assembly.supply_liquids(requester, liquid_requests)
 
 
 func refresh_system_lists() -> void:
 	var previous_control := active_control_block
 	tracks.clear()
-	control_blocks.clear()
 	
 	for block in blocks:
-		if block is ControlBlock:
-			control_blocks.append(block as ControlBlock)
-		elif block is Track:
+		if block is Track:
 			tracks.append(block as Track)
-	if is_instance_valid(previous_control) and control_blocks.has(previous_control):
-		active_control_block = previous_control
-	elif control_blocks.is_empty():
-		active_control_block = null
-	else:
-		active_control_block = control_blocks[0]
+	block_assembly.rebuild(blocks, previous_control)
 	
 	rebuild_block_connectivity()
 	rebuild_tracks_connections()
@@ -910,8 +854,8 @@ func refresh_blueprint_ghosts() -> void:
 		var saved_size := VehicleBlueprint._get_record_size(record)
 		if (
 			saved_size != Vector2i.ZERO
-			and ghost is ExpandableStorage
-			and not (ghost as ExpandableStorage).configure_blueprint_size(
+			and ghost is ExpandableBlock
+			and not (ghost as ExpandableBlock).configure_union_size(
 				saved_size
 			)
 		):

@@ -29,14 +29,14 @@ func _refresh() -> void:
 		active_toggle.disabled = true
 		active_toggle.set_pressed_no_signal(false)
 		return
-	var target_vehicle := control_block.vehicle
-	var available := (
-		is_instance_valid(target_vehicle)
-		and target_vehicle.control_blocks.has(control_block)
+	var target_assembly := control_block.get_assembly()
+	var available: bool = (
+		target_assembly != null
+		and target_assembly.has_control_block(control_block)
 	)
-	var is_active := (
+	var is_active: bool = (
 		available
-		and target_vehicle.active_control_block == control_block
+		and target_assembly.is_active_control_block(control_block)
 	)
 	active_toggle.disabled = not available
 	active_toggle.set_pressed_no_signal(is_active)
@@ -50,9 +50,9 @@ func _refresh() -> void:
 func _on_active_toggle_toggled(enabled: bool) -> void:
 	if not is_instance_valid(control_block):
 		return
-	var target_vehicle := control_block.vehicle
-	if not is_instance_valid(target_vehicle):
+	var target_assembly := control_block.get_assembly()
+	if target_assembly == null:
 		return
 	if enabled:
-		target_vehicle.set_active_control_block(control_block)
+		target_assembly.set_active_control_block(control_block)
 	_refresh()

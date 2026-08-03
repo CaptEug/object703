@@ -119,9 +119,9 @@ var blocks := {
 	8: {
 		"block_name": "Manual Cockpit",
 		"block_class": CLASS_CONSTRUCTED,
-		"allowed_hosts": [HOST_VEHICLE],
+		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
 		"scene_path": "res://blocks/control/manual_cockpit.tscn",
-		"world_functional": false,
+		"world_functional": true,
 		"size": Vector2i(1, 1),
 		"rotatable": true,
 		"max_hp": 100.0,
@@ -194,6 +194,35 @@ var blocks := {
 	},
 }
 
+var _name_to_id: Dictionary = {}
+var _scene_to_id: Dictionary = {}
+var _scene_cache: Dictionary = {}
+var _indexes_ready := false
+
+
+func _ready() -> void:
+	rebuild_indexes()
+
+
+func rebuild_indexes() -> void:
+	_name_to_id.clear()
+	_scene_to_id.clear()
+	_scene_cache.clear()
+	for block_id: int in blocks:
+		var definition: Dictionary = blocks[block_id]
+		var block_name := str(definition.get("block_name", ""))
+		if not block_name.is_empty():
+			_name_to_id[block_name] = block_id
+		var scene_path := str(definition.get("scene_path", ""))
+		if not scene_path.is_empty():
+			_scene_to_id[scene_path] = block_id
+	_indexes_ready = true
+
+
+func _ensure_indexes() -> void:
+	if not _indexes_ready:
+		rebuild_indexes()
+
 
 func get_block(block_id: int) -> Dictionary:
 	return blocks.get(block_id, {})
@@ -208,10 +237,15 @@ func has_block(block_id: int) -> bool:
 
 
 func get_scene(block_id: int) -> PackedScene:
+	_ensure_indexes()
+	if _scene_cache.has(block_id):
+		return _scene_cache[block_id] as PackedScene
 	var scene_path := str(get_block(block_id).get("scene_path", ""))
 	if scene_path.is_empty():
 		return null
-	return load(scene_path) as PackedScene
+	var scene := load(scene_path) as PackedScene
+	_scene_cache[block_id] = scene
+	return scene
 
 
 func get_block_name(block_id: int) -> String:
@@ -223,18 +257,13 @@ func get_color(block_id: int) -> Color:
 
 
 func get_id_for_scene(scene_path: String) -> int:
-	for block_id: int in blocks:
-		if blocks[block_id].get("scene_path", "") == scene_path:
-			return block_id
-	return INVALID_BLOCK_ID
+	_ensure_indexes()
+	return int(_scene_to_id.get(scene_path, INVALID_BLOCK_ID))
 
 
 func get_id_for_name(block_name: String) -> int:
-	for block_id: int in blocks:
-		var definition: Dictionary = blocks[block_id]
-		if definition.get("block_name", "") == block_name:
-			return block_id
-	return INVALID_BLOCK_ID
+	_ensure_indexes()
+	return int(_name_to_id.get(block_name, INVALID_BLOCK_ID))
 
 
 func get_construction_cost(block_id: int) -> Dictionary:
@@ -255,6 +284,10 @@ func can_place_on(block_id: int, host_name: String) -> bool:
 
 func is_constructed(block_id: int) -> bool:
 	return get_block(block_id).get("block_class", "") == CLASS_CONSTRUCTED
+
+
+func is_natural(block_id: int) -> bool:
+	return get_block(block_id).get("block_class", "") == CLASS_NATURAL
 
 
 func is_world_functional(block_id: int) -> bool:
@@ -305,24 +338,8 @@ func get_damage_multiplier(block_id: int, damage_type: StringName) -> float:
 	return maxf(float(get_block(block_id).get(key, 1.0)), 0.0)
 
 
-func get_legacy_world_block_id(tile_id: int) -> int:
-	match tile_id:
-		1:
-			return 9
-		2:
-			return 10
-	return INVALID_BLOCK_ID
-
-
-func get_legacy_liquid_block_id(tile_id: int) -> int:
-	return 11 if tile_id == 3 else INVALID_BLOCK_ID
-
-
-func get_legacy_ground_block_id(tile_id: int) -> int:
-	return 12 if tile_id == 4 else INVALID_BLOCK_ID
-
-
 func validate_database(tile_set: TileSet = null) -> PackedStringArray:
+	rebuild_indexes()
 	var errors := PackedStringArray()
 	var names := {}
 	for block_id: int in blocks:

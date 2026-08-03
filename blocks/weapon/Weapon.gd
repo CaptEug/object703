@@ -50,6 +50,63 @@ func has_information_panel() -> bool:
 	return true
 
 
+func get_save_state() -> Dictionary:
+	var result := {
+		"state": int(state),
+		"selected_ammo": selected_ammo,
+		"loaded_ammo": loaded_ammo,
+		"current_muzzle": current_muzzle,
+	}
+	if state == WeaponState.RELOADING and reload_timer != null:
+		result["reload_remaining"] = reload_timer.time_left
+	return result
+
+
+func apply_save_state(saved: Dictionary) -> void:
+	var saved_selected := str(saved.get("selected_ammo", ""))
+	selected_ammo = (
+		saved_selected
+		if saved_selected.is_empty()
+		or (
+			shells.has(saved_selected)
+			and _is_valid_ammo(saved_selected)
+		)
+		else ""
+	)
+	current_muzzle = maxi(int(saved.get("current_muzzle", 0)), 0)
+	loaded_ammo = ""
+	shell_loaded = null
+	if reload_timer != null:
+		reload_timer.stop()
+
+	var saved_loaded := str(saved.get("loaded_ammo", ""))
+	if shells.has(saved_loaded) and _is_valid_ammo(saved_loaded):
+		loaded_ammo = saved_loaded
+		shell_loaded = ItemDB.get_item_by_name(saved_loaded).get(
+			"shell_scene"
+		) as PackedScene
+	var saved_state := int(saved.get("state", WeaponState.EMPTY))
+	if shell_loaded == null:
+		state = WeaponState.EMPTY
+	elif saved_state == WeaponState.READY:
+		state = WeaponState.READY
+	elif saved_state == WeaponState.RELOADING:
+		var remaining := maxf(
+			float(saved.get("reload_remaining", reload)),
+			0.0
+		)
+		if remaining <= 0.001:
+			state = WeaponState.READY
+		else:
+			state = WeaponState.RELOADING
+			reload_timer.start(remaining)
+	else:
+		loaded_ammo = ""
+		shell_loaded = null
+		state = WeaponState.EMPTY
+	weapon_status_changed.emit()
+
+
 func _ready() -> void:
 	super()
 	reload_timer = Timer.new()
@@ -62,18 +119,11 @@ func _physics_process(delta: float) -> void:
 	if current_assembly == null:
 		return
 
-	if (
-		current_assembly.has_method("has_aim_command")
-		and current_assembly.call("has_aim_command")
-	):
-		set_aim_target(current_assembly.call("get_aim_target"))
+	if current_assembly.has_aim_command():
+		set_aim_target(current_assembly.get_aim_target())
 	else:
 		clear_aim_target()
-	set_trigger_held(
-		bool(current_assembly.call("get_fire_command"))
-		if current_assembly.has_method("get_fire_command")
-		else false
-	)
+	set_trigger_held(current_assembly.get_fire_command())
 	if mount_type == MountType.INTEGRATED_TURRET:
 		_update_integrated_turret(delta)
 
@@ -157,25 +207,9 @@ func _try_start_reload() -> bool:
 	if state != WeaponState.EMPTY or current_assembly == null:
 		return false
 	for item_name: String in _get_ammo_candidates():
-		if (
-			not current_assembly.has_method("can_supply_item")
-			or not current_assembly.call(
-				"can_supply_item",
-				self,
-				item_name,
-				1
-			)
-		):
+		if not current_assembly.can_supply_item(self, item_name, 1):
 			continue
-		if (
-			not current_assembly.has_method("supply_item")
-			or not current_assembly.call(
-				"supply_item",
-				self,
-				item_name,
-				1
-			)
-		):
+		if not current_assembly.supply_item(self, item_name, 1):
 			continue
 		var shell_scene := ItemDB.get_item_by_name(item_name).get("shell_scene") as PackedScene
 		if shell_scene == null:
@@ -248,9 +282,11 @@ func _spawn_projectile(muzzle: Marker2D, shell_scene: PackedScene) -> bool:
 	var direction := Vector2.UP.rotated(muzzle.global_rotation)
 	direction = direction.rotated(randf_range(-spread, spread)).normalized()
 	var current_assembly := get_assembly()
+	shell.source_assembly = current_assembly
 	shell.source_vehicle = (
-		current_assembly as Vehicle
-		if current_assembly is Vehicle
+		current_assembly.host as Vehicle
+		if current_assembly != null
+		and current_assembly.host is Vehicle
 		else null
 	)
 	shell.source_weapon = self
@@ -266,8 +302,8 @@ func _spawn_projectile(muzzle: Marker2D, shell_scene: PackedScene) -> bool:
 	var impulse := direction * shell_mass * velocity
 	shell.apply_impulse(impulse)
 
-	if current_assembly is Vehicle:
-		var source_vehicle := current_assembly as Vehicle
+	if current_assembly != null and current_assembly.host is Vehicle:
+		var source_vehicle := current_assembly.host as Vehicle
 		var recoil_offset := (
 			muzzle.global_position - source_vehicle.global_position
 		)

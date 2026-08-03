@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_rbyyf"]
 [ext_resource type="Script" uid="uid://cgxk62odscflu" path="res://ui/world_ui/hud.gd" id="2_546lt"]
-[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/buttons.png" id="3_546lt"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="3_546lt"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_en2x2"]
 atlas = ExtResource("3_546lt")
@@ -39,9 +39,10 @@ layout_mode = 0
 offset_left = 339.0
 offset_right = 371.0
 offset_bottom = 32.0
-tooltip_text = "new tank"
+tooltip_text = "Construct building"
 focus_mode = 0
 mouse_default_cursor_shape = 2
+toggle_mode = true
 texture_normal = SubResource("AtlasTexture_7ihmi")
 
 [node name="MapButton" type="TextureButton" parent="." unique_id=2059256106]
@@ -71,5 +72,5 @@ grow_vertical = 2
 text = "00:00"
 
 [connection signal="pressed" from="SettingsButton" to="." method="_on_settings_button_pressed"]
-[connection signal="pressed" from="BuildButton" to="." method="_on_build_button_pressed"]
+[connection signal="toggled" from="BuildButton" to="." method="_on_build_button_toggled"]
 [connection signal="pressed" from="MapButton" to="." method="_on_map_button_pressed"]
