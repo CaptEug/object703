@@ -12,6 +12,7 @@ region = Rect2(16, 64, 16, 32)
 
 [node name="V2" type="Node2D" unique_id=1612667147]
 script = ExtResource("1_wdfkh")
+max_power = 1000.0
 size = Vector2i(1, 2)
 metadata/_custom_type_script = "uid://bicc471ql4ger"
 

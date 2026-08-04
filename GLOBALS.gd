@@ -1,7 +1,7 @@
 extends Node
 
 const TILE_SIZE : int = 16
-const CYCLE_DURATION : float = 600
+const CYCLE_DURATION : float = 1800 #sec
 
 # 默认时间缩放为1.0（正常速度）
 var time_scale: float = 1.0:

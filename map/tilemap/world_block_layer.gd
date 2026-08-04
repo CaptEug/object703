@@ -253,12 +253,7 @@ func can_place_block(
 	for cell: Vector2i in occupied_cells:
 		if (
 			gamemap != null
-			and (
-				cell.x < 0
-				or cell.y < 0
-				or cell.x >= gamemap.world_width
-				or cell.y >= gamemap.world_height
-			)
+			and not gamemap.is_cell_in_world(cell)
 		):
 			return false
 		if cell_occupancy.has(cell):
@@ -466,14 +461,18 @@ func restore_constructed_save_data(records: Array) -> void:
 	building_system.restore_constructed_save_data(records)
 
 
-func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
+func save_chunk(
+	chunk_x: int,
+	chunk_y: int,
+	world_origin: Vector2i = Vector2i.ZERO
+) -> PackedByteArray:
 	const CHUNK_SIZE := 32
 	var bytes := PackedByteArray()
 	for ly in range(CHUNK_SIZE):
 		for lx in range(CHUNK_SIZE):
 			var cell := Vector2i(
-				chunk_x * CHUNK_SIZE + lx,
-				chunk_y * CHUNK_SIZE + ly
+				world_origin.x + chunk_x * CHUNK_SIZE + lx,
+				world_origin.y + chunk_y * CHUNK_SIZE + ly
 			)
 			var anchor := get_block_anchor(cell)
 			var state: Dictionary = block_records.get(anchor, {})
@@ -510,7 +509,8 @@ func load_chunk(
 	chunk_x: int,
 	chunk_y: int,
 	bytes: PackedByteArray,
-	chunk_size: int
+	chunk_size: int,
+	world_origin: Vector2i = Vector2i.ZERO
 ) -> void:
 	var expected_size := chunk_size * chunk_size * 4
 	if bytes.size() < expected_size:
@@ -534,8 +534,8 @@ func load_chunk(
 				)
 				continue
 			var cell := Vector2i(
-				chunk_x * chunk_size + lx,
-				chunk_y * chunk_size + ly
+				world_origin.x + chunk_x * chunk_size + lx,
+				world_origin.y + chunk_y * chunk_size + ly
 			)
 			var hp := (
 				BlockDB.get_max_hp(block_id)
@@ -575,12 +575,7 @@ func restore_constructed_block(
 			return false
 		if (
 			gamemap != null
-			and (
-				cell.x < 0
-				or cell.y < 0
-				or cell.x >= gamemap.world_width
-				or cell.y >= gamemap.world_height
-			)
+			and not gamemap.is_cell_in_world(cell)
 		):
 			return false
 	_register_block_state(

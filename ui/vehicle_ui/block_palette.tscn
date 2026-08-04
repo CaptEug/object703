@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://ctxya1ewcu5qr" path="res://blocks/industrial/drill.tscn" id="11_l8ndj"]
 [ext_resource type="PackedScene" uid="uid://cxis8u1udc8hr" path="res://blocks/weapon/KwK_43.tscn" id="11_ulxes"]
 [ext_resource type="PackedScene" path="res://blocks/control/manual_cockpit.tscn" id="12_cockpit"]
+[ext_resource type="PackedScene" path="res://blocks/structural/workshop.tscn" id="13_workshop"]
 
 [node name="BlockPalette" type="Control" unique_id=664557349]
 layout_mode = 3
@@ -45,3 +46,6 @@ position = Vector2(184, 78)
 
 [node name="Drill" parent="." unique_id=71089784 instance=ExtResource("11_l8ndj")]
 position = Vector2(123, 119)
+
+[node name="Workshop" parent="." instance=ExtResource("13_workshop")]
+position = Vector2(224, 32)

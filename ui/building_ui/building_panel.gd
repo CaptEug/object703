@@ -1,5 +1,5 @@
 class_name BuildingPanel
-extends Panel
+extends FloatingPanel
 
 var building: Building
 var world_blocks: WorldBlockLayer
@@ -45,7 +45,9 @@ func refresh_information() -> void:
 	if building == null:
 		building_name_input.text = "No building selected"
 		building_info_label.text = (
-			"Weight: --\n"
+			"Type: --\n"
+			+ "Workshop areas: --\n"
+			+ "Weight: --\n"
 			+ "Blocks: --\n"
 			+ "Occupied cells: --\n"
 			+ "Functional blocks: --\n"
@@ -54,7 +56,13 @@ func refresh_information() -> void:
 		return
 	building_name_input.text = building.building_name
 	building_info_label.text = (
-		"Weight: %.1f t\n" % building.get_total_mass()
+		"Type: %s\n" % (
+			"Vehicle Workshop"
+			if building.is_vehicle_workshop()
+			else "Building"
+		)
+		+ "Workshop areas: %d\n" % building.workshop_blocks.size()
+		+ "Weight: %.1f t\n" % building.get_total_mass()
 		+ "Blocks: %d\n" % building.block_anchors.size()
 		+ "Occupied cells: %d\n" % building.occupied_cells.size()
 		+ "Functional blocks: %d\n" % (

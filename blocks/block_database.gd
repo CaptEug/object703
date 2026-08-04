@@ -192,6 +192,21 @@ var blocks := {
 		"color": Color(0.78, 0.58, 0.16),
 		"construction_cost": {},
 	},
+	14: {
+		"block_name": "Workshop",
+		"block_class": CLASS_CONSTRUCTED,
+		"allowed_hosts": [HOST_WORLD],
+		"scene_path": "res://blocks/structural/workshop.tscn",
+		"world_functional": true,
+		"size": Vector2i(2, 2),
+		"rotatable": false,
+		"max_hp": 100.0,
+		"mass": 1.0,
+		"kinetic_damage_multiplier": 1.0,
+		"explosive_damage_multiplier": 1.0,
+		"color": Color(0.24, 0.52, 0.58),
+		"construction_cost": {},
+	},
 }
 
 var _name_to_id: Dictionary = {}

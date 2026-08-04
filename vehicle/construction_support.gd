@@ -25,6 +25,21 @@ static func get_candidate_storages(
 	return result
 
 
+static func get_workshop_candidate_storages(
+	target_vehicle: Vehicle,
+	workshop_building: Building
+) -> Array[ItemStorage]:
+	var result: Array[ItemStorage] = []
+	if is_instance_valid(target_vehicle):
+		_append_vehicle_storages(target_vehicle, result)
+	if workshop_building == null:
+		return result
+	for storage: ItemStorage in workshop_building.get_construction_storages():
+		if is_instance_valid(storage) and not result.has(storage):
+			result.append(storage)
+	return result
+
+
 static func get_world_candidate_storages(
 	tree: SceneTree,
 	build_world_position: Vector2,

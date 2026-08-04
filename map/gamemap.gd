@@ -1,7 +1,7 @@
 class_name GameMap
 extends Node2D
 
-const MAP_VERSION := 0
+const MAP_VERSION := 1
 const MAP_CHUNK_SIZE := 32
 const MAP_FILE_NAME := "terrain.map"
 const GENERATION_GROUND_BLOCK := "Sandstone Ground"
@@ -36,6 +36,13 @@ var layers:Dictionary[String, TileMapLayer]
 var world_seed:String
 var world_height:int = 256
 var world_width:int = 256
+
+var world_bounds: Rect2i:
+	get:
+		return Rect2i(
+			Vector2i(-world_width / 2, -world_height / 2),
+			Vector2i(world_width, world_height)
+		)
 
 
 func _ready():
@@ -89,8 +96,9 @@ func generate_world() -> void:
 	
 	world_blocks.begin_bulk_edit()
 	liquid.begin_bulk_edit()
-	for x in range(world_width):
-		for y in range(world_height):
+	var bounds := world_bounds
+	for x in range(bounds.position.x, bounds.end.x):
+		for y in range(bounds.position.y, bounds.end.y):
 			var cell := Vector2i(x, y)
 			ground.place_ground(cell, ground_block_id)
 			var noise_value := noise.get_noise_2d(x, y)
@@ -114,11 +122,29 @@ func generate_world() -> void:
 				)
 	world_blocks.end_bulk_edit()
 	liquid.end_bulk_edit()
+	var structure_result := StructureGenerator.generate_default_structures(self)
+	if not structure_result["ok"]:
+		push_warning(structure_result["error"])
 	
 	# load map to minimap
 	if is_instance_valid(minimap):
 		minimap.map_renderer.loadmap()
 		minimap.map_renderer.queue_redraw()
+
+
+func is_cell_in_world(cell: Vector2i) -> bool:
+	return world_bounds.has_point(cell)
+
+
+func get_chunk_world_origin(
+	chunk_x: int,
+	chunk_y: int,
+	chunk_size: int = MAP_CHUNK_SIZE
+) -> Vector2i:
+	return world_bounds.position + Vector2i(
+		chunk_x * chunk_size,
+		chunk_y * chunk_size
+	)
 
 
 func _resolve_generation_rules(
@@ -219,7 +245,11 @@ func save_map(world_folder: String) -> bool:
 		
 		for cy in range(chunks_y):
 			for cx in range(chunks_x):
-				var bytes = layer.save_chunk(cx, cy)
+				var bytes = layer.save_chunk(
+					cx,
+					cy,
+					world_bounds.position
+				)
 				file.store_16(cx)
 				file.store_16(cy)
 				file.store_32(bytes.size())
@@ -279,7 +309,13 @@ func load_map(path: String) -> bool:
 			var data_size := file.get_32()
 			var bytes := file.get_buffer(data_size)
 	
-			layer.load_chunk(cx, cy, bytes, chunk_size)
+			layer.load_chunk(
+				cx,
+				cy,
+				bytes,
+				chunk_size,
+				world_bounds.position
+			)
 
 	world_blocks.end_bulk_edit()
 	liquid.end_bulk_edit()

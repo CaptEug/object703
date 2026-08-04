@@ -5,6 +5,7 @@ const STORAGE_DETAIL := preload("res://ui/block_info/storage_block_info.tscn")
 const WEAPON_DETAIL := preload("res://ui/block_info/weapon_block_info.tscn")
 const CONTROL_DETAIL := preload("res://ui/block_info/control_block_info.tscn")
 const DRILL_DETAIL := preload("res://ui/block_info/drill_block_info.tscn")
+const WORKSHOP_DETAIL := preload("res://ui/block_info/workshop_block_info.tscn")
 
 var target_block: Block
 var detail_section: Node
@@ -74,6 +75,9 @@ func _create_detail_section() -> void:
 	elif target_block.get_information_panel_key() == &"drill":
 		detail_scene = DRILL_DETAIL
 		panel_height = 210.0
+	elif target_block.get_information_panel_key() == &"workshop":
+		detail_scene = WORKSHOP_DETAIL
+		panel_height = 350.0
 	elif target_block is ItemStorage or target_block is LiquidStorage:
 		detail_scene = STORAGE_DETAIL
 		panel_height = 520.0

@@ -64,6 +64,17 @@ func focus_on_vehicle(
 	update_camera_tween()
 
 
+func focus_on_workshop_vehicle(
+	vehicle: Vehicle,
+	front_rotation: float
+) -> void:
+	if not is_instance_valid(vehicle):
+		return
+	target_pos = vehicle.to_global(vehicle.center_of_mass)
+	target_rot = front_rotation
+	update_camera_tween()
+
+
 func sync_rotation_to_vehicle(vehicle: Vehicle):
 	if not vehicle:
 		return

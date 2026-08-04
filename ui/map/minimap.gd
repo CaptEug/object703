@@ -17,9 +17,14 @@ func _ready() -> void:
 
 func _process(_delta):
 	var screen_size = view_screen.size
-	center_cell = map.ground.local_to_map(camera.position)
+	center_cell = map.ground.local_to_map(
+		map.ground.to_local(camera.global_position)
+	)
+	var center_image_cell := center_cell - map.world_bounds.position
 	map_renderer.scale = Vector2(zoom, zoom)
-	map_renderer.position = - Vector2(center_cell * zoom) + (screen_size/2)
+	map_renderer.position = (
+		-Vector2(center_image_cell * zoom) + screen_size / 2
+	)
 
 
 func update_cellmap(cells:Array):

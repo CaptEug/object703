@@ -104,6 +104,9 @@ recent_list_enabled = false
 visible = false
 texture = SubResource("AtlasTexture_com")
 
+[node name="VehiclePanel" parent="." unique_id=720144941 instance=ExtResource("8_vehicle_panel")]
+layout_mode = 0
+
 [node name="EditorDock" type="Panel" parent="." unique_id=71289046]
 layout_mode = 1
 anchors_preset = 12
@@ -114,14 +117,11 @@ offset_top = -256.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="VehiclePanel" parent="EditorDock" unique_id=720144941 instance=ExtResource("8_vehicle_panel")]
-layout_mode = 0
-
 [node name="EditorTools" type="VBoxContainer" parent="EditorDock" unique_id=1572984606]
 layout_mode = 0
-offset_left = 266.0
+offset_left = 10.0
 offset_top = 12.0
-offset_right = 298.0
+offset_right = 42.0
 offset_bottom = 180.0
 theme_override_constants/separation = 6
 
@@ -186,7 +186,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/margin_left = 304
+theme_override_constants/margin_left = 52
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 10

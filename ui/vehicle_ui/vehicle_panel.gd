@@ -1,8 +1,6 @@
 class_name VehiclePanel
-extends Panel
+extends FloatingPanel
 
-signal edit_requested
-signal finish_requested
 signal close_requested
 
 var vehicle: Vehicle
@@ -12,7 +10,6 @@ var updating_name_field := false
 @onready var vehicle_name_input: LineEdit = $VehicleName
 @onready var vehicle_info_label: RichTextLabel = $VehicleInfo
 @onready var status_label: Label = $Status
-@onready var edit_button: Button = $EditButton
 
 
 func _ready() -> void:
@@ -44,14 +41,12 @@ func set_vehicle(new_vehicle: Vehicle) -> void:
 		vehicle_name_input.text = "No vehicle selected"
 	updating_name_field = false
 	_refresh_name_field_state()
-	edit_button.disabled = not is_instance_valid(vehicle)
 	clear_status()
 	refresh_information()
 
 
 func set_editing(value: bool) -> void:
 	editing = value
-	edit_button.text = "Finish Editing" if editing else "Edit Vehicle"
 	_refresh_name_field_state()
 
 
@@ -105,13 +100,6 @@ func _on_vehicle_name_changed(new_name: String) -> void:
 	):
 		return
 	vehicle.vehicle_name = new_name
-
-
-func _on_edit_button_pressed() -> void:
-	if editing:
-		finish_requested.emit()
-	elif is_instance_valid(vehicle):
-		edit_requested.emit()
 
 
 func _on_close_button_pressed() -> void:

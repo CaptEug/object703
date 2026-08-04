@@ -71,7 +71,11 @@ func get_ground_block_id_at(cell: Vector2i) -> int:
 	)
 
 
-func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
+func save_chunk(
+	chunk_x: int,
+	chunk_y: int,
+	world_origin: Vector2i = Vector2i.ZERO
+) -> PackedByteArray:
 	const CHUNK_SIZE := 32
 	var bytes := PackedByteArray()
 	bytes.resize(CHUNK_SIZE * CHUNK_SIZE * 2)
@@ -79,8 +83,8 @@ func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
 	for local_y in range(CHUNK_SIZE):
 		for local_x in range(CHUNK_SIZE):
 			var cell := Vector2i(
-				chunk_x * CHUNK_SIZE + local_x,
-				chunk_y * CHUNK_SIZE + local_y
+				world_origin.x + chunk_x * CHUNK_SIZE + local_x,
+				world_origin.y + chunk_y * CHUNK_SIZE + local_y
 			)
 			var block_id := get_ground_block_id_at(cell)
 			bytes.encode_u16(
@@ -95,7 +99,8 @@ func load_chunk(
 	chunk_x: int,
 	chunk_y: int,
 	bytes: PackedByteArray,
-	chunk_size: int
+	chunk_size: int,
+	world_origin: Vector2i = Vector2i.ZERO
 ) -> void:
 	var expected_size := chunk_size * chunk_size * 2
 	if bytes.size() < expected_size:
@@ -112,7 +117,7 @@ func load_chunk(
 				push_error("Unknown saved ground block ID %d." % block_id)
 				continue
 			var cell := Vector2i(
-				chunk_x * chunk_size + local_x,
-				chunk_y * chunk_size + local_y
+				world_origin.x + chunk_x * chunk_size + local_x,
+				world_origin.y + chunk_y * chunk_size + local_y
 			)
 			place_ground(cell, block_id)

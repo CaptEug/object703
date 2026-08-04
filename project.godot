@@ -14,7 +14,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="ArmourEngineer"
+config/name="Armored Engineer"
 run/main_scene="uid://bhq342vkmfrox"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
@@ -140,6 +140,7 @@ ROTATE={
 2d_physics/layer_1="GroundBlocks"
 2d_physics/layer_2="TurretBlocks"
 2d_physics/layer_4="Liquid"
+2d_physics/layer_5="WorkshopDetection"
 
 [physics]
 

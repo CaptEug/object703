@@ -32,8 +32,9 @@ func loadmap() -> void:
 	for cell: Vector2i in map.liquid.layerdata:
 		_refresh_cell_color(cell)
 	for cell: Vector2i in cell_colors:
-		if Rect2i(Vector2i.ZERO, image.get_size()).has_point(cell):
-			image.set_pixelv(cell, cell_colors[cell])
+		var image_cell := _to_image_cell(cell)
+		if Rect2i(Vector2i.ZERO, image.get_size()).has_point(image_cell):
+			image.set_pixelv(image_cell, cell_colors[cell])
 	texture.update(image)
 	queue_redraw()
 
@@ -43,8 +44,9 @@ func update_cells(cells: Array) -> void:
 		var cell: Vector2i = value
 		_refresh_cell_color(cell)
 		var color: Color = cell_colors.get(cell, Color.TRANSPARENT)
-		if Rect2i(Vector2i.ZERO, image.get_size()).has_point(cell):
-			image.set_pixelv(cell, color)
+		var image_cell := _to_image_cell(cell)
+		if Rect2i(Vector2i.ZERO, image.get_size()).has_point(image_cell):
+			image.set_pixelv(image_cell, color)
 	texture.update(image)
 	queue_redraw()
 
@@ -78,8 +80,9 @@ func _draw_vehicle_blocks() -> void:
 		return
 	var vehicle_colors := collect_vehicle_block_colors()
 	for cell: Vector2i in vehicle_colors:
+		var image_cell := _to_image_cell(cell)
 		draw_rect(
-			Rect2(Vector2(cell), Vector2.ONE),
+			Rect2(Vector2(image_cell), Vector2.ONE),
 			vehicle_colors[cell]
 		)
 
@@ -104,6 +107,12 @@ func collect_vehicle_block_colors() -> Dictionary[Vector2i, Color]:
 				)
 				result[map_cell] = block_color
 	return result
+
+
+func _to_image_cell(cell: Vector2i) -> Vector2i:
+	if map == null:
+		return cell
+	return cell - map.world_bounds.position
 
 
 func _create_image(image_size: Vector2i) -> void:

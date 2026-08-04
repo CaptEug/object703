@@ -12,6 +12,7 @@ func _ready() -> void:
 		collision.shape = collision.shape.duplicate()
 	_prepare_union_visual()
 	_resize_union_collision()
+	_on_union_geometry_changed()
 
 
 func get_union_key() -> String:
@@ -25,11 +26,25 @@ func can_union_members(_members: Array) -> bool:
 func configure_union_size(new_size: Vector2i) -> bool:
 	if new_size.x <= 0 or new_size.y <= 0:
 		return false
-	var unit_count := new_size.x * new_size.y
+	var base_size := (
+		BlockDB.get_size(block_id)
+		if BlockDB.has_block(block_id)
+		else size
+	)
+	if (
+		base_size.x <= 0
+		or base_size.y <= 0
+		or new_size.x % base_size.x != 0
+		or new_size.y % base_size.y != 0
+	):
+		return false
+	var base_area := base_size.x * base_size.y
+	var unit_count := new_size.x * new_size.y / base_area
 	size = new_size
 	mass *= unit_count
 	max_hp *= unit_count
 	_scale_union_capacity(unit_count)
+	_on_union_geometry_changed()
 	return true
 
 
@@ -69,6 +84,7 @@ func merge_union_members(
 		update_transform(vehicle, new_origin, rotation_index)
 	_resize_union_collision()
 	refresh_union_visual()
+	_on_union_geometry_changed()
 	health_changed.emit()
 
 
@@ -131,6 +147,10 @@ func _scale_union_capacity(_unit_count: int) -> void:
 
 
 func _merge_union_data(_members: Array) -> void:
+	pass
+
+
+func _on_union_geometry_changed() -> void:
 	pass
 
 

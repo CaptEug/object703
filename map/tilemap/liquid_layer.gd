@@ -65,12 +65,7 @@ func set_liquid_cell(
 		return false
 	if (
 		gamemap != null
-		and (
-			cell.x < 0
-			or cell.y < 0
-			or cell.x >= gamemap.world_width
-			or cell.y >= gamemap.world_height
-		)
+		and not gamemap.is_cell_in_world(cell)
 	):
 		return false
 	if (
@@ -187,14 +182,18 @@ func add_liquid(cell: Vector2i, block_id: int, mass: float) -> void:
 		_update_minimap(changed)
 
 
-func save_chunk(chunk_x: int, chunk_y: int) -> PackedByteArray:
+func save_chunk(
+	chunk_x: int,
+	chunk_y: int,
+	world_origin: Vector2i = Vector2i.ZERO
+) -> PackedByteArray:
 	const CHUNK_SIZE := 32
 	var bytes := PackedByteArray()
 	for ly in range(CHUNK_SIZE):
 		for lx in range(CHUNK_SIZE):
 			var cell := Vector2i(
-				chunk_x * CHUNK_SIZE + lx,
-				chunk_y * CHUNK_SIZE + ly
+				world_origin.x + chunk_x * CHUNK_SIZE + lx,
+				world_origin.y + chunk_y * CHUNK_SIZE + ly
 			)
 			var state: Dictionary = layerdata.get(cell, {})
 			var offset := bytes.size()
@@ -214,7 +213,8 @@ func load_chunk(
 	chunk_x: int,
 	chunk_y: int,
 	bytes: PackedByteArray,
-	chunk_size: int
+	chunk_size: int,
+	world_origin: Vector2i = Vector2i.ZERO
 ) -> void:
 	var expected_size := chunk_size * chunk_size * 4
 	if bytes.size() < expected_size:
@@ -230,8 +230,8 @@ func load_chunk(
 			if block_id <= 0:
 				continue
 			var cell := Vector2i(
-				chunk_x * chunk_size + lx,
-				chunk_y * chunk_size + ly
+				world_origin.x + chunk_x * chunk_size + lx,
+				world_origin.y + chunk_y * chunk_size + ly
 			)
 			if set_liquid_cell(cell, block_id, float(mass), false):
 				changed.append(cell)

@@ -244,7 +244,10 @@ static func make_block_record(block: Block) -> Array:
 		block.origin_cell.y,
 		block.rotation_index,
 	]
-	if block is ExpandableBlock and block.size != Vector2i.ONE:
+	if (
+		block is ExpandableBlock
+		and block.size != BlockDB.get_size(block_id)
+	):
 		record.append(block.size.x)
 		record.append(block.size.y)
 	if block is ItemStorage:

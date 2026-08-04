@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ui/block_info/workshop_block_info.gd" id="1_detail"]
+
+[node name="WorkshopBlockInfo" type="VBoxContainer"]
+theme_override_constants/separation = 8
+script = ExtResource("1_detail")
+
+[node name="Dimensions" type="Label" parent="."]
+layout_mode = 2
+text = "Area: --"
+
+[node name="Docking" type="Label" parent="."]
+layout_mode = 2
+text = "Docked vehicle: None"
+
+[node name="DirectionRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="DirectionRow"]
+layout_mode = 2
+text = "New vehicle front"
+
+[node name="Direction" type="OptionButton" parent="DirectionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 4
+popup/item_0/text = "Up"
+popup/item_0/id = 0
+popup/item_1/text = "Right"
+popup/item_1/id = 1
+popup/item_2/text = "Down"
+popup/item_2/id = 2
+popup/item_3/text = "Left"
+popup/item_3/id = 3
+
+[node name="VehicleActionButton" type="Button" parent="."]
+layout_mode = 2
+text = "Create Vehicle"
+
+[node name="Status" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+autowrap_mode = 2
+
+[connection signal="item_selected" from="DirectionRow/Direction" to="." method="_on_direction_selected"]
+[connection signal="pressed" from="VehicleActionButton" to="." method="_on_vehicle_action_pressed"]

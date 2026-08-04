@@ -16,6 +16,24 @@ func _ready() -> void:
 			_on_building_constructor_active_changed
 		)
 
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (
+		not event.is_action_pressed("TOGGLE_EDITOR")
+		or (event is InputEventKey and event.echo)
+	):
+		return
+	if building_constructor != null and building_constructor.is_active():
+		building_constructor.set_active(false)
+	elif (
+		vehicle_editor != null
+		and vehicle_editor.try_toggle_workshop_context()
+	):
+		pass
+	elif building_constructor != null:
+		building_constructor.set_active(true)
+	get_viewport().set_input_as_handled()
+
 func _process(_delta):
 	if gamescene:
 		clock.text = get_clock_string(gamescene.game_time)

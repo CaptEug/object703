@@ -10,12 +10,10 @@ region = Rect2(224, 0, 16, 16)
 
 [node name="BuildingPanel" type="Panel" groups=["building_panel"]]
 custom_minimum_size = Vector2(256, 256)
-anchors_preset = 3
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -256.0
-offset_right = 256.0
-grow_vertical = 0
+offset_left = 24.0
+offset_top = 48.0
+offset_right = 280.0
+offset_bottom = 304.0
 theme = ExtResource("1_theme")
 script = ExtResource("2_script")
 
@@ -47,7 +45,7 @@ offset_bottom = 249.0
 mouse_filter = 2
 theme_override_font_sizes/normal_font_size = 8
 bbcode_enabled = true
-text = "Weight: --\nBlocks: --\nOccupied cells: --\nFunctional blocks: --\nOwner: --"
+text = "Type: --\nWorkshop areas: --\nWeight: --\nBlocks: --\nOccupied cells: --\nFunctional blocks: --\nOwner: --"
 fit_content = true
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
