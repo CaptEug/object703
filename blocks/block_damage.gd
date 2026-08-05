@@ -15,6 +15,38 @@ static func miss() -> Dictionary:
 	}
 
 
+static func apply_to_host(
+	host: Object,
+	cell: Vector2i,
+	amount: float,
+	damage_type: StringName
+) -> Dictionary:
+	if (
+		not is_instance_valid(host)
+		or not host.has_method("get_block_damage_state")
+		or not host.has_method("commit_block_damage")
+	):
+		return miss()
+	var state_value: Variant = host.call(
+		"get_block_damage_state",
+		cell
+	)
+	if not state_value is Dictionary:
+		return miss()
+	var state := state_value as Dictionary
+	if state.is_empty():
+		return miss()
+	var result := calculate(
+		int(state.get("block_id", BlockDB.INVALID_BLOCK_ID)),
+		float(state.get("hp", 0.0)),
+		amount,
+		damage_type
+	)
+	if result["hit"]:
+		host.call("commit_block_damage", state, result)
+	return result
+
+
 static func calculate(
 	block_id: int,
 	current_hp: float,

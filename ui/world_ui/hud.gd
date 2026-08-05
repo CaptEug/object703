@@ -52,7 +52,7 @@ func _on_build_button_toggled(enabled: bool) -> void:
 		build_button.set_pressed_no_signal(false)
 		return
 	if enabled and vehicle_editor != null:
-		vehicle_editor.close_vehicle_panel()
+		vehicle_editor.close_editor()
 	building_constructor.set_active(enabled)
 	build_button.set_pressed_no_signal(building_constructor.is_active())
 

@@ -318,26 +318,40 @@ func destroy_block(block: Block) -> Array[Vehicle]:
 	return fragments
 
 
+func get_block_damage_state(cell: Vector2i) -> Dictionary:
+	var block := get_block(cell)
+	if block == null:
+		return {}
+	return {
+		"block": block,
+		"block_id": block.block_id,
+		"hp": block.hp,
+	}
+
+
+func commit_block_damage(
+	state: Dictionary,
+	result: Dictionary
+) -> void:
+	var block := state.get("block") as Block
+	if not is_instance_valid(block) or not blocks.has(block):
+		return
+	block.apply_vehicle_damage_result(result)
+	if result["destroyed"]:
+		destroy_block(block)
+
+
 func damage_block_at(
 	cell: Vector2i,
 	amount: float,
 	damage_type: StringName
 ) -> Dictionary:
-	var block := get_block(cell)
-	if block == null:
-		return BlockDamage.miss()
-	var result := BlockDamage.calculate(
-		block.block_id,
-		block.hp,
+	return BlockDamage.apply_to_host(
+		self,
+		cell,
 		amount,
 		damage_type
 	)
-	if not result["hit"]:
-		return result
-	block.apply_vehicle_damage_result(result)
-	if result["destroyed"]:
-		destroy_block(block)
-	return result
 
 
 func split_disconnected_components(

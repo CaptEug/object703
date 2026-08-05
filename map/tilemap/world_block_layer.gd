@@ -333,24 +333,29 @@ func place_block(
 	return true
 
 
-func damage_block_at(
-	cell: Vector2i,
-	amount: float,
-	damage_type: StringName
-) -> Dictionary:
+func get_block_damage_state(cell: Vector2i) -> Dictionary:
 	var anchor := get_block_anchor(cell)
 	if anchor == INVALID_CELL:
-		return BlockDamage.miss()
+		return {}
+	var state: Dictionary = block_records[anchor]
+	return {
+		"anchor": anchor,
+		"block_id": int(state["block_id"]),
+		"hp": float(state["hp"]),
+	}
+
+
+func commit_block_damage(
+	damage_state: Dictionary,
+	result: Dictionary
+) -> void:
+	var anchor: Vector2i = damage_state.get("anchor", INVALID_CELL)
+	if anchor == INVALID_CELL or not block_records.has(anchor):
+		return
 	var state: Dictionary = block_records[anchor]
 	var block_id := int(state["block_id"])
-	var result := BlockDamage.calculate(
-		block_id,
-		float(state["hp"]),
-		amount,
-		damage_type
-	)
-	if not result["hit"]:
-		return result
+	if block_id != int(damage_state.get("block_id", -1)):
+		return
 	state["hp"] = result["hp_after"]
 	var functional_block: Block = functional_nodes.get(anchor, null)
 	if functional_block != null:
@@ -362,7 +367,19 @@ func damage_block_at(
 		destroy_block_at(anchor)
 	elif randf() < 0.1:
 		_spawn_block_shards(anchor, block_id)
-	return result
+
+
+func damage_block_at(
+	cell: Vector2i,
+	amount: float,
+	damage_type: StringName
+) -> Dictionary:
+	return BlockDamage.apply_to_host(
+		self,
+		cell,
+		amount,
+		damage_type
+	)
 
 
 func apply_radial_damage(

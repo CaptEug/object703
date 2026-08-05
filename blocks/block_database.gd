@@ -12,7 +12,7 @@ var blocks := {
 	1: {
 		"block_name": "Structural Frame",
 		"block_class": CLASS_CONSTRUCTED,
-		"allowed_hosts": [HOST_WORLD, HOST_VEHICLE],
+		"allowed_hosts": [HOST_VEHICLE],
 		"scene_path": "res://blocks/structural/structual_frame.tscn",
 		"world_functional": false,
 		"size": Vector2i(1, 1),
@@ -202,7 +202,7 @@ var blocks := {
 		"rotatable": false,
 		"max_hp": 100.0,
 		"mass": 1.0,
-		"kinetic_damage_multiplier": 1.0,
+		"kinetic_damage_multiplier": 0.0,
 		"explosive_damage_multiplier": 1.0,
 		"color": Color(0.24, 0.52, 0.58),
 		"construction_cost": {},

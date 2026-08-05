@@ -4,6 +4,7 @@ extends VBoxContainer
 var workshop: WorkshopBlock
 var docked_vehicle: Vehicle
 var _updating_direction := false
+var _editor_status := ""
 
 @onready var dimensions_label: Label = $Dimensions
 @onready var docking_label: Label = $Docking
@@ -42,6 +43,13 @@ func bind_block(block: Block) -> void:
 		editor.workshop_session_changed.connect(
 			_on_workshop_session_changed
 		)
+	if (
+		editor != null
+		and not editor.status_changed.is_connected(
+			_on_editor_status_changed
+		)
+	):
+		editor.status_changed.connect(_on_editor_status_changed)
 	if editor != null:
 		editor.set_workshop_context(workshop, docked_vehicle)
 	_refresh_all()
@@ -73,6 +81,13 @@ func unbind_block() -> void:
 		editor.workshop_session_changed.disconnect(
 			_on_workshop_session_changed
 		)
+	if (
+		editor != null
+		and editor.status_changed.is_connected(
+			_on_editor_status_changed
+		)
+	):
+		editor.status_changed.disconnect(_on_editor_status_changed)
 	if editor != null:
 		editor.clear_workshop_context(workshop)
 	workshop = null
@@ -122,10 +137,14 @@ func _refresh_action_state() -> void:
 	if owns_session:
 		vehicle_action_button.text = "Finish Vehicle Editing"
 		vehicle_action_button.disabled = false
-		status_label.text = "Editing %s" % (
-			editor.vehicle.vehicle_name
-			if is_instance_valid(editor.vehicle)
-			else "new vehicle"
+		status_label.text = (
+			_editor_status
+			if not _editor_status.is_empty()
+			else "Editing %s" % (
+				editor.vehicle.vehicle_name
+				if is_instance_valid(editor.vehicle)
+				else "new vehicle"
+			)
 		)
 		return
 	if not is_instance_valid(docked_vehicle):
@@ -210,4 +229,14 @@ func _on_front_direction_changed(_direction: int) -> void:
 
 
 func _on_workshop_session_changed(_active: bool) -> void:
+	_editor_status = ""
 	_refresh_all()
+
+
+func _on_editor_status_changed(message: String) -> void:
+	var editor := _get_vehicle_editor()
+	if editor == null:
+		return
+	if editor.active_workshop == workshop or editor.workshop_context == workshop:
+		_editor_status = message
+		status_label.text = message

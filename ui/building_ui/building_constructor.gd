@@ -5,7 +5,7 @@ signal active_changed(enabled: bool)
 
 enum EditMode {
 	BUILD,
-	DISMANTLE,
+	DEMOLISH,
 }
 
 enum PlacementState {
@@ -22,7 +22,6 @@ const CELL_HALF_SIZE := Globals.TILE_SIZE * 0.5 - 0.1
 @export var gamemap: GameMap
 @export var owner_id: StringName = &"player"
 @export_range(1.0, 64.0, 1.0) var construction_range_tiles := 8.0
-@export var saw_cursor: Texture2D
 
 var active := false
 var edit_mode := EditMode.BUILD
@@ -30,13 +29,14 @@ var selected_block: Block
 var preview_block: Block
 var preview_cell := WorldBlockLayer.INVALID_CELL
 var preview_rotation := 0
+var removal_hover: RemovalHoverOverlay
 
 @onready var constructor_dock: Panel = $ConstructorDock
 @onready var palette: BlockPalette = (
 	$ConstructorDock/PaletteArea/Panel/Clipper/BlockPalette
 )
-@onready var dismantle_button: TextureButton = (
-	$ConstructorDock/Tools/DismantleButton
+@onready var demolish_button: TextureButton = (
+	$ConstructorDock/Tools/DemolishButton
 )
 @onready var status_label: Label = $ConstructorDock/Status
 
@@ -47,14 +47,15 @@ var world_blocks: WorldBlockLayer:
 
 func _ready() -> void:
 	add_to_group("building_constructor")
+	ensure_removal_hover()
 	constructor_dock.hide()
 	set_process(false)
 	set_process_unhandled_input(false)
 
 
 func _exit_tree() -> void:
-	if active:
-		Input.set_custom_mouse_cursor(null)
+	if is_instance_valid(removal_hover):
+		removal_hover.queue_free()
 
 
 func is_active() -> bool:
@@ -81,8 +82,8 @@ func set_active(enabled: bool) -> void:
 		palette.selected_block = null
 		selected_block = null
 		clear_preview_block()
+		clear_removal_hover()
 		status_label.text = ""
-		Input.set_custom_mouse_cursor(null)
 	active_changed.emit(active)
 
 
@@ -94,6 +95,7 @@ func _process(_delta: float) -> void:
 		update_preview()
 	else:
 		clear_preview_block()
+		update_world_removal_hover()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -144,31 +146,27 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func toggle_mode() -> void:
 	if edit_mode == EditMode.BUILD:
-		set_mode(EditMode.DISMANTLE)
+		set_mode(EditMode.DEMOLISH)
 	else:
 		set_mode(EditMode.BUILD)
 
 
 func set_mode(new_mode: EditMode) -> void:
 	edit_mode = new_mode
-	dismantle_button.button_pressed = edit_mode == EditMode.DISMANTLE
+	demolish_button.set_pressed_no_signal(
+		edit_mode == EditMode.DEMOLISH
+	)
 	clear_preview_block()
+	clear_removal_hover()
 	preview_rotation = 0
-	if not active:
-		Input.set_custom_mouse_cursor(null)
-	elif edit_mode == EditMode.DISMANTLE and saw_cursor != null:
-		Input.set_custom_mouse_cursor(
-			saw_cursor,
-			Input.CURSOR_ARROW,
-			Vector2(8, 8)
-		)
+	if active and edit_mode == EditMode.DEMOLISH:
 		status_label.text = "Dismantle: select a friendly building block"
 	else:
-		Input.set_custom_mouse_cursor(null)
 		status_label.text = "Select a block to construct"
 
 
 func update_preview() -> void:
+	clear_removal_hover()
 	preview_cell = _get_mouse_world_cell()
 	if (
 		selected_block == null
@@ -298,6 +296,38 @@ func remove_block_at_mouse() -> void:
 		return
 	var result := dismantle_block_at(_get_mouse_world_cell())
 	status_label.text = str(result.get("message", ""))
+
+
+func update_world_removal_hover() -> void:
+	if world_blocks == null:
+		clear_removal_hover()
+		return
+	preview_cell = _get_mouse_world_cell()
+	var anchor := world_blocks.get_block_anchor(preview_cell)
+	if anchor == WorldBlockLayer.INVALID_CELL:
+		clear_removal_hover()
+		return
+	var cells := world_blocks.get_record_occupied_cells(anchor)
+	if cells.is_empty():
+		clear_removal_hover()
+		return
+	var overlay := ensure_removal_hover()
+	overlay.attach_to(world_blocks)
+	var centers: Array[Vector2] = []
+	for cell: Vector2i in cells:
+		centers.append(world_blocks.map_to_local(cell))
+	overlay.show_centers(centers)
+
+
+func ensure_removal_hover() -> RemovalHoverOverlay:
+	if not is_instance_valid(removal_hover):
+		removal_hover = RemovalHoverOverlay.new()
+	return removal_hover
+
+
+func clear_removal_hover() -> void:
+	if is_instance_valid(removal_hover):
+		removal_hover.clear()
 
 
 func dismantle_block_at(cell: Vector2i) -> Dictionary:

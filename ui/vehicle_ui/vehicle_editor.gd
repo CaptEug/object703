@@ -2,10 +2,10 @@ class_name VehicleEditor
 extends Control
 
 signal workshop_session_changed(active: bool)
+signal status_changed(message: String)
 
 enum InterfaceState {
 	CLOSED,
-	INSPECT,
 	EDIT,
 }
 
@@ -20,7 +20,6 @@ enum BlueprintDialogMode {
 	LOAD,
 }
 
-const INSPECT_PANEL_WIDTH := 256.0
 const DOCKING_LINEAR_SPEED_LIMIT := 2.0
 const DOCKING_ANGULAR_SPEED_LIMIT := 0.05
 
@@ -33,7 +32,6 @@ var interface_state := InterfaceState.CLOSED
 var edit_mode := EditMode.BUILD
 var blueprint_dialog_mode := BlueprintDialogMode.NONE
 var new_vehicle_index := 1
-var selection_click_active := false
 var active_workshop: WorkshopBlock
 var active_workshop_building: Building
 var workshop_context: WorkshopBlock
@@ -41,11 +39,9 @@ var workshop_context_vehicle: Vehicle
 var workshop_new_vehicle := false
 var _session_previous_freeze := false
 var _session_previous_camera_rotation := 0.0
+var removal_hover: RemovalHoverOverlay
 
 @onready var editor_dock: Panel = $EditorDock
-@onready var vehicle_panel: VehiclePanel = $VehiclePanel
-@onready var editor_tools: VBoxContainer = $EditorDock/EditorTools
-@onready var palette_area: MarginContainer = $EditorDock/PaletteArea
 @onready var palette: BlockPalette = (
 	$EditorDock/PaletteArea/Panel/Clipper/BlockPalette
 )
@@ -53,7 +49,6 @@ var _session_previous_camera_rotation := 0.0
 @onready var com_button: TextureButton = $EditorDock/EditorTools/CoMButton
 @onready var blueprint_dialog: FileDialog = $BlueprintDialog
 
-@export var saw_cursor: Texture2D
 @export var gamemap: GameMap
 
 var vehicle_scene: PackedScene = load("res://vehicle/Vehicle.tscn")
@@ -63,17 +58,17 @@ var vehicle_scene: PackedScene = load("res://vehicle/Vehicle.tscn")
 
 func _ready() -> void:
 	add_to_group("vehicle_editor")
-	vehicle_panel.close_requested.connect(close_vehicle_panel)
+	ensure_removal_hover()
 	set_selected_vehicle(null)
 	_apply_interface_state()
 
 
+func _exit_tree() -> void:
+	if is_instance_valid(removal_hover):
+		removal_hover.queue_free()
+
+
 func _process(_delta: float) -> void:
-	if (
-		selection_click_active
-		and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
-	):
-		selection_click_active = false
 	if vehicle != null and not is_instance_valid(vehicle):
 		if active_workshop != null:
 			cancel_workshop_edit("Edited vehicle is no longer available")
@@ -92,6 +87,7 @@ func _process(_delta: float) -> void:
 		update_preview()
 	else:
 		clear_preview_block()
+		clear_removal_hover()
 	if (
 		is_editing_vehicle()
 		and is_instance_valid(vehicle)
@@ -108,30 +104,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	) as BuildingConstructor
 	if constructor != null and constructor.is_active():
 		return
-	if (
-		event is InputEventMouseButton
-		and event.button_index == MOUSE_BUTTON_LEFT
-		and not event.pressed
-	):
-		selection_click_active = false
-
 	if is_editing_vehicle():
 		_handle_editor_input(event)
-	else:
-		_handle_inspection_input(event)
-
-
-func _handle_inspection_input(event: InputEvent) -> void:
-	if not event is InputEventMouseButton:
-		return
-	if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
-		return
-	var clicked_vehicle := _get_vehicle_under_mouse()
-	if clicked_vehicle == null:
-		return
-	selection_click_active = true
-	inspect_vehicle(clicked_vehicle)
-	get_viewport().set_input_as_handled()
 
 
 func _handle_editor_input(event: InputEvent) -> void:
@@ -173,52 +147,29 @@ func _handle_editor_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
-func inspect_vehicle(clicked_vehicle: Vehicle) -> void:
-	if not is_instance_valid(clicked_vehicle):
-		return
-	if is_editing_vehicle() and clicked_vehicle != vehicle:
-		return
-	var building_panel := get_tree().get_first_node_in_group(
-		"building_panel"
-	)
-	if building_panel != null and building_panel.has_method("close_panel"):
-		building_panel.close_panel()
-	set_selected_vehicle(clicked_vehicle)
-	if not is_editing_vehicle():
-		interface_state = InterfaceState.INSPECT
-		_apply_interface_state()
-
-
 func enter_edit_mode() -> void:
 	if not is_instance_valid(vehicle) or not is_instance_valid(active_workshop):
 		return
 	vehicle.ensure_blueprint_from_blocks()
 	vehicle.set_blueprint_ghosts_visible(true)
 	interface_state = InterfaceState.EDIT
-	vehicle_panel.set_editing(true)
 	_apply_interface_state()
-	update_cursor()
 
 
 func exit_edit_mode() -> void:
 	clear_preview_block()
-	Input.set_custom_mouse_cursor(null)
+	clear_removal_hover()
 	if is_instance_valid(vehicle):
 		vehicle.set_blueprint_ghosts_visible(false)
-	interface_state = (
-		InterfaceState.INSPECT
-		if is_instance_valid(vehicle)
-		else InterfaceState.CLOSED
-	)
-	vehicle_panel.set_editing(false)
+	interface_state = InterfaceState.CLOSED
 	_apply_interface_state()
 
 
-func close_vehicle_panel() -> void:
+func close_editor() -> void:
 	if active_workshop != null:
 		cancel_workshop_edit("Workshop editing cancelled")
 	clear_preview_block()
-	Input.set_custom_mouse_cursor(null)
+	clear_removal_hover()
 	palette.selected_block = null
 	if is_instance_valid(vehicle):
 		vehicle.set_blueprint_ghosts_visible(false)
@@ -232,7 +183,7 @@ func is_editing_vehicle() -> bool:
 
 
 func is_fire_suppressed() -> bool:
-	return selection_click_active or is_editing_vehicle()
+	return is_editing_vehicle()
 
 
 func set_workshop_context(
@@ -449,18 +400,10 @@ func _session_error(message: String) -> Dictionary:
 
 
 func _apply_interface_state() -> void:
-	var is_open := interface_state != InterfaceState.CLOSED
 	editor_dock.visible = is_editing_vehicle()
-	vehicle_panel.visible = is_open
-	editor_tools.visible = is_editing_vehicle()
-	palette_area.visible = is_editing_vehicle()
-	vehicle_panel.set_editing(is_editing_vehicle())
 	if is_editing_vehicle():
 		editor_dock.anchor_right = 1.0
 		editor_dock.offset_right = 0.0
-	else:
-		editor_dock.anchor_right = 0.0
-		editor_dock.offset_right = INSPECT_PANEL_WIDTH
 	com_icon.visible = (
 		is_editing_vehicle()
 		and is_instance_valid(vehicle)
@@ -479,21 +422,8 @@ func set_mode(new_mode: EditMode) -> void:
 	if edit_mode == new_mode:
 		return
 	edit_mode = new_mode
-	update_cursor()
-
-
-func update_cursor() -> void:
-	if not is_editing_vehicle():
-		Input.set_custom_mouse_cursor(null)
-		return
-	if edit_mode == EditMode.BUILD:
-		Input.set_custom_mouse_cursor(null)
-	elif saw_cursor != null:
-		Input.set_custom_mouse_cursor(
-			saw_cursor,
-			Input.CURSOR_ARROW,
-			Vector2(8, 8)
-		)
+	clear_preview_block()
+	clear_removal_hover()
 
 
 func update_preview() -> void:
@@ -506,8 +436,13 @@ func update_preview() -> void:
 		return
 	var mouse := camera.get_global_mouse_position()
 	preview_cell = vehicle.world_to_cell(mouse)
+	if edit_mode == EditMode.DISMANTLE:
+		clear_preview_block()
+		update_vehicle_removal_hover()
+		return
+	clear_removal_hover()
 
-	if selected_block == null or edit_mode != EditMode.BUILD:
+	if selected_block == null:
 		clear_preview_block()
 		return
 	if (
@@ -557,6 +492,45 @@ func clear_preview_block() -> void:
 		preview_block.queue_free()
 		preview_block = null
 	preview_rotation = 0
+
+
+func update_vehicle_removal_hover() -> void:
+	if not is_instance_valid(vehicle):
+		clear_removal_hover()
+		return
+	var cells: Array[Vector2i] = []
+	var block := vehicle.get_block(preview_cell)
+	if block != null:
+		cells = block.get_occupied_cells()
+	else:
+		for record: Array in vehicle.blueprint_blocks:
+			var record_cells := VehicleBlueprint.get_record_cells(record)
+			if record_cells.has(preview_cell):
+				cells = record_cells
+				break
+	if cells.is_empty():
+		clear_removal_hover()
+		return
+	var overlay := ensure_removal_hover()
+	overlay.attach_to(vehicle)
+	var centers: Array[Vector2] = []
+	for cell: Vector2i in cells:
+		centers.append(
+			(Vector2(cell) + Vector2(0.5, 0.5))
+			* Globals.TILE_SIZE
+		)
+	overlay.show_centers(centers)
+
+
+func ensure_removal_hover() -> RemovalHoverOverlay:
+	if not is_instance_valid(removal_hover):
+		removal_hover = RemovalHoverOverlay.new()
+	return removal_hover
+
+
+func clear_removal_hover() -> void:
+	if is_instance_valid(removal_hover):
+		removal_hover.clear()
 
 
 func world_to_screen(world_pos: Vector2) -> Vector2:
@@ -612,7 +586,6 @@ func place_block() -> void:
 				ConstructionSupport.format_cost(cost),
 			]
 		)
-	vehicle_panel.refresh_information()
 
 
 func _can_place_selected_block(block_scene: PackedScene) -> bool:
@@ -668,7 +641,6 @@ func remove_block() -> void:
 		vehicle.destroy_block(block)
 	elif blueprint_changed:
 		_show_status("Removed block from blueprint")
-	vehicle_panel.refresh_information()
 
 
 func create_new_vehicle(
@@ -718,17 +690,15 @@ func _get_new_vehicle_spawn_position(reference_vehicle: Vehicle) -> Vector2:
 
 func set_selected_vehicle(new_vehicle: Vehicle) -> void:
 	clear_preview_block()
+	clear_removal_hover()
 	if is_instance_valid(vehicle):
 		vehicle.set_blueprint_ghosts_visible(false)
 	vehicle = new_vehicle if is_instance_valid(new_vehicle) else null
-	vehicle_panel.set_vehicle(vehicle)
 	if is_instance_valid(vehicle):
 		vehicle.ensure_blueprint_from_blocks()
 		vehicle.set_blueprint_ghosts_visible(is_editing_vehicle())
 		_focus_camera_on_vehicle(vehicle)
-		if interface_state == InterfaceState.CLOSED:
-			interface_state = InterfaceState.INSPECT
-	else:
+	elif not is_editing_vehicle():
 		interface_state = InterfaceState.CLOSED
 	_apply_interface_state()
 
@@ -786,7 +756,6 @@ func auto_construct_missing_blocks() -> void:
 			blocked_count += 1
 
 	var remaining := vehicle.get_missing_blueprint_records().size()
-	vehicle_panel.refresh_information()
 	if remaining == 0:
 		_show_status(
 			"Auto construction complete: %d built" % built_count
@@ -1076,4 +1045,4 @@ func _on_com_visibility_changed(enabled: bool) -> void:
 
 
 func _show_status(message: String) -> void:
-	vehicle_panel.show_status(message)
+	status_changed.emit(message)

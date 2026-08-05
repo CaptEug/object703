@@ -1,8 +1,8 @@
 [gd_scene format=3]
 
-[ext_resource type="Theme" path="res://assets/resources/UI_theme.tres" id="1_theme"]
-[ext_resource type="Script" path="res://ui/building_ui/building_panel.gd" id="2_script"]
-[ext_resource type="Texture2D" path="res://assets/icons/symbls.png" id="3_symbols"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://c2kcw8vxvfl1t" path="res://ui/building_ui/building_panel.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/icons_small.png" id="3_symbols"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_close"]
 atlas = ExtResource("3_symbols")
