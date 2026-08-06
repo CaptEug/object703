@@ -32,9 +32,9 @@ var interface_state := InterfaceState.CLOSED
 var edit_mode := EditMode.BUILD
 var blueprint_dialog_mode := BlueprintDialogMode.NONE
 var new_vehicle_index := 1
-var active_workshop: WorkshopBlock
+var active_workshop: MaintenanceBayBlock
 var active_workshop_building: Building
-var workshop_context: WorkshopBlock
+var workshop_context: MaintenanceBayBlock
 var workshop_context_vehicle: Vehicle
 var workshop_new_vehicle := false
 var _session_previous_freeze := false
@@ -46,7 +46,7 @@ var removal_hover: RemovalHoverOverlay
 	$EditorDock/PaletteArea/Panel/Clipper/BlockPalette
 )
 @onready var com_icon: Sprite2D = $COMicon
-@onready var com_button: TextureButton = $EditorDock/EditorTools/CoMButton
+@onready var com_button: CheckButton = $EditorDock/EditorTools/CoMButton
 @onready var blueprint_dialog: FileDialog = $BlueprintDialog
 
 @export var gamemap: GameMap
@@ -75,13 +75,13 @@ func _process(_delta: float) -> void:
 		else:
 			set_selected_vehicle(null)
 	if active_workshop != null and not is_instance_valid(active_workshop):
-		cancel_workshop_edit("Workshop is no longer available")
+		cancel_workshop_edit("Maintenance bay is no longer available")
 	elif (
 		is_instance_valid(active_workshop)
 		and _get_workshop_building(active_workshop)
 		!= active_workshop_building
 	):
-		cancel_workshop_edit("Workshop building changed")
+		cancel_workshop_edit("Vehicle workshop changed")
 	selected_block = palette.selected_block
 	if is_editing_vehicle():
 		update_preview()
@@ -167,7 +167,7 @@ func exit_edit_mode() -> void:
 
 func close_editor() -> void:
 	if active_workshop != null:
-		cancel_workshop_edit("Workshop editing cancelled")
+		cancel_workshop_edit("Maintenance bay editing cancelled")
 	clear_preview_block()
 	clear_removal_hover()
 	palette.selected_block = null
@@ -187,7 +187,7 @@ func is_fire_suppressed() -> bool:
 
 
 func set_workshop_context(
-	workshop: WorkshopBlock,
+	workshop: MaintenanceBayBlock,
 	target_vehicle: Vehicle = null
 ) -> void:
 	workshop_context = workshop if is_instance_valid(workshop) else null
@@ -196,7 +196,7 @@ func set_workshop_context(
 	)
 
 
-func clear_workshop_context(workshop: WorkshopBlock) -> void:
+func clear_workshop_context(workshop: MaintenanceBayBlock) -> void:
 	if workshop_context != workshop or active_workshop == workshop:
 		return
 	workshop_context = null
@@ -224,40 +224,40 @@ func try_toggle_workshop_context() -> bool:
 
 
 func begin_workshop_edit(
-	workshop: WorkshopBlock,
+	workshop: MaintenanceBayBlock,
 	target_vehicle: Vehicle
 ) -> Dictionary:
 	if active_workshop != null:
-		return _session_error("Another workshop session is already active")
+		return _session_error("Another maintenance bay session is already active")
 	if not is_instance_valid(workshop) or not is_instance_valid(target_vehicle):
-		return _session_error("Workshop or vehicle is unavailable")
+		return _session_error("Maintenance bay or vehicle is unavailable")
 	var building := _get_workshop_building(workshop)
 	if building == null:
-		return _session_error("Workshop building is unavailable")
+		return _session_error("Vehicle workshop is unavailable")
 	if target_vehicle.owner_id != building.owner_id:
-		return _session_error("Vehicle owner does not match workshop owner")
+		return _session_error("Vehicle owner does not match vehicle workshop owner")
 	if workshop.get_docked_vehicle() != target_vehicle:
-		return _session_error("Vehicle is not docked in this workshop")
+		return _session_error("Vehicle is not docked in this maintenance bay")
 	if target_vehicle.linear_velocity.length() > DOCKING_LINEAR_SPEED_LIMIT:
 		return _session_error("Vehicle must stop before editing")
 	if absf(target_vehicle.angular_velocity) > DOCKING_ANGULAR_SPEED_LIMIT:
 		return _session_error("Vehicle must stop rotating before editing")
 	if not workshop.is_vehicle_fully_inside(target_vehicle):
-		return _session_error("Vehicle is not fully inside this workshop")
+		return _session_error("Vehicle is not fully inside this maintenance bay")
 	_start_workshop_session(workshop, building, target_vehicle, false)
 	return {"ok": true, "message": "Vehicle editing started"}
 
 
-func begin_new_workshop_vehicle(workshop: WorkshopBlock) -> Dictionary:
+func begin_new_workshop_vehicle(workshop: MaintenanceBayBlock) -> Dictionary:
 	if active_workshop != null:
-		return _session_error("Another workshop session is already active")
+		return _session_error("Another maintenance bay session is already active")
 	if not is_instance_valid(workshop):
-		return _session_error("Workshop is unavailable")
+		return _session_error("Maintenance bay is unavailable")
 	var building := _get_workshop_building(workshop)
 	if building == null:
-		return _session_error("Workshop building is unavailable")
+		return _session_error("Vehicle workshop is unavailable")
 	if is_instance_valid(workshop.get_docked_vehicle()):
-		return _session_error("Workshop already has a docked vehicle")
+		return _session_error("Maintenance bay already has a docked vehicle")
 	create_new_vehicle(workshop.get_center_world_position(), false)
 	if not is_instance_valid(vehicle):
 		return _session_error("New vehicle could not be created")
@@ -270,7 +270,7 @@ func begin_new_workshop_vehicle(workshop: WorkshopBlock) -> Dictionary:
 
 func finish_workshop_edit() -> Dictionary:
 	if active_workshop == null:
-		return _session_error("No workshop editing session is active")
+		return _session_error("No maintenance bay editing session is active")
 	if not is_instance_valid(vehicle):
 		cancel_workshop_edit("Edited vehicle is unavailable")
 		return _session_error("Edited vehicle is unavailable")
@@ -280,7 +280,8 @@ func finish_workshop_edit() -> Dictionary:
 		is_instance_valid(active_workshop)
 		and not active_workshop.is_vehicle_layout_inside(vehicle)
 	):
-		return _session_error("Vehicle must remain inside the workshop")
+		return _session_error("Vehicle must remain inside the maintenance bay")
+	vehicle.normalize_layout_to_top_left()
 	var finished_vehicle := vehicle
 	active_workshop.track_candidate_vehicle(finished_vehicle)
 	exit_edit_mode()
@@ -290,7 +291,9 @@ func finish_workshop_edit() -> Dictionary:
 	return {"ok": true, "message": "Vehicle editing finished"}
 
 
-func cancel_workshop_edit(message: String = "Workshop editing cancelled") -> void:
+func cancel_workshop_edit(
+	message: String = "Maintenance bay editing cancelled"
+) -> void:
 	if active_workshop == null:
 		return
 	var cancelled_vehicle := vehicle
@@ -323,7 +326,7 @@ func refresh_workshop_camera() -> void:
 
 
 func _start_workshop_session(
-	workshop: WorkshopBlock,
+	workshop: MaintenanceBayBlock,
 	building: Building,
 	target_vehicle: Vehicle,
 	is_new_vehicle: bool
@@ -368,19 +371,22 @@ func _clear_active_workshop_session() -> void:
 	workshop_session_changed.emit(false)
 
 
-func _get_workshop_building(workshop: WorkshopBlock) -> Building:
+func _get_workshop_building(workshop: MaintenanceBayBlock) -> Building:
 	if not is_instance_valid(workshop):
 		return null
 	var world_layer := workshop.block_host as WorldBlockLayer
 	if world_layer == null:
 		return null
 	var building := world_layer.get_building_at(workshop.origin_cell)
-	if building == null or building.get_workshop_for_block(workshop) == null:
+	if (
+		building == null
+		or building.get_maintenance_bay_for_block(workshop) == null
+	):
 		return null
 	return building
 
 
-func _find_workshop_for_vehicle(target_vehicle: Vehicle) -> WorkshopBlock:
+func _find_workshop_for_vehicle(target_vehicle: Vehicle) -> MaintenanceBayBlock:
 	if not is_instance_valid(target_vehicle):
 		return null
 	for node: Node in get_tree().get_nodes_in_group("world_block_layers"):
@@ -388,7 +394,9 @@ func _find_workshop_for_vehicle(target_vehicle: Vehicle) -> WorkshopBlock:
 		if world_layer == null:
 			continue
 		for building: Building in world_layer.buildings:
-			var workshop := building.get_workshop_for_vehicle(target_vehicle)
+			var workshop := building.get_maintenance_bay_for_vehicle(
+				target_vehicle
+			)
 			if workshop != null:
 				return workshop
 	return null
@@ -555,7 +563,7 @@ func place_block() -> void:
 				preview_block
 			)
 		):
-			_show_status("Outside workshop area")
+			_show_status("Outside maintenance bay area")
 		else:
 			_show_status("Cannot build here")
 		return
@@ -729,6 +737,10 @@ func _get_vehicle_under_mouse() -> Vehicle:
 
 func _on_dismantle_button_pressed() -> void:
 	toggle_mode()
+
+
+func _on_finish_button_pressed() -> void:
+	finish_workshop_edit()
 
 
 func _on_auto_construct_button_pressed() -> void:
@@ -906,9 +918,9 @@ func _load_blueprint_from_path(path: String) -> void:
 		_show_status(result["error"])
 		return
 
-	var centered_data := result["data"].duplicate(true) as Dictionary
-	centered_data["blocks"] = _center_blueprint_records(
-		centered_data["blocks"]
+	var blueprint_data := result["data"].duplicate(true) as Dictionary
+	var footprint_size := VehicleBlueprint.get_footprint_size(
+		blueprint_data["blocks"]
 	)
 	var parent: Node = gamemap if gamemap != null else get_tree().current_scene
 	var old_transform := Transform2D.IDENTITY
@@ -922,13 +934,13 @@ func _load_blueprint_from_path(path: String) -> void:
 			if workshop_new_vehicle
 			else vehicle.global_rotation
 		)
-		old_transform = Transform2D(
-			session_rotation,
-			active_workshop.get_center_world_position()
+		old_transform = active_workshop.get_aligned_vehicle_transform(
+			footprint_size,
+			session_rotation
 		)
 
 	var built := VehicleBlueprint.build(
-		centered_data,
+		blueprint_data,
 		parent,
 		vehicle_scene,
 		old_transform
@@ -945,11 +957,11 @@ func _load_blueprint_from_path(path: String) -> void:
 		is_instance_valid(active_workshop)
 		and not _blueprint_records_fit_workshop(
 			built_vehicle,
-			centered_data["blocks"]
+			blueprint_data["blocks"]
 		)
 	):
 		built_vehicle.queue_free()
-		_show_status("Blueprint does not fit inside this workshop")
+		_show_status("Blueprint does not fit inside this maintenance bay")
 		return
 	built_vehicle.freeze = active_workshop != null
 	set_selected_vehicle(built_vehicle)
@@ -961,37 +973,6 @@ func _load_blueprint_from_path(path: String) -> void:
 		old_vehicle.queue_free()
 	refresh_workshop_camera()
 	_show_status("Ghost blueprint loaded: %s" % built["name"])
-
-
-func _center_blueprint_records(records: Array) -> Array:
-	var centered := records.duplicate(true)
-	if centered.is_empty():
-		return centered
-	var has_cell := false
-	var minimum := Vector2i.ZERO
-	var maximum := Vector2i.ZERO
-	for record: Array in centered:
-		for cell: Vector2i in VehicleBlueprint.get_record_cells(record):
-			if not has_cell:
-				minimum = cell
-				maximum = cell
-				has_cell = true
-			else:
-				minimum.x = mini(minimum.x, cell.x)
-				minimum.y = mini(minimum.y, cell.y)
-				maximum.x = maxi(maximum.x, cell.x)
-				maximum.y = maxi(maximum.y, cell.y)
-	if not has_cell:
-		return centered
-	var footprint := maximum - minimum + Vector2i.ONE
-	var offset := -minimum - Vector2i(
-		footprint.x / 2,
-		footprint.y / 2
-	)
-	for record: Array in centered:
-		record[1] = int(record[1]) + offset.x
-		record[2] = int(record[2]) + offset.y
-	return centered
 
 
 func _blueprint_records_fit_workshop(

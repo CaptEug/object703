@@ -47,5 +47,5 @@ position = Vector2(184, 78)
 [node name="Drill" parent="." unique_id=71089784 instance=ExtResource("11_l8ndj")]
 position = Vector2(123, 119)
 
-[node name="Workshop" parent="." unique_id=2037674463 instance=ExtResource("13_workshop")]
+[node name="MaintenanceBay" parent="." unique_id=2037674463 instance=ExtResource("13_workshop")]
 position = Vector2(224, 32)

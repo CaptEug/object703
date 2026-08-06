@@ -39,7 +39,16 @@ func _can_accept_player_control() -> bool:
 	if editor != null and editor.is_editing_vehicle():
 		return false
 	if current_assembly.host is Vehicle:
-		return editor == null or editor.vehicle == current_assembly.host
+		var vehicle_panel := get_tree().get_first_node_in_group(
+			"vehicle_panel"
+		)
+		return (
+			vehicle_panel != null
+			and vehicle_panel.has_method("is_vehicle_selected")
+			and vehicle_panel.is_vehicle_selected(
+				current_assembly.host
+			)
+		)
 	if current_assembly.host is Building:
 		var building_panel := get_tree().get_first_node_in_group(
 			"building_panel"

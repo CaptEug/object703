@@ -36,9 +36,13 @@ static func save_path(
 				"Unregistered block: %s"
 				% BlockDB.get_block_name(block.block_id)
 			)
-	vehicle.ensure_blueprint_from_blocks()
-	vehicle.reconcile_blueprint_with_blocks()
-	var normalized := normalize_records(vehicle.blueprint_blocks)
+	# A loaded construction plan can contain missing ghost records. Saving a
+	# vehicle blueprint must snapshot the blocks that are actually built, or
+	# those stale ghosts are merged into every later save.
+	var built_records := capture_vehicle_blocks(vehicle)
+	if built_records.is_empty():
+		return _error("Add at least one block before saving a blueprint.")
+	var normalized := normalize_records(built_records)
 	var block_records: Array = normalized["records"]
 
 	var directory_result := ensure_directory()
@@ -55,6 +59,9 @@ static func save_path(
 	]
 	file.store_string(text)
 	file.close()
+	var cell_offset: Vector2i = normalized["offset"]
+	vehicle.rebase_grid_origin(cell_offset)
+	vehicle.set_blueprint_records(block_records)
 	return {"ok": true, "name": clean_name, "path": path}
 
 
@@ -280,6 +287,30 @@ static func normalize_records(records: Array) -> Dictionary:
 		"records": result,
 		"offset": minimum,
 	}
+
+
+static func get_records_bounds(records: Array) -> Rect2i:
+	var has_cell := false
+	var minimum := Vector2i.ZERO
+	var maximum := Vector2i.ZERO
+	for record: Array in records:
+		for cell: Vector2i in get_record_cells(record):
+			if not has_cell:
+				minimum = cell
+				maximum = cell
+				has_cell = true
+			else:
+				minimum.x = mini(minimum.x, cell.x)
+				minimum.y = mini(minimum.y, cell.y)
+				maximum.x = maxi(maximum.x, cell.x)
+				maximum.y = maxi(maximum.y, cell.y)
+	if not has_cell:
+		return Rect2i()
+	return Rect2i(minimum, maximum - minimum + Vector2i.ONE)
+
+
+static func get_footprint_size(records: Array) -> Vector2i:
+	return get_records_bounds(records).size
 
 
 static func reconcile_records(records: Array, vehicle: Vehicle) -> Array:

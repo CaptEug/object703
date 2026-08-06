@@ -1,1 +1,1 @@
-{"buildings":[{"blocks":[[14,1,0,0,64261,{"size":[8,6],"state":{"vehicle_front":1}}],[3,0,2,0,65535,{"size":[1,2],"state":{"items":{"PZGR88mm":40}}}]],"building_id":1,"building_name":"Starter Vehicle Workshop","origin":[-10,2],"owner_name":"player"}],"version":0}
+{"buildings":[{"blocks":[[14,1,0,0,65535,{"size":[6,6],"state":{"vehicle_front":0}}],[3,0,2,0,65535,{"size":[1,2],"state":{"items":{"PZGR88mm":40}}}]],"building_id":2,"building_name":"New Building","origin":[-10,2],"owner_name":"player"}],"version":0}

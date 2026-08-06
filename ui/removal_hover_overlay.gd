@@ -17,7 +17,8 @@ func _init() -> void:
 	hide()
 
 
-func attach_to(host: Node2D) -> void:
+func attach_to(host: Node2D, relative_z_index: int = 1000) -> void:
+	z_index = relative_z_index
 	if not is_instance_valid(host) or get_parent() == host:
 		return
 	if get_parent() != null:

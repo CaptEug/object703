@@ -154,7 +154,7 @@ func add_liquid(cell: Vector2i, block_id: int, mass: float) -> void:
 	):
 		return
 	var mass_left := mass
-	var changed: Array[Vector2i] = []
+	var cellchanged: Array[Vector2i] = []
 	var cell_capacity := BlockDB.get_default_liquid_mass(block_id)
 	for connected_cell: Vector2i in get_connected_liquid(cell):
 		var stored := float(layerdata[connected_cell]["mass"])
@@ -163,7 +163,7 @@ func add_liquid(cell: Vector2i, block_id: int, mass: float) -> void:
 			continue
 		layerdata[connected_cell]["mass"] = stored + accepted
 		mass_left -= accepted
-		changed.append(connected_cell)
+		cellchanged.append(connected_cell)
 		if mass_left <= 0.0:
 			break
 	while mass_left > 0.0:
@@ -175,11 +175,11 @@ func add_liquid(cell: Vector2i, block_id: int, mass: float) -> void:
 			break
 		var accepted := minf(mass_left, cell_capacity)
 		set_liquid_cell(target, block_id, accepted, false)
-		changed.append(target)
+		cellchanged.append(target)
 		mass_left -= accepted
-	if not changed.is_empty():
-		_queue_visual_refresh(changed)
-		_update_minimap(changed)
+	if not cellchanged.is_empty():
+		_queue_visual_refresh(cellchanged)
+		_update_minimap(cellchanged)
 
 
 func save_chunk(
@@ -221,7 +221,7 @@ func load_chunk(
 		push_error("Liquid chunk is truncated.")
 		return
 	var index := 0
-	var changed: Array[Vector2i] = []
+	var cellchanged: Array[Vector2i] = []
 	for ly in range(chunk_size):
 		for lx in range(chunk_size):
 			var block_id := bytes.decode_u16(index)
@@ -234,9 +234,9 @@ func load_chunk(
 				world_origin.y + chunk_y * chunk_size + ly
 			)
 			if set_liquid_cell(cell, block_id, float(mass), false):
-				changed.append(cell)
-	if not changed.is_empty():
-		_queue_visual_refresh(changed)
+				cellchanged.append(cell)
+	if not cellchanged.is_empty():
+		_queue_visual_refresh(cellchanged)
 
 
 func _render_liquid_cell(cell: Vector2i) -> void:

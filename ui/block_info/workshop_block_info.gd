@@ -1,15 +1,19 @@
-class_name WorkshopBlockInfo
+class_name MaintenanceBayBlockInfo
 extends VBoxContainer
 
-var workshop: WorkshopBlock
+const ACTION_ICON_ATLAS := preload("res://assets/icons/icons.png")
+const ACTION_EDIT_REGION := Rect2(0, 160, 32, 32)
+const ACTION_CREATE_REGION := Rect2(32, 160, 32, 32)
+
+var workshop: MaintenanceBayBlock
 var docked_vehicle: Vehicle
 var _updating_direction := false
 var _editor_status := ""
+var _action_region := Rect2()
 
-@onready var dimensions_label: Label = $Dimensions
 @onready var docking_label: Label = $Docking
 @onready var direction_select: OptionButton = $DirectionRow/Direction
-@onready var vehicle_action_button: Button = $VehicleActionButton
+@onready var vehicle_action_button: TextureButton = $VehicleActionButton
 @onready var status_label: Label = $Status
 
 
@@ -18,7 +22,7 @@ func _ready() -> void:
 
 
 func bind_block(block: Block) -> void:
-	workshop = block as WorkshopBlock
+	workshop = block as MaintenanceBayBlock
 	if not is_instance_valid(workshop):
 		return
 	if not workshop.docked_vehicle_changed.is_connected(
@@ -104,11 +108,6 @@ func _process(_delta: float) -> void:
 func _refresh_all() -> void:
 	if not is_instance_valid(workshop):
 		return
-	dimensions_label.text = "Area: %d x %d cells (%d workshop units)" % [
-		workshop.size.x,
-		workshop.size.y,
-		int(workshop.size.x * workshop.size.y / 4),
-	]
 	_updating_direction = true
 	direction_select.select(int(workshop.vehicle_front))
 	_updating_direction = false
@@ -135,8 +134,7 @@ func _refresh_action_state() -> void:
 	)
 	direction_select.disabled = owns_session
 	if owns_session:
-		vehicle_action_button.text = "Finish Vehicle Editing"
-		vehicle_action_button.disabled = false
+		vehicle_action_button.hide()
 		status_label.text = (
 			_editor_status
 			if not _editor_status.is_empty()
@@ -147,17 +145,18 @@ func _refresh_action_state() -> void:
 			)
 		)
 		return
+	vehicle_action_button.show()
 	if not is_instance_valid(docked_vehicle):
-		vehicle_action_button.text = "Create Vehicle"
+		_set_action_icon(ACTION_CREATE_REGION, "Create vehicle")
 		var building := _get_building()
 		vehicle_action_button.disabled = building == null
 		status_label.text = (
-			"Workshop building is unavailable"
+			"Vehicle workshop is unavailable"
 			if building == null
 			else ""
 		)
 		return
-	vehicle_action_button.text = "Edit Docked Vehicle"
+	_set_action_icon(ACTION_EDIT_REGION, "Edit docked vehicle")
 	var reason := _get_docked_vehicle_rejection()
 	vehicle_action_button.disabled = not reason.is_empty()
 	status_label.text = reason
@@ -168,16 +167,26 @@ func _get_docked_vehicle_rejection() -> String:
 		return "No vehicle is docked"
 	var building := _get_building()
 	if building == null:
-		return "Workshop building is unavailable"
+		return "Vehicle workshop is unavailable"
 	if docked_vehicle.owner_id != building.owner_id:
-		return "Vehicle owner does not match workshop owner"
+		return "Vehicle owner does not match vehicle workshop owner"
 	if docked_vehicle.linear_velocity.length() > 2.0:
 		return "Vehicle must stop before editing"
 	if absf(docked_vehicle.angular_velocity) > 0.05:
 		return "Vehicle must stop rotating before editing"
 	if not workshop.is_vehicle_fully_inside(docked_vehicle):
-		return "Vehicle is not fully inside this workshop"
+		return "Vehicle is not fully inside this maintenance bay"
 	return ""
+
+
+func _set_action_icon(region: Rect2, tooltip: String) -> void:
+	if _action_region != region:
+		_action_region = region
+		var texture := AtlasTexture.new()
+		texture.atlas = ACTION_ICON_ATLAS
+		texture.region = region
+		vehicle_action_button.texture_normal = texture
+	vehicle_action_button.tooltip_text = tooltip
 
 
 func _get_building() -> Building:
@@ -208,8 +217,6 @@ func _on_vehicle_action_pressed() -> void:
 		status_label.text = "Vehicle editor is unavailable"
 		return
 	if editor.active_workshop == workshop:
-		var finish_result := editor.finish_workshop_edit()
-		status_label.text = str(finish_result.get("message", ""))
 		return
 	var result := (
 		editor.begin_workshop_edit(workshop, docked_vehicle)

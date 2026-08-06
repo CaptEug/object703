@@ -1,23 +1,26 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://groik7v5jh3g"]
 
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_theme"]
 [ext_resource type="Script" uid="uid://c2kcw8vxvfl1t" path="res://ui/building_ui/building_panel.gd" id="2_script"]
 [ext_resource type="Texture2D" uid="uid://cjkyiyg0n6t0e" path="res://assets/icons/icons_small.png" id="3_symbols"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="4_icons"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_close"]
 atlas = ExtResource("3_symbols")
 region = Rect2(224, 0, 16, 16)
 
-[node name="BuildingPanel" type="Panel" groups=["building_panel"]]
+[sub_resource type="AtlasTexture" id="AtlasTexture_rename"]
+atlas = ExtResource("4_icons")
+region = Rect2(160, 128, 32, 32)
+
+[node name="BuildingPanel" type="Panel" unique_id=1791484045 groups=["building_panel"]]
 custom_minimum_size = Vector2(256, 256)
-offset_left = 24.0
-offset_top = 48.0
-offset_right = 280.0
-offset_bottom = 304.0
+offset_right = 256.0
+offset_bottom = 256.0
 theme = ExtResource("1_theme")
 script = ExtResource("2_script")
 
-[node name="CloseButton" type="TextureButton" parent="."]
+[node name="CloseButton" type="TextureButton" parent="." unique_id=1878981347]
 layout_mode = 0
 offset_left = 234.0
 offset_top = 6.0
@@ -27,25 +30,41 @@ tooltip_text = "Close building panel"
 focus_mode = 0
 texture_normal = SubResource("AtlasTexture_close")
 
-[node name="BuildingName" type="LineEdit" parent="."]
+[node name="BuildingName" type="LineEdit" parent="." unique_id=379741365]
 layout_mode = 0
-offset_left = 8.0
+offset_left = 32.0
 offset_top = 4.0
-offset_right = 230.0
-offset_bottom = 56.0
-editable = false
+offset_right = 192.0
+offset_bottom = 40.0
 placeholder_text = "Building name"
+editable = false
 
-[node name="BuildingInfo" type="RichTextLabel" parent="."]
+[node name="RenameButton" type="TextureButton" parent="." unique_id=433849054]
+layout_mode = 0
+offset_left = 192.0
+offset_top = 6.0
+offset_right = 224.0
+offset_bottom = 38.0
+tooltip_text = "Rename building"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+texture_normal = SubResource("AtlasTexture_rename")
+
+[node name="BuildingInfo" type="RichTextLabel" parent="." unique_id=296773833]
 layout_mode = 0
 offset_left = 8.0
-offset_top = 57.0
+offset_top = 40.0
 offset_right = 250.0
-offset_bottom = 249.0
+offset_bottom = 250.0
 mouse_filter = 2
 theme_override_font_sizes/normal_font_size = 8
 bbcode_enabled = true
-text = "Type: --\nWorkshop areas: --\nWeight: --\nBlocks: --\nOccupied cells: --\nFunctional blocks: --\nOwner: --"
+text = "Type: --
+Blocks: --
+Owner: --"
 fit_content = true
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="focus_exited" from="BuildingName" to="." method="_on_name_focus_exited"]
+[connection signal="text_submitted" from="BuildingName" to="." method="_on_name_text_submitted"]
+[connection signal="pressed" from="RenameButton" to="." method="_on_rename_button_pressed"]

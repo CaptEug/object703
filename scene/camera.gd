@@ -70,7 +70,7 @@ func focus_on_workshop_vehicle(
 ) -> void:
 	if not is_instance_valid(vehicle):
 		return
-	target_pos = vehicle.to_global(vehicle.center_of_mass)
+	target_pos = vehicle.to_global(vehicle.get_layout_center_local())
 	target_rot = front_rotation
 	update_camera_tween()
 

@@ -68,6 +68,32 @@ texture_margin_bottom = 10.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_edc7y"]
+load_path = "res://.godot/imported/icons.png-5c52b2a8ef046341f695bea1654b31ed.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0j3n0"]
+atlas = SubResource("CompressedTexture2D_edc7y")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_vrn5i"]
+load_path = "res://.godot/imported/icons.png-5c52b2a8ef046341f695bea1654b31ed.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rxu7l"]
+atlas = SubResource("CompressedTexture2D_vrn5i")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2ue16"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lhmk8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_e8i22"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3aiuj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jsdmi"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_upqtn"]
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_5x8jt"]
 atlas = ExtResource("3_vwcpp")
 region = Rect2(208, 0, 16, 16)
@@ -99,16 +125,22 @@ bg_color = Color(0, 1, 0, 1)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4w2ry"]
 atlas = ExtResource("1_4w2ry")
-region = Rect2(48, 0, 48, 48)
+region = Rect2(144, 96, 48, 48)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f7ufs"]
 texture = SubResource("AtlasTexture_4w2ry")
-texture_margin_left = 16.0
-texture_margin_top = 16.0
-texture_margin_right = 16.0
-texture_margin_bottom = 16.0
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_l2ko7"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vwcpp"]
 atlas = ExtResource("1_4w2ry")
@@ -149,12 +181,19 @@ texture_margin_bottom = 3.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ubhoo"]
-texture = SubResource("AtlasTexture_4w2ry")
-texture_margin_left = 16.0
-texture_margin_top = 16.0
-texture_margin_right = 16.0
-texture_margin_bottom = 16.0
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_vwcpp"]
+load_path = "res://.godot/imported/style_tex.png-59c86fc998ec80025de18b1781597db6.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p64gu"]
+atlas = SubResource("CompressedTexture2D_vwcpp")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vyrlb"]
+texture = SubResource("AtlasTexture_p64gu")
+texture_margin_left = 14.0
+texture_margin_top = 14.0
+texture_margin_right = 14.0
+texture_margin_bottom = 14.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
@@ -217,6 +256,21 @@ texture_margin_right = 16.0
 texture_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kwu70"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0on1k"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jxqpn"]
+atlas = ExtResource("1_4w2ry")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dldey"]
+texture = SubResource("AtlasTexture_jxqpn")
+texture_margin_left = 14.0
+texture_margin_top = 14.0
+texture_margin_right = 14.0
+texture_margin_bottom = 14.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_d3oid"]
 atlas = ExtResource("1_4w2ry")
@@ -300,6 +354,14 @@ Button/styles/focus = SubResource("StyleBoxTexture_cet5l")
 Button/styles/hover = SubResource("StyleBoxTexture_p64gu")
 Button/styles/normal = SubResource("StyleBoxTexture_xxub0")
 Button/styles/pressed = SubResource("StyleBoxTexture_7qj07")
+CheckButton/icons/checked = SubResource("AtlasTexture_0j3n0")
+CheckButton/icons/unchecked = SubResource("AtlasTexture_rxu7l")
+CheckButton/styles/disabled = SubResource("StyleBoxEmpty_2ue16")
+CheckButton/styles/focus = SubResource("StyleBoxEmpty_lhmk8")
+CheckButton/styles/hover = SubResource("StyleBoxEmpty_e8i22")
+CheckButton/styles/hover_pressed = SubResource("StyleBoxEmpty_3aiuj")
+CheckButton/styles/normal = SubResource("StyleBoxEmpty_jsdmi")
+CheckButton/styles/pressed = SubResource("StyleBoxEmpty_upqtn")
 FileDialog/icons/back_folder = SubResource("AtlasTexture_5x8jt")
 FileDialog/icons/file_thumbnail = SubResource("AtlasTexture_yi0qi")
 FileDialog/icons/forward_folder = SubResource("AtlasTexture_8fdp8")
@@ -320,18 +382,21 @@ Label/colors/font_color = Color(0.13145, 0.258068, 0.37867, 1)
 Label/fonts/font = ExtResource("3_4w2ry")
 LineEdit/colors/caret_color = Color(0, 1, 0, 1)
 LineEdit/colors/font_color = Color(0, 1, 0, 1)
+LineEdit/colors/font_selected_color = Color(0.13333334, 0.1254902, 0.20392157, 1)
+LineEdit/colors/font_uneditable_color = Color(0.12941177, 0.25882354, 0.3764706, 1)
+LineEdit/colors/selection_color = Color(0, 1, 0, 1)
 LineEdit/constants/caret_width = 2
 LineEdit/fonts/font = ExtResource("3_4w2ry")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_edc7y")
 LineEdit/styles/normal = SubResource("StyleBoxTexture_f7ufs")
-LineEdit/styles/read_only = SubResource("StyleBoxTexture_f7ufs")
+LineEdit/styles/read_only = SubResource("StyleBoxEmpty_l2ko7")
 Panel/styles/panel = SubResource("StyleBoxTexture_vwcpp")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_d3oid")
 ProgressBar/styles/fill = SubResource("StyleBoxTexture_2u1il")
 RichTextLabel/colors/default_color = Color(0, 1, 0, 1)
 RichTextLabel/fonts/bold_font = ExtResource("3_4w2ry")
 RichTextLabel/fonts/normal_font = ExtResource("3_4w2ry")
-RichTextLabel/styles/normal = SubResource("StyleBoxTexture_ubhoo")
+RichTextLabel/styles/normal = SubResource("StyleBoxTexture_vyrlb")
 TabContainer/colors/font_hovered_color = Color(0.169244, 0.169246, 0.169246, 1)
 TabContainer/colors/font_selected_color = Color(0.262933, 0.262932, 0.262932, 1)
 TabContainer/colors/font_unselected_color = Color(0.125911, 0.125911, 0.125911, 1)
@@ -346,7 +411,8 @@ TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_kwu70")
 TabContainer/styles/tabbar_background = SubResource("StyleBoxEmpty_kwu70")
 TextEdit/colors/font_color = Color(0, 1, 0, 1)
 TextEdit/fonts/font = ExtResource("3_4w2ry")
-TextEdit/styles/normal = SubResource("StyleBoxTexture_f7ufs")
+TextEdit/styles/focus = SubResource("StyleBoxEmpty_0on1k")
+TextEdit/styles/normal = SubResource("StyleBoxTexture_dldey")
 TooltipLabel/colors/font_color = Color(1, 1, 1, 1)
 TooltipLabel/font_sizes/font_size = 8
 TooltipPanel/styles/panel = SubResource("StyleBoxTexture_vrn5i")

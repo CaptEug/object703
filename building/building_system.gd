@@ -78,14 +78,9 @@ func open_panel_at(cell: Vector2i) -> bool:
 	var panel := get_tree().get_first_node_in_group("building_panel")
 	if panel == null or not panel.has_method("open_for_building"):
 		return false
-	var vehicle_editor := get_tree().get_first_node_in_group(
-		"vehicle_editor"
-	)
-	if (
-		vehicle_editor != null
-		and vehicle_editor.has_method("close_vehicle_panel")
-	):
-		vehicle_editor.close_vehicle_panel()
+	var other_panel := get_tree().get_first_node_in_group("vehicle_panel")
+	if other_panel != null and other_panel.has_method("close_panel"):
+		other_panel.close_panel()
 	panel.open_for_building(building, world_blocks, cell)
 	return true
 

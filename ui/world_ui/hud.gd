@@ -3,6 +3,7 @@ extends Panel
 @export var UI_root : CanvasLayer
 @export var gamescene : GameScene
 @export var vehicle_editor : VehicleEditor
+@export var vehicle_panel: VehiclePanel
 @export var building_constructor: BuildingConstructor
 @export var settings_panel : FloatingPanel
 @export var minimap : FloatingPanel
@@ -53,6 +54,8 @@ func _on_build_button_toggled(enabled: bool) -> void:
 		return
 	if enabled and vehicle_editor != null:
 		vehicle_editor.close_editor()
+	if enabled and vehicle_panel != null:
+		vehicle_panel.close_panel()
 	building_constructor.set_active(enabled)
 	build_button.set_pressed_no_signal(building_constructor.is_active())
 

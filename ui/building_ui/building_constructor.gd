@@ -142,8 +142,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	else:
 		remove_block_at_mouse()
 	get_viewport().set_input_as_handled()
-
-
 func toggle_mode() -> void:
 	if edit_mode == EditMode.BUILD:
 		set_mode(EditMode.DEMOLISH)
@@ -312,7 +310,7 @@ func update_world_removal_hover() -> void:
 		clear_removal_hover()
 		return
 	var overlay := ensure_removal_hover()
-	overlay.attach_to(world_blocks)
+	overlay.attach_to(world_blocks, 0)
 	var centers: Array[Vector2] = []
 	for cell: Vector2i in cells:
 		centers.append(world_blocks.map_to_local(cell))
@@ -534,3 +532,7 @@ func _refresh_minimap_for_block(
 
 func _on_dismantle_button_pressed() -> void:
 	toggle_mode()
+
+
+func _on_finish_button_pressed() -> void:
+	set_active(false)

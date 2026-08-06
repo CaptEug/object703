@@ -4,6 +4,7 @@
 [ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="2_theme"]
 
 [node name="BlockInformationPanel" type="Panel" unique_id=351814507 groups=["block_information_panel"]]
+clip_contents = true
 offset_left = 24.0
 offset_top = 24.0
 offset_right = 384.0
@@ -48,8 +49,13 @@ text = "HP: 0 / 0"
 [node name="Separator" type="HSeparator" parent="Margin/VBox" unique_id=306156423]
 layout_mode = 2
 
-[node name="DetailHost" type="VBoxContainer" parent="Margin/VBox" unique_id=1498561636]
+[node name="DetailScroll" type="ScrollContainer" parent="Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DetailHost" type="VBoxContainer" parent="Margin/VBox/DetailScroll" unique_id=1498561636]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [connection signal="pressed" from="Margin/VBox/Header/CloseButton" to="." method="close_panel"]

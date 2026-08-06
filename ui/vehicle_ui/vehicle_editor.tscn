@@ -28,14 +28,6 @@ region = Rect2(32, 128, 32, 32)
 atlas = ExtResource("4_buttons")
 region = Rect2(64, 128, 32, 32)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_com_off"]
-atlas = ExtResource("4_buttons")
-region = Rect2(0, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_com_on"]
-atlas = ExtResource("4_buttons")
-region = Rect2(16, 0, 16, 16)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_frame"]
 atlas = ExtResource("3_style")
 region = Rect2(240, 96, 48, 48)
@@ -110,15 +102,16 @@ grow_vertical = 0
 
 [node name="EditorTools" type="VBoxContainer" parent="EditorDock" unique_id=1572984606]
 layout_mode = 0
-offset_left = 10.0
+offset_left = 9.0
 offset_top = 12.0
-offset_right = 42.0
-offset_bottom = 180.0
+offset_right = 49.0
+offset_bottom = 234.0
 theme_override_constants/separation = 6
 
 [node name="SaveButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=990060592]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
+size_flags_horizontal = 4
 tooltip_text = "Save vehicle blueprint"
 focus_mode = 0
 mouse_default_cursor_shape = 2
@@ -127,6 +120,7 @@ texture_normal = SubResource("AtlasTexture_save")
 [node name="LoadButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=1001972702]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
+size_flags_horizontal = 4
 tooltip_text = "Load vehicle blueprint"
 focus_mode = 0
 mouse_default_cursor_shape = 2
@@ -135,6 +129,7 @@ texture_normal = SubResource("AtlasTexture_load")
 [node name="DismantleButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=149098939]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
+size_flags_horizontal = 4
 tooltip_text = "Toggle dismantling"
 focus_mode = 0
 mouse_default_cursor_shape = 2
@@ -143,30 +138,25 @@ texture_normal = SubResource("AtlasTexture_dismantle")
 [node name="AutoConstructButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=2138990638]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
+size_flags_horizontal = 4
 tooltip_text = "Auto construct all missing blueprint blocks"
 focus_mode = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_auto_construct")
 
-[node name="CoMButton" type="TextureButton" parent="EditorDock/EditorTools" unique_id=865704074]
+[node name="CoMButton" type="CheckButton" parent="EditorDock/EditorTools" unique_id=1776400878]
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 4
 tooltip_text = "Show center of mass"
 focus_mode = 0
 mouse_default_cursor_shape = 2
-toggle_mode = true
-button_pressed = true
-texture_normal = SubResource("AtlasTexture_com_off")
-texture_pressed = SubResource("AtlasTexture_com_on")
-
-[node name="Label" type="Label" parent="EditorDock/EditorTools/CoMButton" unique_id=1048243373]
-layout_mode = 0
-offset_left = -19.0
-offset_top = 3.0
-offset_right = 1.0
-offset_bottom = 13.0
 theme_override_colors/font_color = Color(1, 0.40392157, 0, 1)
+theme_override_colors/font_focus_color = Color(1, 0.40392157, 0, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.40392157, 0, 1)
+theme_override_colors/font_hover_color = Color(1, 0.40392157, 0, 1)
+theme_override_colors/font_hover_pressed_color = Color(1, 0.40392157, 0, 1)
 theme_override_font_sizes/font_size = 8
+button_pressed = true
 text = "CoM"
 
 [node name="PaletteArea" type="MarginContainer" parent="EditorDock" unique_id=215437762]
@@ -180,7 +170,7 @@ mouse_filter = 2
 theme_override_constants/margin_left = 52
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_bottom = 52
 
 [node name="Panel" type="Panel" parent="EditorDock/PaletteArea" unique_id=1885308309]
 layout_mode = 2
@@ -238,6 +228,19 @@ grow_vertical = 0
 mouse_default_cursor_shape = 2
 texture_normal = SubResource("AtlasTexture_zoom_out")
 
+[node name="FinishButton" type="Button" parent="EditorDock" unique_id=1600510016]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 0
+offset_left = 993.0
+offset_top = 208.0
+offset_right = 1141.0
+offset_bottom = 248.0
+size_flags_horizontal = 4
+tooltip_text = "Finish vehicle editing"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "Finish Editing"
+
 [connection signal="canceled" from="BlueprintDialog" to="." method="_on_blueprint_dialog_canceled"]
 [connection signal="file_selected" from="BlueprintDialog" to="." method="_on_blueprint_file_selected"]
 [connection signal="pressed" from="EditorDock/EditorTools/SaveButton" to="." method="_on_save_button_pressed"]
@@ -247,3 +250,4 @@ texture_normal = SubResource("AtlasTexture_zoom_out")
 [connection signal="toggled" from="EditorDock/EditorTools/CoMButton" to="." method="_on_com_visibility_changed"]
 [connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomInButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
 [connection signal="pressed" from="EditorDock/PaletteArea/Panel/ZoomOutButton" to="EditorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]
+[connection signal="pressed" from="EditorDock/FinishButton" to="." method="_on_finish_button_pressed"]

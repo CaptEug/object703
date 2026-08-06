@@ -6,7 +6,7 @@ var building_name := "New Building"
 var block_anchors: Array[Vector2i] = []
 var occupied_cells: Array[Vector2i] = []
 var functional_blocks: Array[Block] = []
-var workshop_blocks: Array[WorkshopBlock] = []
+var maintenance_bays: Array[MaintenanceBayBlock] = []
 var world_block_layer: WorldBlockLayer
 var block_assembly: BlockAssembly
 
@@ -44,21 +44,21 @@ func _init() -> void:
 func refresh_functional_state(
 	preferred_control: ControlBlock = active_control_block
 ) -> void:
-	workshop_blocks.clear()
+	maintenance_bays.clear()
 	for block: Block in functional_blocks:
-		if block is WorkshopBlock:
-			workshop_blocks.append(block as WorkshopBlock)
+		if block is MaintenanceBayBlock:
+			maintenance_bays.append(block as MaintenanceBayBlock)
 	block_assembly.rebuild(functional_blocks, preferred_control)
 
 
 func is_vehicle_workshop() -> bool:
-	return not workshop_blocks.is_empty()
+	return not maintenance_bays.is_empty()
 
 
-func get_workshop_cells() -> Array[Vector2i]:
+func get_maintenance_bay_cells() -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
-	for workshop: WorkshopBlock in workshop_blocks:
-		for cell: Vector2i in workshop.get_occupied_cells():
+	for maintenance_bay: MaintenanceBayBlock in maintenance_bays:
+		for cell: Vector2i in maintenance_bay.get_occupied_cells():
 			if not result.has(cell):
 				result.append(cell)
 	return result
@@ -66,24 +66,26 @@ func get_workshop_cells() -> Array[Vector2i]:
 
 func get_docked_vehicles() -> Array[Vehicle]:
 	var result: Array[Vehicle] = []
-	for workshop: WorkshopBlock in workshop_blocks:
-		var vehicle := workshop.get_docked_vehicle()
+	for maintenance_bay: MaintenanceBayBlock in maintenance_bays:
+		var vehicle := maintenance_bay.get_docked_vehicle()
 		if is_instance_valid(vehicle) and not result.has(vehicle):
 			result.append(vehicle)
 	return result
 
 
-func get_workshop_for_vehicle(target: Vehicle) -> WorkshopBlock:
-	if not is_instance_valid(target) or target.owner_id != owner_id:
+func get_maintenance_bay_for_vehicle(target: Vehicle) -> MaintenanceBayBlock:
+	if not is_instance_valid(target):
 		return null
-	for workshop: WorkshopBlock in workshop_blocks:
-		if workshop.get_docked_vehicle() == target:
-			return workshop
+	for maintenance_bay: MaintenanceBayBlock in maintenance_bays:
+		if maintenance_bay.get_docked_vehicle() == target:
+			return maintenance_bay
 	return null
 
 
-func get_workshop_for_block(target: WorkshopBlock) -> WorkshopBlock:
-	return target if workshop_blocks.has(target) else null
+func get_maintenance_bay_for_block(
+	target: MaintenanceBayBlock
+) -> MaintenanceBayBlock:
+	return target if maintenance_bays.has(target) else null
 
 
 func update_functional_systems() -> void:

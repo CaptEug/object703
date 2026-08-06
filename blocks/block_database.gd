@@ -193,7 +193,7 @@ var blocks := {
 		"construction_cost": {},
 	},
 	14: {
-		"block_name": "Workshop",
+		"block_name": "Maintenance Bay",
 		"block_class": CLASS_CONSTRUCTED,
 		"allowed_hosts": [HOST_WORLD],
 		"scene_path": "res://blocks/structural/workshop.tscn",

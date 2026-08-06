@@ -66,21 +66,44 @@ func _process(_delta):
 
 
 func _input_event(viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-	if not event is InputEventMouseButton:
+	if (
+		not event is InputEventMouseButton
+		or not event.pressed
+		or _panel_interaction_is_suppressed()
+	):
 		return
-	if not event.pressed or event.button_index != MOUSE_BUTTON_RIGHT:
-		return
-	if _open_block_panel_at_mouse():
+	var handled := false
+	if event.button_index == MOUSE_BUTTON_LEFT:
+		handled = open_panel()
+	elif event.button_index == MOUSE_BUTTON_RIGHT:
+		handled = _open_block_panel_at_mouse()
+	if handled:
 		viewport.set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventMouseButton:
-		return
-	if not event.pressed or event.button_index != MOUSE_BUTTON_RIGHT:
+	if (
+		not event is InputEventMouseButton
+		or not event.pressed
+		or event.button_index != MOUSE_BUTTON_RIGHT
+		or _panel_interaction_is_suppressed()
+	):
 		return
 	if _open_block_panel_at_mouse():
 		get_viewport().set_input_as_handled()
+
+
+func open_panel() -> bool:
+	if _panel_interaction_is_suppressed():
+		return false
+	var panel := get_tree().get_first_node_in_group("vehicle_panel")
+	if panel == null or not panel.has_method("open_for_vehicle"):
+		return false
+	var other_panel := get_tree().get_first_node_in_group("building_panel")
+	if other_panel != null and other_panel.has_method("close_panel"):
+		other_panel.close_panel()
+	panel.open_for_vehicle(self)
+	return true
 
 
 func _open_block_panel_at_mouse() -> bool:
@@ -94,6 +117,18 @@ func _open_block_panel_at_mouse() -> bool:
 			get_viewport().get_mouse_position()
 		)
 	return false
+
+
+func _panel_interaction_is_suppressed() -> bool:
+	var constructor := get_tree().get_first_node_in_group(
+		"building_constructor"
+	) as BuildingConstructor
+	if constructor != null and constructor.is_active():
+		return true
+	var vehicle_editor := get_tree().get_first_node_in_group(
+		"vehicle_editor"
+	) as VehicleEditor
+	return vehicle_editor != null and vehicle_editor.is_editing_vehicle()
 
 
 func update_vehicle():
@@ -121,7 +156,7 @@ func get_aim_target() -> Vector2:
 	return (
 		block_assembly.get_aim_target()
 		if block_assembly.has_aim_command()
-		else global_position
+		else to_global(center_of_mass)
 	)
 
 
@@ -796,6 +831,61 @@ func distance_to_world_point(world_point: Vector2) -> float:
 				to_global(cell_center).distance_to(world_point)
 			)
 	return nearest_distance
+
+
+func get_layout_center_local() -> Vector2:
+	var records := blueprint_blocks
+	if records.is_empty():
+		records = VehicleBlueprint.capture_vehicle_blocks(self)
+	var bounds := VehicleBlueprint.get_records_bounds(records)
+	if bounds.size == Vector2i.ZERO:
+		return center_of_mass
+	return (
+		Vector2(bounds.position)
+		+ Vector2(bounds.size) * 0.5
+	) * TILE_SIZE
+
+
+func normalize_layout_to_top_left() -> Vector2i:
+	var records := blueprint_blocks.duplicate(true)
+	records.append_array(VehicleBlueprint.capture_vehicle_blocks(self))
+	var bounds := VehicleBlueprint.get_records_bounds(records)
+	if bounds.size == Vector2i.ZERO:
+		return Vector2i.ZERO
+	rebase_grid_origin(bounds.position)
+	return bounds.position
+
+
+func rebase_grid_origin(cell_offset: Vector2i) -> void:
+	if cell_offset == Vector2i.ZERO:
+		return
+	var local_offset := Vector2(cell_offset) * TILE_SIZE
+	# Shift the origin while keeping every block at the same world position.
+	global_position = global_transform * local_offset
+	for record: Array in blueprint_blocks:
+		record[1] = int(record[1]) - cell_offset.x
+		record[2] = int(record[2]) - cell_offset.y
+
+	grid.clear()
+	var occupied_cells: Array[Vector2i] = []
+	for block: Block in blocks:
+		block.update_transform(
+			self,
+			block.origin_cell - cell_offset,
+			block.rotation_index
+		)
+		if (
+			is_instance_valid(block.collision)
+			and block.collision.get_parent() == self
+		):
+			block.collision.position -= local_offset
+		for cell: Vector2i in block.get_occupied_cells():
+			grid[cell] = block
+			occupied_cells.append(cell)
+
+	passive_visuals.clear()
+	update_vehicle()
+	refresh_block_visuals_around(occupied_cells)
 
 
 # Blueprint

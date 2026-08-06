@@ -5,14 +5,18 @@ const STORAGE_DETAIL := preload("res://ui/block_info/storage_block_info.tscn")
 const WEAPON_DETAIL := preload("res://ui/block_info/weapon_block_info.tscn")
 const CONTROL_DETAIL := preload("res://ui/block_info/control_block_info.tscn")
 const DRILL_DETAIL := preload("res://ui/block_info/drill_block_info.tscn")
-const WORKSHOP_DETAIL := preload("res://ui/block_info/workshop_block_info.tscn")
+const MAINTENANCE_BAY_DETAIL := preload(
+	"res://ui/block_info/workshop_block_info.tscn"
+)
 
 var target_block: Block
 var detail_section: Node
 
 @onready var title_label: Label = $Margin/VBox/Header/Title
 @onready var status_label: Label = $Margin/VBox/Status
-@onready var detail_host: VBoxContainer = $Margin/VBox/DetailHost
+@onready var detail_host: VBoxContainer = (
+	$Margin/VBox/DetailScroll/DetailHost
+)
 
 func _ready() -> void:
 	hide()
@@ -31,12 +35,15 @@ func open_for_block(
 	_create_detail_section()
 	show()
 	move_to_front()
+	var viewport_size := get_viewport_rect().size
+	size = size.min(viewport_size)
+	var target_position := position
 	if screen_position != Vector2.ZERO:
-		var viewport_size := get_viewport_rect().size
-		position = (screen_position + Vector2(16.0, 16.0)).clamp(
-			Vector2.ZERO,
-			(viewport_size - size).max(Vector2.ZERO)
-		)
+		target_position = screen_position + Vector2(16.0, 16.0)
+	position = target_position.clamp(
+		Vector2.ZERO,
+		(viewport_size - size).max(Vector2.ZERO)
+	)
 	return true
 
 func close_panel() -> void:
@@ -75,8 +82,8 @@ func _create_detail_section() -> void:
 	elif target_block.get_information_panel_key() == &"drill":
 		detail_scene = DRILL_DETAIL
 		panel_height = 210.0
-	elif target_block.get_information_panel_key() == &"workshop":
-		detail_scene = WORKSHOP_DETAIL
+	elif target_block.get_information_panel_key() == &"maintenance_bay":
+		detail_scene = MAINTENANCE_BAY_DETAIL
 		panel_height = 350.0
 	elif target_block is ItemStorage or target_block is LiquidStorage:
 		detail_scene = STORAGE_DETAIL

@@ -63,21 +63,22 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -220.0
+offset_top = -256.0
 grow_horizontal = 2
 grow_vertical = 0
 
 [node name="Tools" type="VBoxContainer" parent="ConstructorDock" unique_id=1808147066]
 layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 42.0
-offset_bottom = 75.0
-theme_override_constants/separation = 4
+offset_left = 9.0
+offset_top = 12.0
+offset_right = 49.0
+offset_bottom = 234.0
+theme_override_constants/separation = 6
 
 [node name="DemolishButton" type="TextureButton" parent="ConstructorDock/Tools" unique_id=1324140467]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
+size_flags_horizontal = 4
 tooltip_text = "Toggle building Demolition mode"
 focus_mode = 0
 mouse_default_cursor_shape = 2
@@ -95,7 +96,7 @@ mouse_filter = 2
 theme_override_constants/margin_left = 52
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_bottom = 52
 
 [node name="Panel" type="Panel" parent="ConstructorDock/PaletteArea" unique_id=267789631]
 layout_mode = 2
@@ -163,14 +164,35 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 52.0
-offset_top = -24.0
-offset_right = -8.0
-offset_bottom = -5.0
+offset_top = -48.0
+offset_right = -168.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 8
+vertical_alignment = 1
 text_overrun_behavior = 3
+
+[node name="FinishButton" type="Button" parent="ConstructorDock"]
+custom_minimum_size = Vector2(148, 40)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -159.0
+offset_top = -48.0
+offset_right = -11.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+tooltip_text = "Finish building editing"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+text = "Finish Editing"
 
 [connection signal="pressed" from="ConstructorDock/Tools/DemolishButton" to="." method="_on_dismantle_button_pressed"]
 [connection signal="pressed" from="ConstructorDock/PaletteArea/Panel/ZoomInButton" to="ConstructorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_in_button_pressed"]
 [connection signal="pressed" from="ConstructorDock/PaletteArea/Panel/ZoomOutButton" to="ConstructorDock/PaletteArea/Panel/Clipper/BlockPalette" method="_on_zoom_out_button_pressed"]
+[connection signal="pressed" from="ConstructorDock/FinishButton" to="." method="_on_finish_button_pressed"]

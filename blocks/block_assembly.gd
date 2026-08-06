@@ -80,6 +80,14 @@ func set_active_control_block(control_block: ControlBlock) -> bool:
 	return true
 
 
+func get_max_engine_power() -> float:
+	var result := 0.0
+	for engine: PowerPack in engines:
+		if is_instance_valid(engine):
+			result += maxf(engine.max_power, 0.0)
+	return result
+
+
 func get_drive_input() -> Dictionary:
 	if not is_instance_valid(active_control_block):
 		return {"move": 0.0, "pivot": 0.0}

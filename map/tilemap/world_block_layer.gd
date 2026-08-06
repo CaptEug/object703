@@ -60,7 +60,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if (
 		not event is InputEventMouseButton
 		or not event.pressed
-		or _block_interaction_is_suppressed()
+		or _panel_interaction_is_suppressed()
 	):
 		return
 	var cell := local_to_map(to_local(get_global_mouse_position()))
@@ -170,7 +170,7 @@ func open_information_panel_at(
 	cell: Vector2i,
 	screen_position: Vector2 = Vector2.ZERO
 ) -> bool:
-	if _block_interaction_is_suppressed():
+	if _panel_interaction_is_suppressed():
 		return false
 	var block := get_functional_block_at(cell)
 	if block == null or not block.has_information_panel():
@@ -184,25 +184,37 @@ func open_information_panel_at(
 
 
 func open_building_panel_at(cell: Vector2i) -> bool:
-	if _block_interaction_is_suppressed():
+	if _panel_interaction_is_suppressed():
 		return false
+	var vehicle := _get_vehicle_at_world_position(
+		get_global_mouse_position()
+	)
+	if vehicle != null:
+		return vehicle.open_panel()
 	return building_system.open_panel_at(cell)
 
 
-func _block_interaction_is_suppressed() -> bool:
+func _get_vehicle_at_world_position(world_position: Vector2) -> Vehicle:
+	for node: Node in get_tree().get_nodes_in_group("vehicles"):
+		var candidate := node as Vehicle
+		if candidate == null:
+			continue
+		var cell := candidate.world_to_cell(world_position)
+		if candidate.get_block(cell) != null:
+			return candidate
+	return null
+
+
+func _panel_interaction_is_suppressed() -> bool:
 	var constructor := get_tree().get_first_node_in_group(
 		"building_constructor"
-	)
+	) as BuildingConstructor
 	if constructor != null and constructor.is_active():
 		return true
 	var vehicle_editor := get_tree().get_first_node_in_group(
 		"vehicle_editor"
-	)
-	return (
-		vehicle_editor != null
-		and vehicle_editor.has_method("is_editing_vehicle")
-		and vehicle_editor.is_editing_vehicle()
-	)
+	) as VehicleEditor
+	return vehicle_editor != null and vehicle_editor.is_editing_vehicle()
 
 
 func get_building_at(cell: Vector2i) -> Building:

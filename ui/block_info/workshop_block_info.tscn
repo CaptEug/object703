@@ -1,27 +1,31 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bo1eiwjoju60m"]
 
-[ext_resource type="Script" path="res://ui/block_info/workshop_block_info.gd" id="1_detail"]
+[ext_resource type="Script" uid="uid://cbi0u0qw3xvo6" path="res://ui/block_info/workshop_block_info.gd" id="1_detail"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_jrr06"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="3_3qori"]
 
-[node name="WorkshopBlockInfo" type="VBoxContainer"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_jsdmi"]
+atlas = ExtResource("3_3qori")
+region = Rect2(0, 160, 32, 32)
+
+[node name="MaintenanceBayBlockInfo" type="VBoxContainer" unique_id=1367954157]
+theme = ExtResource("1_jrr06")
 theme_override_constants/separation = 8
 script = ExtResource("1_detail")
 
-[node name="Dimensions" type="Label" parent="."]
-layout_mode = 2
-text = "Area: --"
-
-[node name="Docking" type="Label" parent="."]
+[node name="Docking" type="Label" parent="." unique_id=417053874]
 layout_mode = 2
 text = "Docked vehicle: None"
+autowrap_mode = 2
 
-[node name="DirectionRow" type="HBoxContainer" parent="."]
+[node name="DirectionRow" type="HBoxContainer" parent="." unique_id=1753872934]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="DirectionRow"]
+[node name="Label" type="Label" parent="DirectionRow" unique_id=22010243]
 layout_mode = 2
-text = "New vehicle front"
+text = "vehicle front"
 
-[node name="Direction" type="OptionButton" parent="DirectionRow"]
+[node name="Direction" type="OptionButton" parent="DirectionRow" unique_id=248299195]
 layout_mode = 2
 size_flags_horizontal = 3
 item_count = 4
@@ -34,11 +38,13 @@ popup/item_2/id = 2
 popup/item_3/text = "Left"
 popup/item_3/id = 3
 
-[node name="VehicleActionButton" type="Button" parent="."]
+[node name="VehicleActionButton" type="TextureButton" parent="." unique_id=817619369]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-text = "Create Vehicle"
+size_flags_horizontal = 8
+texture_normal = SubResource("AtlasTexture_jsdmi")
 
-[node name="Status" type="Label" parent="."]
+[node name="Status" type="Label" parent="." unique_id=775316598]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 autowrap_mode = 2
