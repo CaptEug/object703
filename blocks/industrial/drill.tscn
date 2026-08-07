@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ctxya1ewcu5qr"]
 
 [ext_resource type="Script" uid="uid://bj11nxudr41mg" path="res://blocks/industrial/drill.gd" id="1_hfpfy"]
-[ext_resource type="Texture2D" uid="uid://c5ovvxeiuly74" path="res://assets/blocks/blocks_industrial.png" id="2_jw8pp"]
+[ext_resource type="Texture2D" uid="uid://c5ovvxeiuly74" path="res://assets/blocks/industrial.png" id="2_jw8pp"]
 
 [sub_resource type="ConvexPolygonShape2D" id="ConvexPolygonShape2D_drill"]
 points = PackedVector2Array(0, -24, 16, 8, 16, 24, -16, 24, -16, 8)
@@ -22,8 +22,6 @@ region = Rect2(0, 32, 32, 48)
 script = ExtResource("1_hfpfy")
 drill_area = NodePath("Area2D")
 drill_head = NodePath("Mask/Sprite2D")
-head_scroll_speed = 256.0
-head_acceleration = 64.0
 size = Vector2i(2, 3)
 edge_sockets = Dictionary[Vector2i, Dictionary]({
 Vector2i(0, 0): {

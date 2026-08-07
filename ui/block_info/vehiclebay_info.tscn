@@ -1,17 +1,17 @@
 [gd_scene format=3 uid="uid://bo1eiwjoju60m"]
 
-[ext_resource type="Script" uid="uid://cbi0u0qw3xvo6" path="res://ui/block_info/workshop_block_info.gd" id="1_detail"]
-[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_jrr06"]
-[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="3_3qori"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="1_tmuu4"]
+[ext_resource type="Script" uid="uid://cbi0u0qw3xvo6" path="res://ui/block_info/vehiclebay_info.gd" id="2_pcvse"]
+[ext_resource type="Texture2D" uid="uid://6d4bdslmcutd" path="res://assets/icons/icons.png" id="3_cmes7"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jsdmi"]
-atlas = ExtResource("3_3qori")
+atlas = ExtResource("3_cmes7")
 region = Rect2(0, 160, 32, 32)
 
-[node name="MaintenanceBayBlockInfo" type="VBoxContainer" unique_id=1367954157]
-theme = ExtResource("1_jrr06")
+[node name="VehicleBayBlockInfo" type="VBoxContainer" unique_id=1367954157]
+theme = ExtResource("1_tmuu4")
 theme_override_constants/separation = 8
-script = ExtResource("1_detail")
+script = ExtResource("2_pcvse")
 
 [node name="Docking" type="Label" parent="." unique_id=417053874]
 layout_mode = 2

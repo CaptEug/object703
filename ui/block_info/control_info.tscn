@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://ui/block_info/control_block_info.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://o06m3jd63e3a" path="res://ui/block_info/control_info.gd" id="1_script"]
 
 [node name="ControlBlockInfo" type="VBoxContainer"]
 theme_override_constants/separation = 8

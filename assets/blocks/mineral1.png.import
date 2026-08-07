@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cg424y6jnmul8"
-path="res://.godot/imported/blocks_liquid1.png-0de3de17eddc8114a689d805b4f07896.ctex"
+uid="uid://dcsl4uledmso8"
+path="res://.godot/imported/mineral1.png-f3946b1a0bedd9e5cca1cc184e60b28e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/blocks/blocks_liquid1.png"
-dest_files=["res://.godot/imported/blocks_liquid1.png-0de3de17eddc8114a689d805b4f07896.ctex"]
+source_file="res://assets/blocks/mineral1.png"
+dest_files=["res://.godot/imported/mineral1.png-f3946b1a0bedd9e5cca1cc184e60b28e.ctex"]
 
 [params]
 

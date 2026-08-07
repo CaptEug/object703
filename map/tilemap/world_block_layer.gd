@@ -167,20 +167,17 @@ func get_functional_block_at(cell: Vector2i) -> Block:
 
 
 func open_information_panel_at(
-	cell: Vector2i,
+	_cell: Vector2i,
 	screen_position: Vector2 = Vector2.ZERO
 ) -> bool:
 	if _panel_interaction_is_suppressed():
 		return false
-	var block := get_functional_block_at(cell)
-	if block == null or not block.has_information_panel():
-		return false
 	var panel := get_tree().get_first_node_in_group(
 		"block_information_panel"
 	)
-	if panel == null or not panel.has_method("open_for_block"):
+	if panel == null or not panel.has_method("pin_hovered_block"):
 		return false
-	return panel.open_for_block(block, screen_position)
+	return panel.pin_hovered_block(screen_position)
 
 
 func open_building_panel_at(cell: Vector2i) -> bool:

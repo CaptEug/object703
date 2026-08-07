@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://ui/block_info/drill_block_info.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://udosbisirh4k" path="res://ui/block_info/drill_info.gd" id="1_script"]
 
 [node name="DrillBlockInfo" type="VBoxContainer"]
 theme_override_constants/separation = 10

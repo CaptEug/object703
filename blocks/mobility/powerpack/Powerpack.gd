@@ -16,10 +16,6 @@ var current_fuel : Dictionary = {}
 var solid_fuel_buffer: Dictionary = {}    # item_name -> buffered solid amount
 
 
-func has_information_panel() -> bool:
-	return true
-
-
 func get_save_state() -> Dictionary:
 	var saved_buffer := {}
 	for item_name: String in solid_fuel_buffer:

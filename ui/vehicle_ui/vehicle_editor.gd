@@ -32,14 +32,14 @@ var interface_state := InterfaceState.CLOSED
 var edit_mode := EditMode.BUILD
 var blueprint_dialog_mode := BlueprintDialogMode.NONE
 var new_vehicle_index := 1
-var active_workshop: MaintenanceBayBlock
+var active_workshop: VehicleBayBlock
 var active_workshop_building: Building
-var workshop_context: MaintenanceBayBlock
+var workshop_context: VehicleBayBlock
 var workshop_context_vehicle: Vehicle
 var workshop_new_vehicle := false
 var _session_previous_freeze := false
 var _session_previous_camera_rotation := 0.0
-var removal_hover: RemovalHoverOverlay
+var removal_hover: RemovalOverlay
 
 @onready var editor_dock: Panel = $EditorDock
 @onready var palette: BlockPalette = (
@@ -75,7 +75,7 @@ func _process(_delta: float) -> void:
 		else:
 			set_selected_vehicle(null)
 	if active_workshop != null and not is_instance_valid(active_workshop):
-		cancel_workshop_edit("Maintenance bay is no longer available")
+		cancel_workshop_edit("Vehicle Bay is no longer available")
 	elif (
 		is_instance_valid(active_workshop)
 		and _get_workshop_building(active_workshop)
@@ -167,7 +167,7 @@ func exit_edit_mode() -> void:
 
 func close_editor() -> void:
 	if active_workshop != null:
-		cancel_workshop_edit("Maintenance bay editing cancelled")
+		cancel_workshop_edit("Vehicle Bay editing cancelled")
 	clear_preview_block()
 	clear_removal_hover()
 	palette.selected_block = null
@@ -187,7 +187,7 @@ func is_fire_suppressed() -> bool:
 
 
 func set_workshop_context(
-	workshop: MaintenanceBayBlock,
+	workshop: VehicleBayBlock,
 	target_vehicle: Vehicle = null
 ) -> void:
 	workshop_context = workshop if is_instance_valid(workshop) else null
@@ -196,7 +196,7 @@ func set_workshop_context(
 	)
 
 
-func clear_workshop_context(workshop: MaintenanceBayBlock) -> void:
+func clear_workshop_context(workshop: VehicleBayBlock) -> void:
 	if workshop_context != workshop or active_workshop == workshop:
 		return
 	workshop_context = null
@@ -224,40 +224,40 @@ func try_toggle_workshop_context() -> bool:
 
 
 func begin_workshop_edit(
-	workshop: MaintenanceBayBlock,
+	workshop: VehicleBayBlock,
 	target_vehicle: Vehicle
 ) -> Dictionary:
 	if active_workshop != null:
-		return _session_error("Another maintenance bay session is already active")
+		return _session_error("Another Vehicle Bay session is already active")
 	if not is_instance_valid(workshop) or not is_instance_valid(target_vehicle):
-		return _session_error("Maintenance bay or vehicle is unavailable")
+		return _session_error("Vehicle Bay or vehicle is unavailable")
 	var building := _get_workshop_building(workshop)
 	if building == null:
 		return _session_error("Vehicle workshop is unavailable")
 	if target_vehicle.owner_id != building.owner_id:
 		return _session_error("Vehicle owner does not match vehicle workshop owner")
 	if workshop.get_docked_vehicle() != target_vehicle:
-		return _session_error("Vehicle is not docked in this maintenance bay")
+		return _session_error("Vehicle is not docked in this Vehicle Bay")
 	if target_vehicle.linear_velocity.length() > DOCKING_LINEAR_SPEED_LIMIT:
 		return _session_error("Vehicle must stop before editing")
 	if absf(target_vehicle.angular_velocity) > DOCKING_ANGULAR_SPEED_LIMIT:
 		return _session_error("Vehicle must stop rotating before editing")
 	if not workshop.is_vehicle_fully_inside(target_vehicle):
-		return _session_error("Vehicle is not fully inside this maintenance bay")
+		return _session_error("Vehicle is not fully inside this Vehicle Bay")
 	_start_workshop_session(workshop, building, target_vehicle, false)
 	return {"ok": true, "message": "Vehicle editing started"}
 
 
-func begin_new_workshop_vehicle(workshop: MaintenanceBayBlock) -> Dictionary:
+func begin_new_workshop_vehicle(workshop: VehicleBayBlock) -> Dictionary:
 	if active_workshop != null:
-		return _session_error("Another maintenance bay session is already active")
+		return _session_error("Another Vehicle Bay session is already active")
 	if not is_instance_valid(workshop):
-		return _session_error("Maintenance bay is unavailable")
+		return _session_error("Vehicle Bay is unavailable")
 	var building := _get_workshop_building(workshop)
 	if building == null:
 		return _session_error("Vehicle workshop is unavailable")
 	if is_instance_valid(workshop.get_docked_vehicle()):
-		return _session_error("Maintenance bay already has a docked vehicle")
+		return _session_error("Vehicle Bay already has a docked vehicle")
 	create_new_vehicle(workshop.get_center_world_position(), false)
 	if not is_instance_valid(vehicle):
 		return _session_error("New vehicle could not be created")
@@ -270,7 +270,7 @@ func begin_new_workshop_vehicle(workshop: MaintenanceBayBlock) -> Dictionary:
 
 func finish_workshop_edit() -> Dictionary:
 	if active_workshop == null:
-		return _session_error("No maintenance bay editing session is active")
+		return _session_error("No Vehicle Bay editing session is active")
 	if not is_instance_valid(vehicle):
 		cancel_workshop_edit("Edited vehicle is unavailable")
 		return _session_error("Edited vehicle is unavailable")
@@ -280,7 +280,7 @@ func finish_workshop_edit() -> Dictionary:
 		is_instance_valid(active_workshop)
 		and not active_workshop.is_vehicle_layout_inside(vehicle)
 	):
-		return _session_error("Vehicle must remain inside the maintenance bay")
+		return _session_error("Vehicle must remain inside the Vehicle Bay")
 	vehicle.normalize_layout_to_top_left()
 	var finished_vehicle := vehicle
 	active_workshop.track_candidate_vehicle(finished_vehicle)
@@ -292,7 +292,7 @@ func finish_workshop_edit() -> Dictionary:
 
 
 func cancel_workshop_edit(
-	message: String = "Maintenance bay editing cancelled"
+	message: String = "Vehicle Bay editing cancelled"
 ) -> void:
 	if active_workshop == null:
 		return
@@ -316,17 +316,12 @@ func refresh_workshop_camera() -> void:
 	if not is_instance_valid(active_workshop) or not is_instance_valid(vehicle):
 		return
 	var camera := get_viewport().get_camera_2d()
-	if camera != null and camera.has_method("focus_on_workshop_vehicle"):
-		var front_rotation := (
-			active_workshop.get_vehicle_front_rotation()
-			if workshop_new_vehicle
-			else active_workshop.get_editor_front_rotation(vehicle)
-		)
-		camera.call("focus_on_workshop_vehicle", vehicle, front_rotation)
+	if camera != null and camera.has_method("focus_and_sync_rot_to_vehicle"):
+		camera.call("focus_and_sync_rot_to_vehicle", vehicle)
 
 
 func _start_workshop_session(
-	workshop: MaintenanceBayBlock,
+	workshop: VehicleBayBlock,
 	building: Building,
 	target_vehicle: Vehicle,
 	is_new_vehicle: bool
@@ -371,7 +366,7 @@ func _clear_active_workshop_session() -> void:
 	workshop_session_changed.emit(false)
 
 
-func _get_workshop_building(workshop: MaintenanceBayBlock) -> Building:
+func _get_workshop_building(workshop: VehicleBayBlock) -> Building:
 	if not is_instance_valid(workshop):
 		return null
 	var world_layer := workshop.block_host as WorldBlockLayer
@@ -380,13 +375,13 @@ func _get_workshop_building(workshop: MaintenanceBayBlock) -> Building:
 	var building := world_layer.get_building_at(workshop.origin_cell)
 	if (
 		building == null
-		or building.get_maintenance_bay_for_block(workshop) == null
+		or building.get_vehicle_bay_for_block(workshop) == null
 	):
 		return null
 	return building
 
 
-func _find_workshop_for_vehicle(target_vehicle: Vehicle) -> MaintenanceBayBlock:
+func _find_workshop_for_vehicle(target_vehicle: Vehicle) -> VehicleBayBlock:
 	if not is_instance_valid(target_vehicle):
 		return null
 	for node: Node in get_tree().get_nodes_in_group("world_block_layers"):
@@ -394,7 +389,7 @@ func _find_workshop_for_vehicle(target_vehicle: Vehicle) -> MaintenanceBayBlock:
 		if world_layer == null:
 			continue
 		for building: Building in world_layer.buildings:
-			var workshop := building.get_maintenance_bay_for_vehicle(
+			var workshop := building.get_vehicle_bay_for_vehicle(
 				target_vehicle
 			)
 			if workshop != null:
@@ -530,9 +525,9 @@ func update_vehicle_removal_hover() -> void:
 	overlay.show_centers(centers)
 
 
-func ensure_removal_hover() -> RemovalHoverOverlay:
+func ensure_removal_hover() -> RemovalOverlay:
 	if not is_instance_valid(removal_hover):
-		removal_hover = RemovalHoverOverlay.new()
+		removal_hover = RemovalOverlay.new()
 	return removal_hover
 
 
@@ -563,7 +558,7 @@ func place_block() -> void:
 				preview_block
 			)
 		):
-			_show_status("Outside maintenance bay area")
+			_show_status("Outside Vehicle Bay area")
 		else:
 			_show_status("Cannot build here")
 		return
@@ -961,7 +956,7 @@ func _load_blueprint_from_path(path: String) -> void:
 		)
 	):
 		built_vehicle.queue_free()
-		_show_status("Blueprint does not fit inside this maintenance bay")
+		_show_status("Blueprint does not fit inside this Vehicle Bay")
 		return
 	built_vehicle.freeze = active_workshop != null
 	set_selected_vehicle(built_vehicle)

@@ -11,9 +11,9 @@ const MAX_QUERY_RESULTS := 256
 @export var drill_area: Area2D
 @export_category("Drill Head")
 @export var drill_head: Sprite2D
-@export var head_scroll_speed := 64.0
+@export var head_scroll_speed := 128.0
 @export var head_acceleration := 128.0
-@export var head_scroll_period := 16.0
+@export var head_scroll_period := 32
 
 var supplied_power := 0.0
 var storage_full := false

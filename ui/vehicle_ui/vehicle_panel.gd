@@ -2,7 +2,7 @@ class_name VehiclePanel
 extends FloatingPanel
 
 var vehicle: Vehicle
-var docked_maintenance_bay: MaintenanceBayBlock
+var docked_vehicle_bay: VehicleBayBlock
 var renaming := false
 
 @onready var vehicle_name_input: LineEdit = $VehicleName
@@ -44,7 +44,7 @@ func is_vehicle_selected(candidate: Vehicle) -> bool:
 
 func refresh_information() -> void:
 	if not is_instance_valid(vehicle):
-		docked_maintenance_bay = null
+		docked_vehicle_bay = null
 		edit_button.hide()
 		if not renaming:
 			vehicle_name_input.text = "No vehicle selected"
@@ -58,8 +58,8 @@ func refresh_information() -> void:
 		return
 	if not renaming:
 		vehicle_name_input.text = vehicle.vehicle_name
-	docked_maintenance_bay = _find_docked_maintenance_bay(vehicle)
-	edit_button.visible = is_instance_valid(docked_maintenance_bay)
+	docked_vehicle_bay = _find_docked_vehicle_bay(vehicle)
+	edit_button.visible = is_instance_valid(docked_vehicle_bay)
 	var details: Array[String] = [
 		"Blocks: %d" % vehicle.blocks.size(),
 		"Owner: %s" % String(vehicle.owner_id),
@@ -87,26 +87,26 @@ func _get_control_text(assembly: BlockAssembly) -> String:
 	return "No active control"
 
 
-func _find_docked_maintenance_bay(
+func _find_docked_vehicle_bay(
 	target_vehicle: Vehicle
-) -> MaintenanceBayBlock:
+) -> VehicleBayBlock:
 	if not is_instance_valid(target_vehicle):
 		return null
 	if (
-		is_instance_valid(docked_maintenance_bay)
-		and docked_maintenance_bay.get_docked_vehicle() == target_vehicle
+		is_instance_valid(docked_vehicle_bay)
+		and docked_vehicle_bay.get_docked_vehicle() == target_vehicle
 	):
-		return docked_maintenance_bay
+		return docked_vehicle_bay
 	for node: Node in get_tree().get_nodes_in_group("world_block_layers"):
 		var world_layer := node as WorldBlockLayer
 		if world_layer == null:
 			continue
 		for building: Building in world_layer.buildings:
-			var maintenance_bay := building.get_maintenance_bay_for_vehicle(
+			var vehicle_bay := building.get_vehicle_bay_for_vehicle(
 				target_vehicle
 			)
-			if maintenance_bay != null:
-				return maintenance_bay
+			if vehicle_bay != null:
+				return vehicle_bay
 	return null
 
 
@@ -150,8 +150,8 @@ func _on_name_focus_exited() -> void:
 func _on_edit_button_pressed() -> void:
 	if not is_instance_valid(vehicle):
 		return
-	var maintenance_bay := _find_docked_maintenance_bay(vehicle)
-	if maintenance_bay == null:
+	var vehicle_bay := _find_docked_vehicle_bay(vehicle)
+	if vehicle_bay == null:
 		refresh_information()
 		return
 	var editor := get_tree().get_first_node_in_group(
@@ -159,8 +159,8 @@ func _on_edit_button_pressed() -> void:
 	) as VehicleEditor
 	if editor == null:
 		return
-	editor.set_workshop_context(maintenance_bay, vehicle)
-	var result := editor.begin_workshop_edit(maintenance_bay, vehicle)
+	editor.set_workshop_context(vehicle_bay, vehicle)
+	var result := editor.begin_workshop_edit(vehicle_bay, vehicle)
 	if bool(result.get("ok", false)):
 		close_panel()
 

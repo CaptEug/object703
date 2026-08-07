@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://ui/block_info/weapon_block_info.gd" id="1_script"]
-[ext_resource type="Theme" path="res://assets/resources/UI_theme.tres" id="2_theme"]
+[ext_resource type="Script" uid="uid://du580dy027nvs" path="res://ui/block_info/weapon_info.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://djb1bkq82a1wy" path="res://assets/resources/UI_theme.tres" id="2_theme"]
 
 [node name="WeaponBlockInfo" type="VBoxContainer"]
 theme_override_constants/separation = 6

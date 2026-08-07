@@ -29,7 +29,7 @@ var selected_block: Block
 var preview_block: Block
 var preview_cell := WorldBlockLayer.INVALID_CELL
 var preview_rotation := 0
-var removal_hover: RemovalHoverOverlay
+var removal_hover: RemovalOverlay
 
 @onready var constructor_dock: Panel = $ConstructorDock
 @onready var palette: BlockPalette = (
@@ -317,9 +317,9 @@ func update_world_removal_hover() -> void:
 	overlay.show_centers(centers)
 
 
-func ensure_removal_hover() -> RemovalHoverOverlay:
+func ensure_removal_hover() -> RemovalOverlay:
 	if not is_instance_valid(removal_hover):
-		removal_hover = RemovalHoverOverlay.new()
+		removal_hover = RemovalOverlay.new()
 	return removal_hover
 
 

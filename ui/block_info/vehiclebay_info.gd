@@ -1,11 +1,11 @@
-class_name MaintenanceBayBlockInfo
+class_name VehicleBayBlockInfo
 extends VBoxContainer
 
 const ACTION_ICON_ATLAS := preload("res://assets/icons/icons.png")
 const ACTION_EDIT_REGION := Rect2(0, 160, 32, 32)
 const ACTION_CREATE_REGION := Rect2(32, 160, 32, 32)
 
-var workshop: MaintenanceBayBlock
+var workshop: VehicleBayBlock
 var docked_vehicle: Vehicle
 var _updating_direction := false
 var _editor_status := ""
@@ -22,7 +22,7 @@ func _ready() -> void:
 
 
 func bind_block(block: Block) -> void:
-	workshop = block as MaintenanceBayBlock
+	workshop = block as VehicleBayBlock
 	if not is_instance_valid(workshop):
 		return
 	if not workshop.docked_vehicle_changed.is_connected(
@@ -175,7 +175,7 @@ func _get_docked_vehicle_rejection() -> String:
 	if absf(docked_vehicle.angular_velocity) > 0.05:
 		return "Vehicle must stop rotating before editing"
 	if not workshop.is_vehicle_fully_inside(docked_vehicle):
-		return "Vehicle is not fully inside this maintenance bay"
+		return "Vehicle is not fully inside this Vehicle Bay"
 	return ""
 
 

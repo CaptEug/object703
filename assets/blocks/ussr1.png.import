@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfm1ixppv8f30"
-path="res://.godot/imported/blocks_ground1.png-c54cddcc41bd072787b2fd470c7cba2d.ctex"
+uid="uid://d1boi4b4eg236"
+path="res://.godot/imported/ussr1.png-49abee1877a0de21334d8454569777bf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/blocks/blocks_ground1.png"
-dest_files=["res://.godot/imported/blocks_ground1.png-c54cddcc41bd072787b2fd470c7cba2d.ctex"]
+source_file="res://assets/blocks/ussr1.png"
+dest_files=["res://.godot/imported/ussr1.png-49abee1877a0de21334d8454569777bf.ctex"]
 
 [params]
 

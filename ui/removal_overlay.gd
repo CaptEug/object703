@@ -1,4 +1,4 @@
-class_name RemovalHoverOverlay
+class_name RemovalOverlay
 extends Node2D
 
 const STRIPE_ATLAS := preload("res://assets/icons/icons_small.png")

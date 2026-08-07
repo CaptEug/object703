@@ -76,7 +76,7 @@ func _input_event(viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event.button_index == MOUSE_BUTTON_LEFT:
 		handled = open_panel()
 	elif event.button_index == MOUSE_BUTTON_RIGHT:
-		handled = _open_block_panel_at_mouse()
+		handled = _pin_hovered_block_panel()
 	if handled:
 		viewport.set_input_as_handled()
 
@@ -89,7 +89,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		or _panel_interaction_is_suppressed()
 	):
 		return
-	if _open_block_panel_at_mouse():
+	if _pin_hovered_block_panel():
 		get_viewport().set_input_as_handled()
 
 
@@ -106,14 +106,10 @@ func open_panel() -> bool:
 	return true
 
 
-func _open_block_panel_at_mouse() -> bool:
-	var block := get_block(world_to_cell(get_global_mouse_position()))
-	if block == null or not block.has_information_panel():
-		return false
+func _pin_hovered_block_panel() -> bool:
 	var panel := get_tree().get_first_node_in_group("block_information_panel")
-	if panel != null and panel.has_method("open_for_block"):
-		return panel.open_for_block(
-			block,
+	if panel != null and panel.has_method("pin_hovered_block"):
+		return panel.pin_hovered_block(
 			get_viewport().get_mouse_position()
 		)
 	return false

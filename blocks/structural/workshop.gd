@@ -1,4 +1,4 @@
-class_name MaintenanceBayBlock
+class_name VehicleBayBlock
 extends ExpandableBlock
 
 signal docked_vehicle_changed(vehicle: Vehicle)
@@ -58,7 +58,7 @@ func has_information_panel() -> bool:
 
 
 func get_information_panel_key() -> StringName:
-	return &"maintenance_bay"
+	return &"vehicle_bay"
 
 
 func get_save_state() -> Dictionary:
@@ -111,13 +111,13 @@ func refresh_union_visual() -> void:
 
 
 func _merge_union_data(members: Array) -> void:
-	var direction_source: MaintenanceBayBlock = self
+	var direction_source: VehicleBayBlock = self
 	var largest_area := size.x * size.y
 	var merged_candidates: Array[Vehicle] = []
 	var merged_docked_vehicle: Vehicle
 	var docked_source_area := -1
 	for value: Variant in members:
-		var member := value as MaintenanceBayBlock
+		var member := value as VehicleBayBlock
 		if member == null:
 			continue
 		var member_area := member.size.x * member.size.y

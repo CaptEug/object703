@@ -173,7 +173,7 @@ theme_override_font_sizes/font_size = 8
 vertical_alignment = 1
 text_overrun_behavior = 3
 
-[node name="FinishButton" type="Button" parent="ConstructorDock"]
+[node name="FinishButton" type="Button" parent="ConstructorDock" unique_id=578511032]
 custom_minimum_size = Vector2(148, 40)
 layout_mode = 1
 anchors_preset = 3
@@ -181,9 +181,9 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -159.0
+offset_left = -158.0
 offset_top = -48.0
-offset_right = -11.0
+offset_right = -10.0
 offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 0

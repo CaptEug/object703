@@ -2,45 +2,45 @@ class_name StructureGenerator
 extends RefCounted
 
 const STARTER_VEHICLE_WORKSHOP_NAME := "Starter Vehicle Workshop"
-const MAINTENANCE_BAY_BLOCK_NAME := "Maintenance Bay"
-const MAINTENANCE_BAY_ROWS := 3
-const MAINTENANCE_BAY_COLUMNS := 4
+const vehicle_bay_BLOCK_NAME := "Vehicle Bay"
+const vehicle_bay_ROWS := 3
+const vehicle_bay_COLUMNS := 4
 const STRUCTURE_CLEARANCE := 1
 
 
 static func generate_default_structures(gamemap: GameMap) -> Dictionary:
 	if not is_instance_valid(gamemap):
 		return _error("Structure generation has no map.")
-	var maintenance_bay_id := BlockDB.get_id_for_name(
-		MAINTENANCE_BAY_BLOCK_NAME
+	var vehicle_bay_id := BlockDB.get_id_for_name(
+		vehicle_bay_BLOCK_NAME
 	)
 	if (
-		maintenance_bay_id == BlockDB.INVALID_BLOCK_ID
-		or not BlockDB.is_constructed(maintenance_bay_id)
+		vehicle_bay_id == BlockDB.INVALID_BLOCK_ID
+		or not BlockDB.is_constructed(vehicle_bay_id)
 		or not BlockDB.can_place_on(
-			maintenance_bay_id,
+			vehicle_bay_id,
 			BlockDB.HOST_WORLD
 		)
 	):
 		return _error(
-			"The Maintenance Bay block is unavailable for world structures."
+			"The Vehicle Bay block is unavailable for world structures."
 		)
 
-	var unit_size := BlockDB.get_size(maintenance_bay_id)
+	var unit_size := BlockDB.get_size(vehicle_bay_id)
 	var anchors: Array[Vector2i] = []
-	for row in range(MAINTENANCE_BAY_ROWS):
-		for column in range(MAINTENANCE_BAY_COLUMNS):
+	for row in range(vehicle_bay_ROWS):
+		for column in range(vehicle_bay_COLUMNS):
 			anchors.append(Vector2i(
 				column * unit_size.x,
 				row * unit_size.y
 			))
 	var footprint := Vector2i(
-		MAINTENANCE_BAY_COLUMNS * unit_size.x,
-		MAINTENANCE_BAY_ROWS * unit_size.y
+		vehicle_bay_COLUMNS * unit_size.x,
+		vehicle_bay_ROWS * unit_size.y
 	)
 	var site := _find_near_center_site(
 		gamemap,
-		maintenance_bay_id,
+		vehicle_bay_id,
 		anchors,
 		footprint
 	)
@@ -50,7 +50,7 @@ static func generate_default_structures(gamemap: GameMap) -> Dictionary:
 		)
 	return _place_structure(
 		gamemap,
-		maintenance_bay_id,
+		vehicle_bay_id,
 		anchors,
 		site,
 		STARTER_VEHICLE_WORKSHOP_NAME
@@ -170,14 +170,14 @@ static func _place_structure(
 	gamemap.world_blocks.end_bulk_edit()
 	if not success:
 		return _error(
-			"Starter maintenance bay placement failed and was rolled back."
+			"Starter Vehicle Bay placement failed and was rolled back."
 		)
 
 	var building := gamemap.world_blocks.get_building_at(origin)
 	if building == null or not building.is_vehicle_workshop():
 		_erase_structure_footprint(gamemap.world_blocks, origin, anchors, block_id)
 		return _error(
-			"Starter maintenance bays did not form a vehicle workshop building."
+			"Starter Vehicle Bays did not form a vehicle workshop building."
 		)
 	building.building_name = structure_name
 	return {
